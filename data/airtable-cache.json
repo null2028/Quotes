@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-11-13T03:19:42.832Z",
+  "syncedAt": "2026-11-13T06:53:17.520Z",
   "selectedBaseId": "app9rk1rYkbXuIi3e",
   "selectedBaseName": "Trà Nguội",
   "selectedTableId": "tblUvm81GfyOYZ4jH",
@@ -2994,6 +2994,33 @@
           }
         },
         {
+          "id": "reclGOSSclsYzptDF",
+          "createdTime": "2026-11-13T05:19:32.000Z",
+          "fields": {
+            "TikTok Caption": "Có những lúc yêu một người, mình không còn bận tâm ai đúng ai sai nữa. Chỉ cần nhìn thấy họ khóc, trong lòng đã tự hỏi: liệu mình có thể làm gì khác để mọi chuyện đừng khiến họ đau đến thế?\n\nCó lẽ yêu thương đôi khi không phải là nhận hết lỗi về mình. Mà là không thể thờ ơ trước nước mắt của người mình thương.\n\n#tranguoi #tinhyeu #yeuthuong #baodung #moiquanhe #suyngam",
+            "Chủ đề": "Tình yêu",
+            "Nguồn": "Người dùng cung cấp",
+            "Tone": "Suy ngẫm",
+            "Cảm xúc": "Bao dung · yêu thương · day dứt · bảo vệ",
+            "Quote tinh chỉnh": "Dù em có phạm phải\nbao nhiêu lầm lỗi,\n\nthì đến giây phút em khóc,\nanh lại chỉ nghĩ một điều:\n\ncó lẽ,\ntrong tất cả những chuyện ấy,\nanh cũng đã không biết cách\nđể em bớt đau.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Tinh tế",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Lắng lại",
+            "Caption Status": "Đã có",
+            "Nội dung nguyên văn": "Dù em phạm phải bao nhiêu lầm lỗi, nhưng ngay giây phút em khóc, tất cả đều là lỗi của tôi.",
+            "Thời điểm phù hợp": "Tối",
+            "ID": "Q089",
+            "Tags": [
+              "tình yêu",
+              "mối quan hệ",
+              "cảm xúc",
+              "chiêm nghiệm"
+            ],
+            "Loại": "Quote"
+          }
+        },
+        {
           "id": "recm9ny4Vj39YLe4D",
           "createdTime": "2026-11-12T09:06:16.000Z",
           "fields": {
@@ -3460,7 +3487,7 @@
           }
         }
       ],
-      "recordCount": 88
+      "recordCount": 89
     },
     {
       "id": "tblG0SqIZOVn5D2NJ",
