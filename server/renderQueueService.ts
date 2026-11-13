@@ -23,31 +23,17 @@ import {
   StageScriptSchema,
 } from '../src/stage/stageScriptSchema';
 import { incrementSceneUsage } from './sceneManagerService';
+import {
+  CupRecord,
+  loadCups,
+  saveCups,
+  updateCupInStore,
+} from './cupStore';
 
-export type RenderJobStatus =
-  | 'draft'
-  | 'queued'
-  | 'bundling'
-  | 'rendering'
-  | 'completed'
-  | 'failed';
-
-export interface CupRecord {
-  id: string;
-  cupNumber: string;
-  status: RenderJobStatus;
-  progress: number;
-  videoUrl?: string;
-  seoVideoUrl?: string;
-  seoFileName?: string;
-  thumbUrl?: string;
-  captionText: string;
-  errorMessage?: string;
-  props: VideoInputProps;
-}
+export type { CupRecord, RenderJobStatus } from './cupStore';
+export { loadCups, saveCups, updateCupInStore } from './cupStore';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const CUPS_PATH = path.resolve(PROJECT_ROOT, 'data/cups.json');
 const STAGE_SCRIPTS_PATH = path.resolve(PROJECT_ROOT, 'data/stage-scripts.json');
 const CUSTOM_PROPS_PATH = path.resolve(PROJECT_ROOT, 'data/custom-props.json');
 const PUBLIC_AUDIO_DIR = path.resolve(PROJECT_ROOT, 'public/audio');
@@ -108,28 +94,6 @@ function hydrateFreshStageScriptForRender(props: VideoInputProps): VideoInputPro
   } catch {
     return props;
   }
-}
-
-export function loadCups(): CupRecord[] {
-  if (!fs.existsSync(CUPS_PATH)) return [];
-  return JSON.parse(fs.readFileSync(CUPS_PATH, 'utf-8')) as CupRecord[];
-}
-
-export function saveCups(cups: CupRecord[]): void {
-  fs.mkdirSync(path.dirname(CUPS_PATH), { recursive: true });
-  fs.writeFileSync(CUPS_PATH, JSON.stringify(cups, null, 2), 'utf-8');
-}
-
-export function updateCupInStore(
-  cupId: string,
-  updater: (cup: CupRecord) => CupRecord
-): CupRecord | null {
-  const cups = loadCups();
-  const idx = cups.findIndex((c) => c.id === cupId);
-  if (idx === -1) return null;
-  cups[idx] = updater(cups[idx]);
-  saveCups(cups);
-  return cups[idx];
 }
 
 export function invalidateRemotionBundleCache(): void {

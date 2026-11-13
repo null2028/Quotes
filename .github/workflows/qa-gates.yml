@@ -1,0 +1,57 @@
+name: Trà Nguội QA Gates (Gate 1 & Gate 2)
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: qa-gates-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa-gates-1-and-2:
+    name: Kiểm thử Tự động Gate 1 (.mp3 & tsc) & Gate 2 (Thuật toán & SEO)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout mã nguồn Quotes
+        uses: actions/checkout@v4
+
+      - name: Thiết lập Node.js 22 & bộ đệm npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cài đặt dependencies sạch (npm ci)
+        run: npm ci
+
+      - name: Gate 1 — Quét tĩnh sạch .mp3 & Kiểm tra kiểu TypeScript (tsc)
+        id: gate1
+        continue-on-error: true
+        run: npx --yes tsx scripts/qa-gates-ci.mjs --gate=1
+
+      - name: Gate 2 — Kiểm toán Âm tiết, SEO, Bình luận mồi, TN-Score & 40-30-20-10
+        id: gate2
+        if: always()
+        continue-on-error: true
+        run: npx --yes tsx scripts/qa-gates-ci.mjs --gate=2
+
+      - name: Xuất QA Report lên GitHub Summary & Chốt kết quả CI
+        id: summary
+        if: always()
+        run: npx --yes tsx scripts/qa-gates-ci.mjs --summarize
+
+      - name: Lưu trữ báo cáo QA Artifacts (Markdown & JSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tra-nguoi-qa-gates-report
+          path: qa-artifacts-ci/
+          retention-days: 30

@@ -4,8 +4,7 @@
     "title": "Nghỉ",
     "rawText": "Cơm áo gồng đã mỏi\nNgồi xuống thở một hơi\nTrời có sập đâu nhỉ\nMai tính... tiếp cuộc đời!",
     "pivotWord": "Mai tính",
-    "bgmFileName": "default-piano.mp3",
-    "bgmStartSeconds": 4,
+    "audioMode": "FOLEY_MASTER",
     "themeId": "MINIMAL_LIGHT",
     "brandText": "TRÀ NGUỘI"
   },
@@ -14,8 +13,7 @@
     "title": "Ngược lối",
     "rawText": "Có những người đi cùng ta qua cả mùa giông bão, nhưng lại lặng lẽ rẽ ngang vào một ngày nắng đẹp.",
     "pivotWord": "rẽ ngang",
-    "bgmFileName": "lofi-night-02.mp3",
-    "bgmStartSeconds": 12,
+    "audioMode": "FOLEY_MASTER",
     "themeId": "MINIMAL_DARK",
     "brandText": "TRÀ NGUỘI"
   }

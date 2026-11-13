@@ -1,0 +1,53 @@
+{
+  "id": "quote-002",
+  "cupNumber": "02",
+  "status": "completed",
+  "progress": 100,
+  "videoUrl": "/output/quote-002/quote-002.mp4",
+  "thumbUrl": "/output/quote-002/quote-002-thumb.png",
+  "captionText": "Cùng nhau đi hết mùa giông bão, lại lặng lẽ rẽ ngang vào ngày nắng đẹp.\nCó ai từng chỉ ghé che chung với bạn một đoạn mưa như thế chưa?\n\n#tranguoi #nguocloi #suyngam #trichdan #chualanh",
+  "props": {
+    "id": "quote-002",
+    "textFormat": "POEM",
+    "title": "Ngược lối",
+    "author": "sưu tầm",
+    "segments": [
+      "Có những người đi cùng ta ",
+      "qua cả mùa giông bão,",
+      "nhưng lại lặng lẽ rẽ ngang",
+      "vào một ngày nắng đẹp."
+    ],
+    "pivotWord": "rẽ ngang",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "RAIN_UMBRELLA_PARTING",
+      "archetype": "RAIN_UMBRELLA_PARTING",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.7,
+        "spread": 0.18,
+        "tiltDeg": -20
+      },
+      "stateB": {
+        "intensity": 0.3,
+        "spread": 0.85,
+        "tiltDeg": 35
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "WOOD_SEAL"
+    },
+    "brandText": "TRÀ NGUỘI"
+  }
+}

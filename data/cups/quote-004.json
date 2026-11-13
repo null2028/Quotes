@@ -1,0 +1,53 @@
+{
+  "id": "quote-004",
+  "cupNumber": "04",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Chỉ được nhớ đến lúc họ chênh vênh, rồi lại lặng lẽ nằm sau cốp xe khi đường đã êm.\nĐừng mãi làm phương án dự phòng trong hành trình của người khác nữa, nhé?\n\n#tranguoi #lopduphong #giatribanthan #suyngam #trichdan",
+  "props": {
+    "id": "quote-004",
+    "textFormat": "PROSE",
+    "title": "Lốp",
+    "author": "",
+    "fontSizeScale": 1.05,
+    "segments": [
+      "Đừng biến mình thành chiếc lốp dự phòng cho một chiếc xe.",
+      "Khi chiếc lốp chính bị hỏng, họ mới nhớ đến bạn.",
+      "Và khi đã sửa xong, bạn lại bị ném vào cốp xe."
+    ],
+    "pivotWord": "ném vào cốp xe",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_LOP_DU_PHONG",
+      "archetype": "SCRIPT_LOP_DU_PHONG",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.8,
+        "spread": 0.2,
+        "tiltDeg": -18
+      },
+      "stateB": {
+        "intensity": 0.1,
+        "spread": 0.75,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-004/Ch%C3%A9n%2004%20-%20L%E1%BB%91p.mp4?v=1794388175576",
+  "thumbUrl": "/output/quote-004/Ch%C3%A9n%2004%20-%20L%E1%BB%91p.png?v=1794388175576"
+}
