@@ -57,8 +57,17 @@ export function loadStageScriptsMap(): Record<string, StageScript> {
 }
 
 export function saveStageScriptsMap(map: Record<string, StageScript>): void {
+  const cleaned: Record<string, StageScript> = {};
+  for (const [key, val] of Object.entries(map)) {
+    const { customPropsResolved: _omit, ...rest } = val;
+    cleaned[key] = rest;
+  }
   fs.mkdirSync(path.dirname(STAGE_SCRIPTS_PATH), { recursive: true });
-  fs.writeFileSync(STAGE_SCRIPTS_PATH, JSON.stringify(map, null, 2), 'utf-8');
+  fs.writeFileSync(
+    STAGE_SCRIPTS_PATH,
+    JSON.stringify(cleaned, null, 2) + '\n',
+    'utf-8'
+  );
 }
 
 export function loadCustomPropsMap(): Record<string, CustomPropDefinition> {
@@ -76,7 +85,11 @@ export function saveCustomPropsMap(
   map: Record<string, CustomPropDefinition>
 ): void {
   fs.mkdirSync(path.dirname(CUSTOM_PROPS_PATH), { recursive: true });
-  fs.writeFileSync(CUSTOM_PROPS_PATH, JSON.stringify(map, null, 2), 'utf-8');
+  fs.writeFileSync(
+    CUSTOM_PROPS_PATH,
+    JSON.stringify(map, null, 2) + '\n',
+    'utf-8'
+  );
 }
 
 export function loadVaultMeta(): VaultSceneMeta[] {
@@ -138,7 +151,7 @@ export function normalizeCustomSceneId(rawId: string): string {
     .replace(/[^A-Z0-9_]/g, '_')
     .replace(/^CUSTOM_+/, '')
     .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
+    .replace(/^_|_$/, '');
   return `CUSTOM_${clean || 'SCENE'}`;
 }
 
@@ -456,7 +469,7 @@ export function upsertCustomSceneCode(params: {
     }
   }
 
-  return { scene: sceneMeta, scenes, cups };
+  return { scene: sceneMeta, scenes, cups: loadCups() };
 }
 
 export function deleteCustomScene(
@@ -497,6 +510,7 @@ export function deleteCustomScene(
     if (activeId === sceneId) {
       cup.props.motion.sceneId = 'BOULDER_TO_BENCH';
       cup.props.motion.archetype = 'BOULDER_TO_BENCH';
+      cup.props.motion.stageScript = undefined;
       cupsChanged = true;
     }
   }
@@ -505,7 +519,7 @@ export function deleteCustomScene(
   }
 
   onInvalidateBundle?.();
-  return { scenes: nextScenes, cups };
+  return { scenes: nextScenes, cups: loadCups() };
 }
 
 const CupBundleImportSchema = z.object({
@@ -655,9 +669,12 @@ export function importDirectorBundle(
   }
   saveCups(cups);
 
+  const hydratedAll = loadCups();
+  const hydratedCup = hydratedAll.find((c) => c.id === cupId) ?? cupRecord;
+
   return {
-    cup: cupRecord,
-    cups,
+    cup: hydratedCup,
+    cups: hydratedAll,
     scenes: loadVaultMeta(),
   };
 }
@@ -672,7 +689,7 @@ export function normalizeScriptSceneId(rawId?: string, rawName?: string): string
     .replace(/[^A-Z0-9_]/g, '_')
     .replace(/^SCRIPT_+/, '')
     .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
+    .replace(/^_|_$/, '');
   return `SCRIPT_${clean || 'SCENE'}`;
 }
 
@@ -848,18 +865,23 @@ export function upsertStageScript(params: {
     }
   }
 
-  const finalScript: StageScript = {
+  const finalScriptForDisk: StageScript = {
     ...scriptData,
     sceneId: finalSceneId,
     name: finalName,
     description: params.description?.trim() || scriptData.description,
     props: updatedProps,
+    customPropsResolved: undefined,
+  };
+
+  const finalScriptHydrated: StageScript = {
+    ...finalScriptForDisk,
     customPropsResolved:
       Object.keys(usedCustomProps).length > 0 ? usedCustomProps : undefined,
   };
 
   const scriptsMap = loadStageScriptsMap();
-  scriptsMap[finalSceneId] = finalScript;
+  scriptsMap[finalSceneId] = finalScriptForDisk;
   saveStageScriptsMap(scriptsMap);
 
   const baseScenes: VaultSceneMeta[] = fs.existsSync(VAULT_META_PATH)
@@ -874,18 +896,18 @@ export function upsertStageScript(params: {
     category: 'TRAVELER',
     origin: 'script',
     act1:
-      finalScript.act1 ||
-      finalScript.description ||
+      finalScriptForDisk.act1 ||
+      finalScriptForDisk.description ||
       'Kịch bản sân khấu khai báo JSON (V7.0 StageScript)',
     act2AtPivot:
-      finalScript.act2AtPivot ||
+      finalScriptForDisk.act2AtPivot ||
       'Chuyển hóa mượt tại điểm bẻ lái pivotWord',
     act3Afterimage:
-      finalScript.act3Afterimage ||
+      finalScriptForDisk.act3Afterimage ||
       'Dư âm tĩnh lặng đến cuối video',
     redProp:
-      finalScript.redProp || 'Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)',
-    tags: finalScript.tags || ['script', 'v7'],
+      finalScriptForDisk.redProp || 'Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)',
+    tags: finalScriptForDisk.tags || ['script', 'v7'],
     usageCount: existingIdx !== -1 ? baseScenes[existingIdx].usageCount : 1,
   };
 
@@ -905,7 +927,7 @@ export function upsertStageScript(params: {
         ...cup.props.motion,
         sceneId: finalSceneId,
         archetype: finalSceneId,
-        stageScript: finalScript,
+        stageScript: undefined,
       };
       cupsChanged = true;
     }
@@ -916,9 +938,9 @@ export function upsertStageScript(params: {
 
   return {
     scene: sceneMeta,
-    script: finalScript,
+    script: finalScriptHydrated,
     scenes: loadVaultMeta(),
-    cups,
+    cups: loadCups(),
   };
 }
 
@@ -959,6 +981,6 @@ export function deleteStageScript(sceneId: string): {
 
   return {
     scenes: loadVaultMeta(),
-    cups,
+    cups: loadCups(),
   };
 }

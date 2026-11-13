@@ -6,11 +6,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
-const { auditVietnameseSyllables } = await import('../src/engine/timelineSync.ts');
+const {
+  ensureCupsDirectoryMigrated,
+  loadThinCupsFromDisk,
+  saveCups,
+  CUPS_DIR_PATH,
+} = await import('../server/cupStore.ts');
+const { loadStageScriptsMap, saveStageScriptsMap } = await import(
+  '../server/sceneManagerService.ts'
+);
+const { auditVietnameseSyllables } = await import(
+  '../src/engine/timelineSync.ts'
+);
 const { generateSeedCommentForCup, auditTikTokSeoCaption } = await import(
   '../src/automation/captionBuilder.ts'
 );
-const { formatCupSeoFileName } = await import('../src/automation/fileNaming.ts');
+const { formatCupSeoFileName } = await import(
+  '../src/automation/fileNaming.ts'
+);
 
 const CHEN_09_SEGMENTS = [
   'Tưởng rằng năm tháng đã xa,',
@@ -22,21 +35,20 @@ const CHEN_09_PIVOT = 'vẫn ngồi đợi ta';
 const CHEN_09_CAPTION =
   'Có những giai điệu chẳng hẹn trước, chỉ vô tình vang lên giữa phố chiều cũng đủ làm bước chân chậm lại.\nCó góc phố nào bạn đi ngang vẫn thấy ký ức lặng lẽ đợi mình ở đó chưa?\n\n#tranguoi #kyuc #hoainiem #lucbat #tamtrang';
 
-// 1. Cập nhật data/cups.json: dọn sạch .mp3 ở tất cả các Chén & chốt Bản Thơ 3 cho Chén 09
-const cupsPath = path.join(ROOT, 'data/cups.json');
-const cups = JSON.parse(fs.readFileSync(cupsPath, 'utf8'));
-let cleanedMp3Count = 0;
+// 1. Tự động di trú data/cups.json -> data/cups/quote-XXX.json (Hướng 2) & làm gọn stage-scripts.json
+ensureCupsDirectoryMigrated();
+const scriptsMap = loadStageScriptsMap();
+if (Object.keys(scriptsMap).length > 0) {
+  saveStageScriptsMap(scriptsMap);
+}
 
+// 2. Dọn sạch khóa .mp3 tồn dư (Chén 08) & chốt Bản Thơ 3 (28 âm tiết) cho Chén 09
+const cups = loadThinCupsFromDisk();
 for (const cup of cups) {
-  if (cup.props?.bgm) {
-    if ('fileName' in cup.props.bgm || 'startFromSeconds' in cup.props.bgm || 'volume' in cup.props.bgm) {
-      cleanedMp3Count += 1;
-    }
-    cup.props.bgm = {
-      audioMode: 'FOLEY_MASTER',
-      foleyPivotStyle: cup.props.bgm.foleyPivotStyle || 'AUTO',
-    };
-  }
+  cup.props.bgm = {
+    audioMode: 'FOLEY_MASTER',
+    foleyPivotStyle: cup.props.bgm?.foleyPivotStyle || 'AUTO',
+  };
 
   if (cup.id === 'quote-009' || cup.cupNumber === '09') {
     cup.props.textFormat = 'POEM';
@@ -54,10 +66,9 @@ for (const cup of cups) {
     cup.seoFileName = `${seoSlug}.mp4`;
   }
 }
+saveCups(cups);
 
-fs.writeFileSync(cupsPath, JSON.stringify(cups, null, 2) + '\n', 'utf8');
-
-// 2. Đồng bộ data/airtable-cache.json (Q042 & bản ghi Chén 09 trên Tủ Chén & Lịch Đăng)
+// 3. Đồng bộ data/airtable-cache.json (Q042 & bản ghi Chén 09 trên Tủ Chén & Lịch Đăng)
 const airtablePath = path.join(ROOT, 'data/airtable-cache.json');
 if (fs.existsSync(airtablePath)) {
   const airtable = JSON.parse(fs.readFileSync(airtablePath, 'utf8'));
@@ -85,11 +96,18 @@ if (fs.existsSync(airtablePath)) {
       }
     }
   }
-  fs.writeFileSync(airtablePath, JSON.stringify(airtable, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(
+    airtablePath,
+    JSON.stringify(airtable, null, 2) + '\n',
+    'utf8'
+  );
 }
 
-// 3. Đồng bộ nhãn tooltip trần 40 âm tiết trong StoryDirectorDesk.tsx
-const deskPath = path.join(ROOT, 'studio-ui/src/components/StoryDirectorDesk.tsx');
+// 4. Đồng bộ nhãn tooltip trần 40 âm tiết trong StoryDirectorDesk.tsx
+const deskPath = path.join(
+  ROOT,
+  'studio-ui/src/components/StoryDirectorDesk.tsx'
+);
 if (fs.existsSync(deskPath)) {
   const deskRaw = fs.readFileSync(deskPath, 'utf8');
   const deskUpdated = deskRaw
@@ -100,9 +118,24 @@ if (fs.existsSync(deskPath)) {
   }
 }
 
+const cupFiles = fs
+  .readdirSync(CUPS_DIR_PATH)
+  .filter((f) => f.endsWith('.json'))
+  .sort();
+const totalCupBytes = cupFiles.reduce(
+  (acc, f) => acc + fs.statSync(path.join(CUPS_DIR_PATH, f)).size,
+  0
+);
 const sylAudit = auditVietnameseSyllables(CHEN_09_SEGMENTS);
 const capAudit = auditTikTokSeoCaption(CHEN_09_CAPTION, CHEN_09_SEGMENTS);
-console.log('✅ Đã đồng bộ hoàn tất dữ liệu Studio V8.3.1:');
-console.log(`   • Đã dọn sạch khóa .mp3 tồn dư trên ${cleanedMp3Count} Chén (bao gồm Chén 08).`);
-console.log(`   • Chén 09 (Bản Thơ 3): ${sylAudit.count} âm tiết — ${sylAudit.label} | pivotWord: "${CHEN_09_PIVOT}"`);
-console.log(`   • Kiểm định SEO Chén 09: isClean=${capAudit.isClean} (${capAudit.hashtagCount} hashtags).`);
+
+console.log('✅ Đã tái cấu trúc xong Hướng 2 (data/cups/*.json) & đồng bộ V8.3.1:');
+console.log(
+  `   • Đã tách thành ${cupFiles.length} tệp trong data/cups/ — tổng dung lượng chỉ ${(totalCupBytes / 1024).toFixed(1)} KB (~${Math.round(totalCupBytes / Math.max(1, cupFiles.length))} B/Chén, xóa bỏ data/cups.json 325 KB cũ).`
+);
+console.log(
+  `   • Chén 09 (Bản Thơ 3): ${sylAudit.count} âm tiết — ${sylAudit.label} | pivotWord: "${CHEN_09_PIVOT}"`
+);
+console.log(
+  `   • Kiểm định SEO Chén 09: isClean=${capAudit.isClean} (${capAudit.hashtagCount} hashtags).`
+);

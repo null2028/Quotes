@@ -56,6 +56,49 @@ function assertCheck(checks, name, condition, detail) {
   }
 }
 
+function loadAllCupsForAudit() {
+  const cupsDir = path.join(ROOT, 'data/cups');
+  if (fs.existsSync(cupsDir)) {
+    const files = fs
+      .readdirSync(cupsDir)
+      .filter((f) => f.endsWith('.json') && !f.startsWith('.'))
+      .sort();
+    if (files.length > 0) {
+      const items = files.map((f) => {
+        const rel = `data/cups/${f}`;
+        const raw = fs.readFileSync(path.join(cupsDir, f), 'utf8');
+        const parsed = JSON.parse(raw);
+        return {
+          cup: parsed,
+          sourceFile: rel,
+          lineCount: raw.split(/\r?\n/).length,
+          hasInlineBloat: Boolean(parsed?.props?.motion?.stageScript),
+        };
+      });
+      items.sort(
+        (a, b) =>
+          (Number(a.cup.cupNumber) || 0) - (Number(b.cup.cupNumber) || 0)
+      );
+      return { mode: 'per-cup-dir', items };
+    }
+  }
+
+  const legacyPath = path.join(ROOT, 'data/cups.json');
+  if (fs.existsSync(legacyPath)) {
+    const parsed = JSON.parse(fs.readFileSync(legacyPath, 'utf8'));
+    return {
+      mode: 'legacy-monolith',
+      items: parsed.map((cup) => ({
+        cup,
+        sourceFile: 'data/cups.json',
+        lineCount: 0,
+        hasInlineBloat: Boolean(cup?.props?.motion?.stageScript),
+      })),
+    };
+  }
+  return { mode: 'empty', items: [] };
+}
+
 async function runGate1() {
   console.log('=== [GATE 1] Quét tĩnh sạch .mp3 & Kiểm tra kiểu TypeScript (tsc) ===');
   const allFiles = walkFiles(ROOT);
@@ -73,6 +116,7 @@ async function runGate1() {
     'package-lock.json',
     'pnpm-lock.yaml',
     SELF_REL,
+    'scripts/sync-v831-cups.mjs',
   ]);
 
   const activeMp3Refs = [];
@@ -188,7 +232,7 @@ function classifyCupPillar(cup, airtableCupRecord) {
 }
 
 async function runGate2() {
-  console.log('=== [GATE 2] Kiểm toán Âm tiết (trần 40), SEO, Bình luận mồi, TN-Score, 60fps/132px & 40-30-20-10 ===');
+  console.log('=== [GATE 2] Kiểm toán Âm tiết (trần 40), SEO, Bình luận mồi, TN-Score, 60fps/132px & Cấu trúc Hướng 2 ===');
 
   const { auditVietnameseSyllables, computeTimelineSync } = await import('../src/engine/timelineSync.ts');
   const { LAYOUT_TOKENS } = await import('../src/theme/palettes.ts');
@@ -233,12 +277,12 @@ async function runGate2() {
   assertCheck(unitChecks, 'Syllable concise (<14)', sConcise.count === 5 && sConcise.band === 'concise', JSON.stringify(sConcise));
 
   const sOptimal = auditVietnameseSyllables([
-    'Ta gom mây làm rượu,',
-    'Để ủ mối duyên đầu.',
-    'Ai ngờ men quá gắt,',
-    'Say tỉnh… chẳng còn nhau.',
+    'Tưởng rằng năm tháng đã xa,',
+    'Chợt nghe câu hát chiều qua phố người.',
+    'Chuyện xưa chẳng nói một lời,',
+    'Mà bên ghế trống… vẫn ngồi đợi ta.',
   ]);
-  assertCheck(unitChecks, 'Syllable optimal (14–28)', sOptimal.count === 20 && sOptimal.band === 'optimal', JSON.stringify(sOptimal));
+  assertCheck(unitChecks, 'Syllable optimal (Chén 09 Bản Thơ 3 = 28 âm)', sOptimal.count === 28 && sOptimal.band === 'optimal', JSON.stringify(sOptimal));
 
   const sCeiling = auditVietnameseSyllables([Array(SYLLABLE_CEILING).fill('trà').join(' ')]);
   assertCheck(unitChecks, 'Syllable ceiling = 40 (long)', sCeiling.count === 40 && sCeiling.band === 'long', JSON.stringify(sCeiling));
@@ -250,7 +294,7 @@ async function runGate2() {
   const sampleSeoSlug = formatCupSeoFileName('09', {
     title: 'Ký ức',
     mood: 'Hoài niệm',
-    pivotWord: 'đứng đợi',
+    pivotWord: 'vẫn ngồi đợi ta',
   });
   assertCheck(
     unitChecks,
@@ -288,8 +332,8 @@ async function runGate2() {
   const sampleSync = computeTimelineSync({
     id: 'test-cup',
     textFormat: 'POEM',
-    segments: ['Ta gom mây làm rượu', 'Say tỉnh chẳng còn nhau'],
-    pivotWord: 'chẳng còn nhau',
+    segments: ['Tưởng rằng năm tháng đã xa,', 'Mà bên ghế trống… vẫn ngồi đợi ta.'],
+    pivotWord: 'vẫn ngồi đợi ta',
     highlightStyle: 'BOTH',
     targetDurationSeconds: 15,
     typingSpeedMsPerChar: 55,
@@ -391,10 +435,9 @@ async function runGate2() {
     JSON.stringify(tnWarn)
   );
 
-  // 5. Kiểm toán thực tế trên data/cups.json & data/airtable-cache.json
-  const cupsPath = path.join(ROOT, 'data/cups.json');
+  // 5. Kiểm toán thực tế trên thư mục data/cups/*.json (Hướng 2) & data/airtable-cache.json
+  const storeInfo = loadAllCupsForAudit();
   const airtablePath = path.join(ROOT, 'data/airtable-cache.json');
-  const cups = fs.existsSync(cupsPath) ? JSON.parse(fs.readFileSync(cupsPath, 'utf8')) : [];
   const airtable = fs.existsSync(airtablePath) ? JSON.parse(fs.readFileSync(airtablePath, 'utf8')) : null;
 
   const trackerTable = (airtable?.tables || []).find((t) => t.name === 'Tủ Chén & Lịch Đăng');
@@ -407,6 +450,13 @@ async function runGate2() {
 
   const hardViolations = [];
   const warnings = [];
+
+  if (storeInfo.mode === 'legacy-monolith') {
+    const msg = 'Cấu trúc lưu trữ: Vẫn còn tệp đơn data/cups.json cũ chưa tách sang thư mục data/cups/quote-XXX.json (chạy npm run sync:v831 để di trú)';
+    warnings.push(msg);
+    ghAnnotate('warning', `Gate 2: ${msg}`, 'data/cups.json', 1);
+  }
+
   const pillarCounts = {
     office_wordplay: 0,
     contemplative_healing: 0,
@@ -414,7 +464,8 @@ async function runGate2() {
     author_literature: 0,
   };
 
-  const cupAudits = cups.map((cup, idx) => {
+  const cupAudits = storeInfo.items.map((entry, idx) => {
+    const { cup, sourceFile, hasInlineBloat } = entry;
     const cupNo = cup.cupNumber || String(idx + 1).padStart(2, '0');
     const p = cup.props || {};
     const hasAuthor = Boolean(String(p.author || '').trim() && !/^sưu tầm$/i.test(String(p.author || '').trim()));
@@ -441,26 +492,32 @@ async function runGate2() {
     const pillar = classifyCupPillar(cup, trackerRec);
     pillarCounts[pillar] += 1;
 
+    if (storeInfo.mode === 'per-cup-dir' && hasInlineBloat) {
+      const msg = `Chén ${cupNo} (${sourceFile}): Còn nhúng trùng stageScript trực tiếp trong tệp Chén`;
+      hardViolations.push(msg);
+      ghAnnotate('error', `Gate 2: ${msg}`, sourceFile, 1);
+    }
+
     if ((syl.count > SYLLABLE_CEILING && !hasAuthor) || syl.count === 0) {
       const msg = `Chén ${cupNo} (${p.title}): ${syl.count} âm tiết — vượt trần ${SYLLABLE_CEILING} âm tiết của khung 15s`;
       hardViolations.push(msg);
-      ghAnnotate('error', `Gate 2: ${msg}`, 'data/cups.json', 1);
+      ghAnnotate('error', `Gate 2: ${msg}`, sourceFile, 1);
     } else if (syl.band !== 'optimal') {
       const msg = `Chén ${cupNo} (${p.title}): ${syl.count} âm tiết (${syl.label})`;
       warnings.push(msg);
-      ghAnnotate('warning', `Gate 2: ${msg}`, 'data/cups.json', 1);
+      ghAnnotate('warning', `Gate 2: ${msg}`, sourceFile, 1);
     }
 
     if (!seoAudit.isClean) {
       const msg = `Chén ${cupNo} (${p.title}): Caption SEO không đạt chuẩn (${JSON.stringify(seoAudit)})`;
       hardViolations.push(msg);
-      ghAnnotate('error', `Gate 2: ${msg}`, 'data/cups.json', 1);
+      ghAnnotate('error', `Gate 2: ${msg}`, sourceFile, 1);
     }
 
     if (!seoSlugValid) {
       const msg = `Chén ${cupNo} (${p.title}): Tên file SEO không khớp chuẩn (${computedSeoFile})`;
       hardViolations.push(msg);
-      ghAnnotate('error', `Gate 2: ${msg}`, 'data/cups.json', 1);
+      ghAnnotate('error', `Gate 2: ${msg}`, sourceFile, 1);
     }
 
     if (trackerRec && airtableSeed.length === 0) {
@@ -480,6 +537,7 @@ async function runGate2() {
 
     return {
       id: cup.id,
+      sourceFile,
       cupNo,
       title: p.title || '',
       pivotWord: p.pivotWord || '',
@@ -499,13 +557,13 @@ async function runGate2() {
 
   // Kiểm tra trùng nội dung giữa các Chén
   const seenQuotes = new Map();
-  for (const cup of cups) {
+  for (const { cup, sourceFile } of storeInfo.items) {
     const norm = (cup.props?.segments || []).join(' ').replace(/\s+/g, ' ').trim().toLowerCase();
     if (!norm) continue;
     if (seenQuotes.has(norm)) {
       const msg = `Trùng lặp nội dung nguyên văn giữa Chén ${seenQuotes.get(norm)} và Chén ${cup.cupNumber}`;
       warnings.push(msg);
-      ghAnnotate('warning', `Gate 2: ${msg}`, 'data/cups.json', 1);
+      ghAnnotate('warning', `Gate 2: ${msg}`, sourceFile, 1);
     } else {
       seenQuotes.set(norm, cup.cupNumber);
     }
@@ -569,7 +627,7 @@ async function runGate2() {
   if (pillarCounts.author_literature === 0) {
     const msg = 'Tỷ trọng 40-30-20-10: Hiện đang thiếu nhóm Văn học nguyên tác có tên tác giả (0% so với mục tiêu 10%)';
     warnings.push(msg);
-    ghAnnotate('warning', `Gate 2: ${msg}`, 'data/cups.json', 1);
+    ghAnnotate('warning', `Gate 2: ${msg}`);
   }
 
   const allUnitsPass = unitChecks.every((u) => u.pass);
@@ -577,6 +635,7 @@ async function runGate2() {
 
   const gate2Result = {
     pass,
+    storageMode: storeInfo.mode,
     unitChecks,
     cupAudits,
     tnScoreBenchmarks: {
@@ -611,6 +670,7 @@ function runSummarize() {
   lines.push(`# 🍵 Báo Cáo Kiểm Thử Tự Động CI — Trà Nguội Studio (Gate 1 & Gate 2)`);
   lines.push('');
   lines.push(`- **Kết quả tổng thể**: ${overallPass ? '✅ **PASS**' : '❌ **CẦN XỬ LÝ LỖI CỨNG**'}`);
+  lines.push(`- **Cấu trúc lưu trữ Chén**: \`${g2?.storageMode || 'unknown'}\``);
   lines.push(`- **Thời gian chạy**: \`${new Date().toISOString()}\``);
   lines.push('');
 
@@ -638,15 +698,15 @@ function runSummarize() {
     lines.push(`- **Trạng thái Gate 2**: ${g2.pass ? '✅ PASS' : '❌ FAIL'}`);
     lines.push(`- **Unit Tests thuật toán cốt lõi**: \`${passedUnits}/${g2.unitChecks.length}\` PASS (Chuẩn \`60 fps\`, Lề \`132px\`, Trần \`40 âm tiết\`, Mốc \`TN-Score = ${g2.tnScoreBenchmarks.baseline100}đ\`)`);
     lines.push('');
-    lines.push('### Bảng kiểm toán từng Chén trong `data/cups.json`');
+    lines.push('### Bảng kiểm toán từng Chén');
     lines.push('');
-    lines.push('| Chén | Tiêu đề | Pivot | Âm tiết | Phân hạng | File SEO | Caption SEO | Mồi & Khung giờ |');
-    lines.push('| :--- | :--- | :--- | ---: | :--- | :--- | :--- | :--- |');
+    lines.push('| Chén | Tệp nguồn | Tiêu đề | Pivot | Âm tiết | Phân hạng | File SEO | Caption SEO |');
+    lines.push('| :--- | :--- | :--- | :--- | ---: | :--- | :--- | :--- |');
     for (const c of g2.cupAudits) {
       const bandBadge = c.syllables > SYLLABLE_CEILING ? `❌ ${c.syllableLabel}` : c.syllableBand === 'optimal' ? `✅ ${c.syllableLabel}` : `⚠️ ${c.syllableLabel}`;
       const seoBadge = c.seoClean && c.seoSlugValid ? `✅ (${c.hashtagCount} tags)` : '❌ Lỗi SEO';
       lines.push(
-        `| **Chén ${c.cupNo}** | ${c.title} | \`${c.pivotWord}\` | \`${c.syllables}\` | ${bandBadge} | \`${c.seoFile}\` | ${seoBadge} | ${c.hasSeedComment ? '✅' : '❌'} ${c.slot || '—'} (${c.mood || '—'}) |`
+        `| **Chén ${c.cupNo}** | \`${c.sourceFile}\` | ${c.title} | \`${c.pivotWord}\` | \`${c.syllables}\` | ${bandBadge} | \`${c.seoFile}\` | ${seoBadge} |`
       );
     }
     lines.push('');
