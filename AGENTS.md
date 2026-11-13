@@ -1,10 +1,10 @@
-# Sổ Tay Ngữ Cảnh Dự Án — TRÀ NGUỘI (`@tranguoi.15s`) · Studio V8.3
+# Sổ Tay Ngữ Cảnh Dự Án — TRÀ NGUỘI (`@tranguoi.15s`) · Studio V8.3.1
 
-> **Cách sử dụng khi mở cuộc trò chuyện mới**: Chỉ cần gắn thư mục `/Volumes/Data/Quotes` và nhắn: *"Đọc file CONTEXT.md trong thư mục Quotes để nắm ngữ cảnh rồi làm tiếp"*.
+> **Quy trình làm việc chuẩn (GitHub-Only)**: Chỉ làm việc trực tiếp với kho GitHub `null2028/Quotes` thông qua **GitHub MCP Server** (tạo nhánh riêng, commit, mở Pull Request, đọc kết quả GitHub Actions) và đồng bộ về `/Volumes/Data/Quotes` qua **GitHub Desktop**. Tuyệt đối không sử dụng bản sao tạm trên Google Drive.
 
 ## 1. Bản sắc kênh & Tiêu chuẩn biên tập câu chữ
 
-- **Định vị kênh**: **TRÀ NGUỘI** (`@tranguoi.15s`) — *"Chút thơ, chút đời, chút ngẫm"*. Video dọc chuẩn **9:16 (`1080×1920`, 15 giây, 30 fps CFR)** phong cách tối giản trên nền giấy trà ấm (`MINIMAL_LIGHT` / `SLATE_CALM`) hoặc nền đêm tĩnh (`DARK_CONTEMPLATIVE` / `WARM_NOIR`), nét vẽ mực tàu kết hợp điểm nhấn **Đỏ Chu Sa (Cinnabar Red)** ở từ khóa điểm lật (`pivotWord`), triện `茶` góc an toàn và đạo cụ chủ đạo.
+- **Định vị kênh**: **TRÀ NGUỘI** (`@tranguoi.15s`) — *"Chút thơ, chút đời, chút ngẫm"*. Video dọc chuẩn **9:16 (`1080×1920`, 15 giây, 60 fps CFR — `900 frames`)** phong cách tối giản trên nền giấy trà ấm (`MINIMAL_LIGHT` / `SLATE_CALM`) hoặc nền đêm tĩnh (`MINIMAL_DARK` / `WARM_NOIR`), nét vẽ mực tàu kết hợp điểm nhấn **Đỏ Chu Sa (Cinnabar Red)** ở từ khóa điểm lật (`pivotWord`), triện `茶` góc an toàn và đạo cụ chủ đạo.
 - **DNA ngôn từ ("Lắng — Kiệm lời — Đời thực — Có dư vị")**:
   - Ưu tiên chi tiết vật lý, đời thường dễ dựng thành hoạt cảnh sân khấu (ấm trà sáng, hiên nắng, chiếc ô ngày mưa, ánh đèn sau khung cửa, thẻ chấm công, thang máy văn phòng, cuốn sổ nhỏ đóng mở ký ức).
   - Nhịp đọc tối ưu **14 – 28 âm tiết tiếng Việt** cho khung 15s (trần tối đa **36 âm tiết**), luôn có **nhịp lật cảm xúc hoặc hóm ngầm** ở vế cuối phục vụ hiệu ứng tô đỏ `pivotWord` và chuyển cảnh `Act 1 → Act 2` trên sân khấu.
@@ -37,36 +37,36 @@
   - **Bản sao cục bộ để đọc tức thì**: `/Volumes/Data/Quotes/data/airtable-cache.json`.
   - **Bảo mật Token**: Mã `pat...` được lưu riêng tư trong `localStorage` (`tra_nguoi_airtable_pat`) tại `http://localhost:3688` (tuyệt đối không yêu cầu người dùng dán token vào khung chat).
 
-## 3. Kiến trúc Kỹ thuật Studio V8.3 & Chuẩn Thuật toán Video 15s
+## 3. Kiến trúc Kỹ thuật Studio V8.3.1 & Chuẩn Thuật toán Video 15s
 
 - **Ứng dụng macOS chạy ngầm**: `/Volumes/Data/Quotes/Trà Nguội.app` (`LSUIElement = true`, biểu tượng **🍵** trên Menu Bar, chạy Express API + Vite HMR tại **`http://localhost:3688`**).
 - **Chuẩn Kết xuất Video & Đặt tên SEO (`server/renderQueueService.ts`, `src/automation/fileNaming.ts`)**:
-  - Khung gốc **9:16 (`1080×1920`)**, `30 fps` CFR, `H.264 High Profile`, không gian màu **`bt709`** (`color_primaries=bt709:color_trc=bt709:colorspace=bt709`), bitrate **`10 Mbps`** (`maxrate 12M`, `bufsize 20M`), âm thanh **`AAC 192 kbps @ 48 kHz`**, cờ `faststart`.
+  - Khung gốc **9:16 (`1080×1920`)**, **`60 fps` CFR (`900 frames`)**, `H.264 High Profile (L4.2)`, không gian màu **`bt709`** (`color_primaries=bt709:color_trc=bt709:colorspace=bt709`), bitrate **`10 Mbps`** (`maxrate 12M`, `bufsize 20M`), âm thanh **`AAC 192 kbps @ 48 kHz`**, cờ `faststart`.
   - Tự động xuất song song 2 bản sạch 100% bản quyền (không trộn cứng nhạc `.mp3` vào MP4): `/Volumes/Data/Quotes/videos/Chén XX - Tên.mp4` và bản Master đặt tên chuẩn SEO `/Volumes/Data/Quotes/videos/seo-master/chen-XX-tu-khoa-tra-nguoi.mp4`.
-- **Thước ngắm Vùng An Toàn 3 Chế độ (`LivePhonePreview.tsx`)**:
-  - Đặt bên trong khung xuất chuẩn `9:16`:
+- **Lưới Bố cục `swissGrid` (`palettes.ts`) & Thước ngắm Vùng An Toàn 3 Chế độ (`LivePhonePreview.tsx`)**:
+  - Lưới `swissGrid` chuẩn giữ lề trái `marginLeft = 132px` (`contentWidth = 816px`, `quoteBlockWidth = 732px`, né trọn dải xén biên `97px` của màn `9:19.5` và cụm nút tương tác bên phải `safeRight = 216px`).
+  - Thước ngắm trực quan trên `LivePhonePreview.tsx`:
     - `1:1 Sạch`: Xem trọn bức tranh `1080×1920`.
-    - `Safe Đa Kênh`: `X=[157, 833]` (tâm quang học `X=495`), `Y=[180, 1540]`, hiển thị rõ 2 dải biên `97px` bị màn hình dài `9:19.5` cắt khuất khi phóng tràn chiều dọc.
+    - `Safe Đa Kênh`: `X=[157, 833]`, `Y=[180, 1540]`, hiển thị rõ 2 dải biên `97px` bị màn hình dài `9:19.5` cắt khuất khi phóng tràn chiều dọc.
     - `Shop/Ads`: `X=[217, 803]`, `Y=[240, 1260]` dự phòng gắn giỏ hàng TikTok Shop / Spark Ads.
 - **Nhịp Sinh học Chống Tĩnh 2s, Camera Push-in & Seamless Loop (`Đợt 2`)**:
   - **0.0s OCR Hook (`timelineSync.ts`, `AdaptiveTypography.tsx`)**: Dòng mở đầu hiển thị sắc nét ngay frame `0` (`opacity 0.92 → 1.0`, `blur = 0`) để AI OCR TikTok đọc tức thì và giữ chân người xem giây đầu.
-  - **Vi chuyển động 68 BPM & Hạt bụi giấy tuần hoàn (`MinimalistBackground.tsx`, `CloakedTraveler.tsx`, `Atmosphere.tsx`)**: Nhịp thở `68 BPM`, tà áo lay nhẹ, khói trà, mưa/gió/lá rơi chạy theo chu kỳ ước số nguyên của `450 frames` (`180/300/450`) đảm bảo `frame 0 === frame 450` không giật hình.
-  - **Virtual Camera Push-in `+4.8%` tại Pivot & Hòa nhịp Seamless Loop `13.5s–15.0s` (`DeclarativeStagePlayer.tsx`)**: Máy quay đẩy nhẹ `+4.8%` vào khoảnh khắc lật `Act 1 → Act 2`, sau đó trả êm về `1.0` ở `13.5s–15.0s` kết hợp hòa tan thủy mặc cho các cảnh bước đi xa để điểm cuối `15.0s` nối khít `0.0s`.
+  - **Vi chuyển động 68 BPM & Hạt bụi giấy tuần hoàn (`MinimalistBackground.tsx`, `CloakedTraveler.tsx`, `Atmosphere.tsx`)**: Nhịp thở `68 BPM`, tà áo lay nhẹ, khói trà, mưa/gió/lá rơi chạy theo chu kỳ ước số nguyên của tổng số frames đảm bảo nối vòng không giật hình.
+  - **Virtual Camera Push-in `+4.8%` tại Pivot & Hòa nhịp Seamless Loop `13.5s–15.0s` (`DeclarativeStagePlayer.tsx`)**: Máy quay đẩy nhẹ `+4.8%` vào khoảnh khắc lật `Act 1 → Act 2`, sau đó trả êm về `1.0` ở `13.5s–15.0s` kết hợp `loopBlend` hòa về trạng thái `frame 0` để điểm cuối `15.0s` nối khít `0.0s`.
   - **Âm thanh Foley Gốc Thuần Khiết chuẩn `-14.0 LUFS` (`src/engine/foleyEngine.ts`, `BgmController.tsx`)**: Tổng hợp WAV Stereo `48 kHz` gồm lớp nền phòng trà ấm, tiếng sột soạt giấy dó theo từng dòng chữ, âm điểm nhấn tại `Pivot` (`Chén sứ khay gỗ` / `Chuông đồng trầm` / `Đóng triện gỗ`) và dư âm kết vòng, chuẩn hóa độ lớn **ITU-R BS.1770-4 `-14.0 LUFS` (`-1.5 dBTP`)** giúp giữ nhãn **Original Audio 100%** đa kênh trước khi lót nhạc xu hướng `3%–8%` trực tiếp trên TikTok lúc đăng.
 - **Động cơ Cộng hưởng `TN-Score` & Thăng hạng 1 chạm `W → Q` (`Đợt 3`)**:
   - Đo sau **7 ngày đăng** ngay trên `LivePhonePreview.tsx`:
     - `Completion%` (mốc `80%` = `30đ`, trần `37.5đ`) + `WatchRatio` (mốc `1.10x` = `25đ`, trần `33.75đ`) + `Share%` (mốc `1.20%` = `20đ`, trần `30đ`) + `Save%` (mốc `2.50%` = `15đ`, trần `22.5đ`) + `Comment%` (mốc `0.50%` = `10đ`, trần `15đ`).
   - Khi **`TN-Score ≥ 110đ` (Nhóm Bứt phá)**: Bấm **`Thăng hạng W → Kho Q`** để tự động đổi trạng thái bản ghi bên bảng `W` sang `Đã chuyển sang Kho Q` và tạo mã `Q0XX` mới bên bảng `Q`.
-- **Tiến độ các Chén trong Studio (`/Volumes/Data/Quotes/data/cups.json`)**:
-  - `Chén 01` – `Chén 09`: `Chén 01/03 - Câu đơn` (`Q025`), `Chén 02 - Ngược lối`, `Chén 04 - Lốp` (`Q028`), `Chén 05 - Trốn` (`Q024`), `Chén 06 - Say` (`SCRIPT_DUYEN_DAU_TREN_MAY`), `Chén 07 - Chấm công` (`SCRIPT_CHAM_CONG_NGONG_TRUA`), `Chén 08 - Chiếc ô` (`Q037`, `SCRIPT_CHIEC_O_RONG_CHO_NHAU` — Hybrid Mảng Đặc `solid_style`), `Chén 09 - Ký ức` (`Q042`, `SCRIPT_GAP_KHOANG_CACH_MO_KY_UC` — Sổ đóng mở ký ức).
+- **Kiểm thử Tự động CI trên GitHub Actions (`Đợt 4`)**:
+  - Mọi nhánh `push` và `pull_request` vào `main` tự động chạy `scripts/qa-gates-ci.mjs` để kiểm định Gate 1 (sạch `.mp3`, sạch `tsc`) và Gate 2 (âm tiết, SEO, Bình luận mồi, `TN-Score`, `60 fps` & `marginLeft = 132px`, tỷ trọng `40–30–20–10`).
 
-## 4. Quy trình 3 bước bắt buộc khi làm Chén mới
+## 4. Quy trình 3 bước bắt buộc khi làm hoặc biên tập lại Chén
 
 1. **Bước 1 — Tinh chỉnh câu chữ từ bản gốc & Chờ duyệt (Gated Step)**:
    - Ngay sau khi chọn được content làm Chén (trừ trích dẫn văn học có tên tác giả rõ ràng thì giữ nguyên 100%), luôn đề xuất các phương án **tinh chỉnh từ nội dung gốc** để **làm mạnh điểm rơi**, **làm dịu/tiết chế hơn**, hoặc **chuyển sang nhịp thơ tự nhiên** (khẩu ngữ mượt như hơi thở, 14–28 âm tiết, không ép vần, không chêm từ nối mòn), đặt cạnh bản gốc kèm `pivotWord` gợi ý.
    - **Bắt buộc dừng lại chờ người dùng duyệt chốt câu chữ ở bước này rồi mới làm tiếp theo quy trình.**
 2. **Bước 2 — Phân tích ẩn dụ & Đề xuất 3 kịch bản sân khấu**:
    - Khi câu chữ đã được duyệt, phân tích tầng ý nghĩa ẩn dụ (tránh minh họa nghĩa đen ngô nghê) và **đề xuất 3 phương án kịch bản sân khấu** (`Act 1` → `Act 2 tại Pivot` → `Act 3 Dư ảnh nối vòng 15s→0s` + đạo cụ **Đỏ Chu Sa**) để người dùng chốt phương án.
-3. **Bước 3 — Đẩy lên Studio hoặc Xuất Video**:
-   - **Nếu chỉ đẩy lên tool (không render)**: Nạp đầy đủ vào `data/cups.json` (`status: "draft"`), `data/stage-scripts.json`, `data/custom-props.json` và `data/vault-meta.json` để người dùng tinh chỉnh trên `http://localhost:3688`.
-   - **Nếu yêu cầu xuất video**: Kết xuất chuẩn `1080×1920` (`bt709`, `10M`, Foley thuần khiết `-14.0 LUFS`) ra `/videos` và `/videos/seo-master/`, giữ chữ và hoạt cảnh sân khấu nằm gọn trong vùng an toàn `X=[157, 833]`, `Y=[180, 1540]`.
+3. **Bước 3 — Đẩy lên Nhánh GitHub & Đồng bộ Studio**:
+   - Ghi cập nhật vào nhánh GitHub (`data/cups.json`, `data/stage-scripts.json`, `data/custom-props.json`, `data/vault-meta.json`), kiểm tra xanh các Gate trên GitHub Actions rồi kéo về `/Volumes/Data/Quotes` qua **GitHub Desktop** để tinh chỉnh hoặc xuất MP4 chuẩn `1080×1920` (`60 fps`, `bt709`, `10M`, Foley `-14.0 LUFS`) trên `http://localhost:3688`.
