@@ -5,6 +5,9 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "typecheck": "tsc --noEmit",
+    "sync:v831": "tsx scripts/sync-v831-cups.mjs",
+    "qa:ci": "tsx scripts/qa-gates-ci.mjs --gate=1 && tsx scripts/qa-gates-ci.mjs --gate=2 && tsx scripts/qa-gates-ci.mjs --summarize",
+    "qa:5gates": "tsx scripts/qa-full-5gates.mjs",
     "map-only": "tsx src/cli/batchRender.ts --map-only",
     "render:batch": "tsx src/cli/batchRender.ts",
     "server": "tsx watch server/index.ts",
