@@ -1,0 +1,15 @@
+node_modules/
+.tmp.driveupload/
+.tmp.drivedownload/
+dist/
+dist-studio/
+output/
+videos/
+qa-artifacts-*/
+Trà Nguội.app/
+public/audio/*.wav
+*.mp4
+*.log
+.env
+.env.*
+.DS_Store

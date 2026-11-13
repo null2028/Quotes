@@ -1,0 +1,1575 @@
+{
+  "goblet_cup": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -6.8 0 Q 0 -1.8 6.8 0",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "d": "M 0 -1.2 L 0 -11.2",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "ellipse": [
+          0,
+          -6.4,
+          2,
+          0.85
+        ],
+        "fill": "bg",
+        "role": "secondary",
+        "strokeScale": 0.65
+      },
+      {
+        "d": "M -11.8 -25 Q 0 -27.2 11.8 -25",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.68,
+        "opacity": 0.62
+      },
+      {
+        "d": "M -11.8 -25 C -10.4 -16.0 -5.4 -11.2 0 -11.2 C 5.4 -11.2 10.4 -16.0 11.8 -25 Q 0 -23.1 -11.8 -25 Z",
+        "fill": "bg",
+        "fillOpacity": 0.12,
+        "role": "ink"
+      },
+      {
+        "ellipse": [
+          0,
+          -21.2,
+          8.6,
+          1.45
+        ],
+        "fill": "accent",
+        "fillOpacity": 0.24,
+        "role": "accent",
+        "strokeScale": 0.5
+      },
+      {
+        "d": "M -7.4 -21.2 C -6.4 -16.6 -3.5 -13.8 -0.8 -13.2",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.5,
+        "opacity": 0.45
+      }
+    ]
+  },
+  "water_moon_reflection": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "ellipse": [
+          0,
+          1.5,
+          20,
+          5.6
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.13,
+        "role": "secondary",
+        "strokeScale": 0.72
+      },
+      {
+        "d": "M -15 0.8 C -9 -2.8 9 -2.8 15 0.8",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.65,
+        "opacity": 0.75
+      },
+      {
+        "d": "M -16.5 3.8 Q -3 6.2 12 4.1",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.52,
+        "opacity": 0.62
+      },
+      {
+        "d": "M -10.5 7.5 Q 1 9.0 11.5 7.2",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.45,
+        "opacity": 0.45
+      }
+    ]
+  },
+  "poetic_leaf": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -12.5 -2.2 C -6 -8.8 5 -10.2 14.5 -5.8 C 7 -0.2 -4 1.2 -12.5 -2.2 Z",
+        "fill": "bg",
+        "fillOpacity": 0.14,
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "d": "M -16.2 -3.4 C -10.5 -1.2 -2 -0.6 14.2 -5.8",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.68
+      },
+      {
+        "d": "M -4.8 -2.3 Q -1.2 -5.2 3.2 -6.5",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.48,
+        "opacity": 0.55
+      },
+      {
+        "d": "M 1.2 -2.6 Q 4.8 -4.8 8.6 -5.7",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.45,
+        "opacity": 0.5
+      },
+      {
+        "d": "M -8.5 2.0 Q 2 3.6 10.5 1.4",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.42,
+        "opacity": 0.3
+      }
+    ]
+  },
+  "poetic_leaf_v2": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -12.5 -2.2 C -6 -8.8 5 -10.2 14.5 -5.8 C 7 -0.2 -4 1.2 -12.5 -2.2 Z",
+        "fill": "bg",
+        "fillOpacity": 0.22,
+        "strokeScale": 0.98
+      },
+      {
+        "d": "M -16.2 -3.4 C -10.5 -1.2 -2 -0.6 14.2 -5.8",
+        "fill": "none",
+        "strokeScale": 0.72
+      },
+      {
+        "d": "M -4.8 -2.3 Q -1.2 -5.2 3.2 -6.5",
+        "fill": "none",
+        "strokeScale": 0.48,
+        "opacity": 0.65
+      },
+      {
+        "d": "M 1.2 -2.6 Q 4.8 -4.8 8.6 -5.7",
+        "fill": "none",
+        "strokeScale": 0.45,
+        "opacity": 0.6
+      }
+    ]
+  },
+  "swallow_kite": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "d": "M 0 -13 C 8 -10 14 -5 15 -1 C 9 2 4 6 0 12 C -4 6 -9 2 -15 -1 C -14 -5 -8 -10 0 -13 Z",
+        "fill": "bg",
+        "fillOpacity": 0.16,
+        "strokeScale": 0.92
+      },
+      {
+        "d": "M 0 -12.5 L 0 11.5",
+        "fill": "none",
+        "strokeScale": 0.5,
+        "opacity": 0.6
+      },
+      {
+        "d": "M -14.2 -1.2 Q 0 -6.5 14.2 -1.2",
+        "fill": "none",
+        "strokeScale": 0.5,
+        "opacity": 0.6
+      },
+      {
+        "d": "M 0 12 C -4 20 5 28 -2 37 C -5 41 1 46 -1 50",
+        "fill": "none",
+        "strokeScale": 0.62,
+        "opacity": 0.78
+      },
+      {
+        "d": "M -14.5 -0.8 C -17 5 -13 10 -16 15",
+        "fill": "none",
+        "strokeScale": 0.42,
+        "opacity": 0.5
+      },
+      {
+        "d": "M 14.5 -0.8 C 17 5 13 10 16 15",
+        "fill": "none",
+        "strokeScale": 0.42,
+        "opacity": 0.5
+      }
+    ]
+  },
+  "horizon_long_shadow": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M 3 2.8 L -182 3.1",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 2.6,
+        "opacity": 0.28
+      },
+      {
+        "d": "M 3 2.0 L -238 2.2",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 1.45,
+        "opacity": 0.46
+      },
+      {
+        "d": "M 1 1.0 L -222 1.1",
+        "fill": "none",
+        "strokeScale": 0.85,
+        "show": "after_pivot",
+        "opacity": 0.68
+      }
+    ]
+  },
+  "ink_coupe": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -46 -9.5 C -46 -18 -38 -20.5 -26 -21.5 L -14 -31.5 C -4 -33.2 9 -33.2 19 -22 L 48 -21.2 C 50 -19.5 50 -14.5 48 -9.5 Z",
+        "fill": "bg",
+        "fillOpacity": 0.11,
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "d": "M -21 -21.2 L -12 -29.2 C -4 -30.6 7 -30.6 15 -22 Z",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.6,
+        "opacity": 0.58
+      },
+      {
+        "d": "M 23 -21.5 L 43 -34.5",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.88
+      },
+      {
+        "circle": [
+          18,
+          -9.2,
+          8.8
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "circle": [
+          18,
+          -9.2,
+          3
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.58
+      },
+      {
+        "ellipse": [
+          -28,
+          -7.2,
+          10.2,
+          6.6
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.14,
+        "role": "secondary",
+        "strokeScale": 0.85,
+        "dashed": true
+      },
+      {
+        "circle": [
+          -28,
+          -7.2,
+          2.6
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.55
+      }
+    ],
+    "altShapes": [
+      {
+        "d": "M -46 -9.5 C -46 -18 -38 -20.5 -26 -21.5 L -14 -31.5 C -4 -33.2 9 -33.2 19 -22 L 48 -21.2 C 50 -19.5 50 -14.5 48 -9.5 Z",
+        "fill": "bg",
+        "fillOpacity": 0.11,
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "d": "M -21 -21.2 L -12 -29.2 C -4 -30.6 7 -30.6 15 -22 Z",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.6,
+        "opacity": 0.58
+      },
+      {
+        "d": "M 23 -21.4 L 47.5 -21.0",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.58,
+        "opacity": 0.55
+      },
+      {
+        "circle": [
+          18,
+          -9.2,
+          8.8
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "circle": [
+          18,
+          -9.2,
+          3
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.58
+      },
+      {
+        "circle": [
+          -28,
+          -9.2,
+          8.8
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "circle": [
+          -28,
+          -9.2,
+          3
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.58
+      }
+    ]
+  },
+  "spare_wheel": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "circle": [
+          0,
+          0,
+          9.2
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.2,
+        "strokeScale": 1.05
+      },
+      {
+        "circle": [
+          0,
+          0,
+          4.8
+        ],
+        "fill": "none",
+        "strokeScale": 0.65,
+        "opacity": 0.85
+      },
+      {
+        "d": "M -4.5 0 L 4.5 0 M 0 -4.5 L 0 4.5",
+        "fill": "none",
+        "strokeScale": 0.5,
+        "opacity": 0.65
+      }
+    ]
+  },
+  "harsh_day_sun": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "circle": [
+          0,
+          0,
+          12.5
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.15,
+        "role": "ink",
+        "strokeScale": 0.88
+      },
+      {
+        "d": "M 15 10 L 36 25 M 9 16 L 26 34 M 18 3 L 40 11",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.5,
+        "dashed": true,
+        "opacity": 0.52
+      }
+    ]
+  },
+  "reality_monolith": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "rect": [
+          -37,
+          -90,
+          23,
+          90
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.07,
+        "role": "secondary",
+        "strokeScale": 0.78
+      },
+      {
+        "rect": [
+          -33,
+          -95,
+          13,
+          5
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.08,
+        "role": "secondary",
+        "strokeScale": 0.68
+      },
+      {
+        "d": "M -33 -82 h 3.4 v 5 h -3.4 Z M -26.5 -82 h 3.4 v 5 h -3.4 Z M -33 -70 h 3.4 v 5 h -3.4 Z M -26.5 -70 h 3.4 v 5 h -3.4 Z M -33 -58 h 3.4 v 5 h -3.4 Z M -26.5 -58 h 3.4 v 5 h -3.4 Z M -33 -46 h 3.4 v 5 h -3.4 Z M -26.5 -46 h 3.4 v 5 h -3.4 Z M -33 -34 h 3.4 v 5 h -3.4 Z M -26.5 -34 h 3.4 v 5 h -3.4 Z M -33 -22 h 3.4 v 5 h -3.4 Z M -26.5 -22 h 3.4 v 5 h -3.4 Z",
+        "fill": "secondary",
+        "fillOpacity": 0.24,
+        "role": "secondary",
+        "strokeScale": 0.38
+      },
+      {
+        "rect": [
+          12,
+          -76,
+          24,
+          76
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.09,
+        "role": "ink",
+        "strokeScale": 0.84
+      },
+      {
+        "rect": [
+          16,
+          -82,
+          14,
+          6
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.09,
+        "role": "secondary",
+        "strokeScale": 0.68
+      },
+      {
+        "d": "M 18 -68 h 4 v 5.2 h -4 Z M 26 -68 h 4 v 5.2 h -4 Z M 18 -56 h 4 v 5.2 h -4 Z M 26 -56 h 4 v 5.2 h -4 Z M 18 -44 h 4 v 5.2 h -4 Z M 26 -44 h 4 v 5.2 h -4 Z M 18 -32 h 4 v 5.2 h -4 Z M 26 -32 h 4 v 5.2 h -4 Z M 18 -20 h 4 v 5.2 h -4 Z M 26 -20 h 4 v 5.2 h -4 Z",
+        "fill": "ink",
+        "fillOpacity": 0.16,
+        "role": "secondary",
+        "strokeScale": 0.42
+      },
+      {
+        "rect": [
+          -16,
+          -118,
+          31,
+          118
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.12,
+        "role": "ink",
+        "strokeScale": 0.98
+      },
+      {
+        "rect": [
+          -16,
+          -118,
+          5.5,
+          118
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.07,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "rect": [
+          -11,
+          -127,
+          21,
+          9
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.13,
+        "role": "ink",
+        "strokeScale": 0.88
+      },
+      {
+        "rect": [
+          -5.5,
+          -132.5,
+          10,
+          5.5
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.14,
+        "role": "ink",
+        "strokeScale": 0.78
+      },
+      {
+        "line": [
+          -0.5,
+          -132.5,
+          -0.5,
+          -146
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.76
+      },
+      {
+        "line": [
+          -17.8,
+          -118,
+          16.8,
+          -118
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "d": "M -11 -110 h 3.8 v 5.8 h -3.8 Z M -2.4 -110 h 3.8 v 5.8 h -3.8 Z M 6.2 -110 h 3.8 v 5.8 h -3.8 Z M -11 -97 h 3.8 v 5.8 h -3.8 Z M -2.4 -97 h 3.8 v 5.8 h -3.8 Z M 6.2 -97 h 3.8 v 5.8 h -3.8 Z M -11 -84 h 3.8 v 5.8 h -3.8 Z M -2.4 -84 h 3.8 v 5.8 h -3.8 Z M 6.2 -84 h 3.8 v 5.8 h -3.8 Z M -11 -71 h 3.8 v 5.8 h -3.8 Z M -2.4 -71 h 3.8 v 5.8 h -3.8 Z M 6.2 -71 h 3.8 v 5.8 h -3.8 Z M -11 -58 h 3.8 v 5.8 h -3.8 Z M -2.4 -58 h 3.8 v 5.8 h -3.8 Z M 6.2 -58 h 3.8 v 5.8 h -3.8 Z M -11 -45 h 3.8 v 5.8 h -3.8 Z M -2.4 -45 h 3.8 v 5.8 h -3.8 Z M 6.2 -45 h 3.8 v 5.8 h -3.8 Z M -11 -32 h 3.8 v 5.8 h -3.8 Z M -2.4 -32 h 3.8 v 5.8 h -3.8 Z M 6.2 -32 h 3.8 v 5.8 h -3.8 Z",
+        "fill": "ink",
+        "fillOpacity": 0.2,
+        "role": "secondary",
+        "strokeScale": 0.44
+      },
+      {
+        "line": [
+          -18.5,
+          -18.5,
+          17.5,
+          -18.5
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.85
+      },
+      {
+        "rect": [
+          -5.5,
+          -18.5,
+          10,
+          18.5
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.18,
+        "role": "ink",
+        "strokeScale": 0.65
+      },
+      {
+        "line": [
+          -0.5,
+          -18.5,
+          -0.5,
+          0
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.48
+      }
+    ]
+  },
+  "reality_monster_shadow": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -18 0 L -14 -68 L 0 -72 L 8 -112 L 28 -122 L 36 -98 L 58 -132 L 84 -120 C 112 -108 134 -80 148 -46 L 126 -50 L 142 -29 L 115 -33 L 129 -14 C 100 -16 68 -5 34 0 Z",
+        "fill": "ink",
+        "fillOpacity": 0.145,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -10 0 L -4 -56 L 14 -96 L 50 -110 C 82 -100 108 -74 126 -44 C 98 -42 80 -25 58 -6 C 34 -1 6 0 -10 0 Z",
+        "fill": "ink",
+        "fillOpacity": 0.115,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -18 0 C 26 -4 90 -4 150 0 C 90 2 26 2 -18 0 Z",
+        "fill": "ink",
+        "fillOpacity": 0.15,
+        "role": "ink",
+        "strokeScale": 0
+      }
+    ]
+  },
+  "night_sanctuary_dome": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -100 2 C -106 -58 -64 -126 0 -128 C 64 -130 106 -60 100 2 C 52 5 -52 5 -100 2 Z",
+        "fill": "ink",
+        "fillOpacity": 0.045,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -78 1 C -82 -48 -49 -104 0 -106 C 49 -108 82 -50 78 1 C 40 3 -40 3 -78 1 Z",
+        "fill": "ink",
+        "fillOpacity": 0.065,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -58 0 C -60 -37 -35 -82 0 -84 C 35 -86 60 -39 58 0 Z",
+        "fill": "ink",
+        "fillOpacity": 0.085,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -39 0 C -40 -26 -23 -60 0 -61 C 23 -62 40 -27 39 0 Z",
+        "fill": "ink",
+        "fillOpacity": 0.095,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "d": "M 23 -89 C 16 -86 15 -77 19 -72 C 24 -66 32 -67 36 -73 C 29 -71 23 -75 22 -82 C 21 -85 22 -87 23 -89 Z",
+        "fill": "secondary",
+        "fillOpacity": 0.44,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "circle": [
+          -24,
+          -78,
+          1.15
+        ],
+        "fill": "secondary",
+        "fillOpacity": 0.36,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "circle": [
+          -4,
+          -93,
+          0.95
+        ],
+        "fill": "secondary",
+        "fillOpacity": 0.32,
+        "role": "secondary",
+        "strokeScale": 0
+      }
+    ]
+  },
+  "ink_wine_jar": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -4.8 -28 L 4.8 -28 L 3.8 -22.5 C 8.8 -19.0 9.0 -8.5 5.2 0 L -5.2 0 C -9.0 -8.5 -8.8 -19.0 -3.8 -22.5 Z",
+        "fill": "bg",
+        "fillOpacity": 0.12,
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "d": "M -3.4 -21.8 C -7.4 -18.0 -7.6 -8.2 -4.2 -1.0 C -5.6 -8.0 -5.4 -16.0 -2.2 -21.0 Z",
+        "fill": "ink",
+        "fillOpacity": 0.08,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -5.6 -28 Q 0 -27.2 5.6 -28",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "d": "M -4.1 -22.5 Q 0 -21.6 4.1 -22.5",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.8
+      },
+      {
+        "d": "M 1.8 -22.2 C 3.6 -19.5 5.0 -16.5 4.2 -13.5 M 2.6 -22.2 C 5.0 -20.2 6.6 -17.8 6.2 -14.8",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.58,
+        "opacity": 0.65
+      }
+    ]
+  },
+  "floating_wine_cup": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -8.6 -8.2 C -7.8 -2.2 -4.4 0 0 0 C 4.4 0 7.8 -2.2 8.6 -8.2 Q 0 -7.0 -8.6 -8.2 Z",
+        "fill": "bg",
+        "fillOpacity": 0.18,
+        "role": "ink",
+        "strokeScale": 0.95
+      },
+      {
+        "ellipse": [
+          0,
+          -7.8,
+          7.6,
+          1.35
+        ],
+        "fill": "accent",
+        "fillOpacity": 0.36,
+        "role": "accent",
+        "strokeScale": 0.62
+      },
+      {
+        "d": "M -6.2 -6.4 Q -5.2 -2.6 -2.6 -1.2",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.5,
+        "opacity": 0.52
+      },
+      {
+        "d": "M -13.2 0.9 Q 0 2.6 13.2 0.9",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.5,
+        "show": "after_pivot",
+        "opacity": 0.52
+      }
+    ]
+  },
+  "dream_cloud_house": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "d": "M -48 8 C -58 6 -58 -6 -45 -10 C -40 -19 -25 -20 -17 -13 C -9 -22 9 -22 17 -13 C 25 -20 40 -19 45 -10 C 58 -6 58 6 48 8 C 35 16 16 18 0 15 C -16 18 -35 16 -48 8 Z",
+        "fill": "ink",
+        "fillOpacity": 0.055,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -20 -24 L -20 -2 Q 0 -0.5 20 -2 L 20 -24 Z",
+        "fill": "bg",
+        "fillOpacity": 0.11,
+        "role": "ink",
+        "strokeScale": 0.88
+      },
+      {
+        "d": "M 9.5 -30 L 9.5 -38.5 L 14.5 -38.5 L 14.5 -26.5",
+        "fill": "bg",
+        "fillOpacity": 0.12,
+        "role": "ink",
+        "strokeScale": 0.76
+      },
+      {
+        "d": "M -27.5 -22.5 C -16 -28.5 -6 -36.5 0 -42.5 C 6 -36.5 16 -28.5 27.5 -22.5 Q 0 -24.5 -27.5 -22.5 Z",
+        "fill": "bg",
+        "fillOpacity": 0.14,
+        "role": "ink",
+        "strokeScale": 0.96
+      },
+      {
+        "rect": [
+          -5.8,
+          -18.5,
+          11.6,
+          10.4,
+          1
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.14,
+        "role": "secondary",
+        "strokeScale": 0.62
+      },
+      {
+        "d": "M 0 -18.5 L 0 -8.1 M -5.8 -13.3 L 5.8 -13.3",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.48,
+        "opacity": 0.65
+      },
+      {
+        "d": "M 12 -40.5 C 9.5 -45.5 15 -49.5 12.5 -54.5",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.52,
+        "opacity": 0.55
+      },
+      {
+        "d": "M -47 4 C -57 1 -56 -11 -42 -11 C -38 -19 -24 -19 -19 -11",
+        "fill": "bg",
+        "fillOpacity": 0.08,
+        "role": "secondary",
+        "strokeScale": 0.85
+      },
+      {
+        "d": "M 19 -11 C 24 -19 38 -19 42 -11 C 56 -11 57 1 47 4",
+        "fill": "bg",
+        "fillOpacity": 0.08,
+        "role": "secondary",
+        "strokeScale": 0.85
+      },
+      {
+        "d": "M -47 4 C -36 15 -18 16 0 13 C 18 16 36 15 47 4",
+        "fill": "bg",
+        "fillOpacity": 0.09,
+        "role": "ink",
+        "strokeScale": 0.88
+      },
+      {
+        "d": "M -28 17.5 Q 0 22 28 17.5",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.6,
+        "opacity": 0.52
+      }
+    ]
+  },
+  "fallen_dream_blossom": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -11.5 -1.0 Q -3.5 -0.2 4.2 -2.6",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.72
+      },
+      {
+        "d": "M 2.5 -2.5 C 1.5 -9.6 7.8 -12.6 11.0 -8.2 C 12.4 -4.4 7.2 -1.4 2.5 -2.5 Z",
+        "fill": "accent",
+        "fillOpacity": 0.36,
+        "role": "accent",
+        "strokeScale": 0.8
+      },
+      {
+        "d": "M 1.8 -2.8 C -3.8 -8.5 0.4 -13.4 4.8 -10.2 C 6.4 -7.2 4.2 -3.8 1.8 -2.8 Z",
+        "fill": "accent",
+        "fillOpacity": 0.3,
+        "role": "accent",
+        "strokeScale": 0.74
+      },
+      {
+        "d": "M 3.2 -2.0 C 8.6 -4.8 14.0 -2.8 12.4 0 C 9.2 1.2 5.2 -0.4 3.2 -2.0 Z",
+        "fill": "accent",
+        "fillOpacity": 0.32,
+        "role": "accent",
+        "strokeScale": 0.74
+      },
+      {
+        "d": "M -5.8 -0.4 C -3.4 -2.8 0.2 -2.2 -0.8 0 C -2.6 0.6 -4.6 0.2 -5.8 -0.4 Z",
+        "fill": "accent",
+        "fillOpacity": 0.28,
+        "role": "accent",
+        "strokeScale": 0.64
+      }
+    ]
+  },
+  "tiny_split_heart": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "d": "M 0 -2.4 C -2.2 -6.2 -7.2 -5.0 -7.2 -0.8 C -7.2 2.8 -2.8 5.4 0 7.8",
+        "fill": "ink",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.82,
+        "splitSide": "left"
+      },
+      {
+        "d": "M 0 -2.4 C 2.2 -6.2 7.2 -5.0 7.2 -0.8 C 7.2 2.8 2.8 5.4 0 7.8",
+        "fill": "ink",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.82,
+        "splitSide": "right"
+      }
+    ]
+  },
+  "office_wall_clock": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "circle": [
+          0,
+          0,
+          14.5
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.1,
+        "role": "secondary",
+        "strokeScale": 0.8
+      },
+      {
+        "d": "M 0 -12.5 L 0 -10.5 M 12.5 0 L 10.5 0 M 0 12.5 L 0 10.5 M -12.5 0 L -10.5 0",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.48
+      },
+      {
+        "line": [
+          0,
+          0,
+          0,
+          -9.5
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.72
+      },
+      {
+        "line": [
+          0,
+          0,
+          -6.8,
+          4
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.82
+      },
+      {
+        "circle": [
+          0,
+          0,
+          1.1
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.8,
+        "role": "ink",
+        "strokeScale": 0
+      }
+    ],
+    "altShapes": [
+      {
+        "circle": [
+          0,
+          0,
+          14.5
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.1,
+        "role": "secondary",
+        "strokeScale": 0.8
+      },
+      {
+        "d": "M 0 -12.5 L 0 -10.5 M 12.5 0 L 10.5 0 M 0 12.5 L 0 10.5 M -12.5 0 L -10.5 0",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.48
+      },
+      {
+        "line": [
+          0,
+          0,
+          0,
+          -10.2
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.72
+      },
+      {
+        "line": [
+          0,
+          0,
+          0.8,
+          -7.2
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.84
+      },
+      {
+        "circle": [
+          0,
+          0,
+          1.1
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.8,
+        "role": "ink",
+        "strokeScale": 0
+      }
+    ]
+  },
+  "office_card_scanner": {
+    "anchorType": "ground",
+    "emitterOffset": [
+      0,
+      -53
+    ],
+    "shapes": [
+      {
+        "line": [
+          -8.5,
+          0,
+          8.5,
+          0
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "line": [
+          0,
+          0,
+          0,
+          -42
+        ],
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "rect": [
+          -9.5,
+          -65,
+          19,
+          23,
+          2.5
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.13,
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "rect": [
+          -6,
+          -61,
+          12,
+          8.2,
+          1
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.14,
+        "role": "secondary",
+        "strokeScale": 0.55
+      },
+      {
+        "d": "M -3 -48 Q 0 -50.5 3 -48 M -4.8 -45.5 Q 0 -49 4.8 -45.5",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.48,
+        "opacity": 0.65
+      }
+    ]
+  },
+  "staff_id_card": {
+    "anchorType": "hand",
+    "shapes": [
+      {
+        "d": "M -3 -7.5 L 0 -3.2 L 3 -7.5",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.52
+      },
+      {
+        "rect": [
+          -4.6,
+          -3.2,
+          9.2,
+          12.2,
+          1.2
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.78
+      },
+      {
+        "circle": [
+          0,
+          0.5,
+          1.6
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.2,
+        "role": "secondary",
+        "strokeScale": 0.45
+      },
+      {
+        "d": "M -2.6 4.6 L 2.6 4.6 M -2.0 6.6 L 2.0 6.6",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.42
+      }
+    ]
+  },
+  "minimal_office_desk": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "rect": [
+          -26,
+          -25.5,
+          52,
+          2.8,
+          1
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.14,
+        "role": "ink",
+        "strokeScale": 0.92
+      },
+      {
+        "d": "M -21 -22.7 L -21 0 M 21 -22.7 L 21 0",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.88
+      },
+      {
+        "line": [
+          -21,
+          -13,
+          21,
+          -13
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.52,
+        "opacity": 0.45
+      }
+    ]
+  },
+  "morphing_laptop": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "rect": [
+          -14,
+          -3.2,
+          28,
+          3,
+          1.2
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.85
+      }
+    ],
+    "altShapes": [
+      {
+        "d": "M 5.5 -3.2 L 11.8 -19.8 L -7.0 -16.2 L -4.5 -3.2 Z",
+        "fill": "ink",
+        "fillOpacity": 0.055,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "rect": [
+          -15,
+          -2.5,
+          22,
+          2.4,
+          1
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.16,
+        "role": "ink",
+        "strokeScale": 0.85
+      },
+      {
+        "d": "M 5.5 -2.5 L 12.5 -21.2 L 14.8 -20.5 L 7.8 -1.8 Z",
+        "fill": "bg",
+        "fillOpacity": 0.18,
+        "role": "ink",
+        "strokeScale": 0.88
+      }
+    ]
+  },
+  "morning_hype_sparks": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "d": "M -13 -3 L -20 -9 M 0 -8 L 0 -17 M 13 -3 L 20 -9",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.82
+      }
+    ]
+  },
+  "lunch_thought_cloud": {
+    "anchorType": "center",
+    "emitterOffset": [
+      0,
+      -5
+    ],
+    "shapes": [
+      {
+        "circle": [
+          -14,
+          38,
+          1.8
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.14,
+        "role": "secondary",
+        "strokeScale": 0.68
+      },
+      {
+        "circle": [
+          -9.5,
+          28.5,
+          2.8
+        ],
+        "fill": "bg",
+        "fillOpacity": 0.14,
+        "role": "secondary",
+        "strokeScale": 0.7
+      },
+      {
+        "d": "M -31 9 C -41 6 -41 -9 -29 -13 C -25 -23 -10 -25 -2 -18 C 7 -26 24 -24 28 -13 C 41 -9 41 6 31 9 C 20 17 -20 17 -31 9 Z",
+        "fill": "bg",
+        "fillOpacity": 0.09,
+        "role": "secondary",
+        "strokeScale": 0.82
+      },
+      {
+        "d": "M -10.5 -2.2 C -7 -8.6 7 -8.6 10.5 -2.2",
+        "fill": "bg",
+        "fillOpacity": 0.2,
+        "role": "accent",
+        "strokeScale": 0.72
+      },
+      {
+        "d": "M -12.8 -2.2 C -12.0 5.2 -6.8 8.8 0 8.8 C 6.8 8.8 12.0 5.2 12.8 -2.2 Q 0 -1.0 -12.8 -2.2 Z",
+        "fill": "accent",
+        "fillOpacity": 0.3,
+        "role": "accent",
+        "strokeScale": 0.9
+      },
+      {
+        "d": "M -8.2 -4.5 L 15.2 -11.5 M -7.6 -2.0 L 15.6 -8.0",
+        "fill": "none",
+        "role": "accent",
+        "strokeScale": 0.8
+      }
+    ]
+  },
+  "rain_puddle_ripple": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "ellipse": [
+          0,
+          0,
+          10.5,
+          1.9
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.46,
+        "opacity": 0.5
+      },
+      {
+        "ellipse": [
+          0,
+          0,
+          4.8,
+          0.9
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.36,
+        "opacity": 0.36
+      }
+    ]
+  },
+  "wide_shared_umbrella": {
+    "anchorType": "hand",
+    "shapes": [
+      {
+        "d": "M 0 -29.5 L 0 4.0 Q -2.0 6.8 -4.4 4.5",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.72
+      },
+      {
+        "d": "M 0 -29.2 C -2.4 -19.5 -3.7 -10.5 -3.4 -4.5 Q 0 -3.4 3.4 -4.5 C 3.7 -10.5 2.4 -19.5 0 -29.2 Z",
+        "fill": "ink",
+        "fillOpacity": 0.94,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -2.8 -12.5 Q 0 -11.6 2.8 -12.5",
+        "fill": "bg",
+        "fillOpacity": 0,
+        "strokeScale": 0.44,
+        "opacity": 0.55
+      }
+    ],
+    "altShapes": [
+      {
+        "d": "M 0 -16.5 L 0 4.0 Q -2.0 6.8 -4.4 4.5",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.74
+      },
+      {
+        "d": "M 0 -33.6 L 0 -36.8",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.68
+      },
+      {
+        "d": "M -39.5 -14.2 C -34.5 -28.6 -17.5 -33.8 0 -33.8 C 17.5 -33.8 34.5 -28.6 39.5 -14.2 Q 26.4 -17.8 13.2 -14.6 Q 0 -18.0 -13.2 -14.6 Q -26.4 -17.8 -39.5 -14.2 Z",
+        "fill": "accent",
+        "fillOpacity": 0.97,
+        "role": "accent",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -0.4 -33.0 C -5.8 -26.8 -10.5 -20.5 -13.2 -15.0",
+        "fill": "bg",
+        "fillOpacity": 0,
+        "strokeScale": 0.44,
+        "opacity": 0.46
+      },
+      {
+        "d": "M 0.4 -33.0 C 5.8 -26.8 10.5 -20.5 13.2 -15.0",
+        "fill": "bg",
+        "fillOpacity": 0,
+        "strokeScale": 0.44,
+        "opacity": 0.46
+      }
+    ]
+  },
+  "memory_street_window": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -10.5 0 L -10.5 -17.5 C -10.5 -24.5 10.5 -24.5 10.5 -17.5 L 10.5 0 Z",
+        "fill": "ink",
+        "fillOpacity": 0.08,
+        "role": "secondary",
+        "strokeScale": 0.58
+      },
+      {
+        "line": [
+          -13.5,
+          0,
+          13.5,
+          0
+        ],
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.66
+      },
+      {
+        "d": "M 0 -22.5 L 0 0 M -10.5 -9.5 L 10.5 -9.5",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.42,
+        "opacity": 0.62
+      },
+      {
+        "d": "M 10.5 -18.2 L 16.2 -16.4 L 16.2 1.0 L 10.5 0",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.46,
+        "opacity": 0.58
+      }
+    ]
+  },
+  "melody_silk_stream": {
+    "anchorType": "center",
+    "shapes": [
+      {
+        "d": "M -32 3.5 C -17 -6.5 -1 6.5 14 -2.2 C 23 -6.5 31 -2.8 37 1.2",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.52,
+        "opacity": 0.76
+      },
+      {
+        "d": "M -22 7.8 C -8 0.5 8 9.2 23 2.4",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.38,
+        "opacity": 0.48
+      },
+      {
+        "circle": [
+          -7.5,
+          -2.2,
+          1.0
+        ],
+        "fill": "secondary",
+        "fillOpacity": 0.52,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "circle": [
+          14.5,
+          -3.4,
+          1.15
+        ],
+        "fill": "secondary",
+        "fillOpacity": 0.56,
+        "role": "secondary",
+        "strokeScale": 0
+      }
+    ]
+  },
+  "park_wooden_bench": {
+    "anchorType": "ground",
+    "shapes": [
+      {
+        "d": "M -24 0.7 Q 0 1.4 24 0.7",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.4,
+        "opacity": 0.3
+      },
+      {
+        "d": "M -19.8 0 C -19.2 -4.5 -18.8 -8.2 -18.8 -11.4 L -20.2 -23.6 M 19.8 0 C 19.2 -4.5 18.8 -8.2 18.8 -11.4 L 20.2 -23.6",
+        "fill": "none",
+        "role": "ink",
+        "strokeScale": 0.66
+      },
+      {
+        "d": "M -23.2 -15.4 Q -25.2 -13.4 -23.0 -11.4 M 23.2 -15.4 Q 25.2 -13.4 23.0 -11.4",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.5,
+        "opacity": 0.68
+      },
+      {
+        "rect": [
+          -23.2,
+          -23.2,
+          46.4,
+          2.3,
+          0.9
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.9,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "rect": [
+          -22.6,
+          -18.8,
+          45.2,
+          1.9,
+          0.8
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.84,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "rect": [
+          -25.0,
+          -11.8,
+          50.0,
+          2.5,
+          1.0
+        ],
+        "fill": "ink",
+        "fillOpacity": 0.94,
+        "role": "ink",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -17.5 -10.6 L 17.5 -10.6",
+        "fill": "bg",
+        "fillOpacity": 0,
+        "strokeScale": 0.36,
+        "opacity": 0.42
+      }
+    ]
+  },
+  "cinnabar_memory_note": {
+    "anchorType": "ground",
+    "emitterOffset": [
+      1.8,
+      -10.5
+    ],
+    "shapes": [
+      {
+        "d": "M -4.8 -2.4 C -5.4 -5.4 -1.6 -7.8 2.4 -6.8 C 5.4 -6.0 5.6 -2.6 2.8 -0.6 C 0.2 0.8 -4.0 0.2 -4.8 -2.4 Z",
+        "fill": "secondary",
+        "fillOpacity": 0.72,
+        "role": "secondary",
+        "strokeScale": 0
+      },
+      {
+        "d": "M 4.0 -3.8 L 4.0 -22.8",
+        "fill": "none",
+        "role": "secondary",
+        "strokeScale": 0.62,
+        "opacity": 0.78
+      },
+      {
+        "d": "M 4.0 -22.9 C 9.2 -19.6 12.4 -15.0 10.3 -8.6 C 9.5 -13.0 7.0 -16.6 4.0 -18.8 Z",
+        "fill": "secondary",
+        "fillOpacity": 0.72,
+        "role": "secondary",
+        "strokeScale": 0
+      }
+    ],
+    "altShapes": [
+      {
+        "d": "M -5.0 -2.5 C -5.6 -5.6 -1.6 -8.1 2.5 -7.1 C 5.7 -6.2 5.9 -2.7 3.0 -0.6 C 0.2 0.9 -4.2 0.2 -5.0 -2.5 Z",
+        "fill": "accent",
+        "fillOpacity": 0.98,
+        "role": "accent",
+        "strokeScale": 0
+      },
+      {
+        "d": "M -2.7 -3.4 Q -0.5 -5.4 1.9 -4.8",
+        "fill": "bg",
+        "fillOpacity": 0,
+        "strokeScale": 0.38,
+        "opacity": 0.48
+      },
+      {
+        "d": "M 4.2 -3.9 L 4.2 -23.8",
+        "fill": "none",
+        "role": "accent",
+        "strokeScale": 0.68
+      },
+      {
+        "d": "M 4.2 -23.9 C 9.6 -20.5 13.0 -15.6 10.8 -8.9 C 10.0 -13.6 7.3 -17.4 4.2 -19.7 Z",
+        "fill": "accent",
+        "fillOpacity": 0.97,
+        "role": "accent",
+        "strokeScale": 0
+      }
+    ]
+  }
+}

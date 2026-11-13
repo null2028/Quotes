@@ -1,0 +1,5808 @@
+{
+  "SCRIPT_RUOU_MAY_DUYEN_DAU": {
+    "sceneId": "SCRIPT_RUOU_MAY_DUYEN_DAU",
+    "name": "Rượu Mây Duyên Đầu (Macro Vò Rượu Mai Bình & Đôi Chén Tri Kỷ — V8.0)",
+    "description": "Chiếc vò gốm cổ Mai Bình phóng lớn (scale 3.0) ở trung tâm cùng đôi chén nhỏ đối xứng; mây thủy mặc từ trời cao hạ vòng cung cuốn vào miệng vò, trước khi chén trái hóa mây bay về trăng và vò rượu từ từ nghiêng đổ (-82 độ) vệt rượu Đỏ Gạch suốt 4.2s.",
+    "act1": "Hai dải mây thủy mặc rõ nét (~0.46) trôi chậm từ hai bên trời hạ vòng cung cuốn tan vào đúng miệng chiếc vò gốm lớn giữa đôi chén nhỏ",
+    "act2AtPivot": "Chiếc chén nhỏ bên trái từ từ nhấc nhẹ hóa thành sợi mây mảnh bay chậm về phía vầng trăng khuyết mờ",
+    "act3Afterimage": "Chiếc vò gốm lớn ở trung tâm từ từ nghiêng mình (rotate: -82, y: -4.5) đổ chậm sang trái suốt 4.2s, loang vệt rượu & làn hương Đỏ Gạch sát miệng vò trên mặt đất",
+    "redProp": "Vò gốm cổ Mai Bình (scale 3.0) nghiêng đổ (rotate: -82) vệt rượu & làn hương Đỏ Gạch từ đúng ổ cắm emitterOffset miệng vò (wine_jar)",
+    "tags": [
+      "rượu mây",
+      "duyên đầu",
+      "tan hợp",
+      "chiêm nghiệm",
+      "vò rượu"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 350,
+      "startX": 75,
+      "endX": 465
+    },
+    "atmosphere": [
+      {
+        "id": "wind_early",
+        "type": "wind",
+        "count": 3,
+        "direction": "right",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.44,
+        "leaveAt": "pivot+0.8s",
+        "fadeDuration": 2.2
+      },
+      {
+        "id": "crescent_late",
+        "type": "crescent",
+        "x": 155,
+        "y": 204,
+        "radius": 14,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "enterAt": "pivot+0.2s",
+        "fadeDuration": 2.6
+      }
+    ],
+    "actors": [],
+    "props": [
+      {
+        "id": "jar",
+        "type": "wine_jar",
+        "x": "center",
+        "y": 0,
+        "layer": "mid",
+        "scale": 3,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "emitters": {
+          "steam": 0.78
+        }
+      },
+      {
+        "id": "cup_left",
+        "type": "small_cup",
+        "x": 214,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.25,
+        "colorRole": "ink",
+        "focusRole": "hero"
+      },
+      {
+        "id": "cup_right",
+        "type": "small_cup",
+        "x": 326,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.25,
+        "colorRole": "ink",
+        "focusRole": "hero"
+      },
+      {
+        "id": "cloud_left",
+        "type": "cloud_wisp",
+        "x": 155,
+        "y": 205,
+        "layer": "sky",
+        "scale": 1.25,
+        "opacity": 0.46,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "idle": "float"
+      },
+      {
+        "id": "cloud_right",
+        "type": "cloud_wisp",
+        "x": 385,
+        "y": 198,
+        "layer": "sky",
+        "scale": 1.2,
+        "opacity": 0.46,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "idle": "float"
+      },
+      {
+        "id": "cup_spirit_cloud",
+        "type": "cloud_wisp",
+        "x": 214,
+        "y": 334,
+        "layer": "sky",
+        "scale": 0.65,
+        "opacity": 0.44,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "enterAt": "pivot+0.2s",
+        "fadeDuration": 1.4
+      }
+    ],
+    "timeline": [
+      {
+        "at": "line_1",
+        "duration": 3.4,
+        "target": "cloud_left",
+        "toX": "center",
+        "toY": 266,
+        "arcY": -18
+      },
+      {
+        "at": "line_1+2.8s",
+        "duration": 0.8,
+        "target": "cloud_left",
+        "scale": 0.32,
+        "opacity": 0
+      },
+      {
+        "at": "line_2",
+        "duration": 3.4,
+        "target": "cloud_right",
+        "toX": "center",
+        "toY": 266,
+        "arcY": -22
+      },
+      {
+        "at": "line_2+2.8s",
+        "duration": 0.8,
+        "target": "cloud_right",
+        "scale": 0.32,
+        "opacity": 0
+      },
+      {
+        "at": "pivot",
+        "duration": 4.2,
+        "target": "cup_left",
+        "toY": -22,
+        "scale": 0.65,
+        "opacity": 0
+      },
+      {
+        "at": "pivot+0.2s",
+        "duration": 4.5,
+        "target": "cup_spirit_cloud",
+        "toX": 162,
+        "toY": 214,
+        "arcY": -16,
+        "scale": 1.05,
+        "opacity": 0.42
+      },
+      {
+        "at": "pivot",
+        "duration": 4.2,
+        "target": "jar",
+        "rotate": -82,
+        "toY": -4.5,
+        "colorRole": "accent",
+        "emitters": {
+          "steam": 0.95,
+          "spill": 1
+        }
+      }
+    ]
+  },
+  "SCRIPT_LA_AP_TRANG_NUOC": {
+    "sceneId": "SCRIPT_LA_AP_TRANG_NUOC",
+    "name": "Kịch Bản — Say",
+    "description": "Kẻ Lữ Hành đứng trên đỉnh đồi thả cánh diều quấn quýt cùng cánh diều tri kỷ giữa tầng mây; khi gió men xoáy gắt làm đứt dây khiến cánh diều kia bay khuất vào mây xa, người lặng lẽ buông tay ngồi xuống đồi thưởng chén trà Đỏ Gạch an nhiên.",
+    "terrain": {
+      "type": "hill",
+      "y": 356,
+      "startX": 68,
+      "endX": 472,
+      "hillCenterX": 312,
+      "hillHeight": 20,
+      "hillWidth": 260
+    },
+    "atmosphere": [
+      {
+        "id": "hill_wind",
+        "type": "wind",
+        "count": 2,
+        "direction": "left",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.34
+      },
+      {
+        "id": "moon_peace",
+        "type": "crescent",
+        "x": 148,
+        "y": 200,
+        "radius": 13,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.5,
+        "enterAt": "pivot+0.6s",
+        "fadeDuration": 3
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 318,
+        "scale": 1.12,
+        "facing": "left",
+        "pose": "hold_up",
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      }
+    ],
+    "props": [
+      {
+        "id": "cloud_left",
+        "type": "cloud_wisp",
+        "x": 145,
+        "y": 224,
+        "layer": "sky",
+        "scale": 1.35,
+        "opacity": 0.48,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": "float"
+      },
+      {
+        "id": "cloud_right",
+        "type": "cloud_wisp",
+        "x": 375,
+        "y": 216,
+        "layer": "sky",
+        "scale": 1.3,
+        "opacity": 0.45,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": "float"
+      },
+      {
+        "id": "kite_thread",
+        "type": "custom",
+        "x": 284,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1,
+        "opacity": 0.68,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M 20 -46 C 4 -68 -10 -86 -24 -108",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "splitSide": "right"
+          },
+          {
+            "d": "M -96 -6 C -68 -44 -54 -76 -46 -106",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.45,
+            "splitSide": "left",
+            "opacity": 0.55
+          }
+        ]
+      },
+      {
+        "id": "kite_lover",
+        "type": "swallow_kite",
+        "x": 176,
+        "y": -98,
+        "layer": "mid",
+        "scale": 1.42,
+        "rotate": 18,
+        "colorRole": "secondary",
+        "focusRole": "hero",
+        "idle": {
+          "type": "float",
+          "speed": 0.85,
+          "amplitude": 0.8
+        },
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M 0 -13 C 8 -10 14 -5 15 -1 C 9 2 4 6 0 12 C -4 6 -9 2 -15 -1 C -14 -5 -8 -10 0 -13 Z",
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M 0 -12.5 L 0 11.5",
+            "fill": "none",
+            "strokeScale": 0.48,
+            "opacity": 0.58
+          },
+          {
+            "d": "M -14.2 -1.2 Q 0 -6.5 14.2 -1.2",
+            "fill": "none",
+            "strokeScale": 0.48,
+            "opacity": 0.58
+          },
+          {
+            "d": "M 0 12 C -4 20 5 28 -2 37 C -5 41 1 46 -1 50",
+            "fill": "none",
+            "strokeScale": 0.58,
+            "opacity": 0.72
+          }
+        ]
+      },
+      {
+        "id": "kite_self",
+        "type": "swallow_kite",
+        "x": 274,
+        "y": -108,
+        "layer": "mid",
+        "scale": 1.52,
+        "rotate": -12,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "idle": {
+          "type": "float",
+          "speed": 0.8,
+          "amplitude": 0.75
+        },
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M 0 -13 C 8 -10 14 -5 15 -1 C 9 2 4 6 0 12 C -4 6 -9 2 -15 -1 C -14 -5 -8 -10 0 -13 Z",
+            "fill": "bg",
+            "fillOpacity": 0.18,
+            "strokeScale": 0.94
+          },
+          {
+            "d": "M 0 -12.5 L 0 11.5",
+            "fill": "none",
+            "strokeScale": 0.5,
+            "opacity": 0.62
+          },
+          {
+            "d": "M -14.2 -1.2 Q 0 -6.5 14.2 -1.2",
+            "fill": "none",
+            "strokeScale": 0.5,
+            "opacity": 0.62
+          },
+          {
+            "d": "M 0 12 C 4 20 -5 28 2 37 C 5 41 -1 46 1 50",
+            "fill": "none",
+            "strokeScale": 0.64,
+            "opacity": 0.8
+          }
+        ]
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.1s",
+        "duration": 3.4,
+        "target": "cloud_left",
+        "toX": 234,
+        "toY": 222
+      },
+      {
+        "at": "start+0.2s",
+        "duration": 3.5,
+        "target": "cloud_right",
+        "toX": 268,
+        "toY": 216
+      },
+      {
+        "at": "start+0.2s",
+        "duration": 3.6,
+        "target": "kite_lover",
+        "toX": 236,
+        "toY": -112,
+        "arcY": -12,
+        "rotate": 12
+      },
+      {
+        "at": "start+0.2s",
+        "duration": 3.6,
+        "target": "kite_self",
+        "toX": 262,
+        "toY": -114,
+        "arcY": -8,
+        "rotate": -12
+      },
+      {
+        "at": "line_3",
+        "duration": 1.3,
+        "target": "kite_lover",
+        "toX": 264,
+        "toY": -122,
+        "rotate": 26
+      },
+      {
+        "at": "line_3",
+        "duration": 1.3,
+        "target": "kite_self",
+        "toX": 238,
+        "toY": -106,
+        "rotate": -24
+      },
+      {
+        "at": "line_3",
+        "duration": 1.3,
+        "target": "hero",
+        "leanDeg": 7
+      },
+      {
+        "at": "line_3+1.3s",
+        "duration": 1.2,
+        "target": "kite_lover",
+        "toX": 240,
+        "toY": -116,
+        "rotate": -16
+      },
+      {
+        "at": "line_3+1.3s",
+        "duration": 1.2,
+        "target": "kite_self",
+        "toX": 262,
+        "toY": -112,
+        "rotate": 20
+      },
+      {
+        "at": "pivot",
+        "duration": 2,
+        "target": "kite_thread",
+        "opacity": 0,
+        "splitProgress": 1
+      },
+      {
+        "at": "pivot",
+        "duration": 4.8,
+        "target": "kite_lover",
+        "toX": 108,
+        "toY": -168,
+        "arcY": -16,
+        "scale": 0.62,
+        "rotate": -38,
+        "opacity": 0
+      },
+      {
+        "at": "pivot",
+        "duration": 4.6,
+        "target": "cloud_left",
+        "toX": 115,
+        "toY": 184,
+        "opacity": 0.14
+      },
+      {
+        "at": "pivot",
+        "duration": 4.6,
+        "target": "cloud_right",
+        "toX": 412,
+        "toY": 188,
+        "opacity": 0.12
+      },
+      {
+        "at": "pivot+0.15s",
+        "duration": 4.4,
+        "target": "kite_self",
+        "toX": 358,
+        "toY": -18,
+        "arcY": 8,
+        "scale": 1.18,
+        "rotate": 58,
+        "opacity": 0.45
+      },
+      {
+        "at": "pivot+0.3s",
+        "duration": 0.5,
+        "target": "hero",
+        "pose": "stand"
+      },
+      {
+        "at": "pivot+0.7s",
+        "duration": 4,
+        "target": "hero",
+        "leanDeg": -5,
+        "sitProgress": 1,
+        "showTeaCup": 1
+      },
+      {
+        "at": "pivot+0.2s",
+        "duration": 5,
+        "target": "camera",
+        "zoom": 1.06,
+        "panX": 4,
+        "panY": 5
+      }
+    ],
+    "customPropsResolved": {
+      "swallow_kite": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M 0 -13 C 8 -10 14 -5 15 -1 C 9 2 4 6 0 12 C -4 6 -9 2 -15 -1 C -14 -5 -8 -10 0 -13 Z",
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "strokeScale": 0.92
+          },
+          {
+            "d": "M 0 -12.5 L 0 11.5",
+            "fill": "none",
+            "strokeScale": 0.5,
+            "opacity": 0.6
+          },
+          {
+            "d": "M -14.2 -1.2 Q 0 -6.5 14.2 -1.2",
+            "fill": "none",
+            "strokeScale": 0.5,
+            "opacity": 0.6
+          },
+          {
+            "d": "M 0 12 C -4 20 5 28 -2 37 C -5 41 1 46 -1 50",
+            "fill": "none",
+            "strokeScale": 0.62,
+            "opacity": 0.78
+          },
+          {
+            "d": "M -14.5 -0.8 C -17 5 -13 10 -16 15",
+            "fill": "none",
+            "strokeScale": 0.42,
+            "opacity": 0.5
+          },
+          {
+            "d": "M 14.5 -0.8 C 17 5 13 10 16 15",
+            "fill": "none",
+            "strokeScale": 0.42,
+            "opacity": 0.5
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_CAU_DON_BONG_DAI": {
+    "sceneId": "SCRIPT_CAU_DON_BONG_DAI",
+    "name": "Bước Chân Ngắn & Bóng Hoàng Hôn Dài",
+    "description": "Kẻ Lữ Hành bước một quãng thật ngắn trao cánh thư nhỏ câu đơn nhưng bóng người thương xoay lưng khuất dần; chạm câu kết, mặt trời chiều Đỏ Gạch hạ thấp rọi vệt bóng dưới chân kéo dài lê thê ngang khắp chân trời, người lặng lẽ ngồi xuống thưởng trà.",
+    "terrain": {
+      "type": "flat",
+      "y": 350,
+      "startX": 68,
+      "endX": 472
+    },
+    "atmosphere": [
+      {
+        "id": "evening_breeze",
+        "type": "wind",
+        "count": 2,
+        "direction": "left",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.32
+      },
+      {
+        "id": "dusk_birds",
+        "type": "birds",
+        "x": 205,
+        "y": 202,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.46,
+        "enterAt": "pivot+1.2s",
+        "fadeDuration": 2.6
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 344,
+        "scale": 1.15,
+        "facing": "left",
+        "pose": "stand",
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      },
+      {
+        "id": "beloved",
+        "x": 248,
+        "scale": 1.04,
+        "facing": "right",
+        "pose": "stand",
+        "opacity": 0.42,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "layer": "mid",
+        "leaveAt": "line_3+0.8s",
+        "fadeDuration": 2
+      }
+    ],
+    "props": [
+      {
+        "id": "sunset_orb",
+        "type": "custom",
+        "x": 432,
+        "y": 286,
+        "layer": "sky",
+        "scale": 1,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "hero",
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              0,
+              0,
+              22
+            ],
+            "fill": "accent",
+            "fillOpacity": 0.12,
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              0,
+              0,
+              13.5
+            ],
+            "fill": "accent",
+            "fillOpacity": 0.62,
+            "strokeScale": 0.85
+          }
+        ]
+      },
+      {
+        "id": "long_shadow",
+        "type": "horizon_long_shadow",
+        "x": 344,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1,
+        "opacity": 0.92,
+        "colorRole": "secondary",
+        "focusRole": "hero",
+        "drawProgress": 0.09,
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M 3 2.8 L -182 3.1",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 2.6,
+            "opacity": 0.28
+          },
+          {
+            "d": "M 3 2.0 L -238 2.2",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 1.45,
+            "opacity": 0.46
+          },
+          {
+            "d": "M 1 1.0 L -222 1.1",
+            "fill": "none",
+            "strokeScale": 0.85,
+            "show": "after_pivot",
+            "opacity": 0.68
+          }
+        ],
+        "saveAs": "horizon_long_shadow"
+      },
+      {
+        "id": "short_note",
+        "type": "envelope",
+        "x": 0,
+        "y": 0,
+        "follow": "hero:hand",
+        "layer": "fore",
+        "scale": 0.88,
+        "colorRole": "ink",
+        "focusRole": "hero"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.3s",
+        "duration": 2.1,
+        "target": "hero",
+        "toX": 322,
+        "pose": "give"
+      },
+      {
+        "at": "start+0.3s",
+        "duration": 2.1,
+        "target": "long_shadow",
+        "toX": 322
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 4.5,
+        "target": "beloved",
+        "toX": 112,
+        "opacity": 0.04,
+        "facing": "left"
+      },
+      {
+        "at": "line_3",
+        "duration": 0.8,
+        "target": "hero",
+        "pose": "stand"
+      },
+      {
+        "at": "line_3",
+        "duration": 1.8,
+        "target": "short_note",
+        "toX": 268,
+        "toY": -1,
+        "arcY": -4,
+        "follow": null,
+        "scale": 0.76,
+        "rotate": -7,
+        "opacity": 0.45
+      },
+      {
+        "at": "line_3+0.6s",
+        "duration": 1.6,
+        "target": "sunset_orb",
+        "toY": 298,
+        "opacity": 0.32
+      },
+      {
+        "at": "pivot",
+        "duration": 3.8,
+        "target": "short_note",
+        "toX": 236,
+        "opacity": 0.06
+      },
+      {
+        "at": "pivot",
+        "duration": 4.8,
+        "target": "sunset_orb",
+        "toY": 335,
+        "scale": 1.18,
+        "opacity": 0.92,
+        "colorRole": "accent"
+      },
+      {
+        "at": "pivot",
+        "duration": 4.8,
+        "target": "long_shadow",
+        "colorRole": "accent",
+        "drawProgress": 1
+      },
+      {
+        "at": "pivot+0.8s",
+        "duration": 4,
+        "target": "hero",
+        "leanDeg": -5,
+        "sitProgress": 1,
+        "showTeaCup": 1
+      },
+      {
+        "at": "pivot",
+        "duration": 5,
+        "target": "camera",
+        "zoom": 1.05,
+        "panX": -6,
+        "panY": 4
+      }
+    ],
+    "customPropsResolved": {
+      "horizon_long_shadow": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M 3 2.8 L -182 3.1",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 2.6,
+            "opacity": 0.28
+          },
+          {
+            "d": "M 3 2.0 L -238 2.2",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 1.45,
+            "opacity": 0.46
+          },
+          {
+            "d": "M 1 1.0 L -222 1.1",
+            "fill": "none",
+            "strokeScale": 0.85,
+            "show": "after_pivot",
+            "opacity": 0.68
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_LOP_DU_PHONG": {
+    "sceneId": "SCRIPT_LOP_DU_PHONG",
+    "name": "Chiếc Lốp Dự Phòng & Lối Rẽ An Nhiên",
+    "description": "Kẻ Lữ Hành lăn chiếc bánh dự phòng tới đỡ chiếc xe cổ đang xẹp lốp nghiêng đầu giữa đường; khi xe đã lành lặn tại điểm bẻ lái, chiếc lốp dự phòng hóa Đỏ Chu Sa bị hất vòng cung vào cốp sau khóa kín rồi xe lăn khuất dần vào sương mù chân trời, còn Kẻ Lữ Hành xoay lưng ngồi lại thảnh thơi thưởng trà.",
+    "act1": "Chiếc xe cổ nghiêng đầu vì xẹp bánh trước với nắp cốp sau mở sẵn; Kẻ Lữ Hành lăn bánh xe dự phòng tới nâng chiếc xe đứng thẳng trở lại",
+    "act2AtPivot": "Chạm 'ném vào cốp xe', chiếc xe lành lặn hất bánh dự phòng Đỏ Chu Sa bay vòng cung rơi gọn vào cốp sau rồi sập nắp cốp",
+    "act3Afterimage": "Chiếc xe chở chiếc lốp đỏ khóa trong cốp lăn xa rồi tan dần vào sương mù chân trời bên trái, còn Kẻ Lữ Hành xoay lưng ngồi thưởng trà dưới trăng",
+    "redProp": "Chiếc lốp dự phòng Đỏ Chu Sa (#CE472E) bị ném giam vào cốp xe lăn khuất, đối lập với chén trà ấm tự tại trên tay Kẻ Lữ Hành",
+    "tags": [
+      "lốp dự phòng",
+      "giá trị bản thân",
+      "buông bỏ",
+      "tỉnh thức"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 338,
+      "startX": 68,
+      "endX": 472
+    },
+    "atmosphere": [
+      {
+        "id": "road_breeze",
+        "type": "wind",
+        "count": 3,
+        "direction": "left",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.34,
+        "leaveAt": "pivot+1.2s",
+        "fadeDuration": 2.2
+      },
+      {
+        "id": "peace_moon",
+        "type": "crescent",
+        "x": 396,
+        "y": 204,
+        "radius": 14,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.52,
+        "enterAt": "pivot+1.0s",
+        "fadeDuration": 2.8
+      },
+      {
+        "id": "evening_birds",
+        "type": "birds",
+        "x": 332,
+        "y": 212,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.44,
+        "enterAt": "pivot+1.6s",
+        "fadeDuration": 2.6
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 334,
+        "scale": 1.18,
+        "facing": "left",
+        "pose": "stand",
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      }
+    ],
+    "props": [
+      {
+        "id": "coupe",
+        "type": "ink_coupe",
+        "x": 202,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.12,
+        "rotate": -3.5,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -46 -9.5 C -46 -18 -38 -20.5 -26 -21.5 L -14 -31.5 C -4 -33.2 9 -33.2 19 -22 L 48 -21.2 C 50 -19.5 50 -14.5 48 -9.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -21 -21.2 L -12 -29.2 C -4 -30.6 7 -30.6 15 -22 Z",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.58
+          },
+          {
+            "d": "M 23 -21.5 L 43 -34.5",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              8.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              3
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58
+          },
+          {
+            "ellipse": [
+              -28,
+              -7.2,
+              10.2,
+              6.6
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.85,
+            "dashed": true
+          },
+          {
+            "circle": [
+              -28,
+              -7.2,
+              2.6
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.55
+          }
+        ],
+        "altShapes": [
+          {
+            "d": "M -46 -9.5 C -46 -18 -38 -20.5 -26 -21.5 L -14 -31.5 C -4 -33.2 9 -33.2 19 -22 L 48 -21.2 C 50 -19.5 50 -14.5 48 -9.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -21 -21.2 L -12 -29.2 C -4 -30.6 7 -30.6 15 -22 Z",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.58
+          },
+          {
+            "d": "M 23 -21.4 L 47.5 -21.0",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58,
+            "opacity": 0.55
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              8.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              3
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58
+          },
+          {
+            "circle": [
+              -28,
+              -9.2,
+              8.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "circle": [
+              -28,
+              -9.2,
+              3
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58
+          }
+        ],
+        "saveAs": "ink_coupe"
+      },
+      {
+        "id": "spare_wheel",
+        "type": "spare_wheel",
+        "x": 304,
+        "y": -10,
+        "layer": "mid",
+        "scale": 1.05,
+        "rotate": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "center",
+        "emitterOffset": [
+          0,
+          0
+        ],
+        "shapes": [
+          {
+            "circle": [
+              0,
+              0,
+              9.2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.2,
+            "strokeScale": 1.05
+          },
+          {
+            "circle": [
+              0,
+              0,
+              4.8
+            ],
+            "fill": "none",
+            "strokeScale": 0.65,
+            "opacity": 0.85
+          },
+          {
+            "d": "M -4.5 0 L 4.5 0 M 0 -4.5 L 0 4.5",
+            "fill": "none",
+            "strokeScale": 0.5,
+            "opacity": 0.65
+          }
+        ],
+        "saveAs": "spare_wheel"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.3s",
+        "duration": 2.8,
+        "target": "hero",
+        "toX": 296
+      },
+      {
+        "at": "start+0.3s",
+        "duration": 2.8,
+        "target": "spare_wheel",
+        "toX": 266,
+        "toY": -10,
+        "rotate": -150
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 2,
+        "target": "hero",
+        "toX": 260,
+        "pose": "give"
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 2,
+        "target": "spare_wheel",
+        "toX": 171,
+        "toY": -10,
+        "rotate": -380
+      },
+      {
+        "at": "line_2+1.3s",
+        "duration": 1.3,
+        "target": "coupe",
+        "rotate": 0
+      },
+      {
+        "at": "line_2+1.8s",
+        "duration": 1.1,
+        "target": "hero",
+        "toX": 296,
+        "pose": "stand"
+      },
+      {
+        "at": "pivot-0.2s",
+        "duration": 1.4,
+        "target": "coupe",
+        "morphProgress": 0.35
+      },
+      {
+        "at": "pivot-0.2s",
+        "duration": 1.5,
+        "target": "spare_wheel",
+        "toX": 243.4,
+        "toY": -17.4,
+        "arcY": -28,
+        "scale": 0.72,
+        "rotate": 160
+      },
+      {
+        "at": "pivot",
+        "duration": 3.8,
+        "target": "spare_wheel",
+        "opacity": 0.88,
+        "colorRole": "accent",
+        "emitters": {
+          "pulseRing": 0.65,
+          "glow": 0.45
+        }
+      },
+      {
+        "at": "pivot+1.35s",
+        "duration": 0.55,
+        "target": "coupe",
+        "morphProgress": 1
+      },
+      {
+        "at": "pivot+1.5s",
+        "duration": 5.2,
+        "target": "coupe",
+        "toX": 122,
+        "opacity": 0.02
+      },
+      {
+        "at": "pivot+1.5s",
+        "duration": 5.2,
+        "target": "spare_wheel",
+        "toX": 163.4,
+        "toY": -17.4,
+        "opacity": 0.04,
+        "emitters": {
+          "pulseRing": 0,
+          "glow": 0.05
+        }
+      },
+      {
+        "at": "pivot+0.55s",
+        "duration": 0.3,
+        "target": "hero",
+        "facing": "right"
+      },
+      {
+        "at": "pivot+0.95s",
+        "duration": 4,
+        "target": "hero",
+        "leanDeg": -6,
+        "sitProgress": 1,
+        "showTeaCup": 1
+      },
+      {
+        "at": "pivot+0.4s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.05,
+        "panX": 6,
+        "panY": 4
+      }
+    ],
+    "customPropsResolved": {
+      "ink_coupe": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -46 -9.5 C -46 -18 -38 -20.5 -26 -21.5 L -14 -31.5 C -4 -33.2 9 -33.2 19 -22 L 48 -21.2 C 50 -19.5 50 -14.5 48 -9.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -21 -21.2 L -12 -29.2 C -4 -30.6 7 -30.6 15 -22 Z",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.58
+          },
+          {
+            "d": "M 23 -21.5 L 43 -34.5",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              8.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              3
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58
+          },
+          {
+            "ellipse": [
+              -28,
+              -7.2,
+              10.2,
+              6.6
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.85,
+            "dashed": true
+          },
+          {
+            "circle": [
+              -28,
+              -7.2,
+              2.6
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.55
+          }
+        ],
+        "altShapes": [
+          {
+            "d": "M -46 -9.5 C -46 -18 -38 -20.5 -26 -21.5 L -14 -31.5 C -4 -33.2 9 -33.2 19 -22 L 48 -21.2 C 50 -19.5 50 -14.5 48 -9.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -21 -21.2 L -12 -29.2 C -4 -30.6 7 -30.6 15 -22 Z",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.58
+          },
+          {
+            "d": "M 23 -21.4 L 47.5 -21.0",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58,
+            "opacity": 0.55
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              8.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "circle": [
+              18,
+              -9.2,
+              3
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58
+          },
+          {
+            "circle": [
+              -28,
+              -9.2,
+              8.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "circle": [
+              -28,
+              -9.2,
+              3
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58
+          }
+        ]
+      },
+      "spare_wheel": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              0,
+              0,
+              9.2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.2,
+            "strokeScale": 1.05
+          },
+          {
+            "circle": [
+              0,
+              0,
+              4.8
+            ],
+            "fill": "none",
+            "strokeScale": 0.65,
+            "opacity": 0.85
+          },
+          {
+            "d": "M -4.5 0 L 4.5 0 M 0 -4.5 L 0 4.5",
+            "fill": "none",
+            "strokeScale": 0.5,
+            "opacity": 0.65
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_CAI_BONG_PHO_THI_VOM_DEM": {
+    "sceneId": "SCRIPT_CAI_BONG_PHO_THI_VOM_DEM",
+    "name": "Cái Bóng Phố Thị & Khoảng Tối Bao Dung (iPhone Master)",
+    "description": "Cụm tòa tháp cao ốc phố thị vươn cao với hàng ô cửa sổ san sát đổ cái bóng quái vật mực loang khổng lồ trùm lên phía sau Kẻ Lữ Hành; chạm điểm bẻ lái, nắng gắt lặn tắt làm cái bóng tan biến, khoảng tối 4 lớp mực loang rộng mở bao bọc Kẻ Lữ Hành ngồi thưởng chén trà Đỏ Chu Sa duy nhất.",
+    "act1": "Dưới nắng gắt chiếu xiên, cụm 3 tòa nhà cao tầng san sát ô cửa sổ đổ cái bóng mực loang cao lớn trùm lên phía sau lưng Kẻ Lữ Hành đang khom mình bước đi",
+    "act2AtPivot": "Chạm điểm bẻ lái, nắng gắt lặn tắt khiến cái bóng thực tại tan biến hoàn toàn; khoảng tối 4 lớp mực loang không viền rộng mở bao bọc lấy Kẻ Lữ Hành",
+    "act3Afterimage": "Giữa khoảng tối mênh mang dưới trăng khuyết và sao thưa mực nhạt, chỉ duy nhất chén trà Đỏ Chu Sa tỏa khói ấm sáng lên trước mặt Kẻ Lữ Hành đang ngồi tĩnh tại",
+    "redProp": "Duy nhất chén trà Đỏ Chu Sa (#CE472E) tỏa quầng ấm và làn khói mảnh giữa lòng bóng tối bao dung",
+    "tags": [
+      "trưởng thành",
+      "thực tế",
+      "nhà cao tầng",
+      "bóng tối",
+      "trốn chạy"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 70,
+      "endX": 470
+    },
+    "atmosphere": [
+      {
+        "id": "harsh_wind",
+        "type": "wind",
+        "count": 3,
+        "direction": "left",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.34,
+        "leaveAt": "pivot+0.4s",
+        "fadeDuration": 2
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 276,
+        "scale": 1.22,
+        "facing": "right",
+        "pose": "stand",
+        "leanDeg": 6,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      }
+    ],
+    "props": [
+      {
+        "id": "glaring_sun",
+        "type": "harsh_day_sun",
+        "x": 98,
+        "y": 164,
+        "layer": "sky",
+        "scale": 1.05,
+        "opacity": 0.74,
+        "colorRole": "ink",
+        "focusRole": "support",
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              0,
+              0,
+              12.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.15,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M 15 10 L 36 25 M 9 16 L 26 34 M 18 3 L 40 11",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.5,
+            "dashed": true,
+            "opacity": 0.52
+          }
+        ],
+        "saveAs": "harsh_day_sun"
+      },
+      {
+        "id": "monster_shadow",
+        "type": "reality_monster_shadow",
+        "x": 166,
+        "y": 0,
+        "layer": "mid",
+        "scale": 0.68,
+        "opacity": 0.44,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -18 0 L -14 -68 L 0 -72 L 8 -112 L 28 -122 L 36 -98 L 58 -132 L 84 -120 C 112 -108 134 -80 148 -46 L 126 -50 L 142 -29 L 115 -33 L 129 -14 C 100 -16 68 -5 34 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.145,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -10 0 L -4 -56 L 14 -96 L 50 -110 C 82 -100 108 -74 126 -44 C 98 -42 80 -25 58 -6 C 34 -1 6 0 -10 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.115,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -18 0 C 26 -4 90 -4 150 0 C 90 2 26 2 -18 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.15,
+            "role": "ink",
+            "strokeScale": 0
+          }
+        ],
+        "saveAs": "reality_monster_shadow"
+      },
+      {
+        "id": "reality_monolith",
+        "type": "reality_monolith",
+        "x": 152,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.04,
+        "opacity": 0.92,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "rect": [
+              -37,
+              -90,
+              23,
+              90
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.07,
+            "role": "secondary",
+            "strokeScale": 0.78
+          },
+          {
+            "rect": [
+              -33,
+              -95,
+              13,
+              5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "d": "M -33 -82 h 3.4 v 5 h -3.4 Z M -26.5 -82 h 3.4 v 5 h -3.4 Z M -33 -70 h 3.4 v 5 h -3.4 Z M -26.5 -70 h 3.4 v 5 h -3.4 Z M -33 -58 h 3.4 v 5 h -3.4 Z M -26.5 -58 h 3.4 v 5 h -3.4 Z M -33 -46 h 3.4 v 5 h -3.4 Z M -26.5 -46 h 3.4 v 5 h -3.4 Z M -33 -34 h 3.4 v 5 h -3.4 Z M -26.5 -34 h 3.4 v 5 h -3.4 Z M -33 -22 h 3.4 v 5 h -3.4 Z M -26.5 -22 h 3.4 v 5 h -3.4 Z",
+            "fill": "secondary",
+            "fillOpacity": 0.24,
+            "role": "secondary",
+            "strokeScale": 0.38
+          },
+          {
+            "rect": [
+              12,
+              -76,
+              24,
+              76
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "ink",
+            "strokeScale": 0.84
+          },
+          {
+            "rect": [
+              16,
+              -82,
+              14,
+              6
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "d": "M 18 -68 h 4 v 5.2 h -4 Z M 26 -68 h 4 v 5.2 h -4 Z M 18 -56 h 4 v 5.2 h -4 Z M 26 -56 h 4 v 5.2 h -4 Z M 18 -44 h 4 v 5.2 h -4 Z M 26 -44 h 4 v 5.2 h -4 Z M 18 -32 h 4 v 5.2 h -4 Z M 26 -32 h 4 v 5.2 h -4 Z M 18 -20 h 4 v 5.2 h -4 Z M 26 -20 h 4 v 5.2 h -4 Z",
+            "fill": "ink",
+            "fillOpacity": 0.16,
+            "role": "secondary",
+            "strokeScale": 0.42
+          },
+          {
+            "rect": [
+              -16,
+              -118,
+              31,
+              118
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.98
+          },
+          {
+            "rect": [
+              -16,
+              -118,
+              5.5,
+              118
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.07,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "rect": [
+              -11,
+              -127,
+              21,
+              9
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.13,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "rect": [
+              -5.5,
+              -132.5,
+              10,
+              5.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.78
+          },
+          {
+            "line": [
+              -0.5,
+              -132.5,
+              -0.5,
+              -146
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.76
+          },
+          {
+            "line": [
+              -17.8,
+              -118,
+              16.8,
+              -118
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -11 -110 h 3.8 v 5.8 h -3.8 Z M -2.4 -110 h 3.8 v 5.8 h -3.8 Z M 6.2 -110 h 3.8 v 5.8 h -3.8 Z M -11 -97 h 3.8 v 5.8 h -3.8 Z M -2.4 -97 h 3.8 v 5.8 h -3.8 Z M 6.2 -97 h 3.8 v 5.8 h -3.8 Z M -11 -84 h 3.8 v 5.8 h -3.8 Z M -2.4 -84 h 3.8 v 5.8 h -3.8 Z M 6.2 -84 h 3.8 v 5.8 h -3.8 Z M -11 -71 h 3.8 v 5.8 h -3.8 Z M -2.4 -71 h 3.8 v 5.8 h -3.8 Z M 6.2 -71 h 3.8 v 5.8 h -3.8 Z M -11 -58 h 3.8 v 5.8 h -3.8 Z M -2.4 -58 h 3.8 v 5.8 h -3.8 Z M 6.2 -58 h 3.8 v 5.8 h -3.8 Z M -11 -45 h 3.8 v 5.8 h -3.8 Z M -2.4 -45 h 3.8 v 5.8 h -3.8 Z M 6.2 -45 h 3.8 v 5.8 h -3.8 Z M -11 -32 h 3.8 v 5.8 h -3.8 Z M -2.4 -32 h 3.8 v 5.8 h -3.8 Z M 6.2 -32 h 3.8 v 5.8 h -3.8 Z",
+            "fill": "ink",
+            "fillOpacity": 0.2,
+            "role": "secondary",
+            "strokeScale": 0.44
+          },
+          {
+            "line": [
+              -18.5,
+              -18.5,
+              17.5,
+              -18.5
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.85
+          },
+          {
+            "rect": [
+              -5.5,
+              -18.5,
+              10,
+              18.5
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.18,
+            "role": "ink",
+            "strokeScale": 0.65
+          },
+          {
+            "line": [
+              -0.5,
+              -18.5,
+              -0.5,
+              0
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48
+          }
+        ],
+        "saveAs": "reality_monolith"
+      },
+      {
+        "id": "night_sky_stars",
+        "type": "custom",
+        "x": 226,
+        "y": 176,
+        "layer": "sky",
+        "scale": 1,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              -58,
+              12,
+              1.15
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.42,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              -12,
+              -8,
+              1.35
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.48,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              38,
+              6,
+              1
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.36,
+            "role": "secondary",
+            "strokeScale": 0
+          }
+        ]
+      },
+      {
+        "id": "night_dome",
+        "type": "night_sanctuary_dome",
+        "x": 348,
+        "y": 0,
+        "layer": "mid",
+        "scale": 0.88,
+        "opacity": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "emitterOffset": [
+          15.4,
+          -5.8
+        ],
+        "shapes": [
+          {
+            "d": "M -100 2 C -106 -58 -64 -126 0 -128 C 64 -130 106 -60 100 2 C 52 5 -52 5 -100 2 Z",
+            "fill": "ink",
+            "fillOpacity": 0.045,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -78 1 C -82 -48 -49 -104 0 -106 C 49 -108 82 -50 78 1 C 40 3 -40 3 -78 1 Z",
+            "fill": "ink",
+            "fillOpacity": 0.065,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -58 0 C -60 -37 -35 -82 0 -84 C 35 -86 60 -39 58 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.085,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -39 0 C -40 -26 -23 -60 0 -61 C 23 -62 40 -27 39 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.095,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M 23 -89 C 16 -86 15 -77 19 -72 C 24 -66 32 -67 36 -73 C 29 -71 23 -75 22 -82 C 21 -85 22 -87 23 -89 Z",
+            "fill": "secondary",
+            "fillOpacity": 0.44,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              -24,
+              -78,
+              1.15
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.36,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              -4,
+              -93,
+              0.95
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.32,
+            "role": "secondary",
+            "strokeScale": 0
+          }
+        ],
+        "saveAs": "night_sanctuary_dome"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.3s",
+        "duration": 2.9,
+        "target": "hero",
+        "toX": 308,
+        "leanDeg": 10
+      },
+      {
+        "at": "line_2-0.3s",
+        "duration": 2.5,
+        "target": "glaring_sun",
+        "scale": 1.22,
+        "opacity": 0.92
+      },
+      {
+        "at": "line_2-0.3s",
+        "duration": 2.6,
+        "target": "monster_shadow",
+        "scale": 1.15,
+        "opacity": 0.96
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 2.6,
+        "target": "hero",
+        "toX": 336,
+        "leanDeg": 14
+      },
+      {
+        "at": "pivot-0.25s",
+        "duration": 2.2,
+        "target": "glaring_sun",
+        "toY": 244,
+        "scale": 0.72,
+        "opacity": 0
+      },
+      {
+        "at": "pivot-0.2s",
+        "duration": 2.3,
+        "target": "monster_shadow",
+        "scale": 0.25,
+        "opacity": 0
+      },
+      {
+        "at": "pivot-0.2s",
+        "duration": 2.8,
+        "target": "reality_monolith",
+        "toX": 138,
+        "opacity": 0.04
+      },
+      {
+        "at": "pivot-0.15s",
+        "duration": 2.8,
+        "target": "night_dome",
+        "scale": 1.12,
+        "opacity": 0.98
+      },
+      {
+        "at": "pivot+0.3s",
+        "duration": 3.2,
+        "target": "night_sky_stars",
+        "opacity": 0.85
+      },
+      {
+        "at": "pivot",
+        "duration": 3.8,
+        "target": "night_dome",
+        "colorRole": "accent",
+        "emitters": {
+          "steam": 0.68,
+          "glow": 0.28
+        }
+      },
+      {
+        "at": "pivot+0.45s",
+        "duration": 4,
+        "target": "hero",
+        "leanDeg": -6,
+        "sitProgress": 1,
+        "showTeaCup": 1
+      },
+      {
+        "at": "pivot+0.3s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.04,
+        "panX": 6,
+        "panY": 2
+      }
+    ],
+    "customPropsResolved": {
+      "harsh_day_sun": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              0,
+              0,
+              12.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.15,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M 15 10 L 36 25 M 9 16 L 26 34 M 18 3 L 40 11",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.5,
+            "dashed": true,
+            "opacity": 0.52
+          }
+        ]
+      },
+      "reality_monster_shadow": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -18 0 L -14 -68 L 0 -72 L 8 -112 L 28 -122 L 36 -98 L 58 -132 L 84 -120 C 112 -108 134 -80 148 -46 L 126 -50 L 142 -29 L 115 -33 L 129 -14 C 100 -16 68 -5 34 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.145,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -10 0 L -4 -56 L 14 -96 L 50 -110 C 82 -100 108 -74 126 -44 C 98 -42 80 -25 58 -6 C 34 -1 6 0 -10 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.115,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -18 0 C 26 -4 90 -4 150 0 C 90 2 26 2 -18 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.15,
+            "role": "ink",
+            "strokeScale": 0
+          }
+        ]
+      },
+      "reality_monolith": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "rect": [
+              -37,
+              -90,
+              23,
+              90
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.07,
+            "role": "secondary",
+            "strokeScale": 0.78
+          },
+          {
+            "rect": [
+              -33,
+              -95,
+              13,
+              5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "d": "M -33 -82 h 3.4 v 5 h -3.4 Z M -26.5 -82 h 3.4 v 5 h -3.4 Z M -33 -70 h 3.4 v 5 h -3.4 Z M -26.5 -70 h 3.4 v 5 h -3.4 Z M -33 -58 h 3.4 v 5 h -3.4 Z M -26.5 -58 h 3.4 v 5 h -3.4 Z M -33 -46 h 3.4 v 5 h -3.4 Z M -26.5 -46 h 3.4 v 5 h -3.4 Z M -33 -34 h 3.4 v 5 h -3.4 Z M -26.5 -34 h 3.4 v 5 h -3.4 Z M -33 -22 h 3.4 v 5 h -3.4 Z M -26.5 -22 h 3.4 v 5 h -3.4 Z",
+            "fill": "secondary",
+            "fillOpacity": 0.24,
+            "role": "secondary",
+            "strokeScale": 0.38
+          },
+          {
+            "rect": [
+              12,
+              -76,
+              24,
+              76
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "ink",
+            "strokeScale": 0.84
+          },
+          {
+            "rect": [
+              16,
+              -82,
+              14,
+              6
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "d": "M 18 -68 h 4 v 5.2 h -4 Z M 26 -68 h 4 v 5.2 h -4 Z M 18 -56 h 4 v 5.2 h -4 Z M 26 -56 h 4 v 5.2 h -4 Z M 18 -44 h 4 v 5.2 h -4 Z M 26 -44 h 4 v 5.2 h -4 Z M 18 -32 h 4 v 5.2 h -4 Z M 26 -32 h 4 v 5.2 h -4 Z M 18 -20 h 4 v 5.2 h -4 Z M 26 -20 h 4 v 5.2 h -4 Z",
+            "fill": "ink",
+            "fillOpacity": 0.16,
+            "role": "secondary",
+            "strokeScale": 0.42
+          },
+          {
+            "rect": [
+              -16,
+              -118,
+              31,
+              118
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.98
+          },
+          {
+            "rect": [
+              -16,
+              -118,
+              5.5,
+              118
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.07,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "rect": [
+              -11,
+              -127,
+              21,
+              9
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.13,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "rect": [
+              -5.5,
+              -132.5,
+              10,
+              5.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.78
+          },
+          {
+            "line": [
+              -0.5,
+              -132.5,
+              -0.5,
+              -146
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.76
+          },
+          {
+            "line": [
+              -17.8,
+              -118,
+              16.8,
+              -118
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -11 -110 h 3.8 v 5.8 h -3.8 Z M -2.4 -110 h 3.8 v 5.8 h -3.8 Z M 6.2 -110 h 3.8 v 5.8 h -3.8 Z M -11 -97 h 3.8 v 5.8 h -3.8 Z M -2.4 -97 h 3.8 v 5.8 h -3.8 Z M 6.2 -97 h 3.8 v 5.8 h -3.8 Z M -11 -84 h 3.8 v 5.8 h -3.8 Z M -2.4 -84 h 3.8 v 5.8 h -3.8 Z M 6.2 -84 h 3.8 v 5.8 h -3.8 Z M -11 -71 h 3.8 v 5.8 h -3.8 Z M -2.4 -71 h 3.8 v 5.8 h -3.8 Z M 6.2 -71 h 3.8 v 5.8 h -3.8 Z M -11 -58 h 3.8 v 5.8 h -3.8 Z M -2.4 -58 h 3.8 v 5.8 h -3.8 Z M 6.2 -58 h 3.8 v 5.8 h -3.8 Z M -11 -45 h 3.8 v 5.8 h -3.8 Z M -2.4 -45 h 3.8 v 5.8 h -3.8 Z M 6.2 -45 h 3.8 v 5.8 h -3.8 Z M -11 -32 h 3.8 v 5.8 h -3.8 Z M -2.4 -32 h 3.8 v 5.8 h -3.8 Z M 6.2 -32 h 3.8 v 5.8 h -3.8 Z",
+            "fill": "ink",
+            "fillOpacity": 0.2,
+            "role": "secondary",
+            "strokeScale": 0.44
+          },
+          {
+            "line": [
+              -18.5,
+              -18.5,
+              17.5,
+              -18.5
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.85
+          },
+          {
+            "rect": [
+              -5.5,
+              -18.5,
+              10,
+              18.5
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.18,
+            "role": "ink",
+            "strokeScale": 0.65
+          },
+          {
+            "line": [
+              -0.5,
+              -18.5,
+              -0.5,
+              0
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48
+          }
+        ]
+      },
+      "night_sanctuary_dome": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -100 2 C -106 -58 -64 -126 0 -128 C 64 -130 106 -60 100 2 C 52 5 -52 5 -100 2 Z",
+            "fill": "ink",
+            "fillOpacity": 0.045,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -78 1 C -82 -48 -49 -104 0 -106 C 49 -108 82 -50 78 1 C 40 3 -40 3 -78 1 Z",
+            "fill": "ink",
+            "fillOpacity": 0.065,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -58 0 C -60 -37 -35 -82 0 -84 C 35 -86 60 -39 58 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.085,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -39 0 C -40 -26 -23 -60 0 -61 C 23 -62 40 -27 39 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.095,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M 23 -89 C 16 -86 15 -77 19 -72 C 24 -66 32 -67 36 -73 C 29 -71 23 -75 22 -82 C 21 -85 22 -87 23 -89 Z",
+            "fill": "secondary",
+            "fillOpacity": 0.44,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              -24,
+              -78,
+              1.15
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.36,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              -4,
+              -93,
+              0.95
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.32,
+            "role": "secondary",
+            "strokeScale": 0
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_BEN_NUOC_CHEN_SAY_TROI_XA": {
+    "sceneId": "SCRIPT_BEN_NUOC_CHEN_SAY_TROI_XA",
+    "name": "Đối Ẩm Bên Bến Nước & Chén Rượu Trôi Xa",
+    "description": "Bên mép nước gợn sóng nhẹ, hai bóng áo choàng đứng cạnh nhau đón mây chiều sà xuống vò gốm và nâng chén ước hẹn; khi gió men thổi gắt, bóng người đồng hành tan thành mây khói, Kẻ Lữ Hành buông tay thả chiếc chén rượu Đỏ Chu Sa trôi dập dềnh ra xa rồi ngồi lại một mình dưới bóng trăng mờ.",
+    "act1": "Bên bờ sông gợn sóng, hai Kẻ Lữ Hành đứng đối diện bên vò rượu gốm đón những làn mây chiều sà xuống miệng vò và nâng đôi chén chạm nhau; gió men thổi gấp làm cả hai nghiêng mình chếnh choáng",
+    "act2AtPivot": "Chạm 'chẳng còn nhau', bóng người thương hóa thành làn mây trắng tan vào khoảng không; Kẻ Lữ Hành bước tới mép nước buông tay thả chiếc chén kỷ niệm hóa sắc Đỏ Chu Sa xuống dòng sông",
+    "act3Afterimage": "Chiếc chén rượu Đỏ Chu Sa dập dềnh trôi xa dần trên sóng nước dưới vầng trăng khuyết mực nhạt, còn Kẻ Lữ Hành ngồi tĩnh lặng một mình trên bờ đất dõi theo",
+    "redProp": "Duy nhất chiếc chén rượu Đỏ Chu Sa (#CE472E) tỏa hương mảnh trôi dập dềnh đơn độc trên sóng nước chiều tà",
+    "tags": [
+      "say",
+      "rượu mây",
+      "duyên đầu",
+      "bến nước",
+      "chia xa"
+    ],
+    "terrain": {
+      "type": "water_shore",
+      "y": 352,
+      "startX": 70,
+      "endX": 470,
+      "shoreX": 258,
+      "waterSide": "right",
+      "waveAmplitude": 3.4
+    },
+    "atmosphere": [
+      {
+        "id": "brew_wind",
+        "type": "wind",
+        "count": 4,
+        "direction": "right",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.36,
+        "enterAt": "line_3-0.3s",
+        "leaveAt": "pivot+0.8s",
+        "fadeDuration": 1.8
+      },
+      {
+        "id": "river_moon",
+        "type": "crescent",
+        "x": 396,
+        "y": 176,
+        "radius": 14,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.46,
+        "enterAt": "pivot+0.8s",
+        "fadeDuration": 2.8
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 180,
+        "scale": 1.2,
+        "facing": "right",
+        "pose": "hold_up",
+        "leanDeg": 3,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      },
+      {
+        "id": "beloved",
+        "x": 244,
+        "scale": 1.16,
+        "facing": "left",
+        "pose": "hold_up",
+        "leanDeg": 3,
+        "opacity": 0.82,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "mid"
+      }
+    ],
+    "props": [
+      {
+        "id": "cloud_gather_left",
+        "type": "cloud_wisp",
+        "x": 158,
+        "y": 178,
+        "layer": "sky",
+        "scale": 1.15,
+        "opacity": 0.72,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.9,
+          "amplitude": 0.8
+        }
+      },
+      {
+        "id": "cloud_gather_right",
+        "type": "cloud_wisp",
+        "x": 272,
+        "y": 188,
+        "layer": "sky",
+        "scale": 1.05,
+        "opacity": 0.68,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.85,
+          "amplitude": 0.8
+        }
+      },
+      {
+        "id": "moon_water_reflection",
+        "type": "water_moon_reflection",
+        "x": 396,
+        "y": 2,
+        "layer": "mid",
+        "scale": 0.92,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "anchorType": "ground"
+      },
+      {
+        "id": "cloud_jar",
+        "type": "ink_wine_jar",
+        "x": 212,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.02,
+        "opacity": 0.9,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "emitterOffset": [
+          0,
+          -28
+        ],
+        "shapes": [
+          {
+            "d": "M -4.8 -28 L 4.8 -28 L 3.8 -22.5 C 8.8 -19.0 9.0 -8.5 5.2 0 L -5.2 0 C -9.0 -8.5 -8.8 -19.0 -3.8 -22.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -3.4 -21.8 C -7.4 -18.0 -7.6 -8.2 -4.2 -1.0 C -5.6 -8.0 -5.4 -16.0 -2.2 -21.0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.08,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -5.6 -28 Q 0 -27.2 5.6 -28",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -4.1 -22.5 Q 0 -21.6 4.1 -22.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 1.8 -22.2 C 3.6 -19.5 5.0 -16.5 4.2 -13.5 M 2.6 -22.2 C 5.0 -20.2 6.6 -17.8 6.2 -14.8",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58,
+            "opacity": 0.65
+          }
+        ],
+        "saveAs": "ink_wine_jar"
+      },
+      {
+        "id": "beloved_cup",
+        "type": "small_cup",
+        "x": 0,
+        "y": 0,
+        "follow": "beloved:hand",
+        "layer": "mid",
+        "scale": 1.12,
+        "opacity": 0.88,
+        "colorRole": "ink",
+        "focusRole": "support"
+      },
+      {
+        "id": "keepsake_cup",
+        "type": "floating_wine_cup",
+        "x": 0,
+        "y": 0,
+        "follow": "hero:hand",
+        "layer": "fore",
+        "scale": 0.76,
+        "opacity": 0.95,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "idle": {
+          "type": "bob",
+          "speed": 0.95,
+          "amplitude": 0.55
+        },
+        "anchorType": "ground",
+        "emitterOffset": [
+          0,
+          -8.5
+        ],
+        "shapes": [
+          {
+            "d": "M -8.6 -8.2 C -7.8 -2.2 -4.4 0 0 0 C 4.4 0 7.8 -2.2 8.6 -8.2 Q 0 -7.0 -8.6 -8.2 Z",
+            "fill": "bg",
+            "fillOpacity": 0.18,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "ellipse": [
+              0,
+              -7.8,
+              7.6,
+              1.35
+            ],
+            "fill": "accent",
+            "fillOpacity": 0.36,
+            "role": "accent",
+            "strokeScale": 0.62
+          },
+          {
+            "d": "M -6.2 -6.4 Q -5.2 -2.6 -2.6 -1.2",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.5,
+            "opacity": 0.52
+          },
+          {
+            "d": "M -13.2 0.9 Q 0 2.6 13.2 0.9",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.5,
+            "show": "after_pivot",
+            "opacity": 0.52
+          }
+        ],
+        "saveAs": "floating_wine_cup"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.2s",
+        "duration": 2.3,
+        "target": "cloud_gather_left",
+        "toX": 210,
+        "toY": 318,
+        "scale": 0.48,
+        "opacity": 0.04
+      },
+      {
+        "at": "start+0.3s",
+        "duration": 2.4,
+        "target": "cloud_gather_right",
+        "toX": 214,
+        "toY": 318,
+        "scale": 0.46,
+        "opacity": 0.04
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 1.8,
+        "target": "hero",
+        "toX": 192,
+        "pose": "give",
+        "leanDeg": 6
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 1.8,
+        "target": "beloved",
+        "toX": 234,
+        "pose": "give",
+        "leanDeg": 6
+      },
+      {
+        "at": "line_2+0.2s",
+        "duration": 1.8,
+        "target": "cloud_jar",
+        "emitters": {
+          "steam": 0.52
+        }
+      },
+      {
+        "at": "line_3-0.15s",
+        "duration": 1.9,
+        "target": "cloud_jar",
+        "rotate": -4,
+        "emitters": {
+          "steam": 0.88
+        }
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 2,
+        "target": "hero",
+        "toX": 184,
+        "leanDeg": -10
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 2.1,
+        "target": "beloved",
+        "toX": 248,
+        "opacity": 0.58,
+        "leanDeg": -12
+      },
+      {
+        "at": "line_3+0.8s",
+        "duration": 1.8,
+        "target": "beloved_cup",
+        "opacity": 0,
+        "floatAwayProgress": 0.85
+      },
+      {
+        "at": "pivot-0.3s",
+        "duration": 2.8,
+        "target": "beloved",
+        "toX": 262,
+        "opacity": 0,
+        "dissolveToCloud": 1
+      },
+      {
+        "at": "pivot-0.25s",
+        "duration": 1.5,
+        "target": "hero",
+        "toX": 238,
+        "pose": "give",
+        "leanDeg": 9
+      },
+      {
+        "at": "pivot-0.15s",
+        "duration": 1.5,
+        "target": "keepsake_cup",
+        "toX": 280,
+        "toY": -0.4,
+        "arcY": -6,
+        "follow": null,
+        "scale": 1.06
+      },
+      {
+        "at": "pivot",
+        "duration": 3.8,
+        "target": "keepsake_cup",
+        "colorRole": "accent",
+        "emitters": {
+          "steam": 0.65,
+          "pulseRing": 0.42,
+          "glow": 0.3
+        }
+      },
+      {
+        "at": "pivot",
+        "duration": 3.8,
+        "target": "cloud_jar",
+        "toX": 198,
+        "rotate": 0,
+        "opacity": 0.36,
+        "emitters": {
+          "steam": 0
+        }
+      },
+      {
+        "at": "pivot+1.35s",
+        "duration": 5.6,
+        "target": "keepsake_cup",
+        "toX": 414,
+        "toY": -0.4,
+        "scale": 0.88,
+        "emitters": {
+          "steam": 0.48,
+          "pulseRing": 0,
+          "glow": 0.24
+        }
+      },
+      {
+        "at": "pivot+1.1s",
+        "duration": 4.2,
+        "target": "hero",
+        "toX": 236,
+        "pose": "stand",
+        "leanDeg": -5,
+        "sitProgress": 1,
+        "showTeaCup": 0
+      },
+      {
+        "at": "pivot+1.0s",
+        "duration": 3.8,
+        "target": "moon_water_reflection",
+        "opacity": 0.38
+      },
+      {
+        "at": "pivot+0.4s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.04,
+        "panX": 8,
+        "panY": 2
+      }
+    ],
+    "customPropsResolved": {
+      "water_moon_reflection": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "ellipse": [
+              0,
+              1.5,
+              20,
+              5.6
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.13,
+            "role": "secondary",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M -15 0.8 C -9 -2.8 9 -2.8 15 0.8",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.65,
+            "opacity": 0.75
+          },
+          {
+            "d": "M -16.5 3.8 Q -3 6.2 12 4.1",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.62
+          },
+          {
+            "d": "M -10.5 7.5 Q 1 9.0 11.5 7.2",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.45,
+            "opacity": 0.45
+          }
+        ]
+      },
+      "ink_wine_jar": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -4.8 -28 L 4.8 -28 L 3.8 -22.5 C 8.8 -19.0 9.0 -8.5 5.2 0 L -5.2 0 C -9.0 -8.5 -8.8 -19.0 -3.8 -22.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -3.4 -21.8 C -7.4 -18.0 -7.6 -8.2 -4.2 -1.0 C -5.6 -8.0 -5.4 -16.0 -2.2 -21.0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.08,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -5.6 -28 Q 0 -27.2 5.6 -28",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -4.1 -22.5 Q 0 -21.6 4.1 -22.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 1.8 -22.2 C 3.6 -19.5 5.0 -16.5 4.2 -13.5 M 2.6 -22.2 C 5.0 -20.2 6.6 -17.8 6.2 -14.8",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.58,
+            "opacity": 0.65
+          }
+        ]
+      },
+      "floating_wine_cup": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -8.6 -8.2 C -7.8 -2.2 -4.4 0 0 0 C 4.4 0 7.8 -2.2 8.6 -8.2 Q 0 -7.0 -8.6 -8.2 Z",
+            "fill": "bg",
+            "fillOpacity": 0.18,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "ellipse": [
+              0,
+              -7.8,
+              7.6,
+              1.35
+            ],
+            "fill": "accent",
+            "fillOpacity": 0.36,
+            "role": "accent",
+            "strokeScale": 0.62
+          },
+          {
+            "d": "M -6.2 -6.4 Q -5.2 -2.6 -2.6 -1.2",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.5,
+            "opacity": 0.52
+          },
+          {
+            "d": "M -13.2 0.9 Q 0 2.6 13.2 0.9",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.5,
+            "show": "after_pivot",
+            "opacity": 0.52
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_NGOI_NHA_TREN_MAY_TINH_MONG": {
+    "sceneId": "SCRIPT_NGOI_NHA_TREN_MAY_TINH_MONG",
+    "name": "Ngôi Nhà Trên Mây & Thực Tại Mặt Đất",
+    "description": "Ẩn dụ mối tình đầu: hai người đứng sát vai nhau cùng ngước nhìn và dệt nên giấc mộng mái nhà chung bồng bềnh trên mây ngay phía trên đầu; khi cảm xúc quá tải làm giấc mộng tan vỡ, Kẻ Lữ Hành bừng tỉnh giữa mặt đất trống trải bên nhành hoa Đỏ Chu Sa rơi lại nơi người cũ từng đứng.",
+    "act1": "Hai bóng người bước lại đứng sát vai nhau giữa đường chân trời, cùng ngước đầu dệt nên đám mây nâng đỡ mái nhà nhỏ ngay phía trên; đến 'Ai ngờ men quá gắt', đám mây phình căng chao lắc dữ dội trong gió xoáy",
+    "act2AtPivot": "Chạm 'chẳng còn nhau', đám mây cùng mái nhà mộng tưởng tan biến sạch giữa không trung; bóng người thương cũng tan vào hư vô để lại khoảng đất trống không sát bên Kẻ Lữ Hành",
+    "act3Afterimage": "Trên đường chân trời thực tại phẳng lặng, Kẻ Lữ Hành ngồi xuống một mình bên nhành hoa nhỏ màu Đỏ Chu Sa rơi lại ngay chỗ người cũ từng đứng",
+    "redProp": "Duy nhất nhành hoa nhỏ Đỏ Chu Sa (#CE472E) rơi lại trên mặt đất trống trải sau khi giấc mộng trên mây tan biến",
+    "tags": [
+      "ẩn dụ",
+      "tình đầu",
+      "ngôi nhà trên mây",
+      "tỉnh mộng",
+      "thực tại"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 70,
+      "endX": 470
+    },
+    "atmosphere": [
+      {
+        "id": "expectation_gale",
+        "type": "wind",
+        "count": 4,
+        "direction": "right",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.38,
+        "enterAt": "line_3-0.3s",
+        "leaveAt": "pivot+0.7s",
+        "fadeDuration": 1.6
+      },
+      {
+        "id": "reality_birds",
+        "type": "birds",
+        "x": 356,
+        "y": 176,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.42,
+        "enterAt": "pivot+1.4s",
+        "fadeDuration": 2.6
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 252,
+        "scale": 1.2,
+        "facing": "right",
+        "pose": "look_up",
+        "leanDeg": -4,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      },
+      {
+        "id": "beloved",
+        "x": 288,
+        "scale": 1.16,
+        "facing": "left",
+        "pose": "look_up",
+        "leanDeg": -4,
+        "opacity": 0.88,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "mid"
+      }
+    ],
+    "props": [
+      {
+        "id": "cloud_left",
+        "type": "cloud_wisp",
+        "x": 172,
+        "y": 238,
+        "layer": "sky",
+        "scale": 1.15,
+        "opacity": 0.76,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.9,
+          "amplitude": 0.7
+        }
+      },
+      {
+        "id": "cloud_right",
+        "type": "cloud_wisp",
+        "x": 368,
+        "y": 240,
+        "layer": "sky",
+        "scale": 1.1,
+        "opacity": 0.72,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.85,
+          "amplitude": 0.7
+        }
+      },
+      {
+        "id": "shared_dream_bubbles",
+        "type": "custom",
+        "x": 270,
+        "y": 274,
+        "layer": "sky",
+        "scale": 1,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.8,
+          "amplitude": 0.5
+        },
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              -8,
+              10,
+              1.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.65
+          },
+          {
+            "circle": [
+              8,
+              11,
+              1.4
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.65
+          },
+          {
+            "circle": [
+              -4,
+              1,
+              2.2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "circle": [
+              4.5,
+              2,
+              2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "circle": [
+              0,
+              -8,
+              3
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.15,
+            "role": "secondary",
+            "strokeScale": 0.72
+          }
+        ]
+      },
+      {
+        "id": "dream_cloud_house",
+        "type": "dream_cloud_house",
+        "x": 270,
+        "y": 236,
+        "layer": "sky",
+        "scale": 0.68,
+        "opacity": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "idle": {
+          "type": "float",
+          "speed": 0.85,
+          "amplitude": 1
+        },
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M -48 8 C -58 6 -58 -6 -45 -10 C -40 -19 -25 -20 -17 -13 C -9 -22 9 -22 17 -13 C 25 -20 40 -19 45 -10 C 58 -6 58 6 48 8 C 35 16 16 18 0 15 C -16 18 -35 16 -48 8 Z",
+            "fill": "ink",
+            "fillOpacity": 0.055,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -20 -24 L -20 -2 Q 0 -0.5 20 -2 L 20 -24 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M 9.5 -30 L 9.5 -38.5 L 14.5 -38.5 L 14.5 -26.5",
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.76
+          },
+          {
+            "d": "M -27.5 -22.5 C -16 -28.5 -6 -36.5 0 -42.5 C 6 -36.5 16 -28.5 27.5 -22.5 Q 0 -24.5 -27.5 -22.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.96
+          },
+          {
+            "rect": [
+              -5.8,
+              -18.5,
+              11.6,
+              10.4,
+              1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.62
+          },
+          {
+            "d": "M 0 -18.5 L 0 -8.1 M -5.8 -13.3 L 5.8 -13.3",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48,
+            "opacity": 0.65
+          },
+          {
+            "d": "M 12 -40.5 C 9.5 -45.5 15 -49.5 12.5 -54.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.55
+          },
+          {
+            "d": "M -47 4 C -57 1 -56 -11 -42 -11 C -38 -19 -24 -19 -19 -11",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M 19 -11 C 24 -19 38 -19 42 -11 C 56 -11 57 1 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M -47 4 C -36 15 -18 16 0 13 C 18 16 36 15 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M -28 17.5 Q 0 22 28 17.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.52
+          }
+        ],
+        "saveAs": "dream_cloud_house"
+      },
+      {
+        "id": "fallen_blossom",
+        "type": "fallen_dream_blossom",
+        "x": 278,
+        "y": -82,
+        "layer": "fore",
+        "scale": 1.15,
+        "rotate": -26,
+        "opacity": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "emitterOffset": [
+          4,
+          -4
+        ],
+        "shapes": [
+          {
+            "d": "M -11.5 -1.0 Q -3.5 -0.2 4.2 -2.6",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M 2.5 -2.5 C 1.5 -9.6 7.8 -12.6 11.0 -8.2 C 12.4 -4.4 7.2 -1.4 2.5 -2.5 Z",
+            "fill": "accent",
+            "fillOpacity": 0.36,
+            "role": "accent",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 1.8 -2.8 C -3.8 -8.5 0.4 -13.4 4.8 -10.2 C 6.4 -7.2 4.2 -3.8 1.8 -2.8 Z",
+            "fill": "accent",
+            "fillOpacity": 0.3,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M 3.2 -2.0 C 8.6 -4.8 14.0 -2.8 12.4 0 C 9.2 1.2 5.2 -0.4 3.2 -2.0 Z",
+            "fill": "accent",
+            "fillOpacity": 0.32,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M -5.8 -0.4 C -3.4 -2.8 0.2 -2.2 -0.8 0 C -2.6 0.6 -4.6 0.2 -5.8 -0.4 Z",
+            "fill": "accent",
+            "fillOpacity": 0.28,
+            "role": "accent",
+            "strokeScale": 0.64
+          }
+        ],
+        "saveAs": "fallen_dream_blossom"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.1s",
+        "duration": 1.6,
+        "target": "hero",
+        "toX": 260,
+        "pose": "look_up",
+        "leanDeg": -5
+      },
+      {
+        "at": "start+0.1s",
+        "duration": 1.6,
+        "target": "beloved",
+        "toX": 281,
+        "pose": "look_up",
+        "leanDeg": -5
+      },
+      {
+        "at": "start+0.15s",
+        "duration": 2,
+        "target": "cloud_left",
+        "toX": 246,
+        "toY": 236,
+        "scale": 0.82,
+        "opacity": 0.06
+      },
+      {
+        "at": "start+0.2s",
+        "duration": 2,
+        "target": "cloud_right",
+        "toX": 294,
+        "toY": 236,
+        "scale": 0.8,
+        "opacity": 0.06
+      },
+      {
+        "at": "start+0.35s",
+        "duration": 1.6,
+        "target": "shared_dream_bubbles",
+        "opacity": 0.78
+      },
+      {
+        "at": "start+0.5s",
+        "duration": 2.1,
+        "target": "dream_cloud_house",
+        "toY": 230,
+        "scale": 1.08,
+        "opacity": 0.96
+      },
+      {
+        "at": "line_3-0.2s",
+        "duration": 1.9,
+        "target": "dream_cloud_house",
+        "toY": 220,
+        "scale": 1.24,
+        "rotate": -7
+      },
+      {
+        "at": "line_3-0.15s",
+        "duration": 1.4,
+        "target": "shared_dream_bubbles",
+        "opacity": 0
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 2,
+        "target": "hero",
+        "toX": 253,
+        "leanDeg": -9
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 2.1,
+        "target": "beloved",
+        "toX": 296,
+        "opacity": 0.58,
+        "leanDeg": -10
+      },
+      {
+        "at": "pivot-0.3s",
+        "duration": 2.6,
+        "target": "dream_cloud_house",
+        "scale": 0.72,
+        "rotate": 6,
+        "opacity": 0,
+        "floatAwayProgress": 1
+      },
+      {
+        "at": "pivot-0.3s",
+        "duration": 2.7,
+        "target": "beloved",
+        "toX": 322,
+        "opacity": 0,
+        "dissolveToCloud": 1
+      },
+      {
+        "at": "pivot-0.1s",
+        "duration": 3.4,
+        "target": "fallen_blossom",
+        "toX": 292,
+        "toY": 0,
+        "rotate": 0,
+        "opacity": 0.96,
+        "colorRole": "accent",
+        "emitters": {
+          "glow": 0.24
+        }
+      },
+      {
+        "at": "pivot+0.2s",
+        "duration": 1.4,
+        "target": "hero",
+        "toX": 256,
+        "pose": "stand",
+        "leanDeg": 4
+      },
+      {
+        "at": "pivot+1.35s",
+        "duration": 4.2,
+        "target": "hero",
+        "toX": 250,
+        "leanDeg": -5,
+        "sitProgress": 1,
+        "showTeaCup": 0
+      },
+      {
+        "at": "pivot+0.4s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.04,
+        "panX": 3,
+        "panY": 2
+      }
+    ],
+    "customPropsResolved": {
+      "dream_cloud_house": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M -48 8 C -58 6 -58 -6 -45 -10 C -40 -19 -25 -20 -17 -13 C -9 -22 9 -22 17 -13 C 25 -20 40 -19 45 -10 C 58 -6 58 6 48 8 C 35 16 16 18 0 15 C -16 18 -35 16 -48 8 Z",
+            "fill": "ink",
+            "fillOpacity": 0.055,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -20 -24 L -20 -2 Q 0 -0.5 20 -2 L 20 -24 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M 9.5 -30 L 9.5 -38.5 L 14.5 -38.5 L 14.5 -26.5",
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.76
+          },
+          {
+            "d": "M -27.5 -22.5 C -16 -28.5 -6 -36.5 0 -42.5 C 6 -36.5 16 -28.5 27.5 -22.5 Q 0 -24.5 -27.5 -22.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.96
+          },
+          {
+            "rect": [
+              -5.8,
+              -18.5,
+              11.6,
+              10.4,
+              1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.62
+          },
+          {
+            "d": "M 0 -18.5 L 0 -8.1 M -5.8 -13.3 L 5.8 -13.3",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48,
+            "opacity": 0.65
+          },
+          {
+            "d": "M 12 -40.5 C 9.5 -45.5 15 -49.5 12.5 -54.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.55
+          },
+          {
+            "d": "M -47 4 C -57 1 -56 -11 -42 -11 C -38 -19 -24 -19 -19 -11",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M 19 -11 C 24 -19 38 -19 42 -11 C 56 -11 57 1 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M -47 4 C -36 15 -18 16 0 13 C 18 16 36 15 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M -28 17.5 Q 0 22 28 17.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.52
+          }
+        ]
+      },
+      "fallen_dream_blossom": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -11.5 -1.0 Q -3.5 -0.2 4.2 -2.6",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M 2.5 -2.5 C 1.5 -9.6 7.8 -12.6 11.0 -8.2 C 12.4 -4.4 7.2 -1.4 2.5 -2.5 Z",
+            "fill": "accent",
+            "fillOpacity": 0.36,
+            "role": "accent",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 1.8 -2.8 C -3.8 -8.5 0.4 -13.4 4.8 -10.2 C 6.4 -7.2 4.2 -3.8 1.8 -2.8 Z",
+            "fill": "accent",
+            "fillOpacity": 0.3,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M 3.2 -2.0 C 8.6 -4.8 14.0 -2.8 12.4 0 C 9.2 1.2 5.2 -0.4 3.2 -2.0 Z",
+            "fill": "accent",
+            "fillOpacity": 0.32,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M -5.8 -0.4 C -3.4 -2.8 0.2 -2.2 -0.8 0 C -2.6 0.6 -4.6 0.2 -5.8 -0.4 Z",
+            "fill": "accent",
+            "fillOpacity": 0.28,
+            "role": "accent",
+            "strokeScale": 0.64
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_DUYEN_DAU_TREN_MAY": {
+    "sceneId": "SCRIPT_DUYEN_DAU_TREN_MAY",
+    "name": "Duyên Đầu Trên Mây & Thực Tại Tỉnh Mộng",
+    "description": "Hai người đứng sát cạnh nhau ngay từ đầu dưới biểu tượng trái tim nhỏ lơ lửng giữa hai mái đầu, cùng gom mây dệt nên giấc mộng mái nhà chung trên cao; khi cảm xúc quá gắt làm trái tim nứt đôi và lâu đài mây tan vỡ, Kẻ Lữ Hành bừng tỉnh một mình bên nhành hoa Đỏ Chu Sa trên mặt đất.",
+    "act1": "Hai bóng người đứng sát vai nhau ngay từ đầu với trái tim nhỏ nhịp nhàng giữa hai mái đầu, phía trên hai cụm mây trôi vào dệt nên mái nhà nhỏ bồng bềnh; đến 'Ai ngờ men quá gắt', gió xoáy làm mây chao đảo và trái tim nhỏ nứt tách đôi",
+    "act2AtPivot": "Chạm 'chẳng còn nhau', ngôi nhà trên mây và bóng người thương tan biến sạch giữa không trung, để lại khoảng đất trống không bên cạnh Kẻ Lữ Hành",
+    "act3Afterimage": "Giữa đường chân trời thực tại phẳng lặng, Kẻ Lữ Hành ngồi xuống một mình bên nhành hoa nhỏ màu Đỏ Chu Sa rơi lại ngay chỗ người cũ từng đứng",
+    "redProp": "Duy nhất nhành hoa nhỏ Đỏ Chu Sa (#CE472E) rơi lại trên mặt đất trống trải sau khi giấc mộng tình đầu tan biến",
+    "tags": [
+      "tình đầu",
+      "ẩn dụ",
+      "trái tim",
+      "ngôi nhà trên mây",
+      "tỉnh mộng"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 70,
+      "endX": 470
+    },
+    "atmosphere": [
+      {
+        "id": "expectation_gale",
+        "type": "wind",
+        "count": 4,
+        "direction": "right",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.38,
+        "enterAt": "line_3-0.3s",
+        "leaveAt": "pivot+0.7s",
+        "fadeDuration": 1.6
+      },
+      {
+        "id": "reality_birds",
+        "type": "birds",
+        "x": 356,
+        "y": 176,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.42,
+        "enterAt": "pivot+1.4s",
+        "fadeDuration": 2.6
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 259,
+        "scale": 1.18,
+        "facing": "right",
+        "pose": "stand",
+        "leanDeg": 2.5,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      },
+      {
+        "id": "beloved",
+        "x": 281,
+        "scale": 1.14,
+        "facing": "left",
+        "pose": "stand",
+        "leanDeg": 2.5,
+        "opacity": 0.88,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "mid"
+      }
+    ],
+    "props": [
+      {
+        "id": "cloud_left",
+        "type": "cloud_wisp",
+        "x": 170,
+        "y": 230,
+        "layer": "sky",
+        "scale": 1.15,
+        "opacity": 0.76,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.9,
+          "amplitude": 0.7
+        }
+      },
+      {
+        "id": "cloud_right",
+        "type": "cloud_wisp",
+        "x": 370,
+        "y": 232,
+        "layer": "sky",
+        "scale": 1.1,
+        "opacity": 0.72,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.85,
+          "amplitude": 0.7
+        }
+      },
+      {
+        "id": "couple_heart",
+        "type": "tiny_split_heart",
+        "x": 270,
+        "y": 286,
+        "layer": "sky",
+        "scale": 0.92,
+        "opacity": 0.92,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "idle": {
+          "type": "pulse",
+          "speed": 1.05,
+          "amplitude": 0.9
+        },
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M 0 -2.4 C -2.2 -6.2 -7.2 -5.0 -7.2 -0.8 C -7.2 2.8 -2.8 5.4 0 7.8",
+            "fill": "ink",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.82,
+            "splitSide": "left"
+          },
+          {
+            "d": "M 0 -2.4 C 2.2 -6.2 7.2 -5.0 7.2 -0.8 C 7.2 2.8 2.8 5.4 0 7.8",
+            "fill": "ink",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.82,
+            "splitSide": "right"
+          }
+        ],
+        "saveAs": "tiny_split_heart"
+      },
+      {
+        "id": "dream_cloud_house",
+        "type": "dream_cloud_house",
+        "x": 270,
+        "y": 228,
+        "layer": "sky",
+        "scale": 0.72,
+        "opacity": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "idle": {
+          "type": "float",
+          "speed": 0.85,
+          "amplitude": 0.95
+        },
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M -48 8 C -58 6 -58 -6 -45 -10 C -40 -19 -25 -20 -17 -13 C -9 -22 9 -22 17 -13 C 25 -20 40 -19 45 -10 C 58 -6 58 6 48 8 C 35 16 16 18 0 15 C -16 18 -35 16 -48 8 Z",
+            "fill": "ink",
+            "fillOpacity": 0.055,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -20 -24 L -20 -2 Q 0 -0.5 20 -2 L 20 -24 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M 9.5 -30 L 9.5 -38.5 L 14.5 -38.5 L 14.5 -26.5",
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.76
+          },
+          {
+            "d": "M -27.5 -22.5 C -16 -28.5 -6 -36.5 0 -42.5 C 6 -36.5 16 -28.5 27.5 -22.5 Q 0 -24.5 -27.5 -22.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.96
+          },
+          {
+            "rect": [
+              -5.8,
+              -18.5,
+              11.6,
+              10.4,
+              1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.62
+          },
+          {
+            "d": "M 0 -18.5 L 0 -8.1 M -5.8 -13.3 L 5.8 -13.3",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48,
+            "opacity": 0.65
+          },
+          {
+            "d": "M 12 -40.5 C 9.5 -45.5 15 -49.5 12.5 -54.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.55
+          },
+          {
+            "d": "M -47 4 C -57 1 -56 -11 -42 -11 C -38 -19 -24 -19 -19 -11",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M 19 -11 C 24 -19 38 -19 42 -11 C 56 -11 57 1 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M -47 4 C -36 15 -18 16 0 13 C 18 16 36 15 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M -28 17.5 Q 0 22 28 17.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.52
+          }
+        ],
+        "saveAs": "dream_cloud_house"
+      },
+      {
+        "id": "fallen_blossom",
+        "type": "fallen_dream_blossom",
+        "x": 278,
+        "y": -82,
+        "layer": "fore",
+        "scale": 1.15,
+        "rotate": -26,
+        "opacity": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "emitterOffset": [
+          4,
+          -4
+        ],
+        "shapes": [
+          {
+            "d": "M -11.5 -1.0 Q -3.5 -0.2 4.2 -2.6",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M 2.5 -2.5 C 1.5 -9.6 7.8 -12.6 11.0 -8.2 C 12.4 -4.4 7.2 -1.4 2.5 -2.5 Z",
+            "fill": "accent",
+            "fillOpacity": 0.36,
+            "role": "accent",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 1.8 -2.8 C -3.8 -8.5 0.4 -13.4 4.8 -10.2 C 6.4 -7.2 4.2 -3.8 1.8 -2.8 Z",
+            "fill": "accent",
+            "fillOpacity": 0.3,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M 3.2 -2.0 C 8.6 -4.8 14.0 -2.8 12.4 0 C 9.2 1.2 5.2 -0.4 3.2 -2.0 Z",
+            "fill": "accent",
+            "fillOpacity": 0.32,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M -5.8 -0.4 C -3.4 -2.8 0.2 -2.2 -0.8 0 C -2.6 0.6 -4.6 0.2 -5.8 -0.4 Z",
+            "fill": "accent",
+            "fillOpacity": 0.28,
+            "role": "accent",
+            "strokeScale": 0.64
+          }
+        ],
+        "saveAs": "fallen_dream_blossom"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.15s",
+        "duration": 2,
+        "target": "cloud_left",
+        "toX": 246,
+        "toY": 226,
+        "scale": 0.82,
+        "opacity": 0.06
+      },
+      {
+        "at": "start+0.2s",
+        "duration": 2,
+        "target": "cloud_right",
+        "toX": 294,
+        "toY": 226,
+        "scale": 0.8,
+        "opacity": 0.06
+      },
+      {
+        "at": "start+0.45s",
+        "duration": 2.1,
+        "target": "dream_cloud_house",
+        "toY": 222,
+        "scale": 1.06,
+        "opacity": 0.96
+      },
+      {
+        "at": "line_2-0.1s",
+        "duration": 1.8,
+        "target": "couple_heart",
+        "scale": 1.08
+      },
+      {
+        "at": "line_3-0.2s",
+        "duration": 1.9,
+        "target": "dream_cloud_house",
+        "toY": 214,
+        "scale": 1.22,
+        "rotate": -7
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 1.9,
+        "target": "couple_heart",
+        "opacity": 0,
+        "splitProgress": 1
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 2,
+        "target": "hero",
+        "toX": 253,
+        "leanDeg": -6
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 2.1,
+        "target": "beloved",
+        "toX": 295,
+        "opacity": 0.58,
+        "leanDeg": -8
+      },
+      {
+        "at": "pivot-0.3s",
+        "duration": 2.6,
+        "target": "dream_cloud_house",
+        "scale": 0.72,
+        "rotate": 6,
+        "opacity": 0,
+        "floatAwayProgress": 1
+      },
+      {
+        "at": "pivot-0.3s",
+        "duration": 2.7,
+        "target": "beloved",
+        "toX": 320,
+        "opacity": 0,
+        "dissolveToCloud": 1
+      },
+      {
+        "at": "pivot-0.1s",
+        "duration": 3.4,
+        "target": "fallen_blossom",
+        "toX": 292,
+        "toY": 0,
+        "rotate": 0,
+        "opacity": 0.96,
+        "colorRole": "accent",
+        "emitters": {
+          "glow": 0.24
+        }
+      },
+      {
+        "at": "pivot+0.2s",
+        "duration": 1.4,
+        "target": "hero",
+        "toX": 256,
+        "pose": "stand",
+        "leanDeg": 4
+      },
+      {
+        "at": "pivot+1.35s",
+        "duration": 4.2,
+        "target": "hero",
+        "toX": 250,
+        "leanDeg": -5,
+        "sitProgress": 1,
+        "showTeaCup": 0
+      },
+      {
+        "at": "pivot+0.4s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.04,
+        "panX": 3,
+        "panY": 2
+      }
+    ],
+    "customPropsResolved": {
+      "tiny_split_heart": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M 0 -2.4 C -2.2 -6.2 -7.2 -5.0 -7.2 -0.8 C -7.2 2.8 -2.8 5.4 0 7.8",
+            "fill": "ink",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.82,
+            "splitSide": "left"
+          },
+          {
+            "d": "M 0 -2.4 C 2.2 -6.2 7.2 -5.0 7.2 -0.8 C 7.2 2.8 2.8 5.4 0 7.8",
+            "fill": "ink",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.82,
+            "splitSide": "right"
+          }
+        ]
+      },
+      "dream_cloud_house": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M -48 8 C -58 6 -58 -6 -45 -10 C -40 -19 -25 -20 -17 -13 C -9 -22 9 -22 17 -13 C 25 -20 40 -19 45 -10 C 58 -6 58 6 48 8 C 35 16 16 18 0 15 C -16 18 -35 16 -48 8 Z",
+            "fill": "ink",
+            "fillOpacity": 0.055,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -20 -24 L -20 -2 Q 0 -0.5 20 -2 L 20 -24 Z",
+            "fill": "bg",
+            "fillOpacity": 0.11,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M 9.5 -30 L 9.5 -38.5 L 14.5 -38.5 L 14.5 -26.5",
+            "fill": "bg",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0.76
+          },
+          {
+            "d": "M -27.5 -22.5 C -16 -28.5 -6 -36.5 0 -42.5 C 6 -36.5 16 -28.5 27.5 -22.5 Q 0 -24.5 -27.5 -22.5 Z",
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.96
+          },
+          {
+            "rect": [
+              -5.8,
+              -18.5,
+              11.6,
+              10.4,
+              1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.62
+          },
+          {
+            "d": "M 0 -18.5 L 0 -8.1 M -5.8 -13.3 L 5.8 -13.3",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48,
+            "opacity": 0.65
+          },
+          {
+            "d": "M 12 -40.5 C 9.5 -45.5 15 -49.5 12.5 -54.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.55
+          },
+          {
+            "d": "M -47 4 C -57 1 -56 -11 -42 -11 C -38 -19 -24 -19 -19 -11",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M 19 -11 C 24 -19 38 -19 42 -11 C 56 -11 57 1 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M -47 4 C -36 15 -18 16 0 13 C 18 16 36 15 47 4",
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "d": "M -28 17.5 Q 0 22 28 17.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.6,
+            "opacity": 0.52
+          }
+        ]
+      },
+      "fallen_dream_blossom": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -11.5 -1.0 Q -3.5 -0.2 4.2 -2.6",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M 2.5 -2.5 C 1.5 -9.6 7.8 -12.6 11.0 -8.2 C 12.4 -4.4 7.2 -1.4 2.5 -2.5 Z",
+            "fill": "accent",
+            "fillOpacity": 0.36,
+            "role": "accent",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 1.8 -2.8 C -3.8 -8.5 0.4 -13.4 4.8 -10.2 C 6.4 -7.2 4.2 -3.8 1.8 -2.8 Z",
+            "fill": "accent",
+            "fillOpacity": 0.3,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M 3.2 -2.0 C 8.6 -4.8 14.0 -2.8 12.4 0 C 9.2 1.2 5.2 -0.4 3.2 -2.0 Z",
+            "fill": "accent",
+            "fillOpacity": 0.32,
+            "role": "accent",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M -5.8 -0.4 C -3.4 -2.8 0.2 -2.2 -0.8 0 C -2.6 0.6 -4.6 0.2 -5.8 -0.4 Z",
+            "fill": "accent",
+            "fillOpacity": 0.28,
+            "role": "accent",
+            "strokeScale": 0.64
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_CHAM_CONG_NGONG_TRUA": {
+    "sceneId": "SCRIPT_CHAM_CONG_NGONG_TRUA",
+    "name": "Quẹt Thẻ Khí Thế & Giấc Mộng Cơm Trưa",
+    "description": "Giữa gió rét ngọt đầu đông, Kẻ Lữ Hành bước nhanh tới trụ chấm công quẹt thẻ đầy khí thế rồi tiến về bàn mở nắp laptop; vừa mở máy lên, hào khí vụt tắt nhường chỗ cho bong bóng mơ tưởng bát cơm trưa nóng hổi màu Đỏ Chu Sa.",
+    "act1": "Gió đầu đông thổi nhẹ dưới nắng sớm, Kẻ Lữ Hành cầm thẻ nhân viên bước tới quẹt qua trụ chấm công rồi tiến về bàn làm việc với tia khí thế hừng hực",
+    "act2AtPivot": "Vừa mở nắp laptop, chạm ngóng trông trưa về, tia khí thế tắt phụt — Kẻ Lữ Hành ngả lưng thẫn thờ, phía trên đầu hiện lên bong bóng mơ tưởng bát cơm nóng và đôi đũa Đỏ Chu Sa",
+    "act3Afterimage": "Trước chiếc laptop đang mở và đồng hồ tường nhích kim hướng về 12 giờ trưa, bát cơm Đỏ Chu Sa trong mây suy tưởng bốc khói thơm lừng suốt những giây cuối",
+    "redProp": "Duy nhất bát cơm nóng hổi kèm đôi đũa Đỏ Chu Sa (#CE472E) tỏa khói thơm trong bong bóng mơ tưởng trưa về",
+    "tags": [
+      "chấm công",
+      "văn phòng",
+      "hài hước",
+      "đầu đông",
+      "ngóng trưa"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 70,
+      "endX": 470
+    },
+    "atmosphere": [
+      {
+        "id": "winter_morning_breeze",
+        "type": "wind",
+        "count": 3,
+        "direction": "right",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.34,
+        "leaveAt": "line_3+0.6s",
+        "fadeDuration": 1.8
+      },
+      {
+        "id": "early_winter_sun",
+        "type": "hollow_sun",
+        "x": 122,
+        "y": 174,
+        "radius": 13,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "opacity": 0.42
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 118,
+        "scale": 1.18,
+        "facing": "right",
+        "pose": "walk",
+        "leanDeg": 6,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      }
+    ],
+    "props": [
+      {
+        "id": "office_clock",
+        "type": "office_wall_clock",
+        "x": 376,
+        "y": 184,
+        "layer": "sky",
+        "scale": 1.04,
+        "opacity": 0.78,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              0,
+              0,
+              14.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.1,
+            "role": "secondary",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 0 -12.5 L 0 -10.5 M 12.5 0 L 10.5 0 M 0 12.5 L 0 10.5 M -12.5 0 L -10.5 0",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48
+          },
+          {
+            "line": [
+              0,
+              0,
+              0,
+              -9.5
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "line": [
+              0,
+              0,
+              -6.8,
+              4
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.82
+          },
+          {
+            "circle": [
+              0,
+              0,
+              1.1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.8,
+            "role": "ink",
+            "strokeScale": 0
+          }
+        ],
+        "altShapes": [
+          {
+            "circle": [
+              0,
+              0,
+              14.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.1,
+            "role": "secondary",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 0 -12.5 L 0 -10.5 M 12.5 0 L 10.5 0 M 0 12.5 L 0 10.5 M -12.5 0 L -10.5 0",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48
+          },
+          {
+            "line": [
+              0,
+              0,
+              0,
+              -10.2
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "line": [
+              0,
+              0,
+              0.8,
+              -7.2
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.84
+          },
+          {
+            "circle": [
+              0,
+              0,
+              1.1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.8,
+            "role": "ink",
+            "strokeScale": 0
+          }
+        ],
+        "saveAs": "office_wall_clock"
+      },
+      {
+        "id": "checkin_reader",
+        "type": "office_card_scanner",
+        "x": 168,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.04,
+        "opacity": 0.9,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "emitterOffset": [
+          0,
+          -53
+        ],
+        "shapes": [
+          {
+            "line": [
+              -8.5,
+              0,
+              8.5,
+              0
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "line": [
+              0,
+              0,
+              0,
+              -42
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "rect": [
+              -9.5,
+              -65,
+              19,
+              23,
+              2.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.13,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "rect": [
+              -6,
+              -61,
+              12,
+              8.2,
+              1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.55
+          },
+          {
+            "d": "M -3 -48 Q 0 -50.5 3 -48 M -4.8 -45.5 Q 0 -49 4.8 -45.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48,
+            "opacity": 0.65
+          }
+        ],
+        "saveAs": "office_card_scanner"
+      },
+      {
+        "id": "id_badge",
+        "type": "staff_id_card",
+        "x": 0,
+        "y": 0,
+        "follow": "hero:hand",
+        "layer": "fore",
+        "scale": 1.05,
+        "opacity": 0.95,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "hand",
+        "shapes": [
+          {
+            "d": "M -3 -7.5 L 0 -3.2 L 3 -7.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52
+          },
+          {
+            "rect": [
+              -4.6,
+              -3.2,
+              9.2,
+              12.2,
+              1.2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.78
+          },
+          {
+            "circle": [
+              0,
+              0.5,
+              1.6
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.2,
+            "role": "secondary",
+            "strokeScale": 0.45
+          },
+          {
+            "d": "M -2.6 4.6 L 2.6 4.6 M -2.0 6.6 L 2.0 6.6",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.42
+          }
+        ],
+        "saveAs": "staff_id_card"
+      },
+      {
+        "id": "work_desk",
+        "type": "minimal_office_desk",
+        "x": 312,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.05,
+        "opacity": 0.92,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "rect": [
+              -26,
+              -25.5,
+              52,
+              2.8,
+              1
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "d": "M -21 -22.7 L -21 0 M 21 -22.7 L 21 0",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "line": [
+              -21,
+              -13,
+              21,
+              -13
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.45
+          }
+        ],
+        "saveAs": "minimal_office_desk"
+      },
+      {
+        "id": "desk_laptop",
+        "type": "morphing_laptop",
+        "x": 310,
+        "y": -26.8,
+        "layer": "fore",
+        "scale": 1.05,
+        "opacity": 0.95,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "rect": [
+              -14,
+              -3.2,
+              28,
+              3,
+              1.2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.85
+          }
+        ],
+        "altShapes": [
+          {
+            "d": "M 5.5 -3.2 L 11.8 -19.8 L -7.0 -16.2 L -4.5 -3.2 Z",
+            "fill": "ink",
+            "fillOpacity": 0.055,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "rect": [
+              -15,
+              -2.5,
+              22,
+              2.4,
+              1
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M 5.5 -2.5 L 12.5 -21.2 L 14.8 -20.5 L 7.8 -1.8 Z",
+            "fill": "bg",
+            "fillOpacity": 0.18,
+            "role": "ink",
+            "strokeScale": 0.88
+          }
+        ],
+        "saveAs": "morphing_laptop"
+      },
+      {
+        "id": "hype_sparks",
+        "type": "morning_hype_sparks",
+        "x": 270,
+        "y": 282,
+        "layer": "sky",
+        "scale": 0.75,
+        "opacity": 0,
+        "colorRole": "ink",
+        "focusRole": "support",
+        "anchorType": "center",
+        "idle": {
+          "type": "pulse",
+          "speed": 1.2,
+          "amplitude": 1
+        },
+        "shapes": [
+          {
+            "d": "M -13 -3 L -20 -9 M 0 -8 L 0 -17 M 13 -3 L 20 -9",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.82
+          }
+        ],
+        "saveAs": "morning_hype_sparks"
+      },
+      {
+        "id": "lunch_daydream",
+        "type": "lunch_thought_cloud",
+        "x": 286,
+        "y": 238,
+        "layer": "sky",
+        "scale": 0.72,
+        "opacity": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "center",
+        "emitterOffset": [
+          0,
+          -5
+        ],
+        "idle": {
+          "type": "float",
+          "speed": 0.9,
+          "amplitude": 0.9
+        },
+        "shapes": [
+          {
+            "circle": [
+              -14,
+              38,
+              1.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "circle": [
+              -9.5,
+              28.5,
+              2.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.7
+          },
+          {
+            "d": "M -31 9 C -41 6 -41 -9 -29 -13 C -25 -23 -10 -25 -2 -18 C 7 -26 24 -24 28 -13 C 41 -9 41 6 31 9 C 20 17 -20 17 -31 9 Z",
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "secondary",
+            "strokeScale": 0.82
+          },
+          {
+            "d": "M -10.5 -2.2 C -7 -8.6 7 -8.6 10.5 -2.2",
+            "fill": "bg",
+            "fillOpacity": 0.2,
+            "role": "accent",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M -12.8 -2.2 C -12.0 5.2 -6.8 8.8 0 8.8 C 6.8 8.8 12.0 5.2 12.8 -2.2 Q 0 -1.0 -12.8 -2.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.3,
+            "role": "accent",
+            "strokeScale": 0.9
+          },
+          {
+            "d": "M -8.2 -4.5 L 15.2 -11.5 M -7.6 -2.0 L 15.6 -8.0",
+            "fill": "none",
+            "role": "accent",
+            "strokeScale": 0.8
+          }
+        ],
+        "saveAs": "lunch_thought_cloud"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.15s",
+        "duration": 1.5,
+        "target": "hero",
+        "toX": 142,
+        "pose": "give",
+        "leanDeg": 5
+      },
+      {
+        "at": "line_2-0.1s",
+        "duration": 0.55,
+        "target": "checkin_reader",
+        "scale": 1.12
+      },
+      {
+        "at": "line_2+0.5s",
+        "duration": 1.2,
+        "target": "checkin_reader",
+        "scale": 1.02,
+        "opacity": 0.34
+      },
+      {
+        "at": "line_2+0.35s",
+        "duration": 1.9,
+        "target": "hero",
+        "toX": 270,
+        "pose": "walk",
+        "leanDeg": 4
+      },
+      {
+        "at": "line_2+1.2s",
+        "duration": 0.9,
+        "target": "id_badge",
+        "opacity": 0
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 0.9,
+        "target": "hero",
+        "toX": 270,
+        "pose": "stand",
+        "leanDeg": -3
+      },
+      {
+        "at": "line_3-0.1s",
+        "duration": 1.1,
+        "target": "hype_sparks",
+        "scale": 1.06,
+        "opacity": 0.92
+      },
+      {
+        "at": "line_4-0.25s",
+        "duration": 0.7,
+        "target": "hero",
+        "toX": 274,
+        "pose": "give",
+        "leanDeg": 6
+      },
+      {
+        "at": "line_4-0.15s",
+        "duration": 0.9,
+        "target": "desk_laptop",
+        "morphProgress": 1
+      },
+      {
+        "at": "pivot-0.2s",
+        "duration": 0.5,
+        "target": "hype_sparks",
+        "scale": 0.5,
+        "opacity": 0
+      },
+      {
+        "at": "pivot",
+        "duration": 3.8,
+        "target": "hero",
+        "toX": 268,
+        "pose": "look_up",
+        "leanDeg": -8,
+        "sitProgress": 0.92,
+        "showTeaCup": 0
+      },
+      {
+        "at": "pivot",
+        "duration": 3.8,
+        "target": "lunch_daydream",
+        "toY": 228,
+        "scale": 1.08,
+        "opacity": 0.98,
+        "colorRole": "accent",
+        "emitters": {
+          "steam": 0.72,
+          "glow": 0.24
+        }
+      },
+      {
+        "at": "pivot+0.3s",
+        "duration": 4,
+        "target": "office_clock",
+        "morphProgress": 1
+      },
+      {
+        "at": "pivot+0.4s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.04,
+        "panX": 12,
+        "panY": 2
+      }
+    ],
+    "customPropsResolved": {
+      "office_wall_clock": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "circle": [
+              0,
+              0,
+              14.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.1,
+            "role": "secondary",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 0 -12.5 L 0 -10.5 M 12.5 0 L 10.5 0 M 0 12.5 L 0 10.5 M -12.5 0 L -10.5 0",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48
+          },
+          {
+            "line": [
+              0,
+              0,
+              0,
+              -9.5
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "line": [
+              0,
+              0,
+              -6.8,
+              4
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.82
+          },
+          {
+            "circle": [
+              0,
+              0,
+              1.1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.8,
+            "role": "ink",
+            "strokeScale": 0
+          }
+        ],
+        "altShapes": [
+          {
+            "circle": [
+              0,
+              0,
+              14.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.1,
+            "role": "secondary",
+            "strokeScale": 0.8
+          },
+          {
+            "d": "M 0 -12.5 L 0 -10.5 M 12.5 0 L 10.5 0 M 0 12.5 L 0 10.5 M -12.5 0 L -10.5 0",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48
+          },
+          {
+            "line": [
+              0,
+              0,
+              0,
+              -10.2
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "line": [
+              0,
+              0,
+              0.8,
+              -7.2
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.84
+          },
+          {
+            "circle": [
+              0,
+              0,
+              1.1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.8,
+            "role": "ink",
+            "strokeScale": 0
+          }
+        ]
+      },
+      "office_card_scanner": {
+        "anchorType": "ground",
+        "emitterOffset": [
+          0,
+          -53
+        ],
+        "shapes": [
+          {
+            "line": [
+              -8.5,
+              0,
+              8.5,
+              0
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "line": [
+              0,
+              0,
+              0,
+              -42
+            ],
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "rect": [
+              -9.5,
+              -65,
+              19,
+              23,
+              2.5
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.13,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "rect": [
+              -6,
+              -61,
+              12,
+              8.2,
+              1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.55
+          },
+          {
+            "d": "M -3 -48 Q 0 -50.5 3 -48 M -4.8 -45.5 Q 0 -49 4.8 -45.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.48,
+            "opacity": 0.65
+          }
+        ]
+      },
+      "staff_id_card": {
+        "anchorType": "hand",
+        "shapes": [
+          {
+            "d": "M -3 -7.5 L 0 -3.2 L 3 -7.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52
+          },
+          {
+            "rect": [
+              -4.6,
+              -3.2,
+              9.2,
+              12.2,
+              1.2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.78
+          },
+          {
+            "circle": [
+              0,
+              0.5,
+              1.6
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.2,
+            "role": "secondary",
+            "strokeScale": 0.45
+          },
+          {
+            "d": "M -2.6 4.6 L 2.6 4.6 M -2.0 6.6 L 2.0 6.6",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.42
+          }
+        ]
+      },
+      "minimal_office_desk": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "rect": [
+              -26,
+              -25.5,
+              52,
+              2.8,
+              1
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.92
+          },
+          {
+            "d": "M -21 -22.7 L -21 0 M 21 -22.7 L 21 0",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.88
+          },
+          {
+            "line": [
+              -21,
+              -13,
+              21,
+              -13
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.45
+          }
+        ]
+      },
+      "morphing_laptop": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "rect": [
+              -14,
+              -3.2,
+              28,
+              3,
+              1.2
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.85
+          }
+        ],
+        "altShapes": [
+          {
+            "d": "M 5.5 -3.2 L 11.8 -19.8 L -7.0 -16.2 L -4.5 -3.2 Z",
+            "fill": "ink",
+            "fillOpacity": 0.055,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "rect": [
+              -15,
+              -2.5,
+              22,
+              2.4,
+              1
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.85
+          },
+          {
+            "d": "M 5.5 -2.5 L 12.5 -21.2 L 14.8 -20.5 L 7.8 -1.8 Z",
+            "fill": "bg",
+            "fillOpacity": 0.18,
+            "role": "ink",
+            "strokeScale": 0.88
+          }
+        ]
+      },
+      "morning_hype_sparks": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M -13 -3 L -20 -9 M 0 -8 L 0 -17 M 13 -3 L 20 -9",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.82
+          }
+        ]
+      },
+      "lunch_thought_cloud": {
+        "anchorType": "center",
+        "emitterOffset": [
+          0,
+          -5
+        ],
+        "shapes": [
+          {
+            "circle": [
+              -14,
+              38,
+              1.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.68
+          },
+          {
+            "circle": [
+              -9.5,
+              28.5,
+              2.8
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "secondary",
+            "strokeScale": 0.7
+          },
+          {
+            "d": "M -31 9 C -41 6 -41 -9 -29 -13 C -25 -23 -10 -25 -2 -18 C 7 -26 24 -24 28 -13 C 41 -9 41 6 31 9 C 20 17 -20 17 -31 9 Z",
+            "fill": "bg",
+            "fillOpacity": 0.09,
+            "role": "secondary",
+            "strokeScale": 0.82
+          },
+          {
+            "d": "M -10.5 -2.2 C -7 -8.6 7 -8.6 10.5 -2.2",
+            "fill": "bg",
+            "fillOpacity": 0.2,
+            "role": "accent",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M -12.8 -2.2 C -12.0 5.2 -6.8 8.8 0 8.8 C 6.8 8.8 12.0 5.2 12.8 -2.2 Q 0 -1.0 -12.8 -2.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.3,
+            "role": "accent",
+            "strokeScale": 0.9
+          },
+          {
+            "d": "M -8.2 -4.5 L 15.2 -11.5 M -7.6 -2.0 L 15.6 -8.0",
+            "fill": "none",
+            "role": "accent",
+            "strokeScale": 0.8
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_CHIEC_O_RONG_CHO_NHAU": {
+    "sceneId": "SCRIPT_CHIEC_O_RONG_CHO_NHAU",
+    "name": "Nửa Vòm Ô Chừa Sẵn & Bước Chân Ghé Vào",
+    "description": "Giữa cơn mưa chiều tơ mảnh khi người qua đường vội vã rẽ hai hướng tránh ướt, Kẻ Lữ Hành đứng điềm tĩnh bung mở chiếc ô rộng màu Đỏ Chu Sa cách điệu lệch sang bên vai để chừa sẵn nửa vòm khô ráo; ít nhịp sau, bóng Người Thương chầm chậm bước vào vừa khít khoảng trống ấm áp ấy.",
+    "act1": "Dưới làn mưa tơ mảnh và mây xám nhạt, hai bóng người mờ phía xa khom lưng bước vội ngược chiều để tránh mưa, riêng Kẻ Lữ Hành mảng mực than cách điệu đứng điềm tĩnh ngước nhìn trời mưa",
+    "act2AtPivot": "Chạm cụm từ 'rộng hơn ngày thường', Kẻ Lữ Hành nâng tay bung mở chiếc ô rộng Đỏ Chu Sa gấu lượn 3 nhịp có nan khắc âm bản thanh mảnh, chủ động cầm lệch sang phải để chừa trọn nửa vòm khô ráo bên vai",
+    "act3Afterimage": "Từ rìa phải màn mưa, bóng Người Thương chầm chậm bước tới dừng lại vừa khít dưới nửa vòm ô Đỏ Chu Sa đang để phần; cả hai đứng sóng vai bình yên ngắm mưa rơi ngoài mép tán ô",
+    "redProp": "Vòm ô rộng Đỏ Chu Sa (#CE472E) gấu lượn 3 nhịp khắc nan âm bản thanh mảnh, che trọn hai bóng người giữa màn mưa chiều",
+    "tags": [
+      "solid_style",
+      "chiếc ô",
+      "ngày mưa",
+      "tình yêu",
+      "ý nhị"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 96,
+      "endX": 444
+    },
+    "atmosphere": [
+      {
+        "id": "afternoon_rain",
+        "type": "rain",
+        "count": 16,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.44
+      },
+      {
+        "id": "rain_breeze",
+        "type": "wind",
+        "count": 2,
+        "direction": "left",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.22,
+        "leaveAt": "pivot+1.4s",
+        "fadeDuration": 2.2
+      }
+    ],
+    "actors": [
+      {
+        "id": "passerby_1",
+        "x": 206,
+        "scale": 0.88,
+        "facing": "left",
+        "pose": "walk",
+        "leanDeg": 13,
+        "opacity": 0.2,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "layer": "far",
+        "leaveAt": "line_2+0.8s",
+        "fadeDuration": 1.8
+      },
+      {
+        "id": "passerby_2",
+        "x": 336,
+        "scale": 0.84,
+        "facing": "right",
+        "pose": "walk",
+        "leanDeg": 14,
+        "opacity": 0.17,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "layer": "far",
+        "leaveAt": "line_2+1.2s",
+        "fadeDuration": 1.8
+      },
+      {
+        "id": "hero",
+        "x": 248,
+        "scale": 1.18,
+        "facing": "right",
+        "pose": "look_up",
+        "leanDeg": -3,
+        "opacity": 1,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      },
+      {
+        "id": "beloved",
+        "x": 382,
+        "scale": 1.12,
+        "facing": "left",
+        "pose": "walk",
+        "leanDeg": 9,
+        "opacity": 0.94,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "mid",
+        "enterAt": "pivot+0.45s",
+        "fadeDuration": 1.3
+      }
+    ],
+    "props": [
+      {
+        "id": "rain_cloud_left",
+        "type": "cloud_wisp",
+        "x": 196,
+        "y": 178,
+        "layer": "sky",
+        "scale": 1.1,
+        "opacity": 0.38,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.75,
+          "amplitude": 0.6
+        }
+      },
+      {
+        "id": "rain_cloud_right",
+        "type": "cloud_wisp",
+        "x": 344,
+        "y": 186,
+        "layer": "sky",
+        "scale": 1.04,
+        "opacity": 0.34,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.7,
+          "amplitude": 0.55
+        }
+      },
+      {
+        "id": "puddle_ripple",
+        "type": "rain_puddle_ripple",
+        "x": 334,
+        "y": 2.2,
+        "layer": "mid",
+        "scale": 0.95,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "idle": {
+          "type": "pulse",
+          "speed": 1.1,
+          "amplitude": 0.8
+        },
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "ellipse": [
+              0,
+              0,
+              10.5,
+              1.9
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.46,
+            "opacity": 0.5
+          },
+          {
+            "ellipse": [
+              0,
+              0,
+              4.8,
+              0.9
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.36,
+            "opacity": 0.36
+          }
+        ],
+        "saveAs": "rain_puddle_ripple"
+      },
+      {
+        "id": "wide_shared_umbrella",
+        "type": "wide_shared_umbrella",
+        "x": 0,
+        "y": 0,
+        "follow": "hero:hand",
+        "layer": "fore",
+        "scale": 1.02,
+        "rotate": 16,
+        "opacity": 1,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "hand",
+        "emitterOffset": [
+          0,
+          -24
+        ],
+        "shapes": [
+          {
+            "d": "M 0 -29.5 L 0 4.0 Q -2.0 6.8 -4.4 4.5",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M 0 -29.2 C -2.4 -19.5 -3.7 -10.5 -3.4 -4.5 Q 0 -3.4 3.4 -4.5 C 3.7 -10.5 2.4 -19.5 0 -29.2 Z",
+            "fill": "ink",
+            "fillOpacity": 0.94,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -2.8 -12.5 Q 0 -11.6 2.8 -12.5",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.44,
+            "opacity": 0.55
+          }
+        ],
+        "altShapes": [
+          {
+            "d": "M 0 -16.5 L 0 4.0 Q -2.0 6.8 -4.4 4.5",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M 0 -33.6 L 0 -36.8",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.68
+          },
+          {
+            "d": "M -39.5 -14.2 C -34.5 -28.6 -17.5 -33.8 0 -33.8 C 17.5 -33.8 34.5 -28.6 39.5 -14.2 Q 26.4 -17.8 13.2 -14.6 Q 0 -18.0 -13.2 -14.6 Q -26.4 -17.8 -39.5 -14.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.97,
+            "role": "accent",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -0.4 -33.0 C -5.8 -26.8 -10.5 -20.5 -13.2 -15.0",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.44,
+            "opacity": 0.46
+          },
+          {
+            "d": "M 0.4 -33.0 C 5.8 -26.8 10.5 -20.5 13.2 -15.0",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.44,
+            "opacity": 0.46
+          }
+        ],
+        "saveAs": "wide_shared_umbrella"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start",
+        "duration": 3.8,
+        "target": "passerby_1",
+        "toX": 112
+      },
+      {
+        "at": "start+0.2s",
+        "duration": 4,
+        "target": "passerby_2",
+        "toX": 422
+      },
+      {
+        "at": "line_2+0.4s",
+        "duration": 1.5,
+        "target": "hero",
+        "pose": "stand",
+        "leanDeg": 0
+      },
+      {
+        "at": "line_3",
+        "duration": 1.6,
+        "target": "hero",
+        "toX": 254
+      },
+      {
+        "at": "line_3",
+        "duration": 1.6,
+        "target": "wide_shared_umbrella",
+        "rotate": 8
+      },
+      {
+        "at": "pivot-0.35s",
+        "duration": 1.25,
+        "target": "hero",
+        "pose": "hold_up",
+        "leanDeg": 0
+      },
+      {
+        "at": "pivot-0.35s",
+        "duration": 1.25,
+        "target": "wide_shared_umbrella",
+        "rotate": 0,
+        "morphProgress": 1
+      },
+      {
+        "at": "pivot",
+        "duration": 0.45,
+        "target": "wide_shared_umbrella",
+        "colorRole": "accent",
+        "emitters": {
+          "pulseRing": 0.5,
+          "glow": 0.2
+        }
+      },
+      {
+        "at": "pivot+0.45s",
+        "duration": 3.9,
+        "target": "beloved",
+        "toX": 286,
+        "leanDeg": 0
+      },
+      {
+        "at": "pivot+0.8s",
+        "duration": 3.8,
+        "target": "puddle_ripple",
+        "opacity": 0.65
+      },
+      {
+        "at": "pivot+0.8s",
+        "duration": 3.8,
+        "target": "wide_shared_umbrella",
+        "emitters": {
+          "pulseRing": 0,
+          "glow": 0.15
+        }
+      },
+      {
+        "at": "pivot+0.4s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.05,
+        "panX": 4,
+        "panY": 2
+      }
+    ],
+    "customPropsResolved": {
+      "rain_puddle_ripple": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "ellipse": [
+              0,
+              0,
+              10.5,
+              1.9
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.46,
+            "opacity": 0.5
+          },
+          {
+            "ellipse": [
+              0,
+              0,
+              4.8,
+              0.9
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.36,
+            "opacity": 0.36
+          }
+        ]
+      },
+      "wide_shared_umbrella": {
+        "anchorType": "hand",
+        "shapes": [
+          {
+            "d": "M 0 -29.5 L 0 4.0 Q -2.0 6.8 -4.4 4.5",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.72
+          },
+          {
+            "d": "M 0 -29.2 C -2.4 -19.5 -3.7 -10.5 -3.4 -4.5 Q 0 -3.4 3.4 -4.5 C 3.7 -10.5 2.4 -19.5 0 -29.2 Z",
+            "fill": "ink",
+            "fillOpacity": 0.94,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -2.8 -12.5 Q 0 -11.6 2.8 -12.5",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.44,
+            "opacity": 0.55
+          }
+        ],
+        "altShapes": [
+          {
+            "d": "M 0 -16.5 L 0 4.0 Q -2.0 6.8 -4.4 4.5",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.74
+          },
+          {
+            "d": "M 0 -33.6 L 0 -36.8",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.68
+          },
+          {
+            "d": "M -39.5 -14.2 C -34.5 -28.6 -17.5 -33.8 0 -33.8 C 17.5 -33.8 34.5 -28.6 39.5 -14.2 Q 26.4 -17.8 13.2 -14.6 Q 0 -18.0 -13.2 -14.6 Q -26.4 -17.8 -39.5 -14.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.97,
+            "role": "accent",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -0.4 -33.0 C -5.8 -26.8 -10.5 -20.5 -13.2 -15.0",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.44,
+            "opacity": 0.46
+          },
+          {
+            "d": "M 0.4 -33.0 C 5.8 -26.8 10.5 -20.5 13.2 -15.0",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.44,
+            "opacity": 0.46
+          }
+        ]
+      }
+    }
+  },
+  "SCRIPT_NGUOI_LU_HANH_VA_KY_UC": {
+    "sceneId": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
+    "name": "Trạm Dừng Giai Điệu & Nốt Nhạc Đỏ Chu Sa Bên Ghế Trống",
+    "description": "Từ ô cửa nhỏ phía xa đầu phố, dải thanh âm mảnh và nốt nhạc mực nhạt ngân lên trôi vượt qua bước chân tản bộ khoan thai liền mạch của Kẻ Lữ Hành; dải giai điệu tụ lại bên chiếc ghế băng cuối phố nơi bóng dáng Người Cũ đã ngồi đợi sẵn; khi Kẻ Lữ Hành chậm bước dừng hẳn trước ghế tại điểm lật, nốt nhạc bừng sắc Đỏ Chu Sa đặc rồi đậu yên trên mặt ghế trống sau khi bóng ký ức tan vào sương chiều.",
+    "act1": "Kẻ Lữ Hành mảng mực than thong thả tản bộ một mạch êm đều dọc con đường quen; từ ô cửa nhỏ đầu phố, dải thanh âm mảnh và nốt nhạc mực nhạt ngân lên lướt vượt qua vai người về phía trước",
+    "act2AtPivot": "Dải thanh âm lướt tới chiếc ghế băng cuối phố nơi bóng dáng Người Cũ đã ngồi đợi sẵn; Kẻ Lữ Hành chậm bước dừng hẳn trước ghế đúng lúc nốt nhạc bừng sắc Đỏ Chu Sa đặc tại cụm 'đứng đợi sẵn ở đó'",
+    "act3Afterimage": "Kẻ Lữ Hành đứng lặng ngắm bóng dáng ký ức tan nhẹ thành làn sương mảnh, để lại duy nhất nốt nhạc Đỏ Chu Sa đặc đậu yên trên mặt ghế gỗ trống",
+    "redProp": "Duy nhất nốt nhạc móc đơn Đỏ Chu Sa đặc (#CE472E) khắc ánh sáng âm bản thanh mảnh, đậu lại trên chiếc ghế gỗ trống ở cuối con đường quen",
+    "tags": [
+      "solid_style",
+      "ký ức",
+      "hoài niệm",
+      "nốt nhạc",
+      "ghế trống"
+    ],
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 96,
+      "endX": 444
+    },
+    "atmosphere": [
+      {
+        "id": "memory_breeze",
+        "type": "wind",
+        "count": 2,
+        "direction": "right",
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.24,
+        "leaveAt": "pivot+1.4s",
+        "fadeDuration": 2.2
+      },
+      {
+        "id": "dusk_birds",
+        "type": "birds",
+        "x": 208,
+        "y": 178,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "opacity": 0.34,
+        "enterAt": "pivot+1.8s",
+        "fadeDuration": 2.6
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": 132,
+        "scale": 1.16,
+        "facing": "right",
+        "pose": "walk",
+        "leanDeg": 3,
+        "opacity": 1,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "fore"
+      },
+      {
+        "id": "memory_beloved",
+        "x": 344,
+        "scale": 1.12,
+        "facing": "left",
+        "pose": "stand",
+        "leanDeg": -5,
+        "sitProgress": 0.38,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "layer": "mid"
+      }
+    ],
+    "props": [
+      {
+        "id": "distant_window",
+        "type": "memory_street_window",
+        "x": 118,
+        "y": -56,
+        "layer": "far",
+        "scale": 0.96,
+        "opacity": 0.18,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "anchorType": "ground"
+      },
+      {
+        "id": "melody_silk",
+        "type": "melody_silk_stream",
+        "x": 142,
+        "y": 292,
+        "layer": "sky",
+        "scale": 0.96,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "drawProgress": 0.15,
+        "idle": {
+          "type": "float",
+          "speed": 0.75,
+          "amplitude": 0.55
+        },
+        "anchorType": "center"
+      },
+      {
+        "id": "corner_bench",
+        "type": "park_wooden_bench",
+        "x": 348,
+        "y": 0,
+        "layer": "mid",
+        "scale": 1.04,
+        "opacity": 0.22,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "anchorType": "ground"
+      },
+      {
+        "id": "red_memory_note",
+        "type": "cinnabar_memory_note",
+        "x": 128,
+        "y": -62,
+        "layer": "fore",
+        "scale": 0.96,
+        "rotate": -8,
+        "opacity": 0,
+        "colorRole": "secondary",
+        "focusRole": "hero",
+        "idle": {
+          "type": "float",
+          "speed": 0.82,
+          "amplitude": 0.45
+        },
+        "anchorType": "ground",
+        "emitterOffset": [
+          1.8,
+          -10.5
+        ]
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.15s",
+        "duration": 7.45,
+        "target": "hero",
+        "toX": 284,
+        "pose": "walk",
+        "leanDeg": 3
+      },
+      {
+        "at": "line_2-0.25s",
+        "duration": 1.2,
+        "target": "distant_window",
+        "opacity": 0.44
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 1.2,
+        "target": "melody_silk",
+        "opacity": 0.78,
+        "drawProgress": 1
+      },
+      {
+        "at": "line_2-0.2s",
+        "duration": 4.3,
+        "target": "melody_silk",
+        "toX": 326,
+        "toY": 294,
+        "arcY": -6,
+        "scale": 1.04
+      },
+      {
+        "at": "line_2-0.15s",
+        "duration": 1.1,
+        "target": "red_memory_note",
+        "opacity": 0.8
+      },
+      {
+        "at": "line_2-0.15s",
+        "duration": 4.35,
+        "target": "red_memory_note",
+        "toX": 320,
+        "toY": -34,
+        "arcY": -12,
+        "scale": 1.05,
+        "rotate": -3
+      },
+      {
+        "at": "line_3-0.2s",
+        "duration": 1.9,
+        "target": "corner_bench",
+        "opacity": 0.96
+      },
+      {
+        "at": "line_3+0.4s",
+        "duration": 2,
+        "target": "distant_window",
+        "opacity": 0.14
+      },
+      {
+        "at": "line_4-0.35s",
+        "duration": 1.5,
+        "target": "memory_beloved",
+        "opacity": 0.92
+      },
+      {
+        "at": "line_4+0.35s",
+        "duration": 1,
+        "target": "hero",
+        "leanDeg": 0
+      },
+      {
+        "at": "pivot-0.15s",
+        "duration": 0.45,
+        "target": "hero",
+        "pose": "stand"
+      },
+      {
+        "at": "pivot-0.25s",
+        "duration": 0.55,
+        "target": "red_memory_note",
+        "scale": 1.15,
+        "rotate": 0,
+        "opacity": 1,
+        "morphProgress": 1
+      },
+      {
+        "at": "pivot",
+        "duration": 0.5,
+        "target": "red_memory_note",
+        "colorRole": "accent",
+        "emitters": {
+          "pulseRing": 0.52,
+          "glow": 0.28
+        }
+      },
+      {
+        "at": "pivot+0.1s",
+        "duration": 1.8,
+        "target": "melody_silk",
+        "opacity": 0
+      },
+      {
+        "at": "pivot+1.65s",
+        "duration": 3.8,
+        "target": "memory_beloved",
+        "dissolveToCloud": 1
+      },
+      {
+        "at": "pivot+1.75s",
+        "duration": 3.8,
+        "target": "red_memory_note",
+        "toX": 346,
+        "toY": -12,
+        "scale": 1.12,
+        "rotate": -3,
+        "emitters": {
+          "pulseRing": 0,
+          "glow": 0.2
+        }
+      },
+      {
+        "at": "pivot+1.8s",
+        "duration": 3.8,
+        "target": "hero",
+        "leanDeg": 1.5
+      },
+      {
+        "at": "pivot+0.4s",
+        "duration": 4.8,
+        "target": "camera",
+        "zoom": 1.04,
+        "panX": 12,
+        "panY": 2
+      }
+    ],
+    "customPropsResolved": {
+      "memory_street_window": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -10.5 0 L -10.5 -17.5 C -10.5 -24.5 10.5 -24.5 10.5 -17.5 L 10.5 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.08,
+            "role": "secondary",
+            "strokeScale": 0.58
+          },
+          {
+            "line": [
+              -13.5,
+              0,
+              13.5,
+              0
+            ],
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.66
+          },
+          {
+            "d": "M 0 -22.5 L 0 0 M -10.5 -9.5 L 10.5 -9.5",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.42,
+            "opacity": 0.62
+          },
+          {
+            "d": "M 10.5 -18.2 L 16.2 -16.4 L 16.2 1.0 L 10.5 0",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.46,
+            "opacity": 0.58
+          }
+        ]
+      },
+      "melody_silk_stream": {
+        "anchorType": "center",
+        "shapes": [
+          {
+            "d": "M -32 3.5 C -17 -6.5 -1 6.5 14 -2.2 C 23 -6.5 31 -2.8 37 1.2",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.52,
+            "opacity": 0.76
+          },
+          {
+            "d": "M -22 7.8 C -8 0.5 8 9.2 23 2.4",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.38,
+            "opacity": 0.48
+          },
+          {
+            "circle": [
+              -7.5,
+              -2.2,
+              1
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.52,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "circle": [
+              14.5,
+              -3.4,
+              1.15
+            ],
+            "fill": "secondary",
+            "fillOpacity": 0.56,
+            "role": "secondary",
+            "strokeScale": 0
+          }
+        ]
+      },
+      "park_wooden_bench": {
+        "anchorType": "ground",
+        "shapes": [
+          {
+            "d": "M -24 0.7 Q 0 1.4 24 0.7",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.4,
+            "opacity": 0.3
+          },
+          {
+            "d": "M -19.8 0 C -19.2 -4.5 -18.8 -8.2 -18.8 -11.4 L -20.2 -23.6 M 19.8 0 C 19.2 -4.5 18.8 -8.2 18.8 -11.4 L 20.2 -23.6",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.66
+          },
+          {
+            "d": "M -23.2 -15.4 Q -25.2 -13.4 -23.0 -11.4 M 23.2 -15.4 Q 25.2 -13.4 23.0 -11.4",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.5,
+            "opacity": 0.68
+          },
+          {
+            "rect": [
+              -23.2,
+              -23.2,
+              46.4,
+              2.3,
+              0.9
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.9,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "rect": [
+              -22.6,
+              -18.8,
+              45.2,
+              1.9,
+              0.8
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.84,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "rect": [
+              -25,
+              -11.8,
+              50,
+              2.5,
+              1
+            ],
+            "fill": "ink",
+            "fillOpacity": 0.94,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -17.5 -10.6 L 17.5 -10.6",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.36,
+            "opacity": 0.42
+          }
+        ]
+      },
+      "cinnabar_memory_note": {
+        "anchorType": "ground",
+        "emitterOffset": [
+          1.8,
+          -10.5
+        ],
+        "shapes": [
+          {
+            "d": "M -4.8 -2.4 C -5.4 -5.4 -1.6 -7.8 2.4 -6.8 C 5.4 -6.0 5.6 -2.6 2.8 -0.6 C 0.2 0.8 -4.0 0.2 -4.8 -2.4 Z",
+            "fill": "secondary",
+            "fillOpacity": 0.72,
+            "role": "secondary",
+            "strokeScale": 0
+          },
+          {
+            "d": "M 4.0 -3.8 L 4.0 -22.8",
+            "fill": "none",
+            "role": "secondary",
+            "strokeScale": 0.62,
+            "opacity": 0.78
+          },
+          {
+            "d": "M 4.0 -22.9 C 9.2 -19.6 12.4 -15.0 10.3 -8.6 C 9.5 -13.0 7.0 -16.6 4.0 -18.8 Z",
+            "fill": "secondary",
+            "fillOpacity": 0.72,
+            "role": "secondary",
+            "strokeScale": 0
+          }
+        ],
+        "altShapes": [
+          {
+            "d": "M -5.0 -2.5 C -5.6 -5.6 -1.6 -8.1 2.5 -7.1 C 5.7 -6.2 5.9 -2.7 3.0 -0.6 C 0.2 0.9 -4.2 0.2 -5.0 -2.5 Z",
+            "fill": "accent",
+            "fillOpacity": 0.98,
+            "role": "accent",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -2.7 -3.4 Q -0.5 -5.4 1.9 -4.8",
+            "fill": "bg",
+            "fillOpacity": 0,
+            "strokeScale": 0.38,
+            "opacity": 0.48
+          },
+          {
+            "d": "M 4.2 -3.9 L 4.2 -23.8",
+            "fill": "none",
+            "role": "accent",
+            "strokeScale": 0.68
+          },
+          {
+            "d": "M 4.2 -23.9 C 9.6 -20.5 13.0 -15.6 10.8 -8.9 C 10.0 -13.6 7.3 -17.4 4.2 -19.7 Z",
+            "fill": "accent",
+            "fillOpacity": 0.97,
+            "role": "accent",
+            "strokeScale": 0
+          }
+        ]
+      }
+    }
+  }
+}

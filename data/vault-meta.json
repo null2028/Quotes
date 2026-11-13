@@ -1,0 +1,447 @@
+[
+  {
+    "sceneId": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
+    "name": "Trạm Dừng Giai Điệu & Nốt Nhạc Đỏ Chu Sa Bên Ghế Trống",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kẻ Lữ Hành mảng mực than thong thả tản bộ một mạch êm đều dọc con đường quen; từ ô cửa nhỏ đầu phố, dải thanh âm mảnh và nốt nhạc mực nhạt ngân lên lướt vượt qua vai người về phía trước",
+    "act2AtPivot": "Dải thanh âm lướt tới chiếc ghế băng cuối phố nơi bóng dáng Người Cũ đã ngồi đợi sẵn; Kẻ Lữ Hành chậm bước dừng hẳn trước ghế đúng lúc nốt nhạc bừng sắc Đỏ Chu Sa đặc tại cụm 'đứng đợi sẵn ở đó'",
+    "act3Afterimage": "Kẻ Lữ Hành đứng lặng ngắm bóng dáng ký ức tan nhẹ thành làn sương mảnh, để lại duy nhất nốt nhạc Đỏ Chu Sa đặc đậu yên trên mặt ghế gỗ trống",
+    "redProp": "Duy nhất nốt nhạc móc đơn Đỏ Chu Sa đặc (#CE472E) khắc ánh sáng âm bản thanh mảnh, đậu lại trên chiếc ghế gỗ trống ở cuối con đường quen",
+    "tags": [
+      "solid_style",
+      "ký ức",
+      "hoài niệm",
+      "nốt nhạc",
+      "ghế trống"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_CHIEC_O_RONG_CHO_NHAU",
+    "name": "Nửa Vòm Ô Chừa Sẵn & Bước Chân Ghé Vào",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới làn mưa tơ mảnh và mây xám nhạt, hai bóng người mờ phía xa khom lưng bước vội ngược chiều để tránh mưa, riêng Kẻ Lữ Hành mảng mực than cách điệu đứng điềm tĩnh ngước nhìn trời mưa",
+    "act2AtPivot": "Chạm cụm từ 'rộng hơn ngày thường', Kẻ Lữ Hành nâng tay bung mở chiếc ô rộng Đỏ Chu Sa gấu lượn 3 nhịp có nan khắc âm bản thanh mảnh, chủ động cầm lệch sang phải để chừa trọn nửa vòm khô ráo bên vai",
+    "act3Afterimage": "Từ rìa phải màn mưa, bóng Người Thương chầm chậm bước tới dừng lại vừa khít dưới nửa vòm ô Đỏ Chu Sa đang để phần; cả hai đứng sóng vai bình yên ngắm mưa rơi ngoài mép tán ô",
+    "redProp": "Vòm ô rộng Đỏ Chu Sa (#CE472E) gấu lượn 3 nhịp khắc nan âm bản thanh mảnh, che trọn hai bóng người giữa màn mưa chiều",
+    "tags": [
+      "solid_style",
+      "chiếc ô",
+      "ngày mưa",
+      "tình yêu",
+      "ý nhị"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "SCRIPT_CHAM_CONG_NGONG_TRUA",
+    "name": "Quẹt Thẻ Khí Thế & Giấc Mộng Cơm Trưa",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Gió đầu đông thổi nhẹ dưới nắng sớm, Kẻ Lữ Hành cầm thẻ nhân viên bước tới quẹt qua trụ chấm công rồi tiến về bàn làm việc với tia khí thế hừng hực",
+    "act2AtPivot": "Vừa mở nắp laptop, chạm ngóng trông trưa về, tia khí thế tắt phụt — Kẻ Lữ Hành ngả lưng thẫn thờ, phía trên đầu hiện lên bong bóng mơ tưởng bát cơm nóng và đôi đũa Đỏ Chu Sa",
+    "act3Afterimage": "Trước chiếc laptop đang mở và đồng hồ tường nhích kim hướng về 12 giờ trưa, bát cơm Đỏ Chu Sa trong mây suy tưởng bốc khói thơm lừng suốt những giây cuối",
+    "redProp": "Duy nhất bát cơm nóng hổi kèm đôi đũa Đỏ Chu Sa (#CE472E) tỏa khói thơm trong bong bóng mơ tưởng trưa về",
+    "tags": [
+      "chấm công",
+      "văn phòng",
+      "hài hước",
+      "đầu đông",
+      "ngóng trưa"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_DUYEN_DAU_TREN_MAY",
+    "name": "Duyên Đầu Trên Mây & Thực Tại Tỉnh Mộng",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Hai bóng người đứng sát vai nhau ngay từ đầu với trái tim nhỏ nhịp nhàng giữa hai mái đầu, phía trên hai cụm mây trôi vào dệt nên mái nhà nhỏ bồng bềnh; đến 'Ai ngờ men quá gắt', gió xoáy làm mây chao đảo và trái tim nhỏ nứt tách đôi",
+    "act2AtPivot": "Chạm 'chẳng còn nhau', ngôi nhà trên mây và bóng người thương tan biến sạch giữa không trung, để lại khoảng đất trống không bên cạnh Kẻ Lữ Hành",
+    "act3Afterimage": "Giữa đường chân trời thực tại phẳng lặng, Kẻ Lữ Hành ngồi xuống một mình bên nhành hoa nhỏ màu Đỏ Chu Sa rơi lại ngay chỗ người cũ từng đứng",
+    "redProp": "Duy nhất nhành hoa nhỏ Đỏ Chu Sa (#CE472E) rơi lại trên mặt đất trống trải sau khi giấc mộng tình đầu tan biến",
+    "tags": [
+      "tình đầu",
+      "ẩn dụ",
+      "trái tim",
+      "ngôi nhà trên mây",
+      "tỉnh mộng"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_NGOI_NHA_TREN_MAY_TINH_MONG",
+    "name": "Ngôi Nhà Trên Mây & Thực Tại Mặt Đất",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Hai bóng người bước lại đứng sát vai nhau giữa đường chân trời, cùng ngước đầu dệt nên đám mây nâng đỡ mái nhà nhỏ ngay phía trên; đến 'Ai ngờ men quá gắt', đám mây phình căng chao lắc dữ dội trong gió xoáy",
+    "act2AtPivot": "Chạm 'chẳng còn nhau', đám mây cùng mái nhà mộng tưởng tan biến sạch giữa không trung; bóng người thương cũng tan vào hư vô để lại khoảng đất trống không sát bên Kẻ Lữ Hành",
+    "act3Afterimage": "Trên đường chân trời thực tại phẳng lặng, Kẻ Lữ Hành ngồi xuống một mình bên nhành hoa nhỏ màu Đỏ Chu Sa rơi lại ngay chỗ người cũ từng đứng",
+    "redProp": "Duy nhất nhành hoa nhỏ Đỏ Chu Sa (#CE472E) rơi lại trên mặt đất trống trải sau khi giấc mộng trên mây tan biến",
+    "tags": [
+      "ẩn dụ",
+      "tình đầu",
+      "ngôi nhà trên mây",
+      "tỉnh mộng",
+      "thực tại"
+    ],
+    "usageCount": 4
+  },
+  {
+    "sceneId": "SCRIPT_BEN_NUOC_CHEN_SAY_TROI_XA",
+    "name": "Đối Ẩm Bên Bến Nước & Chén Rượu Trôi Xa",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Bên bờ sông gợn sóng, hai Kẻ Lữ Hành đứng đối diện bên vò rượu gốm đón những làn mây chiều sà xuống miệng vò và nâng đôi chén chạm nhau; gió men thổi gấp làm cả hai nghiêng mình chếnh choáng",
+    "act2AtPivot": "Chạm 'chẳng còn nhau', bóng người thương hóa thành làn mây trắng tan vào khoảng không; Kẻ Lữ Hành bước tới mép nước buông tay thả chiếc chén kỷ niệm hóa sắc Đỏ Chu Sa xuống dòng sông",
+    "act3Afterimage": "Chiếc chén rượu Đỏ Chu Sa dập dềnh trôi xa dần trên sóng nước dưới vầng trăng khuyết mực nhạt, còn Kẻ Lữ Hành ngồi tĩnh lặng một mình trên bờ đất dõi theo",
+    "redProp": "Duy nhất chiếc chén rượu Đỏ Chu Sa (#CE472E) tỏa hương mảnh trôi dập dềnh đơn độc trên sóng nước chiều tà",
+    "tags": [
+      "say",
+      "rượu mây",
+      "duyên đầu",
+      "bến nước",
+      "chia xa"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "SCRIPT_CAI_BONG_PHO_THI_VOM_DEM",
+    "name": "Cái Bóng Phố Thị & Khoảng Tối Bao Dung (iPhone Master)",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng gắt chiếu xiên, cụm 3 tòa nhà cao tầng san sát ô cửa sổ đổ cái bóng mực loang cao lớn trùm lên phía sau lưng Kẻ Lữ Hành đang khom mình bước đi",
+    "act2AtPivot": "Chạm điểm bẻ lái, nắng gắt lặn tắt khiến cái bóng thực tại tan biến hoàn toàn; khoảng tối 4 lớp mực loang không viền rộng mở bao bọc lấy Kẻ Lữ Hành",
+    "act3Afterimage": "Giữa khoảng tối mênh mang dưới trăng khuyết và sao thưa mực nhạt, chỉ duy nhất chén trà Đỏ Chu Sa tỏa khói ấm sáng lên trước mặt Kẻ Lữ Hành đang ngồi tĩnh tại",
+    "redProp": "Duy nhất chén trà Đỏ Chu Sa (#CE472E) tỏa quầng ấm và làn khói mảnh giữa lòng bóng tối bao dung",
+    "tags": [
+      "trưởng thành",
+      "thực tế",
+      "nhà cao tầng",
+      "bóng tối",
+      "trốn chạy"
+    ],
+    "usageCount": 7
+  },
+  {
+    "sceneId": "SCRIPT_LOP_DU_PHONG",
+    "name": "Chiếc Lốp Dự Phòng & Lối Rẽ An Nhiên",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Chiếc xe cổ nghiêng đầu vì xẹp bánh trước với nắp cốp sau mở sẵn; Kẻ Lữ Hành lăn bánh xe dự phòng tới nâng chiếc xe đứng thẳng trở lại",
+    "act2AtPivot": "Chạm 'ném vào cốp xe', chiếc xe lành lặn hất bánh dự phòng Đỏ Chu Sa bay vòng cung rơi gọn vào cốp sau rồi sập nắp cốp",
+    "act3Afterimage": "Chiếc xe chở chiếc lốp đỏ khóa trong cốp lăn xa rồi tan dần vào sương mù chân trời bên trái, còn Kẻ Lữ Hành xoay lưng ngồi thưởng trà dưới trăng",
+    "redProp": "Chiếc lốp dự phòng Đỏ Chu Sa (#CE472E) bị ném giam vào cốp xe lăn khuất, đối lập với chén trà ấm tự tại trên tay Kẻ Lữ Hành",
+    "tags": [
+      "lốp dự phòng",
+      "giá trị bản thân",
+      "buông bỏ",
+      "tỉnh thức"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "SCRIPT_CAU_DON_BONG_DAI",
+    "name": "Bước Chân Ngắn & Bóng Hoàng Hôn Dài",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kẻ Lữ Hành bước một quãng thật ngắn trao cánh thư nhỏ câu đơn nhưng bóng người thương xoay lưng khuất dần; chạm câu kết, mặt trời chiều Đỏ Gạch hạ thấp rọi vệt bóng dưới chân kéo dài lê thê ngang khắp chân trời, người lặng lẽ ngồi xuống thưởng trà.",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "SCRIPT_LA_AP_TRANG_NUOC",
+    "name": "Kịch Bản — Say",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kẻ Lữ Hành đứng trên đỉnh đồi thả cánh diều quấn quýt cùng cánh diều tri kỷ giữa tầng mây; khi gió men xoáy gắt làm đứt dây khiến cánh diều kia bay khuất vào mây xa, người lặng lẽ buông tay ngồi xuống đồi thưởng chén trà Đỏ Gạch an nhiên.",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "SCRIPT_RUOU_MAY_DUYEN_DAU",
+    "name": "Kịch Bản — Say",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đôi chén đài cao đón mây trời trên đỉnh đồi rồi nghiêng mình chạm cốc giao bôi; sau cơn say chếnh choáng, chén trái hóa mây bay mất khiến chén phải nghiêng tìm trong hư không rồi hụt hẫng ngã đổ loang vệt rượu Đỏ Gạch.",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 4
+  },
+  {
+    "sceneId": "CUSTOM_BOULDER_TO_BENCH",
+    "name": "Tảng Đá Hóa Điểm Tựa Trà Chiều",
+    "category": "TRAVELER",
+    "origin": "custom",
+    "act1": "Kẻ Lữ Hành gồng mình đẩy khối đá nặng nhích từng bước lên con dốc cao.",
+    "act2AtPivot": "Chuyển hóa nhịp chậm tại từ khóa pivotWord.",
+    "act3Afterimage": "Dư âm tĩnh lặng đến giây 15.",
+    "redProp": "Điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "custom",
+      "workbench"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "CUSTOM_THIEP_HONG_NGUOI_XUA",
+    "name": "Cảnh — Thiệp",
+    "category": "TRAVELER",
+    "origin": "custom",
+    "act1": "Cảnh ký họa tùy chỉnh được nạp trực tiếp qua Trà Nguội Workbench.",
+    "act2AtPivot": "Chuyển hóa nhịp chậm tại từ khóa pivotWord.",
+    "act3Afterimage": "Dư âm tĩnh lặng đến giây 15.",
+    "redProp": "Điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "custom",
+      "workbench"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "BOULDER_TO_BENCH",
+    "name": "Tảng Đá Hóa Điểm Tựa Trà Chiều",
+    "category": "TRAVELER",
+    "origin": "built-in",
+    "act1": "Kẻ Lữ Hành gồng mình đẩy khối đá nặng nhích từng bước lên con dốc cao.",
+    "act2AtPivot": "Buông tay khỏi đá, ngồi phệt xuống tựa lưng vào chính vách đá và nâng tách trà Đỏ Gạch.",
+    "act3Afterimage": "Camera lùi xa lộ mặt trời hoàng hôn Đỏ Gạch ấm áp và đôi chim bay chậm ngang trời.",
+    "redProp": "Tách trà nóng & Mặt trời chiều Đỏ Gạch",
+    "tags": [
+      "áp lực",
+      "cơm áo",
+      "mệt mỏi",
+      "nghỉ ngơi",
+      "buông bỏ",
+      "công việc"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "RAIN_UMBRELLA_PARTING",
+    "name": "Chiếc Ô Đỏ Nơi Ngã Rẽ Sau Mưa",
+    "category": "TRAVELER",
+    "origin": "built-in",
+    "act1": "Hai Kẻ Lữ Hành Áo Choàng bước đi sát nhau dưới cơn mưa giông, che chung một chiếc ô Đỏ Gạch.",
+    "act2AtPivot": "Mưa tạnh, nắng lên nhưng người đồng hành tách sang nhánh đường rẽ phải.",
+    "act3Afterimage": "Người ở lại đứng lặng một mình với chiếc ô đỏ hạ nghiêng thừa thãi giữa trời nắng.",
+    "redProp": "Chiếc ô Đỏ Gạch che mưa",
+    "tags": [
+      "tình cảm",
+      "chia ly",
+      "ngược lối",
+      "giông bão",
+      "mối quan hệ",
+      "cô đơn"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "KNOT_TO_BIRD",
+    "name": "Nút Thắt Chỉ Rối Hóa Cánh Chim Trời",
+    "category": "OBJECT",
+    "origin": "built-in",
+    "act1": "Sợi dây dài cuộn xoắn rối bời nhiều vòng ở tâm khung hình như dòng suy nghĩ ngổn ngang.",
+    "act2AtPivot": "Nút thắt tự tháo gỡ duỗi phẳng thành đường chân trời, hóa thành cánh chim Đỏ Gạch mở cánh.",
+    "act3Afterimage": "Cánh chim Đỏ Gạch vỗ cánh bay cao về phía bầu trời thoáng đãng.",
+    "redProp": "Cánh chim tự do màu Đỏ Gạch",
+    "tags": [
+      "overthinking",
+      "lo âu",
+      "bình yên",
+      "thông suốt",
+      "tâm trí",
+      "tự do"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "KEY_CHANGED_LOCK",
+    "name": "Chìa Khóa Cũ Trước Ổ Khóa Đã Thay",
+    "category": "OBJECT",
+    "origin": "built-in",
+    "act1": "Chiếc chìa khóa cũ từ từ tiến về phía ổ khóa quen thuộc trên cánh cửa.",
+    "act2AtPivot": "Tâm ổ khóa xoay ngang 90 độ đổi cấu trúc rãnh và chuyển sang sắc Đỏ Gạch.",
+    "act3Afterimage": "Chiếc chìa khóa khựng lại và lùi chậm ra ngoài khoảng không khi cánh cửa đã khép.",
+    "redProp": "Ổ khóa xoay ngang màu Đỏ Gạch",
+    "tags": [
+      "quá khứ",
+      "người cũ",
+      "ranh giới",
+      "đổi thay",
+      "khép lại",
+      "chấp nhận"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "MATCH_LIGHTING_CANDLE",
+    "name": "Que Diêm Tự Cháy Thắp Sáng Ngọn Nến",
+    "category": "OBJECT",
+    "origin": "built-in",
+    "act1": "Que diêm nhỏ nghiêng mình mang đốm lửa tiến sát vào bấc của cây nến lớn đang tắt.",
+    "act2AtPivot": "Ngọn nến bừng sáng rực rỡ với ngọn lửa Đỏ Gạch ấm áp.",
+    "act3Afterimage": "Nến tỏa vòng hào quang sáng trong khi thân que diêm cong lại hóa xám tro.",
+    "redProp": "Ngọn lửa nến & Hào quang Đỏ Gạch",
+    "tags": [
+      "hy sinh",
+      "cho đi",
+      "giá trị",
+      "chân thật",
+      "sưởi ấm",
+      "tri ân"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "PASSING_CLOCK_HANDS",
+    "name": "Hai Kim Đồng Hồ Chạm Nhau Rồi Đi Tiếp",
+    "category": "OBJECT",
+    "origin": "built-in",
+    "act1": "Trên mặt đồng hồ tối giản không số, kim ngắn và kim dài xoay tiến sát về phía nhau.",
+    "act2AtPivot": "Hai kim trùng khít lên nhau đúng một khoảnh khắc, tỏa vòng sóng cộng hưởng Đỏ Gạch.",
+    "act3Afterimage": "Kim dài tiếp tục xoay rời xa theo quy luật thời gian, để lại kim ngắn ở lại.",
+    "redProp": "Kim dài & Vòng cộng hưởng thời gian Đỏ Gạch",
+    "tags": [
+      "đúng người sai thời điểm",
+      "thời gian",
+      "duyên phận",
+      "khoảnh khắc",
+      "trưởng thành"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "PAPER_BOAT_STREAM",
+    "name": "Thả Thuyền Giấy Đỏ Trôi Theo Dòng Nước",
+    "category": "TRAVELER",
+    "origin": "built-in",
+    "act1": "Kẻ Lữ Hành bước tới mép bờ sông, cúi mình đặt chiếc thuyền giấy Đỏ Gạch xuống dòng nước.",
+    "act2AtPivot": "Buông tay để chiếc thuyền giấy tự trôi êm theo nhịp sóng lăn tăn.",
+    "act3Afterimage": "Thuyền giấy Đỏ Gạch trôi xa dần về phía chân trời rộng mở dưới bóng chim bay.",
+    "redProp": "Chiếc thuyền giấy Origami Đỏ Gạch",
+    "tags": [
+      "buông tay",
+      "gửi gắm",
+      "kỷ niệm",
+      "trôi qua",
+      "nhẹ lòng",
+      "thuận tự nhiên"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "KITE_RELEASE_WIND",
+    "name": "Buông Dây Cho Cánh Diều Đỏ Bay Cao",
+    "category": "TRAVELER",
+    "origin": "built-in",
+    "act1": "Kẻ Lữ Hành gồng tay giữ sợi dây diều căng cứng giằng co giữa làn gió ngược.",
+    "act2AtPivot": "Buông sợi dây khỏi tay để cánh diều Đỏ Gạch vút lên êm ái.",
+    "act3Afterimage": "Cánh diều Đỏ Gạch bay bổng tự do trên bầu trời cao, người đứng dưới ngước nhìn thanh thản.",
+    "redProp": "Cánh diều lụa màu Đỏ Gạch",
+    "tags": [
+      "kiểm soát",
+      "níu kéo",
+      "tự do",
+      "giải thoát",
+      "ước mơ",
+      "trưởng thành"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "LADDER_MOON_REFLECTION",
+    "name": "Rời Thang Cao Ngắm Trăng Đỏ Đáy Hồ",
+    "category": "TRAVELER",
+    "origin": "built-in",
+    "act1": "Chiếc thang cao dựng chênh vênh giữa trời định với tới vầng trăng khuyết xa mờ.",
+    "act2AtPivot": "Kẻ Lữ Hành rời chiếc thang, bước sang ngồi tĩnh lặng bên bờ hồ.",
+    "act3Afterimage": "Dưới mặt nước hồ gợn nhẹ hiện lên bóng trăng Đỏ Gạch tròn đầy ngay trước mắt.",
+    "redProp": "Bóng trăng Đỏ Gạch phản chiếu dưới mặt hồ",
+    "tags": [
+      "tham vọng",
+      "hạnh phúc gần",
+      "biết đủ",
+      "ảo vọng",
+      "tĩnh tâm",
+      "chiêm nghiệm"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "STREETLAMP_SOLO_BENCH",
+    "name": "Chiếc Lá Đỏ Trên Ghế Dài Dưới Đèn Đường",
+    "category": "TRAVELER",
+    "origin": "built-in",
+    "act1": "Hai người ngồi cạnh nhau trên chiếc ghế gỗ công viên dưới ánh đèn đường trầm mặc.",
+    "act2AtPivot": "Người bên phải đứng dậy và chậm rãi bước đi khuất dần vào khoảng xa.",
+    "act3Afterimage": "Một chiếc lá thu màu Đỏ Gạch xoay nhẹ rơi xuống đậu ngay chỗ ngồi vừa bỏ trống.",
+    "redProp": "Chiếc lá thu màu Đỏ Gạch trên mặt ghế trống",
+    "tags": [
+      "cô đơn",
+      "đêm khuya",
+      "chia xa",
+      "hoài niệm",
+      "khoảng trống",
+      "lặng lẽ"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "BROKEN_BRANCH_SPROUT",
+    "name": "Cành Khô Gãy Nảy Mầm Lá Đỏ Sau Mưa",
+    "category": "OBJECT",
+    "origin": "built-in",
+    "act1": "Cành cây khô gãy gập rung rẩy dưới màn mưa giông lạnh lẽo.",
+    "act2AtPivot": "Mưa tạnh dần, ngay từ chính vết nứt gãy nảy lên một thân mầm non mới.",
+    "act3Afterimage": "Đôi lá mầm màu Đỏ Gạch bung nở vươn thẳng lên bầu trời sáng.",
+    "redProp": "Chồi mầm hai lá non màu Đỏ Gạch",
+    "tags": [
+      "vấp ngã",
+      "chữa lành",
+      "hồi sinh",
+      "hy vọng",
+      "kiên cường",
+      "bắt đầu lại"
+    ],
+    "usageCount": 0
+  },
+  {
+    "sceneId": "HOURGLASS_TEA_BREW",
+    "name": "Cát Thời Gian Hóa Tách Trà Đỏ Ấm",
+    "category": "OBJECT",
+    "origin": "built-in",
+    "act1": "Cát chảy lặng lẽ qua eo chiếc đồng hồ cát tối giản giữa khoảng không.",
+    "act2AtPivot": "Hạt cát cuối cùng hóa thành giọt trà Đỏ Gạch nhỏ xuống chiếc tách sứ bên dưới.",
+    "act3Afterimage": "Tách trà đầy sắc Đỏ Gạch bốc làn khói thơm chậm rãi suốt những giây cuối.",
+    "redProp": "Tách trà sứ Đỏ Gạch bốc khói ấm",
+    "tags": [
+      "thời gian",
+      "kiên nhẫn",
+      "chín muồi",
+      "trà nguội",
+      "đợi chờ",
+      "ngọt hậu"
+    ],
+    "usageCount": 0
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "webhookUrl": "https://script.google.com/macros/s/AKfycbz72CVGGFA-NgKOMJbIrKEr-pH7_nwCgnsvcEib0kKznYzwCkQNp-v_kqepMgduAMg-/exec",
+  "folderName": "Trà Nguội Videos",
+  "folderId": "",
+  "splitListsBySlot": true,
+  "singleListName": "🍵 Trà Nguội · Chờ đăng",
+  "autoSyncOnRender": true
+}
