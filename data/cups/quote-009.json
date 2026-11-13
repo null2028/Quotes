@@ -1,0 +1,54 @@
+{
+  "id": "quote-009",
+  "cupNumber": "09",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Có những giai điệu chẳng hẹn trước, chỉ vô tình vang lên giữa phố chiều cũng đủ làm bước chân chậm lại.\nCó góc phố nào bạn đi ngang vẫn thấy ký ức đứng đợi ở đó chưa?\n\n#tranguoi #kyuc #hoainiem #tamtrang #chiemnghiem",
+  "props": {
+    "id": "quote-009",
+    "textFormat": "PROSE",
+    "title": "Ký ức",
+    "customCaption": "Có những giai điệu chẳng hẹn trước, chỉ vô tình vang lên giữa phố chiều cũng đủ làm bước chân chậm lại.\nCó góc phố nào bạn đi ngang vẫn thấy ký ức đứng đợi ở đó chưa?\n\n#tranguoi #kyuc #hoainiem #tamtrang #chiemnghiem",
+    "fontSizeScale": 0.95,
+    "segments": [
+      "Có những người, ta càng cố quên thì lại gặp họ ở khắp mọi nơi.",
+      "Trong một bài hát vô tình nghe thấy.",
+      "Một con đường quen, một mùi hương thoáng qua.",
+      "Ký ức thật kỳ lạ...",
+      "Ta không đi tìm nó, đôi khi chỉ cần bước qua một nơi nào đó, nó đã đứng đợi sẵn ở đó."
+    ],
+    "pivotWord": "kỳ lạ",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": -35,
+      "offsetY": -36,
+      "scale": 1.09,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
+      "archetype": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.85,
+        "spread": 0.25,
+        "tiltDeg": -14
+      },
+      "stateB": {
+        "intensity": 0.05,
+        "spread": 0.65,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-009/Ch%C3%A9n%2009%20-%20K%C3%BD%20%E1%BB%A9c.mp4?v=1794482011001"
+}

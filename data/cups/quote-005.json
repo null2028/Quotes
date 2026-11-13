@@ -1,0 +1,54 @@
+{
+  "id": "quote-005",
+  "cupNumber": "05",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Ngày bé sợ bóng tối giấu quái vật, lớn lên mới biết đời thực ngoài kia còn đáng sợ hơn nhiều.\nĐêm nay tắt bớt đèn, cho phép mình trốn vào một góc lặng bình yên nhé?\n\n#tranguoi #truongthanh #apluccuocsong #gocbinhyen #suyngam",
+  "props": {
+    "id": "quote-005",
+    "textFormat": "POEM",
+    "title": "Trốn",
+    "author": "",
+    "fontSizeScale": 1.05,
+    "segments": [
+      "Lớn lên rồi mới hiểu",
+      "quái vật đáng sợ nhất ",
+      "Chính là thực tế cuộc sống",
+      "Và bóng tối lại là... ",
+      "nơi an toàn nhất để trốn chạy"
+    ],
+    "pivotWord": "trốn chạy",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_CAI_BONG_PHO_THI_VOM_DEM",
+      "archetype": "SCRIPT_CAI_BONG_PHO_THI_VOM_DEM",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.8,
+        "spread": 0.2,
+        "tiltDeg": -18
+      },
+      "stateB": {
+        "intensity": 0.1,
+        "spread": 0.75,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-005/Ch%C3%A9n%2005%20-%20Tr%E1%BB%91n.mp4?v=1794396089006"
+}

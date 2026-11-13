@@ -1,0 +1,53 @@
+{
+  "id": "quote-007",
+  "cupNumber": "07",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Quẹt thẻ đầu giờ khí thế ngút trời, mở máy chưa ấm tay đã ngóng tới giờ nghỉ trưa.\nSáng nay vừa ngồi vào bàn làm việc bạn đã nghĩ trưa nay ăn gì chưa?\n\n#tranguoi #danvanphong #chamcong #haihuoc #thohay",
+  "props": {
+    "id": "quote-007",
+    "textFormat": "POEM",
+    "title": "Chấm công",
+    "author": "",
+    "fontSizeScale": 1,
+    "segments": [
+      "Sáng nay rét ngọt đầu đông,",
+      "Vừa quẹt chiếc thẻ vào phòng chấm công.",
+      "Miệng cười khí thế một lòng,",
+      "Tay vừa mở máy... ngóng trông trưa về!"
+    ],
+    "pivotWord": "trưa về",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_CHAM_CONG_NGONG_TRUA",
+      "archetype": "SCRIPT_CHAM_CONG_NGONG_TRUA",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.8,
+        "spread": 0.2,
+        "tiltDeg": -14
+      },
+      "stateB": {
+        "intensity": 0.1,
+        "spread": 0.75,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-007/Ch%C3%A9n%2007%20-%20Ch%E1%BA%A5m%20c%C3%B4ng.mp4?v=1794444884718"
+}

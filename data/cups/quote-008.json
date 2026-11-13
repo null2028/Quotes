@@ -1,0 +1,55 @@
+{
+  "id": "quote-008",
+  "cupNumber": "08",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Có những cơn mưa chẳng ai muốn tránh, chỉ mong kéo dài thêm vài con phố. ☔\n\n#tranguoi #thathinh #ngaymua #tinhyeu",
+  "props": {
+    "id": "quote-008",
+    "textFormat": "POEM",
+    "title": "Chiếc ô",
+    "author": "",
+    "customCaption": "Có những cơn mưa chẳng ai muốn tránh, chỉ mong kéo dài thêm vài con phố. ☔\n\n#tranguoi #thathinh #ngaymua #tinhyeu",
+    "fontSizeScale": 1.05,
+    "segments": [
+      "Người ta xem dự báo để tránh ngày mưa.",
+      "Còn tôi xem… chỉ để biết ",
+      "hôm nào cần mang chiếc ô rộng hơn ngày thường."
+    ],
+    "pivotWord": "chiếc ô rộng",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_CHIEC_O_RONG_CHO_NHAU",
+      "archetype": "SCRIPT_CHIEC_O_RONG_CHO_NHAU",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.8,
+        "spread": 0.2,
+        "tiltDeg": -16
+      },
+      "stateB": {
+        "intensity": 0.1,
+        "spread": 0.75,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-008/Ch%C3%A9n%2008%20-%20Chi%E1%BA%BFc%20%C3%B4.mp4?v=1794529599788",
+  "seoFileName": "chen-08-chiec-o-chiec-o-rong-tra-nguoi.mp4",
+  "seoVideoUrl": "/output/quote-008/chen-08-chiec-o-chiec-o-rong-tra-nguoi.mp4?v=1794529599788"
+}
