@@ -7,7 +7,7 @@
 - **Định vị kênh**: **TRÀ NGUỘI** (`@tranguoi.15s`) — *"Chút thơ, chút đời, chút ngẫm"*. Video dọc chuẩn **9:16 (`1080×1920`, 15 giây, 60 fps CFR — `900 frames`)** phong cách tối giản trên nền giấy trà ấm (`MINIMAL_LIGHT` / `SLATE_CALM`) hoặc nền đêm tĩnh (`MINIMAL_DARK` / `WARM_NOIR`), nét vẽ mực tàu kết hợp điểm nhấn **Đỏ Chu Sa (Cinnabar Red)** ở từ khóa điểm lật (`pivotWord`), triện `茶` góc an toàn và đạo cụ chủ đạo.
 - **DNA ngôn từ ("Lắng — Kiệm lời — Đời thực — Có dư vị")**:
   - Ưu tiên chi tiết vật lý, đời thường dễ dựng thành hoạt cảnh sân khấu (ấm trà sáng, hiên nắng, chiếc ô ngày mưa, ánh đèn sau khung cửa, thẻ chấm công, thang máy văn phòng, cuốn sổ nhỏ đóng mở ký ức).
-  - Nhịp đọc tối ưu **14 – 28 âm tiết tiếng Việt** cho khung 15s (trần tối đa **36 âm tiết**), luôn có **nhịp lật cảm xúc hoặc hóm ngầm** ở vế cuối phục vụ hiệu ứng tô đỏ `pivotWord` và chuyển cảnh `Act 1 → Act 2` trên sân khấu.
+  - Nhịp đọc tối ưu **14 – 28 âm tiết tiếng Việt** cho khung 15s (trần tối đa **40 âm tiết**), luôn có **nhịp lật cảm xúc hoặc hóm ngầm** ở vế cuối phục vụ hiệu ứng tô đỏ `pivotWord` và chuyển cảnh `Act 1 → Act 2` trên sân khấu.
   - **Tuyệt đối tránh**: Từ ngữ bi lụy kịch tính (*"tê tái lòng"*, *"chôn chặt đáy Đại Dương"*), giọng răn đe/khẩu hiệu sách kỹ năng sống cũ (*"Hãy..."*, *"Đừng..."*), câu dịch cứng (*"một loại... không kể xiết"*), hoặc thơ thả thính sáo rỗng đại trà.
   - **Tôn trọng nguyên tác**: Với trích dẫn văn học có tên tác giả rõ ràng (như Lưu Quang Vũ, Nguyễn Ngọc Tư), giữ nguyên câu chữ 100%, không tự ý sửa từ.
 - **Tỷ trọng Danh mục Nội dung Chiến lược (`40–30–20–10`)**:
@@ -59,12 +59,12 @@
     - `Completion%` (mốc `80%` = `30đ`, trần `37.5đ`) + `WatchRatio` (mốc `1.10x` = `25đ`, trần `33.75đ`) + `Share%` (mốc `1.20%` = `20đ`, trần `30đ`) + `Save%` (mốc `2.50%` = `15đ`, trần `22.5đ`) + `Comment%` (mốc `0.50%` = `10đ`, trần `15đ`).
   - Khi **`TN-Score ≥ 110đ` (Nhóm Bứt phá)**: Bấm **`Thăng hạng W → Kho Q`** để tự động đổi trạng thái bản ghi bên bảng `W` sang `Đã chuyển sang Kho Q` và tạo mã `Q0XX` mới bên bảng `Q`.
 - **Kiểm thử Tự động CI trên GitHub Actions (`Đợt 4`)**:
-  - Mọi nhánh `push` và `pull_request` vào `main` tự động chạy `scripts/qa-gates-ci.mjs` để kiểm định Gate 1 (sạch `.mp3`, sạch `tsc`) và Gate 2 (âm tiết, SEO, Bình luận mồi, `TN-Score`, `60 fps` & `marginLeft = 132px`, tỷ trọng `40–30–20–10`).
+  - Mọi nhánh `push` và `pull_request` vào `main` tự động chạy `scripts/qa-gates-ci.mjs` để kiểm định Gate 1 (sạch `.mp3`, sạch `tsc`) và Gate 2 (âm tiết trần `40`, SEO, Bình luận mồi, `TN-Score`, `60 fps` & `marginLeft = 132px`, tỷ trọng `40–30–20–10`).
 
 ## 4. Quy trình 3 bước bắt buộc khi làm hoặc biên tập lại Chén
 
 1. **Bước 1 — Tinh chỉnh câu chữ từ bản gốc & Chờ duyệt (Gated Step)**:
-   - Ngay sau khi chọn được content làm Chén (trừ trích dẫn văn học có tên tác giả rõ ràng thì giữ nguyên 100%), luôn đề xuất các phương án **tinh chỉnh từ nội dung gốc** để **làm mạnh điểm rơi**, **làm dịu/tiết chế hơn**, hoặc **chuyển sang nhịp thơ tự nhiên** (khẩu ngữ mượt như hơi thở, 14–28 âm tiết, không ép vần, không chêm từ nối mòn), đặt cạnh bản gốc kèm `pivotWord` gợi ý.
+   - Ngay sau khi chọn được content làm Chén (trừ trích dẫn văn học có tên tác giả rõ ràng thì giữ nguyên 100%), luôn đề xuất các phương án **tinh chỉnh từ nội dung gốc** để **làm mạnh điểm rơi**, **làm dịu/tiết chế hơn**, hoặc **chuyển sang nhịp thơ tự nhiên** (khẩu ngữ mượt như hơi thở, tối ưu 14–28 âm tiết, trần tối đa 40 âm tiết, không ép vần, không chêm từ nối mòn), đặt cạnh bản gốc kèm `pivotWord` gợi ý.
    - **Bắt buộc dừng lại chờ người dùng duyệt chốt câu chữ ở bước này rồi mới làm tiếp theo quy trình.**
 2. **Bước 2 — Phân tích ẩn dụ & Đề xuất 3 kịch bản sân khấu**:
    - Khi câu chữ đã được duyệt, phân tích tầng ý nghĩa ẩn dụ (tránh minh họa nghĩa đen ngô nghê) và **đề xuất 3 phương án kịch bản sân khấu** (`Act 1` → `Act 2 tại Pivot` → `Act 3 Dư ảnh nối vòng 15s→0s` + đạo cụ **Đỏ Chu Sa**) để người dùng chốt phương án.

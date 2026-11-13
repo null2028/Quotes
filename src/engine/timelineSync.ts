@@ -87,13 +87,13 @@ export function auditVietnameseSyllables(
       label: 'Chuẩn vàng (14–28 âm)',
     };
   }
-  if (count <= 36) {
+  if (count <= 40) {
     return {
       count,
       band: 'long',
       skimSeconds,
       contemplateSeconds,
-      label: 'Sát trần (29–36 âm)',
+      label: 'Sát trần (29–40 âm)',
     };
   }
   return {
@@ -101,7 +101,7 @@ export function auditVietnameseSyllables(
     band: 'overflow',
     skimSeconds,
     contemplateSeconds,
-    label: 'Vượt trần (>36 âm)',
+    label: 'Vượt trần (>40 âm)',
   };
 }
 

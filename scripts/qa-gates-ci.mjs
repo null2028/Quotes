@@ -9,6 +9,8 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'qa-artifacts-ci');
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
+const SYLLABLE_CEILING = 40;
+
 const IGNORE_DIRS = new Set([
   '.git',
   '.github',
@@ -186,7 +188,7 @@ function classifyCupPillar(cup, airtableCupRecord) {
 }
 
 async function runGate2() {
-  console.log('=== [GATE 2] Kiểm toán Âm tiết, SEO, Bình luận mồi, TN-Score, 60fps/132px & 40-30-20-10 ===');
+  console.log('=== [GATE 2] Kiểm toán Âm tiết (trần 40), SEO, Bình luận mồi, TN-Score, 60fps/132px & 40-30-20-10 ===');
 
   const { auditVietnameseSyllables, computeTimelineSync } = await import('../src/engine/timelineSync.ts');
   const { LAYOUT_TOKENS } = await import('../src/theme/palettes.ts');
@@ -223,7 +225,7 @@ async function runGate2() {
     JSON.stringify(LAYOUT_TOKENS.swissGrid)
   );
 
-  // 1. Unit tests cho thuật toán đếm âm tiết (14–28 chuẩn vàng, trần 36)
+  // 1. Unit tests cho thuật toán đếm âm tiết (14–28 chuẩn vàng, trần 40)
   const sEmpty = auditVietnameseSyllables(['', '   ']);
   assertCheck(unitChecks, 'Syllable empty = 0', sEmpty.count === 0 && sEmpty.band === 'empty', JSON.stringify(sEmpty));
 
@@ -238,11 +240,11 @@ async function runGate2() {
   ]);
   assertCheck(unitChecks, 'Syllable optimal (14–28)', sOptimal.count === 20 && sOptimal.band === 'optimal', JSON.stringify(sOptimal));
 
-  const sCeiling = auditVietnameseSyllables([Array(36).fill('trà').join(' ')]);
-  assertCheck(unitChecks, 'Syllable ceiling = 36 (long)', sCeiling.count === 36 && sCeiling.band === 'long', JSON.stringify(sCeiling));
+  const sCeiling = auditVietnameseSyllables([Array(SYLLABLE_CEILING).fill('trà').join(' ')]);
+  assertCheck(unitChecks, 'Syllable ceiling = 40 (long)', sCeiling.count === 40 && sCeiling.band === 'long', JSON.stringify(sCeiling));
 
-  const sOverflow = auditVietnameseSyllables([Array(37).fill('trà').join(' ')]);
-  assertCheck(unitChecks, 'Syllable >36 = overflow', sOverflow.count === 37 && sOverflow.band === 'overflow', JSON.stringify(sOverflow));
+  const sOverflow = auditVietnameseSyllables([Array(SYLLABLE_CEILING + 1).fill('trà').join(' ')]);
+  assertCheck(unitChecks, 'Syllable >40 = overflow', sOverflow.count === 41 && sOverflow.band === 'overflow', JSON.stringify(sOverflow));
 
   // 2. Unit tests cho thuật toán SEO Filename & Caption
   const sampleSeoSlug = formatCupSeoFileName('09', {
@@ -305,8 +307,8 @@ async function runGate2() {
   assertCheck(
     unitChecks,
     'computeTimelineSync mở chữ ngay frame 0 (0.0s OCR Hook) & chuẩn 900 frames',
-    sampleSync.durationInFrames === 900 && (sampleSync.lineWindows?.[0]?.startFrame ?? 0) === 0,
-    JSON.stringify({ durationInFrames: sampleSync.durationInFrames, firstLineStart: sampleSync.lineWindows?.[0]?.startFrame })
+    sampleSync.durationInFrames === 900 && sampleSync.segmentTimings?.[0]?.startFrame === 0,
+    JSON.stringify({ durationInFrames: sampleSync.durationInFrames, firstLineStart: sampleSync.segmentTimings?.[0]?.startFrame })
   );
 
   const seedOffice = generateSeedCommentForCup({
@@ -439,8 +441,8 @@ async function runGate2() {
     const pillar = classifyCupPillar(cup, trackerRec);
     pillarCounts[pillar] += 1;
 
-    if ((syl.count > 36 && !hasAuthor) || syl.count === 0) {
-      const msg = `Chén ${cupNo} (${p.title}): ${syl.count} âm tiết — vượt trần 36 âm tiết của khung 15s`;
+    if ((syl.count > SYLLABLE_CEILING && !hasAuthor) || syl.count === 0) {
+      const msg = `Chén ${cupNo} (${p.title}): ${syl.count} âm tiết — vượt trần ${SYLLABLE_CEILING} âm tiết của khung 15s`;
       hardViolations.push(msg);
       ghAnnotate('error', `Gate 2: ${msg}`, 'data/cups.json', 1);
     } else if (syl.band !== 'optimal') {
@@ -628,20 +630,20 @@ function runSummarize() {
   }
   lines.push('');
 
-  lines.push('## 2. Gate 2 — Thuật toán Âm tiết, SEO, Bình luận mồi, `TN-Score`, `60fps/132px` & `40-30-20-10`');
+  lines.push('## 2. Gate 2 — Thuật toán Âm tiết (trần 40), SEO, Bình luận mồi, `TN-Score`, `60fps/132px` & `40-30-20-10`');
   if (!g2) {
     lines.push('_Không tìm thấy dữ liệu Gate 2._');
   } else {
     const passedUnits = g2.unitChecks.filter((u) => u.pass).length;
     lines.push(`- **Trạng thái Gate 2**: ${g2.pass ? '✅ PASS' : '❌ FAIL'}`);
-    lines.push(`- **Unit Tests thuật toán cốt lõi**: \`${passedUnits}/${g2.unitChecks.length}\` PASS (Chuẩn \`60 fps\`, Lề \`132px\`, Mốc \`TN-Score = ${g2.tnScoreBenchmarks.baseline100}đ\`, Trần \`${g2.tnScoreBenchmarks.ceiling138_75}đ\`)`);
+    lines.push(`- **Unit Tests thuật toán cốt lõi**: \`${passedUnits}/${g2.unitChecks.length}\` PASS (Chuẩn \`60 fps\`, Lề \`132px\`, Trần \`40 âm tiết\`, Mốc \`TN-Score = ${g2.tnScoreBenchmarks.baseline100}đ\`)`);
     lines.push('');
     lines.push('### Bảng kiểm toán từng Chén trong `data/cups.json`');
     lines.push('');
     lines.push('| Chén | Tiêu đề | Pivot | Âm tiết | Phân hạng | File SEO | Caption SEO | Mồi & Khung giờ |');
     lines.push('| :--- | :--- | :--- | ---: | :--- | :--- | :--- | :--- |');
     for (const c of g2.cupAudits) {
-      const bandBadge = c.syllables > 36 ? `❌ ${c.syllableLabel}` : c.syllableBand === 'optimal' ? `✅ ${c.syllableLabel}` : `⚠️ ${c.syllableLabel}`;
+      const bandBadge = c.syllables > SYLLABLE_CEILING ? `❌ ${c.syllableLabel}` : c.syllableBand === 'optimal' ? `✅ ${c.syllableLabel}` : `⚠️ ${c.syllableLabel}`;
       const seoBadge = c.seoClean && c.seoSlugValid ? `✅ (${c.hashtagCount} tags)` : '❌ Lỗi SEO';
       lines.push(
         `| **Chén ${c.cupNo}** | ${c.title} | \`${c.pivotWord}\` | \`${c.syllables}\` | ${bandBadge} | \`${c.seoFile}\` | ${seoBadge} | ${c.hasSeedComment ? '✅' : '❌'} ${c.slot || '—'} (${c.mood || '—'}) |`
