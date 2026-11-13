@@ -713,7 +713,7 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                         ? 'bg-red-500/15 text-red-700 border-red-500/40'
                         : 'bg-tea-bg text-tea-muted border-tea-border'
               }`}
-              title="Chuẩn nhịp đọc 15s: 14–28 âm tiết (trần tối đa 36 âm tiết)"
+              title="Chuẩn nhịp đọc 15s: 14–28 âm tiết (trần tối đa 40 âm tiết)"
             >
               {syllableAudit.count} âm tiết · {syllableAudit.label}
             </span>
@@ -864,7 +864,7 @@ export const StoryDirectorDesk: React.FC<Props> = ({
           <div className="px-3.5 py-2 rounded-xl border border-red-500/35 bg-red-500/10 text-xs text-red-800 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
             <span>
-              Đang ở mức <strong>{syllableAudit.count} âm tiết</strong> (vượt trần 36 âm tiết của video 15s). Nên cô đọng về vùng vàng <strong>14–28 âm tiết</strong> để khán giả kịp đọc hết và xem lặp hoạt cảnh.
+              Đang ở mức <strong>{syllableAudit.count} âm tiết</strong> (vượt trần 40 âm tiết của video 15s). Nên cô đọng về vùng vàng <strong>14–28 âm tiết</strong> để khán giả kịp đọc hết và xem lặp hoạt cảnh.
             </span>
           </div>
         )}

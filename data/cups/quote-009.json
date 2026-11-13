@@ -1,0 +1,54 @@
+{
+  "id": "quote-009",
+  "cupNumber": "09",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Có những giai điệu chẳng hẹn trước, chỉ vô tình vang lên giữa phố chiều cũng đủ làm bước chân chậm lại.\nCó góc phố nào bạn đi ngang vẫn thấy ký ức lặng lẽ đợi mình ở đó chưa?\n\n#tranguoi #kyuc #hoainiem #lucbat #tamtrang",
+  "props": {
+    "id": "quote-009",
+    "textFormat": "POEM",
+    "title": "Ký ức",
+    "customCaption": "Có những giai điệu chẳng hẹn trước, chỉ vô tình vang lên giữa phố chiều cũng đủ làm bước chân chậm lại.\nCó góc phố nào bạn đi ngang vẫn thấy ký ức lặng lẽ đợi mình ở đó chưa?\n\n#tranguoi #kyuc #hoainiem #lucbat #tamtrang",
+    "fontSizeScale": 1,
+    "segments": [
+      "Tưởng rằng năm tháng đã xa,",
+      "Chợt nghe câu hát chiều qua phố người.",
+      "Chuyện xưa chẳng nói một lời,",
+      "Mà bên ghế trống… vẫn ngồi đợi ta."
+    ],
+    "pivotWord": "vẫn ngồi đợi ta",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": -35,
+      "offsetY": -36,
+      "scale": 1.09,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
+      "archetype": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.85,
+        "spread": 0.25,
+        "tiltDeg": -14
+      },
+      "stateB": {
+        "intensity": 0.05,
+        "spread": 0.65,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-009/Ch%C3%A9n%2009%20-%20K%C3%BD%20%E1%BB%A9c.mp4?v=1794482011001",
+  "seoFileName": "chen-09-ky-uc-hoai-niem-tra-nguoi.mp4"
+}

@@ -1,0 +1,53 @@
+{
+  "id": "quote-006",
+  "cupNumber": "06",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Mối tình đầu ủ bằng mây trời nên men say mới gắt đến thế.\nQua cơn chếnh choáng rồi, ký ức trong bạn là vị ngọt hay cay?\n\n#tranguoi #moiduyendau #thohay #trichdan #tamtrang",
+  "props": {
+    "id": "quote-006",
+    "textFormat": "POEM",
+    "title": "Say",
+    "author": "",
+    "fontSizeScale": 1.05,
+    "segments": [
+      "Ta gom mây làm rượu",
+      "Để ủ mối duyên đầu",
+      "Ai ngờ men quá gắt",
+      "Say tỉnh… chẳng còn nhau."
+    ],
+    "pivotWord": "chẳng còn nhau",
+    "highlightStyle": "BOTH",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_DUYEN_DAU_TREN_MAY",
+      "archetype": "SCRIPT_DUYEN_DAU_TREN_MAY",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.8,
+        "spread": 0.2,
+        "tiltDeg": -16
+      },
+      "stateB": {
+        "intensity": 0.1,
+        "spread": 0.75,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-006/Ch%C3%A9n%2006%20-%20Say.mp4?v=1794398477963"
+}
