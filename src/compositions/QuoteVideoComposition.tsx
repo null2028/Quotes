@@ -26,7 +26,7 @@ export const QuoteVideoComposition: React.FC<VideoInputProps> = (props) => {
       {/* 2. Sân khấu Animation nửa trên (Zoom Pivot +4.8% & Seamless Loop 13.5s-15.0s) */}
       <MotionStageRouter props={props} sync={sync} palette={palette} />
 
-      {/* 3. Sân khấu Chữ tự thích ứng (Khóa OCR 0.0s & Seamless Loop 13.8s-15.0s) */}
+      {/* 3. Sân khấu Chữ tự thích ứng (Hướng 1: Mở chữ 0.35s đồng nhất & Seamless Loop 14.2s-15.0s) */}
       <AdaptiveTypography props={props} sync={sync} palette={palette} />
 
       {/* 4. Âm thanh Gốc Foley Stereo -14.0 LUFS khớp từng frame Pivot */}

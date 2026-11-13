@@ -8,6 +8,7 @@ import {
 import { loadFont as loadNotoSerifFont } from '@remotion/google-fonts/NotoSerif';
 import { loadFont as loadBeVietnamProFont } from '@remotion/google-fonts/BeVietnamPro';
 import {
+  TYPO_LOOP_FADE_SECONDS,
   TimelineSyncResult,
   stripInlineMarkdown,
 } from '../engine/timelineSync';
@@ -175,8 +176,9 @@ export const AdaptiveTypography: React.FC<{
   const { swissGrid } = LAYOUT_TOKENS;
 
   const safeDuration = Math.max(2, sync.durationInFrames);
+  // Hướng 1 Seamless Loop: Từ 14.20s -> 15.00s (Frame 852 -> 899 @ 60fps), toàn bộ khối chữ tan êm về 0
   const typoLoopWindow = Math.min(
-    Math.round(1.2 * sync.fps),
+    Math.round(TYPO_LOOP_FADE_SECONDS * sync.fps),
     Math.floor(safeDuration * 0.18)
   );
   const typoLoopStart = Math.max(1, safeDuration - typoLoopWindow);
@@ -279,22 +281,9 @@ export const AdaptiveTypography: React.FC<{
     lineWeights.reduce((a, b) => a + b, 0)
   );
 
-  const lineProgresses = sync.segmentTimings.map((seg) => {
-    if (seg.isFirstActiveLine) {
-      const openP = interpolate(
-        frame,
-        [0, Math.max(1, seg.endTypingFrame)],
-        [0.92, 1],
-        {
-          easing: Easing.out(Easing.cubic),
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        }
-      );
-      return openP * (1 - typoLoopBlend) + 0.92 * typoLoopBlend;
-    }
-
-    const revealP = interpolate(
+  // Hướng 1: Đồng nhất 100% hiệu ứng thấm mực mềm mại cho CẢ 4 DÒNG (kể cả Dòng 1 từ 0.35s)
+  const revealProgresses = sync.segmentTimings.map((seg) =>
+    interpolate(
       frame,
       [seg.startFrame, Math.max(seg.startFrame + 1, seg.endTypingFrame)],
       [0, 1],
@@ -303,14 +292,35 @@ export const AdaptiveTypography: React.FC<{
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       }
-    );
-    return revealP * (1 - typoLoopBlend);
-  });
+    )
+  );
+
+  const lineProgresses = revealProgresses.map(
+    (revealP) => revealP * (1 - typoLoopBlend)
+  );
 
   const activeRailScaleY = lineProgresses.reduce(
     (sum, prog, idx) => sum + prog * (lineWeights[idx] / totalVisualLines),
     0
   );
+
+  const firstActiveSeg = sync.segmentTimings.find(
+    (s) => stripInlineMarkdown(s.text).trim().length > 0
+  );
+  const railLeadStart =
+    firstActiveSeg?.startFrame ?? sync.introBufferFrames;
+  const baseRailOpacity =
+    interpolate(
+      frame,
+      [railLeadStart, railLeadStart + Math.round(0.45 * sync.fps)],
+      [0, 0.7],
+      {
+        easing: Easing.out(Easing.cubic),
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    ) *
+    (1 - typoLoopBlend);
 
   const authorStartFrame =
     sync.allTextFinishedFrame + Math.round(0.25 * sync.fps);
@@ -327,15 +337,22 @@ export const AdaptiveTypography: React.FC<{
       )
     : 0;
   const authorProgress = rawAuthorProgress * (1 - typoLoopBlend);
-  const authorTranslateY = interpolate(authorProgress, [0, 1], [6, 0]);
-  const authorBlurPx = interpolate(authorProgress, [0, 1], [5, 0]);
+  const authorTranslateY =
+    interpolate(rawAuthorProgress, [0, 1], [6, 0]) - typoLoopBlend * 2;
+  const authorBlurPx = Math.max(
+    interpolate(rawAuthorProgress, [0, 1], [5, 0]),
+    typoLoopBlend * 3
+  );
 
   const sealStartFrame = hasAuthor
     ? authorStartFrame + Math.round(0.35 * sync.fps)
-    : sync.allTextFinishedFrame - 12;
+    : Math.max(
+        sync.introBufferFrames,
+        sync.allTextFinishedFrame - Math.round(0.2 * sync.fps)
+      );
   const rawSealProgress = interpolate(
     frame,
-    [sealStartFrame, sealStartFrame + 36],
+    [sealStartFrame, sealStartFrame + Math.round(0.6 * sync.fps)],
     [0, 1],
     {
       easing: Easing.out(Easing.cubic),
@@ -344,7 +361,8 @@ export const AdaptiveTypography: React.FC<{
     }
   );
   const sealProgress = rawSealProgress * (1 - typoLoopBlend);
-  const sealTranslateY = interpolate(sealProgress, [0, 1], [8, 0]);
+  const sealTranslateY =
+    interpolate(rawSealProgress, [0, 1], [8, 0]) - typoLoopBlend * 2;
 
   const serifStack = `${notoSerifFontFamily}, 'Noto Serif', Georgia, serif`;
   const railToTextOffsetPx = 32;
@@ -387,7 +405,7 @@ export const AdaptiveTypography: React.FC<{
               bottom: 8,
               width: 1.5,
               backgroundColor: palette.surfaceSubtle,
-              opacity: 0.7,
+              opacity: baseRailOpacity,
             }}
           />
 
@@ -401,6 +419,7 @@ export const AdaptiveTypography: React.FC<{
               backgroundColor: palette.accent,
               transformOrigin: 'top center',
               transform: `scaleY(${activeRailScaleY.toFixed(4)})`,
+              opacity: 1 - typoLoopBlend,
               borderRadius: 2,
             }}
           />
@@ -416,13 +435,13 @@ export const AdaptiveTypography: React.FC<{
               );
             }
 
+            const revealP = revealProgresses[idx];
             const lineProgress = lineProgresses[idx];
-            const translateY = seg.isFirstActiveLine
-              ? 0
-              : interpolate(lineProgress, [0, 1], [10, 0]);
-            const blurPx = seg.isFirstActiveLine
-              ? 0
-              : interpolate(lineProgress, [0, 1], [3.8, 0]);
+            const translateY =
+              interpolate(revealP, [0, 1], [10, 0]) - typoLoopBlend * 2.5;
+            const entranceBlurPx = interpolate(revealP, [0, 1], [5.2, 0]);
+            const exitBlurPx = typoLoopBlend * 3.2;
+            const blurPx = Math.max(entranceBlurPx, exitBlurPx);
 
             const useAccentColor =
               props.highlightStyle === 'ACCENT_COLOR' ||
@@ -437,9 +456,8 @@ export const AdaptiveTypography: React.FC<{
                   ],
                   [0, 1],
                   { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-                ) *
-                (1 - typoLoopBlend)
-              : lineProgress;
+                )
+              : revealP;
 
             const pivotColor = useAccentColor
               ? interpolateColors(

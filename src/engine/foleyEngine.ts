@@ -230,13 +230,13 @@ export function synthesizeCupFoleyAudio(
     right[i] += lpAirR * breezeEnv + roomWarmth * 0.96;
   }
 
-  // 0.0s – 1.25s: Lật giấy tuyên + rót trà ấm mở màn
-  const paperLen = Math.min(totalSamples, Math.round(0.46 * sr));
+  // 0.00s – 0.35s: Nhịp thở mở màn nhẹ + rót trà ấm trước khi Dòng 1 cất lời tại 0.35s
+  const paperLen = Math.min(totalSamples, Math.round(0.32 * sr));
   let bpState1 = 0;
   let bpState2 = 0;
   for (let n = 0; n < paperLen; n++) {
     const u = n / paperLen;
-    const env = Math.sin(u * Math.PI) * Math.pow(1 - u, 0.75) * 0.24;
+    const env = Math.sin(u * Math.PI) * Math.pow(1 - u, 0.75) * 0.14;
     const white = (rng() * 2 - 1) * (0.65 + 0.35 * Math.sin(u * 38));
     bpState1 += 0.26 * (white - bpState1);
     bpState2 += 0.08 * (bpState1 - bpState2);
@@ -244,9 +244,9 @@ export function synthesizeCupFoleyAudio(
     addStereoSample(
       left,
       right,
-      Math.round(0.02 * sr) + n,
+      Math.round(0.03 * sr) + n,
       paperGrain * env,
-      -0.18 + u * 0.36
+      -0.16 + u * 0.32
     );
   }
 
@@ -276,15 +276,19 @@ export function synthesizeCupFoleyAudio(
     }
   }
 
-  // Hồi I: Tiếng cọ mực tàu theo từng dòng chữ + Nhịp khay gỗ 64 BPM
+  // Hồi I (Hướng 1): Tiếng sột soạt giấy dó / cọ mực tàu khớp chính xác từng dòng chữ (từ Dòng 1 tại 0.35s)
   for (const seg of sync.segmentTimings) {
     const clean = stripInlineMarkdown(seg.text).trim();
-    if (!clean || seg.isFirstActiveLine) continue;
+    if (!clean) continue;
     const strokeStart = Math.round((seg.startFrame / sync.fps) * sr);
-    if (strokeStart >= pivotSample - Math.round(0.12 * sr)) continue;
-    const strokeDur = Math.min(
+    if (strokeStart >= pivotSample - Math.round(0.08 * sr)) continue;
+    const rawStrokeDur = Math.min(
       Math.round(0.62 * sr),
       Math.max(Math.round(0.28 * sr), clean.length * Math.round(0.014 * sr))
+    );
+    const strokeDur = Math.min(
+      rawStrokeDur,
+      Math.max(0, pivotSample - Math.round(0.04 * sr) - strokeStart)
     );
     let lp1 = 0;
     let lp2 = 0;

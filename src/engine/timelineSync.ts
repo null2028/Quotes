@@ -1,6 +1,9 @@
 import { VideoInputProps } from '../schemas/videoSchema';
 import { LAYOUT_TOKENS } from '../theme/palettes';
 
+export const STAGE_LEAD_IN_SECONDS = 0.35;
+export const TYPO_LOOP_FADE_SECONDS = 0.8;
+
 export interface SegmentTiming {
   index: number;
   text: string;
@@ -73,7 +76,7 @@ export function auditVietnameseSyllables(
     return {
       count,
       band: 'concise',
-      skimSeconds,
+      skimSeconds: 0 + skimSeconds,
       contemplateSeconds,
       label: 'Cô đọng (<14 âm)',
     };
@@ -112,7 +115,8 @@ export function computeTimelineSync(
   const targetDurationSec = props.targetDurationSeconds ?? 15;
   const durationInFrames = Math.round(targetDurationSec * fps);
 
-  const introBufferFrames = Math.round(1.35 * fps);
+  // Hướng 1: Nhịp thở sân khấu 0.35s đầu (Frame 0 -> 21 @ 60fps) trước khi Dòng 1 thấm mực
+  const introBufferFrames = Math.round(STAGE_LEAD_IN_SECONDS * fps);
 
   const nonEmptyLines = props.segments.filter(
     (s) => stripInlineMarkdown(s).trim().length > 0
@@ -120,14 +124,19 @@ export function computeTimelineSync(
   const activeLineCount = Math.max(1, nonEmptyLines.length);
   const fadeDurationFrames = Math.round(1.05 * fps);
 
-  const totalRevealSpanSec = Math.min(
-    8.2,
-    Math.max(4.8, targetDurationSec * 0.54)
+  // Phân bổ đều các dòng từ 0.35s đến ~6.20s (bước 1.95s cho thơ 4 câu, tối đa 2.25s cho câu 2-3 dòng)
+  const maxRevealWindowSec = Math.min(
+    5.85,
+    Math.max(3.6, targetDurationSec * 0.39)
   );
   const remainingLines = Math.max(1, activeLineCount - 1);
+  const effectiveRevealWindowSec = Math.min(
+    maxRevealWindowSec,
+    remainingLines * 2.25
+  );
   const stepBetweenLinesFrames =
     activeLineCount > 1
-      ? Math.round(((totalRevealSpanSec - 1.35) * fps) / remainingLines)
+      ? Math.round((effectiveRevealWindowSec * fps) / remainingLines)
       : 0;
 
   const normalizedPivot = stripInlineMarkdown(props.pivotWord)
@@ -151,8 +160,8 @@ export function computeTimelineSync(
 
   let detectedPivotFrame: number | null = null;
   let activeLineCursor = 0;
-  let lastNonEmptyStartFrame = 0;
-  let lastNonEmptyEndFrame = Math.round(0.35 * fps);
+  let lastNonEmptyStartFrame = introBufferFrames;
+  let lastNonEmptyEndFrame = introBufferFrames + fadeDurationFrames;
 
   const segmentTimings: SegmentTiming[] = props.segments.map((rawText, index) => {
     const text = rawText.trim();
@@ -166,16 +175,10 @@ export function computeTimelineSync(
     if (isEmptyStanzaBreak) {
       startFrame = lastNonEmptyStartFrame;
       endTypingFrame = lastNonEmptyEndFrame;
-    } else if (activeLineCursor === 0) {
-      isFirstActiveLine = true;
-      startFrame = 0;
-      endTypingFrame = Math.round(0.35 * fps);
-      lastNonEmptyStartFrame = startFrame;
-      lastNonEmptyEndFrame = endTypingFrame;
-      activeLineCursor += 1;
     } else {
+      isFirstActiveLine = activeLineCursor === 0;
       startFrame =
-        introBufferFrames + (activeLineCursor - 1) * stepBetweenLinesFrames;
+        introBufferFrames + activeLineCursor * stepBetweenLinesFrames;
       endTypingFrame = startFrame + fadeDurationFrames;
       lastNonEmptyStartFrame = startFrame;
       lastNonEmptyEndFrame = endTypingFrame;
@@ -190,7 +193,10 @@ export function computeTimelineSync(
     if (containsPivot) {
       detectedPivotFrame = isFirstActiveLine
         ? Math.round(targetDurationSec * 0.44 * fps)
-        : Math.max(introBufferFrames, startFrame - Math.round(0.22 * fps));
+        : Math.max(
+            introBufferFrames + Math.round(0.38 * fps),
+            startFrame + Math.round(0.38 * fps)
+          );
     }
 
     return {
@@ -214,7 +220,10 @@ export function computeTimelineSync(
 
   const pivotFrame =
     detectedPivotFrame ??
-    Math.max(Math.round(5.6 * fps), lastNonEmptyStartFrame);
+    Math.max(
+      Math.round(5.6 * fps),
+      lastNonEmptyStartFrame + Math.round(0.38 * fps)
+    );
 
   return {
     fps,

@@ -235,7 +235,12 @@ function classifyCupPillar(cup, airtableCupRecord) {
 async function runGate2() {
   console.log('=== [GATE 2] Kiểm toán Âm tiết (trần 40), SEO, Bình luận mồi, TN-Score, 60fps/132px & Cấu trúc Hướng 2 ===');
 
-  const { auditVietnameseSyllables, computeTimelineSync } = await import('../src/engine/timelineSync.ts');
+  const {
+    STAGE_LEAD_IN_SECONDS,
+    TYPO_LOOP_FADE_SECONDS,
+    auditVietnameseSyllables,
+    computeTimelineSync,
+  } = await import('../src/engine/timelineSync.ts');
   const { LAYOUT_TOKENS } = await import('../src/theme/palettes.ts');
   const { toAsciiKebabSlug, formatCupBaseFileName, formatCupSeoFileName } = await import(
     '../src/automation/fileNaming.ts'
@@ -329,11 +334,16 @@ async function runGate2() {
     JSON.stringify(dupAudit)
   );
 
-  // 3. Unit tests cho Động cơ Bình luận mồi (3 nhánh ngữ cảnh) & 0.0s OCR Hook
+  // 3. Unit tests cho Động cơ Bình luận mồi & Hướng 1 (Nhịp mở chữ 0.35s + Seamless Loop 14.2s->15.0s)
   const sampleSync = computeTimelineSync({
     id: 'test-cup',
     textFormat: 'POEM',
-    segments: ['Tưởng rằng năm tháng đã xa,', 'Mà bên ghế trống… vẫn ngồi đợi ta.'],
+    segments: [
+      'Tưởng rằng năm tháng đã xa,',
+      'Chợt nghe câu hát chiều qua phố người.',
+      'Chuyện xưa chẳng nói một lời,',
+      'Mà bên ghế trống… vẫn ngồi đợi ta.',
+    ],
     pivotWord: 'vẫn ngồi đợi ta',
     highlightStyle: 'BOTH',
     targetDurationSeconds: 15,
@@ -349,11 +359,26 @@ async function runGate2() {
     bgm: { audioMode: 'FOLEY_MASTER', foleyPivotStyle: 'AUTO' },
     brandText: 'TRÀ NGUỘI',
   });
+  const expectedLeadInFrames = Math.round(STAGE_LEAD_IN_SECONDS * LAYOUT_TOKENS.fps);
+  const expectedFadeDuration = Math.round(1.05 * LAYOUT_TOKENS.fps);
+  const expectedLoopFadeStart =
+    sampleSync.durationInFrames - Math.round(TYPO_LOOP_FADE_SECONDS * LAYOUT_TOKENS.fps);
   assertCheck(
     unitChecks,
-    'computeTimelineSync mở chữ ngay frame 0 (0.0s OCR Hook) & chuẩn 900 frames',
-    sampleSync.durationInFrames === 900 && sampleSync.segmentTimings?.[0]?.startFrame === 0,
-    JSON.stringify({ durationInFrames: sampleSync.durationInFrames, firstLineStart: sampleSync.segmentTimings?.[0]?.startFrame })
+    'computeTimelineSync chuẩn Hướng 1: mở chữ Dòng 1 tại 0.35s (frame 21), thấm mực đồng nhất & Seamless Loop (frame 852 -> 899)',
+    sampleSync.durationInFrames === 900 &&
+      sampleSync.introBufferFrames === expectedLeadInFrames &&
+      sampleSync.segmentTimings?.[0]?.startFrame === 21 &&
+      sampleSync.segmentTimings?.[0]?.endTypingFrame === 21 + expectedFadeDuration &&
+      expectedLoopFadeStart === 852,
+    JSON.stringify({
+      durationInFrames: sampleSync.durationInFrames,
+      firstLineStart: sampleSync.segmentTimings?.[0]?.startFrame,
+      firstLineEnd: sampleSync.segmentTimings?.[0]?.endTypingFrame,
+      fourthLineStart: sampleSync.segmentTimings?.[3]?.startFrame,
+      pivotFrame: sampleSync.pivotFrame,
+      typoLoopStartFrame: expectedLoopFadeStart,
+    })
   );
 
   const seedOffice = generateSeedCommentForCup({
@@ -691,13 +716,13 @@ function runSummarize() {
   }
   lines.push('');
 
-  lines.push('## 2. Gate 2 — Thuật toán Âm tiết (trần 40), SEO, Bình luận mồi, `TN-Score`, `60fps/132px` & `40-30-20-10`');
+  lines.push('## 2. Gate 2 — Thuật toán Âm tiết (trần 40), Hướng 1 (0.35s & Loop), SEO, Bình luận mồi, `TN-Score` & `40-30-20-10`');
   if (!g2) {
     lines.push('_Không tìm thấy dữ liệu Gate 2._');
   } else {
     const passedUnits = g2.unitChecks.filter((u) => u.pass).length;
     lines.push(`- **Trạng thái Gate 2**: ${g2.pass ? '✅ PASS' : '❌ FAIL'}`);
-    lines.push(`- **Unit Tests thuật toán cốt lõi**: \`${passedUnits}/${g2.unitChecks.length}\` PASS (Chuẩn \`60 fps\`, Lề \`132px\`, Trần \`40 âm tiết\`, Mốc \`TN-Score = ${g2.tnScoreBenchmarks.baseline100}đ\`)`);
+    lines.push(`- **Unit Tests thuật toán cốt lõi**: \`${passedUnits}/${g2.unitChecks.length}\` PASS (Chuẩn \`60 fps\`, Lề \`132px\`, Hướng 1 \`0.35s / Loop 852->899\`, Trần \`40 âm tiết\`, Mốc \`TN-Score = ${g2.tnScoreBenchmarks.baseline100}đ\`)`);
     lines.push('');
     lines.push('### Bảng kiểm toán từng Chén');
     lines.push('');

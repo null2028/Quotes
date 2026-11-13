@@ -25,8 +25,8 @@ function runCmd(cmd, args, timeout = 300_000) {
 }
 
 console.log('=== [BƯỚC 1 & 2/5] Chạy Gate 1 & Gate 2 ===');
-const g1Run = runCmd('npx', ['tsx', 'scripts/qa-gates-ci.mjs', '--gate=1']);
-const g2Run = runCmd('npx', ['tsx', 'scripts/qa-gates-ci.mjs', '--gate=2']);
+runCmd('npx', ['tsx', 'scripts/qa-gates-ci.mjs', '--gate=1']);
+runCmd('npx', ['tsx', 'scripts/qa-gates-ci.mjs', '--gate=2']);
 const g1 = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'gate1.json'), 'utf8'));
 const g2 = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'gate2.json'), 'utf8'));
 
@@ -35,7 +35,7 @@ const renderStartMs = Date.now();
 const { enqueueCupsForRender, loadCups } = await import('../server/renderQueueService.ts');
 enqueueCupsForRender(['quote-008', 'quote-009']);
 
-const deadline = Date.now() + 900_000; // Tối đa 15 phút cho 2 video 60fps (900 frames/video)
+const deadline = Date.now() + 900_000;
 while (Date.now() < deadline) {
   const current = loadCups();
   const c8 = current.find((c) => c.id === 'quote-008');
@@ -177,7 +177,7 @@ const g4 = {
 };
 g4.pass = Boolean(g4.chen08.pass && g4.chen09.pass);
 
-console.log('=== [BƯỚC 5/5] GATE 5: Kiểm định Khung hình 0.0s Hook, Chống tĩnh 2.0s, Vùng an toàn & Seamless Loop ===');
+console.log('=== [BƯỚC 5/5] GATE 5: Kiểm định Hướng 1 (0.0s giấy sạch -> 0.35s thấm mực), Chống tĩnh 2.0s, Vùng an toàn & Seamless Loop ===');
 function extractRawRgb(videoPath, frameIdx) {
   const res = spawnSync(
     'ffmpeg',
@@ -233,13 +233,15 @@ function inspectVisuals(label, videoPath, meta) {
   if (!videoPath || !fs.existsSync(videoPath)) return { pass: false, missing: true };
   const subDir = path.join(FRAMES_DIR, label);
   fs.mkdirSync(subDir, { recursive: true });
-  const pivotF = meta?.pivotFrame || 390;
+  const pivotF = meta?.pivotFrame || 395;
   const lastF = 899; // 14.98s tại 60fps (900 frames: 0..899)
   const framesToSave = [
     { n: 0, name: 'frame_000_0.00s.png' },
-    { n: 60, name: 'frame_060_1.00s.png' },
+    { n: 21, name: 'frame_021_0.35s_leadin.png' },
+    { n: 84, name: 'frame_084_1.40s_line1_done.png' },
     { n: 120, name: 'frame_120_2.00s.png' },
     { n: pivotF, name: `frame_${pivotF}_pivot.png` },
+    { n: 852, name: 'frame_852_14.20s_hold_end.png' },
     { n: lastF, name: 'frame_899_end.png' },
   ];
   for (const f of framesToSave) {
@@ -248,13 +250,16 @@ function inspectVisuals(label, videoPath, meta) {
 
   const rgb0 = extractRawRgb(videoPath, 0);
   const rgb60 = extractRawRgb(videoPath, 60);
+  const rgb84 = extractRawRgb(videoPath, 84);
   const rgb120 = extractRawRgb(videoPath, 120);
   const rgbPivot = extractRawRgb(videoPath, pivotF);
   const rgb899 = extractRawRgb(videoPath, lastF);
 
-  // Vùng chữ mở đầu (Y=260..760) tại 0.00s phải có nét mực sắc nét ngay frame 0
-  const hookTextBounds = measureInkBounds(rgb0, 260, 760);
-  const pivotBounds = measureInkBounds(rgbPivot, 180, 1650);
+  // Hướng 1: Vùng chữ (Y=1020..1820) trống tại frame 0 & frame 899, sắc nét tại frame 84 (1.40s)
+  const typoAt0s = measureInkBounds(rgb0, 1020, 1820);
+  const typoAt1_4s = measureInkBounds(rgb84, 1020, 1820);
+  const typoAtEnd = measureInkBounds(rgb899, 1020, 1820);
+  const pivotBounds = measureInkBounds(rgbPivot, 180, 1820);
   const d0_1s = diffRgb(rgb0, rgb60);
   const d1_2s = diffRgb(rgb60, rgb120);
   const loopDiff = diffRgb(rgb899, rgb0);
@@ -269,16 +274,24 @@ function inspectVisuals(label, videoPath, meta) {
   const ssimMatch = (ssimRun.stderr || '').match(/All:([\d.]+)/);
   const loopSsim = ssimMatch ? Number(ssimMatch[1]) : null;
 
-  const hookVisibleAt0s = hookTextBounds.inkPixels > 250;
+  const option1LeadInPass =
+    typoAt0s.inkPixels === 0 &&
+    typoAt1_4s.inkPixels > 250 &&
+    typoAtEnd.inkPixels === 0;
   const antiStaticPass = Boolean(d0_1s?.changedPixels > 0 && d1_2s?.changedPixels > 0);
   const clearsHardCrop97px =
     pivotBounds.inkPixels > 0 && pivotBounds.minX >= 97 && pivotBounds.maxX <= 983;
-  const loopSmooth = loopSsim !== null && loopSsim >= 0.94;
+  const loopSmooth = loopSsim !== null && loopSsim >= 0.96;
 
   return {
-    pass: hookVisibleAt0s && antiStaticPass && clearsHardCrop97px && loopSmooth,
+    pass: option1LeadInPass && antiStaticPass && clearsHardCrop97px && loopSmooth,
     framesDir: path.relative(ROOT, subDir),
-    hookAt0s: hookTextBounds,
+    option1TypographyCheck: {
+      typoAt0s,
+      typoAt1_4s,
+      typoAtEnd,
+      pass: option1LeadInPass,
+    },
     antiStatic: { d0_1s, d1_2s, pass: antiStaticPass },
     boundsAtPivot: { ...pivotBounds, clearsHardCrop97px },
     seamlessLoop: { ...loopDiff, ssim: loopSsim, pass: loopSmooth },
@@ -313,11 +326,11 @@ const md = [
   '',
   '| Gate | Hạng mục kiểm định | Trạng thái | Chỉ số thực tế |',
   '| :--- | :--- | :--- | :--- |',
-  `| **Gate 1** | Sạch \`.mp3\` & \`tsc --noEmit\` | ${g1.pass ? '✅ PASS' : '❌ FAIL'} | \`${g1.mp3FilesOnDisk.length}\` file .mp3, \`${g1.activeMp3Refs.length}\` tham chiếu .mp3 |`,
-  `| **Gate 2** | Âm tiết (trần 40), SEO, Mồi, \`TN-Score\`, 60fps/132px | ${g2.pass ? '✅ PASS' : '❌ FAIL'} | \`${g2.unitChecks.filter((u) => u.pass).length}/${g2.unitChecks.length}\` unit tests, \`${g2.hardViolations.length}\` lỗi cứng |`,
+  `| **Gate 1** | Sạch \`.mp3\` & \`tsc --noEmit\` | ${g1.pass ? '✅ PASS' : '❌ FAIL'} | \`${g1.mp3FilesOnDisk.length}\` file nhạc trộn cứng, \`${g1.activeMp3Refs.length}\` tham chiếu tồn dư |`,
+  `| **Gate 2** | Âm tiết (trần 40), Hướng 1 (0.35s), SEO, Mồi, \`TN-Score\`, 60fps/132px | ${g2.pass ? '✅ PASS' : '❌ FAIL'} | \`${g2.unitChecks.filter((u) => u.pass).length}/${g2.unitChecks.length}\` unit tests, \`${g2.hardViolations.length}\` lỗi cứng |`,
   `| **Gate 3** | Render MP4 thực tế Chén 08 & Chén 09 | ${g3.pass ? '✅ PASS' : '❌ FAIL'} | Chén 08: \`${g3.chen08.seoSizeMb} MB\`, Chén 09: \`${g3.chen09.seoSizeMb} MB\` |`,
   `| **Gate 4** | \`ffprobe\` (60fps, bt709, faststart) & \`ebur128\` | ${g4.pass ? '✅ PASS' : '❌ FAIL'} | Chén 08: \`${g4.chen08.integratedLufs} LUFS\` (\`${g4.chen08.truePeakDbtp} dBTP\`), Chén 09: \`${g4.chen09.integratedLufs} LUFS\` (\`${g4.chen09.truePeakDbtp} dBTP\`) |`,
-  `| **Gate 5** | OCR Hook 0.0s, Chống tĩnh 2.0s, Biên 9:19.5 & Loop | ${g5.pass ? '✅ PASS' : '❌ FAIL'} | Chén 08 SSIM \`${g5.chen08.seamlessLoop?.ssim}\`, Chén 09 SSIM \`${g5.chen09.seamlessLoop?.ssim}\` |`,
+  `| **Gate 5** | Hướng 1 (0.35s thấm mực), Chống tĩnh 2.0s, Biên 9:19.5 & Loop | ${g5.pass ? '✅ PASS' : '❌ FAIL'} | Chén 08 SSIM \`${g5.chen08.seamlessLoop?.ssim}\`, Chén 09 SSIM \`${g5.chen09.seamlessLoop?.ssim}\` |`,
   '',
 ];
 
