@@ -300,7 +300,7 @@ export function inferCupDefaultSlotAndMood(
     slot =
       cup.props.themeId === 'MINIMAL_DARK' ||
       cup.props.themeId === 'WARM_NOIR' ||
-      cup.props.themeId === 'DARK_CONTEMPLATIVE'
+      String(cup.props.themeId) === 'DARK_CONTEMPLATIVE'
         ? 'Night'
         : cup.props.themeId === 'SLATE_CALM'
           ? 'Morning'

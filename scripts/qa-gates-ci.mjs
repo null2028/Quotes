@@ -117,6 +117,7 @@ async function runGate1() {
     'pnpm-lock.yaml',
     SELF_REL,
     'scripts/sync-v831-cups.mjs',
+    'scripts/qa-full-5gates.mjs',
   ]);
 
   const activeMp3Refs = [];

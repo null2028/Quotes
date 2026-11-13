@@ -331,12 +331,12 @@ export function generateSeedCommentForCup(
     effectiveSlot === 'Night' ||
     props.themeId === 'MINIMAL_DARK' ||
     props.themeId === 'WARM_NOIR' ||
-    props.themeId === 'DARK_CONTEMPLATIVE';
+    String(props.themeId) === 'DARK_CONTEMPLATIVE';
 
   const isOfficeOrWordplay =
     props.motion?.pacingMode === 'WRY_BATHOS' ||
     /tự trào|hài hước|chơi chữ|nói lái|slang/i.test(effectiveMood) ||
-    /chấm công|quẹt thẻ|lương|deadline|sếp|họp|văn phòng|thứ hai|công sở|câu đơn|cơn đau/i.test(
+    /chấm công|quẹt thẻ|lương|sếp|deadline|văn phòng|thứ hai|công sở|câu đơn|cơn đau/i.test(
       corpus
     );
 
