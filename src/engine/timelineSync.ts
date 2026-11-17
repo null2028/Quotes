@@ -22,6 +22,43 @@ export interface TimelineSyncResult {
   pivotFrame: number;
   allTextFinishedFrame: number;
   durationInFrames: number;
+  recommendedCoverFrame: number;
+  headerDissolveStartFrame: number;
+  headerDissolveEndFrame: number;
+  loopRestoreStartFrame: number;
+}
+
+/**
+ * Hàm băm tất định FNV-1a tạo seed ổn định theo cupId + từ khóa trọng tâm.
+ */
+export function hashCupSeed(seedText: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seedText.length; i++) {
+    h ^= seedText.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/**
+ * Sinh tổng số frame động (13.5s – 16.5s theo bước 30f tại 60fps, loại trừ mốc cứng 900f)
+ * dựa trên số âm tiết thực tế và seed của từng Chén.
+ */
+export function computeDynamicDurationFrames(
+  props: Pick<VideoInputProps, 'id' | 'segments' | 'pivotWord'>,
+  fps: number = LAYOUT_TOKENS.fps
+): number {
+  const { count } = auditVietnameseSyllables(props.segments);
+  const pool60 =
+    count < 18
+      ? [810, 840, 870]
+      : count <= 28
+        ? [840, 870, 930, 960]
+        : [930, 960, 990];
+  const seed = hashCupSeed(`${props.id}::${props.pivotWord || ''}`);
+  const pickedAt60 = pool60[seed % pool60.length];
+  if (fps === 60) return pickedAt60;
+  return Math.max(240, Math.round((pickedAt60 / 60) * fps));
 }
 
 export type SyllableBand =
@@ -112,8 +149,11 @@ export function computeTimelineSync(
   props: VideoInputProps,
   fps: number = LAYOUT_TOKENS.fps
 ): TimelineSyncResult {
-  const targetDurationSec = props.targetDurationSeconds ?? 15;
-  const durationInFrames = Math.round(targetDurationSec * fps);
+  const durationInFrames =
+    props.durationMode === 'AUTO_SEED'
+      ? computeDynamicDurationFrames(props, fps)
+      : Math.round((props.targetDurationSeconds ?? 15) * fps);
+  const targetDurationSec = durationInFrames / fps;
 
   // Hướng 1: Nhịp thở sân khấu 0.35s đầu (Frame 0 -> 21 @ 60fps) trước khi Dòng 1 thấm mực
   const introBufferFrames = Math.round(STAGE_LEAD_IN_SECONDS * fps);
@@ -225,6 +265,82 @@ export function computeTimelineSync(
       lastNonEmptyStartFrame + Math.round(0.38 * fps)
     );
 
+  // Ràng buộc B.1: Neo mốc Header tan mực theo recommendedCoverFrame để Ảnh Bìa 3:4 sắc nét chữ tập
+  // và bảo đảm Header tan xong hoàn toàn trước pivotFrame (chừa Hồi 2 & Hồi 3 sạch khung tĩnh).
+  const pivotSeg = segmentTimings.find((s) => s.containsPivot);
+  const spoilerStartFrame =
+    pivotSeg && !pivotSeg.isFirstActiveLine
+      ? pivotSeg.startFrame
+      : Math.max(
+          introBufferFrames + Math.round(0.9 * fps),
+          pivotFrame - Math.round(0.6 * fps)
+        );
+  const setupSegments = segmentTimings.filter(
+    (s) =>
+      stripInlineMarkdown(s.text).trim().length > 0 &&
+      !s.containsPivot &&
+      s.startFrame < spoilerStartFrame
+  );
+  const lastSetupSeg =
+    setupSegments.length > 0
+      ? setupSegments[setupSegments.length - 1]
+      : undefined;
+  const rawCoverFrame = lastSetupSeg
+    ? Math.min(
+        lastSetupSeg.endTypingFrame,
+        Math.max(
+          introBufferFrames + Math.round(0.5 * fps),
+          spoilerStartFrame - Math.round(0.2 * fps)
+        )
+      )
+    : Math.max(
+        introBufferFrames + Math.round(0.5 * fps),
+        spoilerStartFrame - Math.round(0.25 * fps)
+      );
+
+  const holdAfterCoverFrames = Math.round(0.3 * fps); // 18 frames @ 60fps
+  const minDissolveFrames = Math.round(0.55 * fps);
+  const targetDissolveFrames = Math.round(0.8 * fps);
+  const dissolveDeadlineFrame = Math.max(
+    introBufferFrames + Math.round(0.7 * fps),
+    pivotFrame - Math.max(4, Math.round(0.1 * fps))
+  );
+
+  let recommendedCoverFrame: number;
+  let headerDissolveStartFrame: number;
+  let headerDissolveEndFrame: number;
+
+  if (
+    rawCoverFrame + holdAfterCoverFrames + minDissolveFrames <=
+    dissolveDeadlineFrame
+  ) {
+    recommendedCoverFrame = Math.max(introBufferFrames + 12, rawCoverFrame);
+    headerDissolveStartFrame = recommendedCoverFrame + holdAfterCoverFrames;
+    headerDissolveEndFrame = Math.min(
+      dissolveDeadlineFrame,
+      headerDissolveStartFrame + targetDissolveFrames
+    );
+  } else {
+    headerDissolveEndFrame = dissolveDeadlineFrame;
+    headerDissolveStartFrame = Math.max(
+      introBufferFrames + Math.round(0.4 * fps),
+      headerDissolveEndFrame - Math.round(0.6 * fps)
+    );
+    recommendedCoverFrame = Math.max(
+      introBufferFrames + 6,
+      Math.min(rawCoverFrame, headerDissolveStartFrame - holdAfterCoverFrames)
+    );
+  }
+
+  const loopWindowFrames = Math.min(
+    Math.round(TYPO_LOOP_FADE_SECONDS * fps),
+    Math.floor(durationInFrames * 0.18)
+  );
+  const loopRestoreStartFrame = Math.max(
+    pivotFrame + Math.round(0.4 * fps),
+    durationInFrames - loopWindowFrames
+  );
+
   return {
     fps,
     introBufferFrames,
@@ -232,5 +348,9 @@ export function computeTimelineSync(
     pivotFrame,
     allTextFinishedFrame,
     durationInFrames,
+    recommendedCoverFrame,
+    headerDissolveStartFrame,
+    headerDissolveEndFrame,
+    loopRestoreStartFrame,
   };
 }

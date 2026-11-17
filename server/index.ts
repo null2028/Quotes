@@ -23,6 +23,11 @@ import {
 import { VideoInputSchema } from '../src/schemas/videoSchema';
 import { heuristicFallbackMapper } from '../src/automation/semanticMapper';
 import { ensureValidPivotSubstring } from '../src/automation/validator';
+import {
+  GEMINI_SKILL_MD,
+  GEMINI_SKILL_NAME,
+  buildGeminiSkillZipBytes,
+} from '../src/automation/geminiBundleBridge';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const AUDIO_DIR = path.resolve(PROJECT_ROOT, 'public/audio');
@@ -163,7 +168,7 @@ export function createStudioApiApp() {
     }
   });
 
-  // 4. Nạp Gói Đạo Diễn (Direct Cup Bundle JSON Import)
+  // 4. Nạp Gói Đạo Diễn & Xuất Gói Gemini Skill Chuẩn (SKILL.md / .zip)
   app.post('/api/bundles/import', (req, res) => {
     try {
       const result = importDirectorBundle(
@@ -176,6 +181,22 @@ export function createStudioApiApp() {
         error: err instanceof Error ? err.message : String(err),
       });
     }
+  });
+
+  app.get(`/api/skills/${GEMINI_SKILL_NAME}.zip`, (_req, res) => {
+    const zipBytes = buildGeminiSkillZipBytes();
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${GEMINI_SKILL_NAME}.zip"`
+    );
+    res.send(Buffer.from(zipBytes));
+  });
+
+  app.get(`/api/skills/${GEMINI_SKILL_NAME}/SKILL.md`, (_req, res) => {
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="SKILL.md"');
+    res.send(GEMINI_SKILL_MD);
   });
 
   // 5. Quản lý Danh sách Chén (Cups CRUD)
@@ -283,13 +304,21 @@ export function createStudioApiApp() {
         incomingProps.motion.stageScript = undefined;
       }
 
+      const resetToDraft = Boolean(req.body?.resetToDraft);
       cups[idx] = {
         ...cups[idx],
+        ...(resetToDraft
+          ? {
+              status: 'draft' as const,
+              progress: 0,
+              errorMessage: undefined,
+            }
+          : {}),
         props: incomingProps,
         captionText: buildTraNguoiCaption(cups[idx].id, incomingProps),
       };
       saveCups(cups);
-      res.json({ cup: cups[idx] });
+      res.json({ cup: cups[idx], cups });
     } catch (err: unknown) {
       res
         .status(400)

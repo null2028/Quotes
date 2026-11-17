@@ -16,8 +16,14 @@ import {
 } from '../../src/automation/captionBuilder';
 import {
   formatCupBaseFileName,
-  formatCupSeoFileName,
 } from '../../src/automation/fileNaming';
+import {
+  isLegacyPublishedCupId,
+  LAYOUT_VARIANT_SHORT_LABELS,
+  resolveVisualDNA,
+} from '../../src/engine/visualDnaResolver';
+import { resolveStageScript } from '../../src/stage/stageScriptRegistry';
+import { isDarkThemePalette } from '../../src/theme/palettes';
 
 export const AIRTABLE_PAT_KEY = 'tra_nguoi_airtable_pat';
 export const DEFAULT_TRA_NGUOI_BASE_ID = 'app9rk1rYkbXuIi3e';
@@ -48,6 +54,12 @@ export interface ConsecutiveSomberNightWarning {
   cupB: string;
   moodA: string;
   moodB: string;
+  message: string;
+}
+
+export interface VisualDnaSequenceWarning {
+  code: 'CONSECUTIVE_LAYOUT' | 'MONOTONE_LIGHT_STREAK';
+  cups: string[];
   message: string;
 }
 
@@ -299,12 +311,9 @@ export function inferCupDefaultSlotAndMood(
   if (!slot) {
     slot =
       cup.props.themeId === 'MINIMAL_DARK' ||
-      cup.props.themeId === 'WARM_NOIR' ||
-      String(cup.props.themeId) === 'DARK_CONTEMPLATIVE'
+      cup.props.themeId === 'WARM_NOIR'
         ? 'Night'
-        : cup.props.themeId === 'SLATE_CALM'
-          ? 'Morning'
-          : 'Anytime';
+        : 'Anytime';
   }
 
   if (!mood) {
@@ -493,7 +502,8 @@ function isSomberMood(mood: string): boolean {
 }
 
 export function detectConsecutiveSomberNightWarning(
-  cups: CupRecord[]
+  cups: CupRecord[],
+  options?: { onlyActiveDrafts?: boolean }
 ): ConsecutiveSomberNightWarning | null {
   const ordered = [...cups].sort((a, b) => {
     const na = extractCupNumberInt(a.cupNumber || a.id) ?? 999;
@@ -507,6 +517,31 @@ export function detectConsecutiveSomberNightWarning(
       meta: resolveEffectiveCupTrackMeta(cup),
     }))
     .filter((item) => item.meta.slot === 'Night');
+
+  if (options?.onlyActiveDrafts) {
+    for (let i = nightCups.length - 1; i >= 1; i--) {
+      const prev = nightCups[i - 1];
+      const curr = nightCups[i];
+      if (
+        prev.cup.status === 'completed' &&
+        curr.cup.status === 'completed'
+      ) {
+        continue;
+      }
+      if (isSomberMood(prev.meta.mood) && isSomberMood(curr.meta.mood)) {
+        const labelA = `Chén ${prev.cup.cupNumber}`;
+        const labelB = `Chén ${curr.cup.cupNumber}`;
+        return {
+          cupA: labelA,
+          cupB: labelB,
+          moodA: prev.meta.mood,
+          moodB: curr.meta.mood,
+          message: `${labelA} (${prev.meta.mood}) & ${labelB} (${curr.meta.mood}) cùng khung Tối trầm — nên xen 1 Chén Tối «Ấm áp / Nhẹ nhàng» ở giữa.`,
+        };
+      }
+    }
+    return null;
+  }
 
   for (let i = 1; i < nightCups.length; i++) {
     const prev = nightCups[i - 1];
@@ -525,6 +560,76 @@ export function detectConsecutiveSomberNightWarning(
   }
 
   return null;
+}
+
+/**
+ * Phát hiện sớm các Chén liền kề trùng bố cục hoặc lặp >=3 nền sáng liên tiếp (bỏ qua lịch sử 01–07 nội bộ).
+ */
+export function detectVisualDnaSequenceWarnings(
+  cups: CupRecord[]
+): VisualDnaSequenceWarning[] {
+  const ordered = [...cups]
+    .sort((a, b) => {
+      const na = extractCupNumberInt(a.cupNumber || a.id) ?? 999;
+      const nb = extractCupNumberInt(b.cupNumber || b.id) ?? 999;
+      return na !== nb ? na - nb : a.id.localeCompare(b.id);
+    })
+    .map((cup) => {
+      const sceneId = cup.props.motion?.sceneId || cup.props.motion?.archetype;
+      const script = resolveStageScript(sceneId, cup.props.motion?.stageScript);
+      const dna = resolveVisualDNA(cup.props, script);
+      const isDarkContrast = isDarkThemePalette(cup.props.themeId);
+      return { cup, dna, isDarkContrast };
+    });
+
+  const warnings: VisualDnaSequenceWarning[] = [];
+
+  for (let i = 1; i < ordered.length; i++) {
+    const prev = ordered[i - 1];
+    const curr = ordered[i];
+    if (isLegacyPublishedCupId(curr.cup.id)) continue;
+
+    if (prev.dna.layout === curr.dna.layout) {
+      const labelA = `Chén ${prev.cup.cupNumber}`;
+      const labelB = `Chén ${curr.cup.cupNumber}`;
+      const layoutLabel =
+        LAYOUT_VARIANT_SHORT_LABELS[curr.dna.layout] || curr.dna.layout;
+      warnings.push({
+        code: 'CONSECUTIVE_LAYOUT',
+        cups: [labelA, labelB],
+        message: `${labelA} & ${labelB} trùng bố cục «${layoutLabel}» liền kề — bấm «🎲 Đảo DNA» để tránh pHash giống nhau.`,
+      });
+    }
+  }
+
+  let lightStreak: typeof ordered = [];
+  const flushLightStreak = () => {
+    if (lightStreak.length >= 3) {
+      const tail = lightStreak[lightStreak.length - 1];
+      if (!isLegacyPublishedCupId(tail.cup.id)) {
+        const activeLabels = lightStreak
+          .slice(-3)
+          .map((item) => `Chén ${item.cup.cupNumber}`);
+        warnings.push({
+          code: 'MONOTONE_LIGHT_STREAK',
+          cups: activeLabels,
+          message: `${lightStreak.length} Chén nền sáng liên tiếp (${activeLabels.join(' → ')}) — nên xen 1 Chén «Mực Đêm Trầm» hoặc «Ô Long Cổ».`,
+        });
+      }
+    }
+    lightStreak = [];
+  };
+
+  for (const item of ordered) {
+    if (!item.isDarkContrast) {
+      lightStreak.push(item);
+    } else {
+      flushLightStreak();
+    }
+  }
+  flushLightStreak();
+
+  return warnings;
 }
 
 function extractCupNumberInt(cupNumberOrLabel: string): number | null {
@@ -558,19 +663,17 @@ function buildTrackerFieldsPayload(
     paddedNum,
     cup.props.title
   )}.mp4`;
-  const seoMp4FileName =
-    cup.seoFileName ||
-    `${formatCupSeoFileName(paddedNum, {
-      title: cup.props.title,
-      pivotWord: cup.props.pivotWord,
-      mood: meta.mood || cup.props.publishMood,
-      topic: cup.props.publishTopic,
-    })}.mp4`;
-  const foleyTag = ' · 🍵 Foley -14 LUFS';
+  const audioMode = cup.props.bgm?.audioMode ?? 'PIVOT_ACCENT';
+  const foleyTag =
+    audioMode === 'TIKTOK_SILENT'
+      ? ' · 🔇 Silent AAC'
+      : audioMode === 'FOLEY_MASTER'
+        ? ' · 🍵 Foley -14 LUFS'
+        : ' · 🎯 Pivot Accent';
   const fileStatusText =
     cup.status === 'completed'
-      ? `${seoMp4FileName} (${mp4FileName})${foleyTag}`
-      : `(Đang nháp) ${seoMp4FileName}${foleyTag}`;
+      ? `${mp4FileName}${foleyTag}`
+      : `(Đang nháp) ${mp4FileName}${foleyTag}`;
 
   const fields: Record<string, unknown> = {
     'Mã Chén': primaryLabel,

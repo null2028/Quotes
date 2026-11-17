@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Player } from '@remotion/player';
+import React, { useEffect, useRef, useState } from 'react';
+import { Player, type PlayerRef } from '@remotion/player';
 import {
   Film,
   Copy,
@@ -23,6 +23,8 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowUpRight,
+  Camera,
+  LayoutGrid,
 } from 'lucide-react';
 import {
   CupAirtableTrackMeta,
@@ -37,6 +39,11 @@ import {
   auditVietnameseSyllables,
   computeTimelineSync,
 } from '../../../src/engine/timelineSync';
+import {
+  resolveLayoutGeometry,
+  resolveVisualDNA,
+} from '../../../src/engine/visualDnaResolver';
+import { resolveStageScript } from '../../../src/stage/stageScriptRegistry';
 import { LAYOUT_TOKENS } from '../../../src/theme/palettes';
 import {
   auditTikTokSeoCaption,
@@ -48,7 +55,6 @@ import {
 } from '../../../src/automation/captionBuilder';
 import {
   formatCupBaseFileName,
-  formatCupSeoFileName,
 } from '../../../src/automation/fileNaming';
 import {
   MOOD_PRESETS,
@@ -60,7 +66,7 @@ import {
   upsertSingleCupOnAirtableTracker,
 } from '../airtableCupTracker';
 
-type SafeZoneMode = 'off' | 'organic' | 'shop';
+type SafeZoneMode = 'off' | 'organic' | 'profile34' | 'shop';
 
 interface Props {
   cup: CupRecord;
@@ -78,7 +84,8 @@ export const LivePhonePreview: React.FC<Props> = ({
   onCupTrackUpdated,
 }) => {
   // Mặc định TẮT lớp phủ Safe-Zone để xem video phẳng chuẩn 9:16 (1080×1920);
-  // cho phép bật nhanh 2 chế độ: Đa Kênh (X=[157,833], Y=[180,1540]) hoặc Shop/Ads (X=[217,803], Y=[240,1260])
+  // cho phép bật nhanh 3 chế độ: Đa Kênh, 3:4 Tường Profile, hoặc Shop/Ads
+  const playerRef = useRef<PlayerRef>(null);
   const [safeZoneMode, setSafeZoneMode] = useState<SafeZoneMode>('off');
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [copiedSeed, setCopiedSeed] = useState(false);
@@ -137,6 +144,36 @@ export const LivePhonePreview: React.FC<Props> = ({
   ]);
 
   const sync = computeTimelineSync(cup.props, LAYOUT_TOKENS.fps);
+  const activeSceneId =
+    cup.props.motion?.sceneId || cup.props.motion?.archetype;
+  const resolvedDna = resolveVisualDNA(
+    cup.props,
+    resolveStageScript(activeSceneId, cup.props.motion?.stageScript)
+  );
+  const layoutGeo = resolveLayoutGeometry(
+    resolvedDna.layout,
+    resolvedDna.brushOrientation
+  );
+  const coverTimeSec = (sync.recommendedCoverFrame / LAYOUT_TOKENS.fps).toFixed(
+    2
+  );
+  const durationSecLabel = (
+    sync.durationInFrames / LAYOUT_TOKENS.fps
+  ).toFixed(1);
+  const activeAudioMode = cup.props.bgm?.audioMode ?? 'PIVOT_ACCENT';
+  const audioOverlayLabel =
+    activeAudioMode === 'TIKTOK_SILENT'
+      ? '🔇 Silent AAC · Nhạc kho TikTok'
+      : activeAudioMode === 'FOLEY_MASTER'
+        ? '♫ Foley Master -14.0 LUFS'
+        : '🎯 Nền -55dBFS + Điểm Pivot';
+
+  const handleJumpToCoverFrame = () => {
+    playerRef.current?.pause();
+    playerRef.current?.seekTo(sync.recommendedCoverFrame);
+    setSafeZoneMode('profile34');
+  };
+
   const syllableAudit = auditVietnameseSyllables(cup.props.segments);
   const isBusy =
     cup.status === 'queued' ||
@@ -158,14 +195,8 @@ export const LivePhonePreview: React.FC<Props> = ({
     cup.cupNumber || cup.id,
     cup.props.title
   );
-  const seoFileBase = formatCupSeoFileName(cup.cupNumber || cup.id, {
-    title: cup.props.title,
-    pivotWord: cup.props.pivotWord,
-    mood: publishMood || cup.props.publishMood,
-    topic: cup.props.publishTopic,
-  });
-  const seoDownloadName = cup.seoFileName || `${seoFileBase}.mp4`;
-  const downloadHref = cup.seoVideoUrl || cup.videoUrl;
+  const videoDownloadName = `${cupFileBase}.mp4`;
+  const downloadHref = cup.videoUrl;
 
   const firstHookLine =
     activeCaption
@@ -356,7 +387,7 @@ export const LivePhonePreview: React.FC<Props> = ({
 
   // Tỷ lệ phần trăm chính xác bên trong khung chuẩn 9:16 (1080 × 1920 px):
   // - Dải xén mép iPhone 9:19.5 full-height: 97px / 1080px = 8.98% mỗi bên
-  // - Vùng an toàn Đa kênh (Organic): X=[157..833] (left 14.54%, right 22.87%), Y=[180..1540] (top 9.38%, bottom 19.79%), trần chữ Studio Y=1460 (bottom 23.96%)
+  // - Vùng an toàn Đa kênh (Organic): X=[132..833] (left 12.22%, right 22.87%), Y=[180..1550] (top 9.38%, bottom 19.27%), trần chữ Studio mở rộng Y=1550
   // - Vùng an toàn Shop / Spark Ads: X=[217..803] (left 20.09%, right 25.65%), Y=[240..1260] (top 12.50%, bottom 34.38%)
   const safeBoxStyle =
     safeZoneMode === 'shop'
@@ -367,54 +398,67 @@ export const LivePhonePreview: React.FC<Props> = ({
           bottom: '34.38%',
         }
       : {
-          left: '14.54%',
+          left: '12.22%',
           right: '22.87%',
           top: '9.38%',
-          bottom: '19.79%',
+          bottom: '19.27%',
         };
 
   return (
     <aside className="w-[405px] shrink-0 border-l border-tea-border bg-tea-paper/95 p-4 flex flex-col justify-between overflow-y-auto">
       <div className="space-y-3">
-        {/* Thanh tiêu đề Preview chuẩn 9:16 + Công tắc 3 chế độ thước ngắm Safe-Zone */}
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-tea-ink shrink-0">
-            <Film className="w-4 h-4 text-tea-accent" />
-            <span>Khung 9:16</span>
+        {/* Thanh tiêu đề Preview chuẩn 9:16 + Công tắc 4 chế độ thước ngắm Safe-Zone */}
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-tea-ink shrink-0">
+            <Film className="w-3.5 h-3.5 text-tea-accent" />
+            <span>9:16</span>
           </div>
 
           <div
-            className="inline-flex items-center rounded-full border border-tea-border bg-white p-0.5 text-[10.5px] font-semibold"
+            className="inline-flex items-center rounded-full border border-tea-border bg-white p-0.5 text-[10px] font-semibold"
             title="Thước ngắm vùng an toàn nằm bên trong khung xuất chuẩn 9:16 (1080×1920)"
           >
             <button
               type="button"
               onClick={() => setSafeZoneMode('off')}
-              className={`px-2 py-0.5 rounded-full transition ${
+              className={`px-1.5 py-0.5 rounded-full transition ${
                 safeZoneMode === 'off'
                   ? 'bg-tea-ink text-tea-paper'
                   : 'text-tea-muted hover:text-tea-ink'
               }`}
             >
-              1:1 Sạch
+              Sạch
             </button>
             <button
               type="button"
               onClick={() => setSafeZoneMode('organic')}
-              className={`px-2 py-0.5 rounded-full flex items-center gap-1 transition ${
+              className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 transition ${
                 safeZoneMode === 'organic'
                   ? 'bg-tea-accent text-white'
                   : 'text-tea-muted hover:text-tea-ink'
               }`}
-              title="Vùng an toàn Đa kênh (TikTok · Reels · Shorts): X=[157,833], Y=[180,1540], trừ 97px mép màn hình 9:19.5"
+              title="Vùng an toàn Đa kênh (TikTok · Reels · Shorts): X=[157,833], Y=[180,1550], trừ 97px mép màn hình 9:19.5"
             >
               <Scan className="w-2.5 h-2.5" />
-              Safe Đa Kênh
+              Đa Kênh
+            </button>
+            <button
+              type="button"
+              onClick={() => setSafeZoneMode('profile34')}
+              className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 transition ${
+                safeZoneMode === 'profile34'
+                  ? 'bg-emerald-700 text-white'
+                  : 'text-tea-muted hover:text-tea-ink'
+              }`}
+              title="Khung cắt lưới 3:4 ngoài tường Profile TikTok (1080×1440 · Xén 240px trên & 240px dưới)"
+            >
+              <LayoutGrid className="w-2.5 h-2.5" />
+              3:4 Tường
             </button>
             <button
               type="button"
               onClick={() => setSafeZoneMode('shop')}
-              className={`px-2 py-0.5 rounded-full flex items-center gap-1 transition ${
+              className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 transition ${
                 safeZoneMode === 'shop'
                   ? 'bg-amber-600 text-white'
                   : 'text-tea-muted hover:text-tea-ink'
@@ -422,7 +466,7 @@ export const LivePhonePreview: React.FC<Props> = ({
               title="Vùng an toàn gắn giỏ hàng TikTok Shop / Spark Ads: X=[217,803], Y=[240,1260]"
             >
               <ShoppingBag className="w-2.5 h-2.5" />
-              Shop/Ads
+              Shop
             </button>
           </div>
         </div>
@@ -430,6 +474,7 @@ export const LivePhonePreview: React.FC<Props> = ({
         {/* Khung Video Chuẩn Tỷ Lệ 9:16 Tuyệt Đối (box-content 288×512 = 1080×1920) */}
         <div className="box-content relative mx-auto w-[288px] h-[512px] border border-tea-ink/20 bg-tea-bg shadow-sm overflow-hidden">
           <Player
+            ref={playerRef}
             component={QuoteVideoComposition}
             inputProps={cup.props}
             durationInFrames={sync.durationInFrames}
@@ -441,8 +486,49 @@ export const LivePhonePreview: React.FC<Props> = ({
             loop
           />
 
-          {/* Lớp phủ Thước ngắm Safe-Zone đặt bên trong bức tranh 9:16 (1080×1920) */}
-          {safeZoneMode !== 'off' && (
+          {/* Lớp phủ Lưới Tường Profile TikTok 3:4 (1080×1440 căn giữa · xén 240px trên & dưới) */}
+          {safeZoneMode === 'profile34' && (
+            <div className="pointer-events-none absolute inset-0 z-10">
+              <div
+                style={{ height: '12.5%' }}
+                className="absolute inset-x-0 top-0 bg-black/62 border-b-2 border-dashed border-emerald-400 flex items-end justify-between px-2 pb-1 text-[7.5px] font-mono text-emerald-200"
+              >
+                <span>XÉN TRÊN LƯỚI 3:4</span>
+                <span>Y = 0..240px</span>
+              </div>
+
+              <div
+                style={{ top: '12.5%', bottom: '12.5%' }}
+                className="absolute inset-x-0 border-x-2 border-emerald-400/75"
+              >
+                <div className="w-full h-full grid grid-cols-3 grid-rows-3">
+                  {Array.from({ length: 9 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="border border-white/12"
+                    />
+                  ))}
+                </div>
+                <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-emerald-700/90 text-[7.5px] font-mono font-semibold text-white">
+                  TƯỜNG PROFILE 3:4 (1080×1440) · Header Y=268 ✓
+                </span>
+                <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/55 text-[8px] font-semibold text-white">
+                  ▷ 12.8K
+                </span>
+              </div>
+
+              <div
+                style={{ height: '12.5%' }}
+                className="absolute inset-x-0 bottom-0 bg-black/62 border-t-2 border-dashed border-emerald-400 flex items-start justify-between px-2 pt-1 text-[7.5px] font-mono text-emerald-200"
+              >
+                <span>XÉN DƯỚI LƯỚI 3:4</span>
+                <span>Y = 1680..1920px</span>
+              </div>
+            </div>
+          )}
+
+          {/* Lớp phủ Thước ngắm Safe-Zone Đa kênh / Shop bên trong khung 9:16 */}
+          {(safeZoneMode === 'organic' || safeZoneMode === 'shop') && (
             <div className="pointer-events-none absolute inset-0 z-10">
               {/* 1. Hai dải rìa 97px (8.98%) bị màn hình dài iPhone 9:19.5 phóng tràn viền cắt khuất */}
               <div
@@ -459,6 +545,34 @@ export const LivePhonePreview: React.FC<Props> = ({
                 className="absolute inset-y-0 right-0 bg-black/32 border-l border-dotted border-white/55"
                 title="97px mép phải bị màn hình iPhone 9:19.5 cắt khuất"
               />
+
+              {/* 1b. Khung Sân khấu & Khối chữ động theo visualDNA.layout */}
+              <div
+                style={{
+                  top: `${(layoutGeo.stageTop / 1920) * 100}%`,
+                  height: `${(layoutGeo.stageHeight / 1920) * 100}%`,
+                  left: `${(layoutGeo.stageLeft / 1080) * 100}%`,
+                  width: `${(layoutGeo.stageWidth / 1080) * 100}%`,
+                }}
+                className="absolute border border-dotted border-emerald-400/80 bg-emerald-400/[0.04]"
+              >
+                <span className="px-1 bg-emerald-900/70 rounded-br text-[6.5px] font-mono text-emerald-100">
+                  Sân khấu ({layoutGeo.stageTop}..{layoutGeo.stageTop + layoutGeo.stageHeight})
+                </span>
+              </div>
+              <div
+                style={{
+                  top: `${(layoutGeo.typographyTop / 1920) * 100}%`,
+                  height: `${((layoutGeo.typographyMaxBottom - layoutGeo.typographyTop) / 1920) * 100}%`,
+                  left: `${(layoutGeo.typographyLeft / 1080) * 100}%`,
+                  width: `${(layoutGeo.quoteBlockWidth / 1080) * 100}%`,
+                }}
+                className="absolute border border-dotted border-tea-accent/75 bg-tea-accent/[0.03]"
+              >
+                <span className="px-1 bg-black/55 rounded-br text-[6.5px] font-mono text-amber-100">
+                  Khối chữ ({layoutGeo.typographyTop}..{layoutGeo.typographyMaxBottom})
+                </span>
+              </div>
 
               {/* 2. Khung chữ nhật Safe Zone chuẩn (Đa kênh X=[157,833] Y=[180,1540] hoặc Shop X=[217,803] Y=[240,1260]) */}
               <div
@@ -478,23 +592,8 @@ export const LivePhonePreview: React.FC<Props> = ({
                 >
                   {safeZoneMode === 'shop'
                     ? 'SHOP SAFE · X[217..803] · Y[240..1260]'
-                    : 'SAFE ĐA KÊNH · X[157..833] · tâm X=495'}
+                    : `SAFE ĐA KÊNH · ${resolvedDna.layout}`}
                 </span>
-
-                {/* Vạch ranh giới giữa Sân khấu (y=354..844) & Khối chữ (y=856..1460) tại y=850px (44.27% toàn khung) */}
-                <div
-                  style={{
-                    top:
-                      safeZoneMode === 'shop'
-                        ? `${((850 - 240) / (1260 - 240)) * 100}%`
-                        : `${((850 - 180) / (1540 - 180)) * 100}%`,
-                  }}
-                  className="absolute inset-x-1 border-t border-dotted border-tea-accent/55 flex justify-end"
-                >
-                  <span className="px-1 -mt-2 bg-black/45 rounded text-[7px] font-mono text-white/85">
-                    Sân khấu ↑ · Chữ ↓ (y=850)
-                  </span>
-                </div>
               </div>
 
               {/* 3. Thanh tìm kiếm TikTok phía trên (y=0..295px = 15.36%) */}
@@ -524,7 +623,7 @@ export const LivePhonePreview: React.FC<Props> = ({
                   width: '13.89%',
                   right: '8.98%',
                   top: '44%',
-                  bottom: safeZoneMode === 'shop' ? '34.38%' : '23.96%',
+                  bottom: safeZoneMode === 'shop' ? '34.38%' : '19.27%',
                 }}
                 className="absolute bg-black/18 border-l border-dashed border-tea-accent/60 flex flex-col items-center justify-between py-1.5 text-white drop-shadow"
               >
@@ -571,16 +670,16 @@ export const LivePhonePreview: React.FC<Props> = ({
                 </div>
               )}
 
-              {/* 6. Vùng tên kênh + Caption + Thanh nhạc dưới đáy (y=1460..1920px = 23.96%) */}
+              {/* 6. Vùng tên kênh + Caption + Thanh nhạc dưới đáy (y=1550..1920px = 19.27%) */}
               <div
-                style={{ height: '23.96%', left: '8.98%', right: '8.98%' }}
+                style={{ height: '19.27%', left: '8.98%', right: '8.98%' }}
                 className="absolute bottom-0 bg-black/45 border-t-2 border-dashed border-tea-accent px-2 pt-1.5 pb-2 flex flex-col justify-between text-white"
               >
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-[9.5px] font-bold">@tranguoi.15s</span>
                     <span className="text-[7.5px] font-mono text-amber-200 font-semibold">
-                      y=1460..1540px
+                      y=1550..1920px
                     </span>
                   </div>
                   <div className="text-[8.5px] text-white/90 line-clamp-2 leading-snug mt-0.5 pr-1">
@@ -589,13 +688,31 @@ export const LivePhonePreview: React.FC<Props> = ({
                   </div>
                 </div>
 
-                <div className="bg-black/55 rounded-full px-2 py-0.5 text-[8px] text-white/80 flex items-center justify-between border border-white/15">
-                  <span>♫ Foley gốc 100% + Nhạc 5%</span>
-                  <span className="text-[7.5px] text-white/65">9:19.5 view</span>
+                <div className="bg-black/55 rounded-full px-2 py-0.5 text-[7.5px] text-white/85 flex items-center justify-between border border-white/15 gap-1">
+                  <span className="truncate">{audioOverlayLabel}</span>
+                  <span className="text-[7px] text-white/65 shrink-0">9:19.5</span>
                 </div>
               </div>
             </div>
           )}
+        </div>
+
+        {/* Thanh Tua Nhanh Đến Khung Cover Chống Lộ Câu Kết + Kiểm 3:4 */}
+        <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-xl bg-white/80 border border-tea-border text-[10.5px]">
+          <span className="text-tea-muted truncate">
+            Cover chống spoiler:{' '}
+            <strong className="font-mono text-tea-ink">
+              {coverTimeSec}s (F{sync.recommendedCoverFrame})
+            </strong>
+          </span>
+          <button
+            type="button"
+            onClick={handleJumpToCoverFrame}
+            className="px-2 py-0.5 rounded-lg bg-tea-ink text-tea-paper text-[10px] font-semibold hover:bg-tea-accent transition flex items-center gap-1 shrink-0"
+            title="Dừng video, tua đúng đến frame Ảnh Bìa (Header sắc nét, chưa lộ câu kết) và bật khung cắt 3:4 Profile"
+          >
+            <Camera className="w-3 h-3" /> Xem Cover 3:4
+          </button>
         </div>
 
         {/* 4 Ô Thông số kỹ thuật: Pivot · Nhịp đọc Âm tiết · Hết chữ · Chuẩn Master */}
@@ -628,10 +745,12 @@ export const LivePhonePreview: React.FC<Props> = ({
               {(sync.allTextFinishedFrame / LAYOUT_TOKENS.fps).toFixed(1)}s
             </div>
           </div>
-          <div title="Chuẩn kết xuất 1080×1920 CFR · H.264 High · BT.709 · 10 Mbps · Foley -14 LUFS">
-            <div className="text-[9.5px] text-tea-muted">Master</div>
+          <div
+            title={`Chuẩn kết xuất V8.5 · 1080×1920 60fps CFR · H.264 High · BT.709 · Constrained CRF (~2.5-4.2MB) · Sạch Lavf · ${activeAudioMode}`}
+          >
+            <div className="text-[9.5px] text-tea-muted">Master V8.5</div>
             <div className="font-mono font-semibold text-tea-ink">
-              bt709·10M
+              {durationSecLabel}s·CRF
             </div>
           </div>
         </div>
@@ -850,8 +969,8 @@ export const LivePhonePreview: React.FC<Props> = ({
           )}
 
           <div className="flex items-center justify-between text-[10px] text-tea-muted px-0.5">
-            <span className="truncate" title={seoDownloadName}>
-              SEO file: <code className="text-tea-ink">{seoDownloadName}</code>
+            <span className="truncate" title={videoDownloadName}>
+              File MP4: <code className="text-tea-ink">{videoDownloadName}</code>
             </span>
             <span className="shrink-0 ml-1">{activeCaption.length} ký tự</span>
           </div>
@@ -1163,15 +1282,15 @@ export const LivePhonePreview: React.FC<Props> = ({
         )}
 
         {cup.status === 'completed' && downloadHref ? (
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="space-y-1.5">
             <a
               href={downloadHref}
-              download={seoDownloadName}
-              className="py-2 px-2.5 rounded-xl bg-tea-ink text-tea-paper text-[11.5px] font-semibold hover:bg-tea-accent transition flex items-center justify-center gap-1.5"
-              title={`Tải bản Master đặt tên chuẩn SEO: ${seoDownloadName} (bản lưu Studio: ${cupFileBase}.mp4)`}
+              download={videoDownloadName}
+              className="w-full py-2 px-2.5 rounded-xl bg-tea-ink text-tea-paper text-[11.5px] font-semibold hover:bg-tea-accent transition flex items-center justify-center gap-1.5"
+              title={`Tải file video: ${videoDownloadName}`}
             >
               <Download className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">Tải MP4 (SEO)</span>
+              <span className="truncate">Tải MP4 ({videoDownloadName})</span>
             </a>
 
             <button
@@ -1188,7 +1307,7 @@ export const LivePhonePreview: React.FC<Props> = ({
                   true
                 )
               }
-              className="py-2 px-2.5 rounded-xl border border-tea-accent/50 bg-tea-accent/10 text-tea-accent text-[11.5px] font-semibold hover:bg-tea-accent hover:text-white transition flex items-center justify-center gap-1.5 disabled:opacity-60"
+              className="w-full py-2 px-2.5 rounded-xl border border-tea-accent/50 bg-tea-accent/10 text-tea-accent text-[11.5px] font-semibold hover:bg-tea-accent hover:text-white transition flex items-center justify-center gap-1.5 disabled:opacity-60"
               title='Cập nhật thông tin Chén này lên bảng "Tủ Chén & Lịch Đăng" trên Airtable'
             >
               {syncingTracker ? (

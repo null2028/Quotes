@@ -1,13 +1,26 @@
-import { FoleyPivotStyle, VideoInputProps } from '../schemas/videoSchema';
+import {
+  AudioMode,
+  FoleyPivotStyle,
+  VideoInputProps,
+} from '../schemas/videoSchema';
 import { TimelineSyncResult, stripInlineMarkdown } from './timelineSync';
 
 export const FOLEY_SAMPLE_RATE = 48000;
 export const TARGET_INTEGRATED_LUFS = -14.0;
 export const TRUE_PEAK_CEILING_LINEAR = 0.841395;
 
-export function getFoleyMasterFileName(cupId: string): string {
+export function getAudioMasterFileName(
+  cupId: string,
+  audioMode: AudioMode = 'PIVOT_ACCENT'
+): string {
   const safeId = cupId.replace(/[^a-zA-Z0-9_-]+/g, '-').toLowerCase();
-  return `foley-master-${safeId}.wav`;
+  if (audioMode === 'FOLEY_MASTER') return `foley-master-${safeId}.wav`;
+  if (audioMode === 'TIKTOK_SILENT') return `silent-master-${safeId}.wav`;
+  return `pivot-accent-${safeId}.wav`;
+}
+
+export function getFoleyMasterFileName(cupId: string): string {
+  return getAudioMasterFileName(cupId, 'FOLEY_MASTER');
 }
 
 function createSeededRng(seedText: string): () => number {
@@ -118,22 +131,9 @@ function normalizeStereoToTargetLufs(
   const clampedGainDb = Math.max(-24, Math.min(32, targetLufs - measuredBeforeLufs));
   const linearGain = Math.pow(10, clampedGainDb / 20);
 
-  const kneeStart = TRUE_PEAK_CEILING_LINEAR * 0.82;
-  const kneeSpan = TRUE_PEAK_CEILING_LINEAR - kneeStart;
-
-  const softLimit = (x: number): number => {
-    const ax = Math.abs(x);
-    if (ax <= kneeStart) return x;
-    const sign = x < 0 ? -1 : 1;
-    const compressed =
-      kneeStart +
-      kneeSpan * Math.tanh((ax - kneeStart) / Math.max(1e-6, kneeSpan));
-    return sign * Math.min(TRUE_PEAK_CEILING_LINEAR, compressed);
-  };
-
   for (let i = 0; i < n; i++) {
-    left[i] = softLimit(left[i] * linearGain);
-    right[i] = softLimit(right[i] * linearGain);
+    left[i] = softLimitValue(left[i] * linearGain);
+    right[i] = softLimitValue(right[i] * linearGain);
   }
 }
 
@@ -145,7 +145,7 @@ export function resolveEffectivePivotStyle(
   if (props.motion?.pacingMode === 'WRY_BATHOS') {
     return 'WOOD_SEAL';
   }
-  if (props.themeId === 'MINIMAL_DARK' || props.themeId === 'SLATE_CALM') {
+  if (props.themeId === 'MINIMAL_DARK' || props.themeId === 'WARM_NOIR') {
     return 'WIND_CHIME';
   }
   return 'TEA_CUP';
@@ -327,53 +327,7 @@ export function synthesizeCupFoleyAudio(
   }
 
   // Hồi II (Đúng chính xác Frame Pivot): Điểm nhấn Đỏ Chu Sa
-  if (pivotStyle === 'TEA_CUP') {
-    const cupDur = Math.min(totalSamples - pivotSample, Math.round(1.45 * sr));
-    for (let k = 0; k < cupDur; k++) {
-      const t = k / sr;
-      const attack = Math.min(1, k / (0.0025 * sr));
-      const woodBody =
-        Math.sin(2 * Math.PI * 168 * t) * Math.exp(-t * 34) * 0.34;
-      const rim1 =
-        Math.sin(2 * Math.PI * 1174.66 * t) * Math.exp(-t * 5.8) * 0.22;
-      const rim2 =
-        Math.sin(2 * Math.PI * 2418.0 * t) * Math.exp(-t * 9.5) * 0.11;
-      const warmTail =
-        Math.sin(2 * Math.PI * 587.33 * t) * Math.exp(-t * 2.4) * 0.14;
-      const val = (woodBody + rim1 + rim2 + warmTail) * attack;
-      addStereoSample(left, right, pivotSample + k, val, 0.06);
-    }
-  } else if (pivotStyle === 'WIND_CHIME') {
-    const chimeDur = Math.min(totalSamples - pivotSample, Math.round(2.85 * sr));
-    for (let k = 0; k < chimeDur; k++) {
-      const t = k / sr;
-      const attack = Math.min(1, k / (0.004 * sr));
-      const m1 = Math.sin(2 * Math.PI * 293.66 * t) * Math.exp(-t * 1.45) * 0.28;
-      const m2 = Math.sin(2 * Math.PI * 295.1 * t) * Math.exp(-t * 1.6) * 0.16;
-      const m3 = Math.sin(2 * Math.PI * 587.33 * t) * Math.exp(-t * 2.5) * 0.15;
-      const m4 = Math.sin(2 * Math.PI * 880.0 * t) * Math.exp(-t * 4.2) * 0.08;
-      const val = (m1 + m2 + m3 + m4) * attack;
-      addStereoSample(left, right, pivotSample + k, val, -0.08);
-      addStereoSample(left, right, pivotSample + k + 18, val * 0.35, 0.22);
-    }
-  } else {
-    const sealDur = Math.min(totalSamples - pivotSample, Math.round(0.75 * sr));
-    let thudLp = 0;
-    for (let k = 0; k < sealDur; k++) {
-      const t = k / sr;
-      const attack = Math.min(1, k / (0.0018 * sr));
-      const woodImpact =
-        Math.sin(2 * Math.PI * (142 - 36 * Math.min(1, t * 18)) * t) *
-        Math.exp(-t * 24) *
-        0.42;
-      const crispSnap = (rng() * 2 - 1) * Math.exp(-t * 65) * 0.24;
-      thudLp += 0.38 * (crispSnap - thudLp);
-      const subtleRes =
-        Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 6.5) * 0.11;
-      const val = (woodImpact + thudLp + subtleRes) * attack;
-      addStereoSample(left, right, pivotSample + k, val, 0);
-    }
-  }
+  addPivotAccentHit(left, right, pivotSample, sr, totalSamples, pivotStyle, rng, 1.0);
 
   // Hồi III -> 15.0s: Hạt mưa hiên mỏng dần & khử click đầu-cuối 20ms
   const rainDropsInAct3 = 6;
@@ -423,19 +377,16 @@ export function synthesizeCupFoleyAudio(
   };
 }
 
-function encodeStereoFloat32ToWav16(
-  left: Float32Array,
-  right: Float32Array,
+function writeWav16Header(
+  view: DataView,
+  numFrames: number,
   sampleRate: number
-): Uint8Array {
-  const numFrames = left.length;
+): void {
   const numChannels = 2;
   const bytesPerSample = 2;
   const blockAlign = numChannels * bytesPerSample;
   const byteRate = sampleRate * blockAlign;
   const dataSize = numFrames * blockAlign;
-  const buffer = new ArrayBuffer(44 + dataSize);
-  const view = new DataView(buffer);
 
   const writeAscii = (offset: number, str: string) => {
     for (let i = 0; i < str.length; i++) {
@@ -456,6 +407,18 @@ function encodeStereoFloat32ToWav16(
   view.setUint16(34, 16, true);
   writeAscii(36, 'data');
   view.setUint32(40, dataSize, true);
+}
+
+function encodeStereoFloat32ToWav16(
+  left: Float32Array,
+  right: Float32Array,
+  sampleRate: number
+): Uint8Array {
+  const numFrames = left.length;
+  const dataSize = numFrames * 4;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+  writeWav16Header(view, numFrames, sampleRate);
 
   let offset = 44;
   for (let i = 0; i < numFrames; i++) {
@@ -475,4 +438,184 @@ function encodeStereoFloat32ToWav16(
   }
 
   return new Uint8Array(buffer);
+}
+
+function softLimitValue(x: number): number {
+  const kneeStart = TRUE_PEAK_CEILING_LINEAR * 0.82;
+  const kneeSpan = TRUE_PEAK_CEILING_LINEAR - kneeStart;
+  const ax = Math.abs(x);
+  if (ax <= kneeStart) return x;
+  const sign = x < 0 ? -1 : 1;
+  const compressed =
+    kneeStart +
+    kneeSpan * Math.tanh((ax - kneeStart) / Math.max(1e-6, kneeSpan));
+  return sign * Math.min(TRUE_PEAK_CEILING_LINEAR, compressed);
+}
+
+function addPivotAccentHit(
+  left: Float32Array,
+  right: Float32Array,
+  pivotSample: number,
+  sr: number,
+  totalSamples: number,
+  pivotStyle: Exclude<FoleyPivotStyle, 'AUTO'>,
+  rng: () => number,
+  gainMult = 1.0
+): void {
+  if (pivotStyle === 'TEA_CUP') {
+    const cupDur = Math.min(totalSamples - pivotSample, Math.round(1.45 * sr));
+    for (let k = 0; k < cupDur; k++) {
+      const t = k / sr;
+      const attack = Math.min(1, k / (0.0025 * sr));
+      const woodBody =
+        Math.sin(2 * Math.PI * 168 * t) * Math.exp(-t * 34) * 0.34;
+      const rim1 =
+        Math.sin(2 * Math.PI * 1174.66 * t) * Math.exp(-t * 5.8) * 0.22;
+      const rim2 =
+        Math.sin(2 * Math.PI * 2418.0 * t) * Math.exp(-t * 9.5) * 0.11;
+      const warmTail =
+        Math.sin(2 * Math.PI * 587.33 * t) * Math.exp(-t * 2.4) * 0.14;
+      const val = (woodBody + rim1 + rim2 + warmTail) * attack * gainMult;
+      addStereoSample(left, right, pivotSample + k, val, 0.06);
+    }
+  } else if (pivotStyle === 'WIND_CHIME') {
+    const chimeDur = Math.min(
+      totalSamples - pivotSample,
+      Math.round(2.85 * sr)
+    );
+    for (let k = 0; k < chimeDur; k++) {
+      const t = k / sr;
+      const attack = Math.min(1, k / (0.004 * sr));
+      const m1 =
+        Math.sin(2 * Math.PI * 293.66 * t) * Math.exp(-t * 1.45) * 0.28;
+      const m2 =
+        Math.sin(2 * Math.PI * 295.1 * t) * Math.exp(-t * 1.6) * 0.16;
+      const m3 =
+        Math.sin(2 * Math.PI * 587.33 * t) * Math.exp(-t * 2.5) * 0.15;
+      const m4 =
+        Math.sin(2 * Math.PI * 880.0 * t) * Math.exp(-t * 4.2) * 0.08;
+      const val = (m1 + m2 + m3 + m4) * attack * gainMult;
+      addStereoSample(left, right, pivotSample + k, val, -0.08);
+      addStereoSample(left, right, pivotSample + k + 18, val * 0.35, 0.22);
+    }
+  } else {
+    const sealDur = Math.min(
+      totalSamples - pivotSample,
+      Math.round(0.75 * sr)
+    );
+    let thudLp = 0;
+    for (let k = 0; k < sealDur; k++) {
+      const t = k / sr;
+      const attack = Math.min(1, k / (0.0018 * sr));
+      const woodImpact =
+        Math.sin(2 * Math.PI * (142 - 36 * Math.min(1, t * 18)) * t) *
+        Math.exp(-t * 24) *
+        0.42;
+      const crispSnap = (rng() * 2 - 1) * Math.exp(-t * 65) * 0.24;
+      thudLp += 0.38 * (crispSnap - thudLp);
+      const subtleRes =
+        Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 6.5) * 0.11;
+      const val = (woodImpact + thudLp + subtleRes) * attack * gainMult;
+      addStereoSample(left, right, pivotSample + k, val, 0);
+    }
+  }
+}
+
+export function synthesizeCupAudioByMode(
+  props: VideoInputProps,
+  sync: TimelineSyncResult
+): {
+  wavBytes: Uint8Array;
+  audioMode: AudioMode;
+  pivotStyle: Exclude<FoleyPivotStyle, 'AUTO'>;
+  durationSeconds: number;
+} {
+  const audioMode: AudioMode = props.bgm?.audioMode ?? 'PIVOT_ACCENT';
+  const sr = FOLEY_SAMPLE_RATE;
+  const durationSeconds = Math.max(4, sync.durationInFrames / sync.fps);
+  const totalSamples = Math.round(durationSeconds * sr);
+  const pivotStyle = resolveEffectivePivotStyle(props);
+
+  if (audioMode === 'FOLEY_MASTER') {
+    const full = synthesizeCupFoleyAudio(props, sync);
+    return {
+      ...full,
+      audioMode: 'FOLEY_MASTER',
+    };
+  }
+
+  if (audioMode === 'TIKTOK_SILENT') {
+    const dataSize = totalSamples * 4;
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+    writeWav16Header(view, totalSamples, sr);
+    return {
+      wavBytes: new Uint8Array(buffer),
+      audioMode: 'TIKTOK_SILENT',
+      pivotStyle,
+      durationSeconds,
+    };
+  }
+
+  // Mode 2 (PIVOT_ACCENT — mặc định): lót nền dither êm ~ -55 dBFS tránh AGC kéo gắt trên nền zero tuyệt đối,
+  // chỉ chèn đúng 1 tiếng chạm Đỏ Chu Sa tại frame Pivot.
+  const left = new Float32Array(totalSamples);
+  const right = new Float32Array(totalSamples);
+  const rng = createSeededRng(
+    `${props.id}-${props.title || ''}-${props.pivotWord}-mode2`
+  );
+
+  // TPDF filtered dither chuẩn mục tiêu ~ -55 dBFS RMS (~0.00178 linear)
+  const ditherDrive = 0.00178 * Math.sqrt(6) * Math.sqrt(7);
+  let ditherLpL = 0;
+  let ditherLpR = 0;
+  for (let i = 0; i < totalSamples; i++) {
+    const tpdfL = (rng() - rng()) * ditherDrive;
+    const tpdfR = (rng() - rng()) * ditherDrive;
+    ditherLpL += 0.25 * (tpdfL - ditherLpL);
+    ditherLpR += 0.25 * (tpdfR - ditherLpR);
+    left[i] = ditherLpL;
+    right[i] = ditherLpR;
+  }
+
+  const pivotSample = Math.min(
+    totalSamples - Math.round(0.5 * sr),
+    Math.max(Math.round(0.8 * sr), Math.round((sync.pivotFrame / sync.fps) * sr))
+  );
+  addPivotAccentHit(
+    left,
+    right,
+    pivotSample,
+    sr,
+    totalSamples,
+    pivotStyle,
+    rng,
+    0.78
+  );
+
+  const declickSamples = Math.min(
+    Math.round(0.02 * sr),
+    Math.floor(totalSamples / 8)
+  );
+  for (let i = 0; i < declickSamples; i++) {
+    const g =
+      0.25 + 0.75 * (0.5 - 0.5 * Math.cos((Math.PI * i) / declickSamples));
+    left[i] *= g;
+    right[i] *= g;
+    const tailIdx = totalSamples - 1 - i;
+    left[tailIdx] *= g;
+    right[tailIdx] *= g;
+  }
+
+  for (let i = 0; i < totalSamples; i++) {
+    left[i] = softLimitValue(left[i]);
+    right[i] = softLimitValue(right[i]);
+  }
+
+  return {
+    wavBytes: encodeStereoFloat32ToWav16(left, right, sr),
+    audioMode: 'PIVOT_ACCENT',
+    pivotStyle,
+    durationSeconds,
+  };
 }

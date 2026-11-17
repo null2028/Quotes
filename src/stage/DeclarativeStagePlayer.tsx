@@ -2,7 +2,11 @@ import React from 'react';
 import { interpolateColors } from 'remotion';
 import { EvaluatedMotionState } from '../engine/motionPhysics';
 import { TimelineSyncResult } from '../engine/timelineSync';
-import { LAYOUT_TOKENS, ThemePalette } from '../theme/palettes';
+import {
+  LAYOUT_TOKENS,
+  ThemePalette,
+  isDarkThemePalette,
+} from '../theme/palettes';
 import { CloakedTraveler } from '../kit/CloakedTraveler';
 import {
   SlowRain,
@@ -26,12 +30,17 @@ import {
 } from './terrainSystem';
 import { evaluateEnterLeaveMultiplier } from './timeResolver';
 import {
+  applyHorizonOffsetToTerrain,
   EvaluatedActorState,
   EvaluatedPropState,
   evaluateStageScriptAtFrame,
   resolveRoleColor,
 } from './trackCompiler';
-import { StagePropRenderer } from './propCatalog';
+import { ResolvedVisualDNA } from '../engine/visualDnaResolver';
+import {
+  BUILT_IN_PROP_CATALOG,
+  StagePropRenderer,
+} from './propCatalog';
 
 function lerpNum(a: number, b: number, t: number): number {
   return a + (b - a) * t;
@@ -46,6 +55,9 @@ export const DeclarativeStagePlayer: React.FC<{
   fps: number;
   durationInFrames: number;
   timeline: TimelineSyncResult;
+  visualDNA?: ResolvedVisualDNA;
+  stageBox?: { width: number; height: number };
+  frameMode?: 'NONE' | 'WINDOW_ARCH' | 'ASYMMETRIC_CARD';
 }> = ({
   script,
   state,
@@ -53,35 +65,48 @@ export const DeclarativeStagePlayer: React.FC<{
   strokeWidth,
   frame,
   timeline,
+  visualDNA,
+  stageBox,
+  frameMode = 'NONE',
 }) => {
+  const isDarkSpotTheme = isDarkThemePalette(palette.id);
+  const propAccentColor = palette.accentProp || palette.accent;
   const compiledNow = evaluateStageScriptAtFrame(
     script,
     frame,
     timeline,
-    palette
+    palette,
+    visualDNA
   );
 
-  // Pha thu hồi Seamless Loop (13.5s -> 15.0s): khớp khít 100% về trạng thái 0.0s
+  // Pha thu hồi Seamless Loop: khớp khít 100% về trạng thái 0.0s
   const loopBlend = state.seamlessLoopBlend ?? 0;
   const isLoopClosing = loopBlend > 0.002;
   const compiledZero = isLoopClosing
-    ? evaluateStageScriptAtFrame(script, 0, timeline, palette)
+    ? evaluateStageScriptAtFrame(script, 0, timeline, palette, visualDNA)
     : null;
 
   const isPrePivot = frame < timeline.pivotFrame - 6;
   const isAfterPivot = !isPrePivot && loopBlend < 0.75;
   const phase = state.continuousPhase;
-  const isSolidStyle = Boolean(script.tags?.includes('solid_style'));
+  const isSolidStyle =
+    Boolean(script.tags?.includes('solid_style')) ||
+    Boolean(visualDNA?.forceSolidStyle);
+  const horizonOffsetPx =
+    visualDNA && !visualDNA.isLegacyLocked ? visualDNA.horizonOffsetPx : 0;
 
   const effectiveTerrain =
     compiledZero && isLoopClosing
-      ? normalizeTerrainConfig(
-          script.terrain,
-          lerpNum(
-            compiledNow.terrain.bridgeProgress,
-            compiledZero.terrain.bridgeProgress,
-            loopBlend
-          )
+      ? applyHorizonOffsetToTerrain(
+          normalizeTerrainConfig(
+            script.terrain,
+            lerpNum(
+              compiledNow.terrain.bridgeProgress,
+              compiledZero.terrain.bridgeProgress,
+              loopBlend
+            )
+          ),
+          horizonOffsetPx
         )
       : compiledNow.terrain;
 
@@ -120,6 +145,7 @@ export const DeclarativeStagePlayer: React.FC<{
             leanDeg: lerpNum(curA.leanDeg, zeroA.leanDeg, loopBlend),
             sitProgress: lerpNum(curA.sitProgress, zeroA.sitProgress, loopBlend),
             showTeaCup: lerpNum(curA.showTeaCup, zeroA.showTeaCup, loopBlend),
+            drawProgress: lerpNum(curA.drawProgress, zeroA.drawProgress, loopBlend),
             opacity: lerpNum(curA.opacity, zeroA.opacity, loopBlend),
             color:
               curA.color === zeroA.color
@@ -127,6 +153,33 @@ export const DeclarativeStagePlayer: React.FC<{
                 : interpolateColors(loopBlend, [0, 1], [curA.color, zeroA.color]),
             facing: loopBlend < 0.55 ? curA.facing : zeroA.facing,
             pose: loopBlend < 0.55 ? curA.pose : zeroA.pose,
+            poseWeights: {
+              lookUp: lerpNum(
+                curA.poseWeights.lookUp,
+                zeroA.poseWeights.lookUp,
+                loopBlend
+              ),
+              reachOut: lerpNum(
+                curA.poseWeights.reachOut,
+                zeroA.poseWeights.reachOut,
+                loopBlend
+              ),
+              give: lerpNum(
+                curA.poseWeights.give,
+                zeroA.poseWeights.give,
+                loopBlend
+              ),
+              holdUp: lerpNum(
+                curA.poseWeights.holdUp,
+                zeroA.poseWeights.holdUp,
+                loopBlend
+              ),
+              push: lerpNum(
+                curA.poseWeights.push,
+                zeroA.poseWeights.push,
+                loopBlend
+              ),
+            },
           },
         });
       } else {
@@ -182,6 +235,16 @@ export const DeclarativeStagePlayer: React.FC<{
             scale: lerpNum(curP.scale, zeroP.scale, loopBlend),
             rotate: lerpNum(curP.rotate, zeroP.rotate, loopBlend),
             opacity: lerpNum(curP.opacity, zeroP.opacity, loopBlend),
+            motionActivity: lerpNum(
+              curP.motionActivity,
+              zeroP.motionActivity,
+              loopBlend
+            ),
+            travelDist: lerpNum(
+              curP.travelDist,
+              zeroP.travelDist,
+              loopBlend
+            ),
             drawProgress: lerpNum(curP.drawProgress, zeroP.drawProgress, loopBlend),
             morphProgress: lerpNum(curP.morphProgress, zeroP.morphProgress, loopBlend),
             splitProgress: lerpNum(curP.splitProgress, zeroP.splitProgress, loopBlend),
@@ -280,12 +343,22 @@ export const DeclarativeStagePlayer: React.FC<{
 
     const focusCap =
       item.focusRole === 'ambient'
-        ? 0.48
+        ? isDarkSpotTheme
+          ? 0.56
+          : 0.48
         : item.focusRole === 'support'
-          ? 0.52
+          ? isDarkSpotTheme
+            ? 0.64
+            : 0.52
           : 0.95;
+    const atmoIntroMult =
+      item.enterAt !== undefined
+        ? 1
+        : Math.max(0, Math.min(1, (frame - Math.round(0.55 * timeline.fps)) / Math.max(1, Math.round(0.75 * timeline.fps))));
+    const stageOutroGate =
+      frame > timeline.pivotFrame ? state.drawProgress : 1;
     const rawItemOpacity =
-      (item.opacity ?? 1) * enterLeave * state.drawProgress;
+      (item.opacity ?? 1) * enterLeave * atmoIntroMult * stageOutroGate;
     const itemOpacity =
       item.focusRole === 'ambient' || item.focusRole === 'support'
         ? Math.min(focusCap, rawItemOpacity)
@@ -350,7 +423,7 @@ export const DeclarativeStagePlayer: React.FC<{
             frame={frame}
             opacity={itemOpacity}
             color={color}
-            accentColor={isAfterPivot ? palette.accent : palette.inkSecondary}
+            accentColor={isAfterPivot ? propAccentColor : palette.inkSecondary}
             count={item.count ?? 6}
           />
         );
@@ -426,9 +499,9 @@ export const DeclarativeStagePlayer: React.FC<{
     const rawActorOpacity = actor.opacity * dissolveMult;
     const effOpacity =
       actor.focusRole === 'ambient'
-        ? Math.min(0.24, rawActorOpacity)
+        ? Math.min(isDarkSpotTheme ? 0.36 : 0.24, rawActorOpacity)
         : actor.focusRole === 'support' || isFar
-          ? Math.min(0.38, rawActorOpacity)
+          ? Math.min(isDarkSpotTheme ? 0.52 : 0.38, rawActorOpacity)
           : isSolidStyle
             ? Math.min(1, rawActorOpacity)
             : rawActorOpacity * 0.95;
@@ -439,29 +512,99 @@ export const DeclarativeStagePlayer: React.FC<{
         ? Math.sin(cloudP * Math.PI) * 0.72 * (1 - loopBlend)
         : 0;
 
+    const rigName = actor.rig?.trim();
+    const isCustomRig =
+      Boolean(rigName) &&
+      rigName !== 'traveler' &&
+      rigName !== 'cloaked_traveler' &&
+      rigName !== 'human' &&
+      Boolean(
+        script.customPropsResolved?.[rigName!] ??
+          BUILT_IN_PROP_CATALOG[rigName!]
+      );
+
+    const safeTotalFrames = Math.max(2, timeline.durationInFrames);
+    const actorLoopProgress =
+      (((frame % safeTotalFrames) + safeTotalFrames) % safeTotalFrames) /
+      safeTotalFrames;
+    const actorDirSign = actor.facing === 'left' ? -1 : 1;
+
+    const actorStageGate =
+      frame > timeline.pivotFrame ? state.drawProgress : 1;
     return (
-      <g key={`actor-${key}`} opacity={state.drawProgress}>
-        {effOpacity > 0.01 && actor.dissolveToCloud < 0.8 && (
-          <CloakedTraveler
-            x={actor.x}
-            y={actor.y}
-            scale={actor.scale}
-            facing={actor.facing}
-            pose={actor.pose}
-            leanDeg={actor.leanDeg}
-            sitProgress={actor.sitProgress}
-            walkPhase={actor.walkPhase}
-            walkActivity={actor.walkActivity}
-            breathPhase={actor.breathPhase}
-            color={actor.color}
-            accentColor={isAfterPivot ? palette.accent : palette.inkPrimary}
-            bgColor={palette.background}
-            showTeaCup={actor.showTeaCup}
-            solidFill={isSolidStyle}
-            strokeWidth={effStroke}
-            opacity={effOpacity}
-          />
-        )}
+      <g key={`actor-${key}`} opacity={actorStageGate}>
+        {effOpacity > 0.01 &&
+          actor.dissolveToCloud < 0.8 &&
+          (isCustomRig && rigName ? (
+            <StagePropRenderer
+              propState={{
+                id: actor.id,
+                type: rigName,
+                layer: actor.layer,
+                focusRole: actor.focusRole,
+                x: actor.x,
+                y: actor.y,
+                scale: actor.scale,
+                rotate: actor.leanDeg,
+                opacity: effOpacity,
+                color: actor.color,
+                isAccentActive: isAfterPivot && actor.color === propAccentColor,
+                loopProgress: actorLoopProgress,
+                motionActivity: actor.walkActivity,
+                travelDist:
+                  actorDirSign *
+                  (actor.walkPhase / Math.PI) *
+                  8.8 *
+                  Math.max(0.6, actor.scale),
+                drawProgress: actor.drawProgress,
+                morphProgress: isAfterPivot ? actor.sitProgress : 0,
+                splitProgress: 0,
+                floatAwayProgress: 0,
+                emitters: {
+                  steam: actor.showTeaCup,
+                  pulseRing: 0,
+                  spill: 0,
+                  glow: 0,
+                  color: propAccentColor,
+                  steamColor: isAfterPivot
+                    ? propAccentColor
+                    : palette.inkSecondary,
+                },
+                spec: {
+                  id: actor.id,
+                  type: rigName,
+                },
+              }}
+              palette={palette}
+              strokeWidth={strokeWidth}
+              frame={frame}
+              isAfterPivot={isAfterPivot}
+              customPropsMap={script.customPropsResolved}
+              flipX={actor.facing === 'left'}
+            />
+          ) : (
+            <CloakedTraveler
+              x={actor.x}
+              y={actor.y}
+              scale={actor.scale}
+              facing={actor.facing}
+              pose={actor.pose}
+              poseWeights={actor.poseWeights}
+              leanDeg={actor.leanDeg}
+              sitProgress={actor.sitProgress}
+              walkPhase={actor.walkPhase}
+              walkActivity={actor.walkActivity}
+              breathPhase={actor.breathPhase}
+              color={actor.color}
+              accentColor={isAfterPivot ? propAccentColor : palette.inkPrimary}
+              bgColor={palette.background}
+              showTeaCup={actor.showTeaCup}
+              solidFill={isSolidStyle}
+              strokeWidth={effStroke}
+              opacity={effOpacity}
+              drawProgress={actor.drawProgress}
+            />
+          ))}
 
         {cloudOpacity > 0.01 && (
           <g
@@ -509,47 +652,172 @@ export const DeclarativeStagePlayer: React.FC<{
       .filter((entry) => entry.actor.layer === layer)
       .map(({ key, actor }) => renderActorNode(key, actor));
 
-  const cameraTransform = `translate(270, 315) scale(${cam.zoom.toFixed(3)}) translate(${(-270 - cam.panX).toFixed(2)}, ${(-315 - cam.panY).toFixed(2)})`;
+  const parallax =
+    compiledZero && isLoopClosing
+      ? {
+          sky: lerpNum(
+            compiledNow.layerParallaxX.sky,
+            compiledZero.layerParallaxX.sky,
+            loopBlend
+          ),
+          far: lerpNum(
+            compiledNow.layerParallaxX.far,
+            compiledZero.layerParallaxX.far,
+            loopBlend
+          ),
+          mid: lerpNum(
+            compiledNow.layerParallaxX.mid,
+            compiledZero.layerParallaxX.mid,
+            loopBlend
+          ),
+          fore: lerpNum(
+            compiledNow.layerParallaxX.fore,
+            compiledZero.layerParallaxX.fore,
+            loopBlend
+          ),
+        }
+      : compiledNow.layerParallaxX;
+
+  const spotlight =
+    compiledZero && isLoopClosing
+      ? {
+          strength: lerpNum(
+            compiledNow.spotlight.strength,
+            compiledZero.spotlight.strength,
+            loopBlend
+          ),
+          focusX: lerpNum(
+            compiledNow.spotlight.focusX,
+            compiledZero.spotlight.focusX,
+            loopBlend
+          ),
+          focusY: lerpNum(
+            compiledNow.spotlight.focusY,
+            compiledZero.spotlight.focusY,
+            loopBlend
+          ),
+        }
+      : compiledNow.spotlight;
+
+  const spotGradId = `stage-spotlight-${(script.sceneId || 'cup').replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+  const peripheryDim =
+    spotlight.strength > 0.005
+      ? 1 - spotlight.strength * (isDarkSpotTheme ? 0.38 : 0.32)
+      : 1;
+  const svgWidth = stageBox?.width ?? LAYOUT_TOKENS.swissGrid.stageWidth;
+  const svgHeight = stageBox?.height ?? LAYOUT_TOKENS.swissGrid.stageHeight;
+
+  const cameraTransform = `translate(270, 315) scale(${cam.zoom.toFixed(5)}) translate(${(-270 - cam.panX).toFixed(3)}, ${(-315 - cam.panY).toFixed(3)})`;
 
   return (
     <svg
-      width={LAYOUT_TOKENS.swissGrid.stageWidth}
-      height={LAYOUT_TOKENS.swissGrid.stageHeight}
+      width={svgWidth}
+      height={svgHeight}
       viewBox={STAGE_VIEWBOX}
-      style={{ overflow: 'visible' }}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ overflow: 'visible', background: 'transparent' }}
     >
+      {spotlight.strength > 0.005 && (
+        <defs>
+          <radialGradient
+            id={spotGradId}
+            cx={spotlight.focusX.toFixed(1)}
+            cy={spotlight.focusY.toFixed(1)}
+            r="146"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop
+              offset="0%"
+              stopColor={isDarkSpotTheme ? '#FFEAD2' : '#FFF5E0'}
+              stopOpacity={(
+                spotlight.strength * (isDarkSpotTheme ? 0.16 : 0.22)
+              ).toFixed(3)}
+            />
+            <stop
+              offset="52%"
+              stopColor={propAccentColor}
+              stopOpacity={(spotlight.strength * 0.045).toFixed(3)}
+            />
+            <stop
+              offset="100%"
+              stopColor={propAccentColor}
+              stopOpacity="0"
+            />
+          </radialGradient>
+        </defs>
+      )}
       <g transform={cameraTransform}>
-        <g opacity={state.drawProgress}>{renderPropsByLayer('sky')}</g>
-        {(script.atmosphere ?? []).map((item, idx) =>
-          renderAtmosphereItem(item, idx)
-        )}
+        <g
+          opacity={(frame > timeline.pivotFrame ? state.drawProgress : 1) * peripheryDim}
+          transform={`translate(${parallax.sky.toFixed(2)}, 0)`}
+        >
+          {renderPropsByLayer('sky')}
+        </g>
+        <g
+          opacity={peripheryDim}
+          transform={`translate(${parallax.sky.toFixed(2)}, 0)`}
+        >
+          {(script.atmosphere ?? []).map((item, idx) =>
+            renderAtmosphereItem(item, idx)
+          )}
+        </g>
 
-        <g opacity={state.drawProgress}>
+        <g
+          opacity={(frame > timeline.pivotFrame ? state.drawProgress : 1) * peripheryDim}
+          transform={`translate(${parallax.far.toFixed(2)}, 0)`}
+        >
           {renderPropsByLayer('far')}
           {renderActorsByLayer('far')}
         </g>
 
-        <TerrainRenderer
-          terrain={effectiveTerrain}
-          drawProgress={state.drawProgress}
-          phase={phase}
-          stroke={palette.inkPrimary}
-          secondaryStroke={palette.inkSecondary}
-          accentStroke={isAfterPivot ? palette.accent : palette.inkPrimary}
-          strokeWidth={strokeWidth}
-          solidHorizon={isSolidStyle}
-        />
+        {spotlight.strength > 0.005 && (
+          <circle
+            cx={spotlight.focusX.toFixed(1)}
+            cy={spotlight.focusY.toFixed(1)}
+            r="146"
+            fill={`url(#${spotGradId})`}
+            pointerEvents="none"
+          />
+        )}
 
-        <g opacity={state.drawProgress}>
-          {renderPropsByLayer('mid')}
-          {renderActorsByLayer('mid')}
+        <g transform={`translate(${parallax.mid.toFixed(2)}, 0)`}>
+          <TerrainRenderer
+            terrain={effectiveTerrain}
+            drawProgress={state.drawProgress}
+            phase={phase}
+            stroke={palette.inkPrimary}
+            secondaryStroke={palette.inkSecondary}
+            accentStroke={isAfterPivot ? propAccentColor : palette.inkPrimary}
+            strokeWidth={strokeWidth}
+            solidHorizon={isSolidStyle}
+          />
+
+          <g opacity={frame > timeline.pivotFrame ? state.drawProgress : 1}>
+            {renderPropsByLayer('mid')}
+            {renderActorsByLayer('mid')}
+          </g>
         </g>
 
-        <g opacity={state.drawProgress}>
+        <g
+          opacity={frame > timeline.pivotFrame ? state.drawProgress : 1}
+          transform={`translate(${parallax.fore.toFixed(2)}, 0)`}
+        >
           {renderActorsByLayer('fore')}
           {renderPropsByLayer('fore')}
         </g>
       </g>
+
+      {frameMode === 'WINDOW_ARCH' && (
+        <path
+          d="M 122 362 L 122 246 A 148 114 0 0 1 418 246 L 418 362"
+          fill="none"
+          stroke={palette.surfaceSubtle}
+          strokeWidth={1.15}
+          strokeLinecap="round"
+          opacity={(0.82 * state.drawProgress).toFixed(3)}
+          pointerEvents="none"
+        />
+      )}
     </svg>
   );
 };

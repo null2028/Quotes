@@ -54,13 +54,32 @@ export function evaluateMotionState(
       : 0;
   const seamlessLoopBlend = 0.5 - 0.5 * Math.cos(Math.PI * rawLoopU);
 
-  const introSettle = interpolate(frame, [0, Math.round(0.35 * fps)], [0.94, 1], {
-    easing: Easing.out(Easing.cubic),
+  // Pha 1 (CHOREO-01 & CHOREO-02): Đường nền mặt đất chạy nét cọ thư pháp chậm rãi từ trái sang phải (0.00s -> 2.20s)
+  // theo đường cong Cosine S-Curve (Easing.inOut(Easing.sin)) và thu mờ thong thả trong 1.35s cuối video (CHOREO-07).
+  const horizonDrawFrames = Math.max(30, Math.round(2.2 * fps));
+  const horizonSweep = interpolate(frame, [0, horizonDrawFrames], [0, 1], {
+    easing: Easing.inOut(Easing.sin),
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  const drawProgress =
-    introSettle * (1 - seamlessLoopBlend) + 0.94 * seamlessLoopBlend;
+  const outroDissolveWindow = Math.min(
+    Math.round(1.35 * fps),
+    Math.floor(safeDuration * 0.22)
+  );
+  const outroDissolveStart = Math.max(1, safeDuration - outroDissolveWindow);
+  const rawOutroU =
+    frame >= outroDissolveStart
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            (frame - outroDissolveStart) /
+              Math.max(1, safeDuration - 1 - outroDissolveStart)
+          )
+        )
+      : 0;
+  const outroDissolveBlend = 0.5 - 0.5 * Math.cos(Math.PI * rawOutroU);
+  const drawProgress = horizonSweep * (1 - outroDissolveBlend);
 
   const act1Progress = interpolate(frame, [0, Math.max(1, pivotFrame)], [0, 1], {
     extrapolateLeft: 'clamp',

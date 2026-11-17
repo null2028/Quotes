@@ -7,12 +7,20 @@ import { ThemePalette, LAYOUT_TOKENS } from '../theme/palettes';
 import { resolveSceneComponent } from '../scenes/vaultIndex';
 import { resolveStageScript } from '../stage/stageScriptRegistry';
 import { DeclarativeStagePlayer } from '../stage/DeclarativeStagePlayer';
+import {
+  LayoutGeometry,
+  ResolvedVisualDNA,
+  resolveLayoutGeometry,
+  resolveVisualDNA,
+} from '../engine/visualDnaResolver';
 
 export const MotionStageRouter: React.FC<{
   props: VideoInputProps;
   sync: TimelineSyncResult;
   palette: ThemePalette;
-}> = ({ props, sync, palette }) => {
+  visualDNA?: ResolvedVisualDNA;
+  layoutGeo?: LayoutGeometry;
+}> = ({ props, sync, palette, visualDNA, layoutGeo }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -43,18 +51,30 @@ export const MotionStageRouter: React.FC<{
     (LAYOUT_TOKENS.strokeWidth * (tuning.strokeScale ?? 1)).toFixed(2)
   );
 
+  const activeVisualDNA = visualDNA ?? resolveVisualDNA(props, resolvedScript);
+  const activeGeo =
+    layoutGeo ??
+    resolveLayoutGeometry(
+      activeVisualDNA.layout,
+      activeVisualDNA.brushOrientation
+    );
+
   return (
     <div
       style={{
         position: 'absolute',
-        top: LAYOUT_TOKENS.swissGrid.stageTop,
-        left: LAYOUT_TOKENS.swissGrid.marginLeft,
-        width: LAYOUT_TOKENS.swissGrid.stageWidth,
-        height: LAYOUT_TOKENS.swissGrid.stageHeight,
+        top: activeGeo.stageTop,
+        left: activeGeo.stageLeft,
+        width: activeGeo.stageWidth,
+        height: activeGeo.stageHeight,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        overflow: 'hidden',
+        background: 'transparent',
+        overflow: 'visible',
+        border: 'none',
+        boxShadow: 'none',
+        boxSizing: 'border-box',
       }}
     >
       {resolvedScript ? (
@@ -75,6 +95,12 @@ export const MotionStageRouter: React.FC<{
             fps={fps}
             durationInFrames={sync.durationInFrames}
             timeline={sync}
+            visualDNA={activeVisualDNA}
+            stageBox={{
+              width: activeGeo.stageWidth,
+              height: activeGeo.stageHeight,
+            }}
+            frameMode={activeGeo.stageFrameMode}
           />
         </div>
       ) : (

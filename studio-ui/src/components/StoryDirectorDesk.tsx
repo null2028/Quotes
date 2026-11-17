@@ -16,6 +16,13 @@ import {
   Bold,
   Target,
   Film,
+  Sparkles,
+  AlertTriangle,
+  User,
+  Package,
+  Dices,
+  Lock,
+  Layers,
 } from 'lucide-react';
 import {
   CupRecord,
@@ -24,22 +31,45 @@ import {
   VaultSceneMeta,
 } from '../types';
 import {
+  AudioMode,
+  DurationMode,
   FoleyPivotStyle,
+  LayoutVariant,
+  LightingGobo,
+  PivotMechanic,
+  ShotMode,
   StageTuning,
   VideoInputProps,
+  VisualDNAMode,
 } from '../../../src/schemas/videoSchema';
 import {
+  ActorSpec,
+  PropSpec,
   StageScript,
   StageScriptSchema,
   formatStageScriptZodError,
 } from '../../../src/stage/stageScriptSchema';
+import { resolveXCoord } from '../../../src/stage/terrainSystem';
+import {
+  applyAutoHeadroomFix,
+  auditStageVisualLayout,
+  sanitizeStageScriptObject,
+} from '../../../src/automation/geminiBundleBridge';
 import { THEME_PALETTES, LAYOUT_TOKENS } from '../../../src/theme/palettes';
 import {
   auditVietnameseSyllables,
   computeTimelineSync,
   stripInlineMarkdown,
 } from '../../../src/engine/timelineSync';
-import { synthesizeCupFoleyAudio } from '../../../src/engine/foleyEngine';
+import {
+  ASYMMETRIC_THIRD_MAX_SYLLABLES,
+  canUseAsymmetricThird,
+  isLegacyPublishedCupId,
+  resolveVisualDNA,
+  suggestDistinctVisualDNA,
+} from '../../../src/engine/visualDnaResolver';
+import { resolveStageScript } from '../../../src/stage/stageScriptRegistry';
+import { synthesizeCupAudioByMode } from '../../../src/engine/foleyEngine';
 
 interface Props {
   cup: CupRecord;
@@ -79,11 +109,7 @@ const THEME_META: Record<
   },
   WARM_NOIR: {
     label: 'Ô Long Cổ',
-    hint: 'Hoài niệm · Chuyện xưa',
-  },
-  SLATE_CALM: {
-    label: 'Men Lam Sương',
-    hint: 'An nhiên · Buông bỏ',
+    hint: 'Tối ấm · Hoài niệm',
   },
 };
 
@@ -134,7 +160,7 @@ export const StoryDirectorDesk: React.FC<Props> = ({
   const unifiedQuoteText = props.segments.join('\n');
   const fontSizeScale = props.fontSizeScale ?? 1.0;
 
-  const [isScriptOpen, setIsScriptOpen] = useState(true);
+  const [isScriptOpen, setIsScriptOpen] = useState(false);
   const [isCreatingBlankScript, setIsCreatingBlankScript] = useState(false);
   const [loadingScript, setLoadingScript] = useState(false);
   const [savingScript, setSavingScript] = useState(false);
@@ -150,6 +176,134 @@ export const StoryDirectorDesk: React.FC<Props> = ({
     text: string;
   } | null>(null);
 
+  const [selectedElementKey, setSelectedElementKey] = useState<string>('');
+  const scriptAutoSaveTimerRef = useRef<number | null>(null);
+  const [dnaSalt, setDnaSalt] = useState(1);
+
+  const resolvedScriptForDna = resolveStageScript(
+    activeSceneId,
+    props.motion.stageScript
+  );
+  const resolvedDna = resolveVisualDNA(props, resolvedScriptForDna);
+  const asymmetricGuard = canUseAsymmetricThird(
+    resolvedScriptForDna,
+    resolvedDna.shotMode,
+    syllableAudit.count
+  );
+  const activeDnaMode: VisualDNAMode =
+    props.visualDNA?.mode ??
+    (isLegacyPublishedCupId(props.id) ? 'LEGACY_LOCK' : 'AUTO');
+
+  const applyCustomDnaPatch = (
+    patch: Partial<NonNullable<VideoInputProps['visualDNA']>>
+  ) => {
+    onUpdateProps({
+      ...props,
+      visualDNA: {
+        mode: 'CUSTOM',
+        layout: resolvedDna.layout,
+        lightingGobo: resolvedDna.lightingGobo,
+        shotMode: resolvedDna.shotMode,
+        pivotMechanic: resolvedDna.pivotMechanic,
+        horizonOffsetPx: resolvedDna.horizonOffsetPx,
+        forceSolidStyle: resolvedDna.forceSolidStyle,
+        ...patch,
+      },
+    });
+  };
+
+  const activeStageScript = activeSceneId.startsWith('SCRIPT_')
+    ? props.motion.stageScript
+    : undefined;
+
+  const layoutWarnings = activeStageScript
+    ? auditStageVisualLayout(
+        activeStageScript,
+        activeStageScript.customPropsResolved
+      )
+    : [];
+  const hasHeadroomWarning = layoutWarnings.some(
+    (w) => w.code === 'HEADROOM_OVERLAP'
+  );
+
+  useEffect(() => {
+    if (!activeStageScript) return;
+    const actors = activeStageScript.actors ?? [];
+    const stageProps = activeStageScript.props ?? [];
+    const allKeys = [
+      ...actors.map((a) => `actor:${a.id}`),
+      ...stageProps.map((p) => `prop:${p.id}`),
+    ];
+    if (allKeys.length > 0 && !allKeys.includes(selectedElementKey)) {
+      setSelectedElementKey(allKeys[0]);
+    }
+  }, [activeStageScript, selectedElementKey]);
+
+  useEffect(() => {
+    return () => {
+      if (scriptAutoSaveTimerRef.current) {
+        window.clearTimeout(scriptAutoSaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  const applyLiveStageScriptMutation = (
+    mutator: (prev: StageScript) => StageScript
+  ) => {
+    if (!activeStageScript) return;
+    const nextScript = mutator(activeStageScript);
+    const { customPropsResolved: _omit, ...cleanNext } = nextScript;
+    setScriptJsonText(JSON.stringify(cleanNext, null, 2));
+
+    onUpdateProps({
+      ...props,
+      motion: {
+        ...props.motion,
+        sceneId: activeSceneId,
+        archetype: activeSceneId,
+        stageScript: nextScript,
+      },
+    });
+
+    if (scriptAutoSaveTimerRef.current) {
+      window.clearTimeout(scriptAutoSaveTimerRef.current);
+    }
+    scriptAutoSaveTimerRef.current = window.setTimeout(() => {
+      scriptAutoSaveTimerRef.current = null;
+      void onUpsertStageScript({
+        sceneId: nextScript.sceneId || activeSceneId,
+        name:
+          nextScript.name ||
+          scriptSceneName.trim() ||
+          activeSceneMeta?.name ||
+          activeSceneId,
+        script: cleanNext,
+        cupId: cup.id,
+      }).catch(() => undefined);
+    }, 700);
+  };
+
+  const handleAutoFixHeadroom = () => {
+    if (!activeStageScript || !hasHeadroomWarning) return;
+    applyLiveStageScriptMutation((prev) =>
+      applyAutoHeadroomFix(prev, layoutWarnings)
+    );
+  };
+
+  const selectedActor: ActorSpec | undefined =
+    activeStageScript && selectedElementKey.startsWith('actor:')
+      ? (activeStageScript.actors ?? []).find(
+          (a) => `actor:${a.id}` === selectedElementKey
+        )
+      : undefined;
+
+  const selectedProp: PropSpec | undefined =
+    activeStageScript && selectedElementKey.startsWith('prop:')
+      ? (activeStageScript.props ?? []).find(
+          (p) => `prop:${p.id}` === selectedElementKey
+        )
+      : undefined;
+
   useEffect(() => {
     if (isCreatingBlankScript) return;
     if (props.motion.stageScript && activeSceneId.startsWith('SCRIPT_')) {
@@ -157,9 +311,11 @@ export const StoryDirectorDesk: React.FC<Props> = ({
       setScriptSceneName(
         props.motion.stageScript.name || activeSceneMeta?.name || activeSceneId
       );
-      const { customPropsResolved: _omit, ...cleanScript } =
-        props.motion.stageScript;
-      setScriptJsonText(JSON.stringify(cleanScript, null, 2));
+      if (!isScriptOpen || !scriptJsonText) {
+        const { customPropsResolved: _omit, ...cleanScript } =
+          props.motion.stageScript;
+        setScriptJsonText(JSON.stringify(cleanScript, null, 2));
+      }
       setScriptNotice(null);
       return;
     }
@@ -204,7 +360,7 @@ export const StoryDirectorDesk: React.FC<Props> = ({
     return () => {
       cancelled = true;
     };
-  }, [activeSceneId, cup.id, isCreatingBlankScript]);
+  }, [activeSceneId, cup.id, isCreatingBlankScript, props.motion.stageScript, isScriptOpen]);
 
   const handleStartBlankStageScript = () => {
     setIsCreatingBlankScript(true);
@@ -336,22 +492,28 @@ export const StoryDirectorDesk: React.FC<Props> = ({
         );
       }
 
-      const zodCheck = StageScriptSchema.safeParse(rawParsed);
-      if (!zodCheck.success) {
-        throw new Error(
-          `Lỗi cấu trúc StageScript (Zod):\n${formatStageScriptZodError(
-            zodCheck.error
-          )}`
-        );
-      }
+      const sanitizedScript =
+        rawParsed && typeof rawParsed === 'object' && !Array.isArray(rawParsed)
+          ? sanitizeStageScriptObject(rawParsed as Record<string, unknown>)
+          : (() => {
+              const zodCheck = StageScriptSchema.safeParse(rawParsed);
+              if (!zodCheck.success) {
+                throw new Error(
+                  `Lỗi cấu trúc StageScript (Zod):\n${formatStageScriptZodError(
+                    zodCheck.error
+                  )}`
+                );
+              }
+              return zodCheck.data;
+            })();
 
       const res = await onUpsertStageScript({
-        sceneId: scriptSceneId.trim() || zodCheck.data.sceneId,
+        sceneId: scriptSceneId.trim() || sanitizedScript.sceneId,
         name:
           scriptSceneName.trim() ||
-          zodCheck.data.name ||
+          sanitizedScript.name ||
           (props.title ? `Kịch Bản — ${props.title}` : undefined),
-        script: zodCheck.data,
+        script: sanitizedScript,
         cupId: cup.id,
       });
 
@@ -666,7 +828,10 @@ export const StoryDirectorDesk: React.FC<Props> = ({
       return;
     }
 
-    const { wavBytes } = synthesizeCupFoleyAudio(props, sync);
+    const { wavBytes, audioMode } = synthesizeCupAudioByMode(props, sync);
+    if (audioMode === 'TIKTOK_SILENT') {
+      return;
+    }
     const blob = new Blob([wavBytes.buffer as ArrayBuffer], {
       type: 'audio/wav',
     });
@@ -801,15 +966,19 @@ export const StoryDirectorDesk: React.FC<Props> = ({
               <span className="text-tea-muted font-medium">
                 Cỡ chữ:{' '}
                 <strong className="font-mono text-tea-ink">
-                  {fontSizeScale.toFixed(2)}x
+                  {Math.round(
+                    LAYOUT_TOKENS.typography.baseFontSize *
+                      Math.max(0.88, Math.min(1.15, fontSizeScale))
+                  )}
+                  px ({fontSizeScale.toFixed(2)}x)
                 </strong>
               </span>
               <input
                 type="range"
-                min={0.85}
-                max={1.2}
-                step={0.05}
-                value={fontSizeScale}
+                min={0.88}
+                max={1.15}
+                step={0.02}
+                value={Math.max(0.88, Math.min(1.15, fontSizeScale))}
                 onChange={(e) =>
                   onUpdateProps({
                     ...props,
@@ -817,6 +986,7 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                   })
                 }
                 className="w-20 accent-tea-accent"
+                title="Cỡ chữ chuẩn 42px (1.00x), biên độ tinh chỉnh toàn kênh 38px–48px"
               />
               {Math.abs(fontSizeScale - 1.0) > 0.01 && (
                 <button
@@ -825,9 +995,9 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                     onUpdateProps({ ...props, fontSizeScale: 1.0 })
                   }
                   className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink"
-                  title="Đặt lại cỡ chữ 1.00x"
+                  title={`Đặt lại cỡ chữ chuẩn ${LAYOUT_TOKENS.typography.baseFontSize}px (1.00x)`}
                 >
-                  1.0x
+                  {LAYOUT_TOKENS.typography.baseFontSize}px
                 </button>
               )}
             </div>
@@ -949,7 +1119,7 @@ export const StoryDirectorDesk: React.FC<Props> = ({
               }`}
             >
               <Film className="w-3.5 h-3.5 text-tea-accent" />
-              🎬 Kịch Bản JSON
+              🎬 Xem / Sửa JSON gốc
               {isScriptOpen ? (
                 <ChevronUp className="w-3.5 h-3.5" />
               ) : (
@@ -1055,6 +1225,569 @@ export const StoryDirectorDesk: React.FC<Props> = ({
             </div>
           )}
         </div>
+
+        {/* VI CHỈNH TỪNG NHÂN VẬT & ĐẠO CỤ (KÉO TRỰC TIẾP 60FPS — KHÔNG CẦN SỬA JSON) */}
+        {activeStageScript &&
+          ((activeStageScript.actors?.length ?? 0) > 0 ||
+            (activeStageScript.props?.length ?? 0) > 0) && (
+            <div className="p-4 rounded-xl bg-white/95 border border-tea-accent/35 shadow-2xs space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-tea-ink">
+                  <Sparkles className="w-3.5 h-3.5 text-tea-accent" />
+                  Vi Chỉnh Từng Nhân Vật &amp; Đạo Cụ (Kéo 60fps · Tự lưu không cần sửa JSON)
+                </div>
+                <span className="text-[10.5px] text-tea-muted">
+                  Chọn thẻ bên dưới để dời vị trí X/Y, cỡ hoặc hướng nhìn
+                </span>
+              </div>
+
+              {layoutWarnings.length > 0 && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-300/80 text-xs text-amber-950 space-y-2">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 flex-1 min-w-[220px]">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        {layoutWarnings.map((w, idx) => (
+                          <p key={`${w.targetId}-${idx}`} className="leading-relaxed">
+                            {w.message}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                    {hasHeadroomWarning && (
+                      <button
+                        type="button"
+                        onClick={handleAutoFixHeadroom}
+                        className="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-[11px] font-semibold hover:bg-amber-700 flex items-center gap-1 shrink-0 shadow-2xs"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Tự nâng thoáng đầu nhân vật
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Dải Pill chọn Nhân vật / Đạo cụ */}
+              <div className="flex flex-wrap gap-1.5">
+                {(activeStageScript.actors ?? []).map((actor) => {
+                  const key = `actor:${actor.id}`;
+                  const isActive = selectedElementKey === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSelectedElementKey(key)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition ${
+                        isActive
+                          ? 'bg-tea-ink text-tea-paper border-tea-ink shadow-2xs'
+                          : 'bg-tea-bg/50 text-tea-ink border-tea-border hover:border-tea-accent'
+                      }`}
+                    >
+                      <User className="w-3 h-3 text-tea-accent" />
+                      <span>Nhân vật: {actor.id}</span>
+                    </button>
+                  );
+                })}
+                {(activeStageScript.props ?? []).map((propItem) => {
+                  const key = `prop:${propItem.id}`;
+                  const isActive = selectedElementKey === key;
+                  const isAccent = propItem.colorRole === 'accent';
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSelectedElementKey(key)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition ${
+                        isActive
+                          ? 'bg-tea-accent text-white border-tea-accent shadow-2xs'
+                          : 'bg-white text-tea-ink border-tea-border hover:border-tea-accent'
+                      }`}
+                    >
+                      <Package
+                        className={`w-3 h-3 ${
+                          isActive
+                            ? 'text-white'
+                            : isAccent
+                              ? 'text-tea-accent'
+                              : 'text-tea-muted'
+                        }`}
+                      />
+                      <span>
+                        Đạo cụ: {propItem.id}
+                        {propItem.type ? ` (${propItem.type})` : ''}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Thanh trượt cho Nhân vật đang chọn */}
+              {selectedActor && (() => {
+                const actorX = Math.round(resolveXCoord(selectedActor.x, 270));
+                const actorYOffset = Math.round(selectedActor.yOffset ?? 0);
+                const actorScale = Number((selectedActor.scale ?? 1.16).toFixed(2));
+                const actorLean = Math.round(selectedActor.leanDeg ?? 0);
+                const actorFacing = selectedActor.facing ?? 'right';
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          Vị trí Ngang X (cả đường đi):
+                        </span>
+                        <span className="font-mono font-bold text-tea-ink">
+                          {actorX}px
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={95}
+                        max={445}
+                        step={1}
+                        value={actorX}
+                        onChange={(e) => {
+                          const nextX = Number(e.target.value);
+                          const dx = nextX - actorX;
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            actors: (prev.actors ?? []).map((a) =>
+                              a.id === selectedActor.id ? { ...a, x: nextX } : a
+                            ),
+                            timeline: (prev.timeline ?? []).map((c) => {
+                              if (c.target !== selectedActor.id) return c;
+                              if (c.toX === undefined && c.x === undefined) return c;
+                              return {
+                                ...c,
+                                ...(c.toX !== undefined
+                                  ? {
+                                      toX: Math.max(
+                                        80,
+                                        Math.min(
+                                          460,
+                                          Math.round(resolveXCoord(c.toX, actorX) + dx)
+                                        )
+                                      ),
+                                    }
+                                  : {}),
+                                ...(c.x !== undefined
+                                  ? {
+                                      x: Math.max(
+                                        80,
+                                        Math.min(
+                                          460,
+                                          Math.round(resolveXCoord(c.x, actorX) + dx)
+                                        )
+                                      ),
+                                    }
+                                  : {}),
+                              };
+                            }),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          Cao độ chân (Y Offset):
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-bold text-tea-ink">
+                            {actorYOffset > 0 ? `+${actorYOffset}` : actorYOffset}px
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const dy = 0 - actorYOffset;
+                              applyLiveStageScriptMutation((prev) => ({
+                                ...prev,
+                                actors: (prev.actors ?? []).map((a) =>
+                                  a.id === selectedActor.id
+                                    ? { ...a, yOffset: 0 }
+                                    : a
+                                ),
+                                timeline: (prev.timeline ?? []).map((c) =>
+                                  c.target === selectedActor.id &&
+                                  c.yOffset !== undefined
+                                    ? { ...c, yOffset: Math.round(c.yOffset + dy) }
+                                    : c
+                                ),
+                              }));
+                            }}
+                            className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink"
+                          >
+                            0
+                          </button>
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min={-60}
+                        max={40}
+                        step={1}
+                        value={actorYOffset}
+                        onChange={(e) => {
+                          const nextY = Number(e.target.value);
+                          const dy = nextY - actorYOffset;
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            actors: (prev.actors ?? []).map((a) =>
+                              a.id === selectedActor.id
+                                ? { ...a, yOffset: nextY }
+                                : a
+                            ),
+                            timeline: (prev.timeline ?? []).map((c) =>
+                              c.target === selectedActor.id && c.yOffset !== undefined
+                                ? { ...c, yOffset: Math.round(c.yOffset + dy) }
+                                : c
+                            ),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          Kích cỡ nhân vật (Scale):
+                        </span>
+                        <span className="font-mono font-bold text-tea-accent">
+                          {actorScale.toFixed(2)}x
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0.6}
+                        max={1.8}
+                        step={0.02}
+                        value={actorScale}
+                        onChange={(e) => {
+                          const nextS = Number(e.target.value);
+                          const ratio = actorScale > 0.1 ? nextS / actorScale : 1;
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            actors: (prev.actors ?? []).map((a) =>
+                              a.id === selectedActor.id ? { ...a, scale: nextS } : a
+                            ),
+                            timeline: (prev.timeline ?? []).map((c) =>
+                              c.target === selectedActor.id && c.scale !== undefined
+                                ? {
+                                    ...c,
+                                    scale:
+                                      Math.round(c.scale * ratio * 100) / 100,
+                                  }
+                                : c
+                            ),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          Độ nghiêng ({actorLean}°) &amp; Hướng nhìn:
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              applyLiveStageScriptMutation((prev) => ({
+                                ...prev,
+                                actors: (prev.actors ?? []).map((a) =>
+                                  a.id === selectedActor.id
+                                    ? { ...a, facing: 'left' }
+                                    : a
+                                ),
+                              }))
+                            }
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                              actorFacing === 'left'
+                                ? 'bg-tea-ink text-white border-tea-ink'
+                                : 'bg-white text-tea-muted border-tea-border'
+                            }`}
+                          >
+                            ← Trái
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              applyLiveStageScriptMutation((prev) => ({
+                                ...prev,
+                                actors: (prev.actors ?? []).map((a) =>
+                                  a.id === selectedActor.id
+                                    ? { ...a, facing: 'right' }
+                                    : a
+                                ),
+                              }))
+                            }
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                              actorFacing === 'right'
+                                ? 'bg-tea-ink text-white border-tea-ink'
+                                : 'bg-white text-tea-muted border-tea-border'
+                            }`}
+                          >
+                            Phải →
+                          </button>
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min={-25}
+                        max={25}
+                        step={1}
+                        value={actorLean}
+                        onChange={(e) => {
+                          const nextLean = Number(e.target.value);
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            actors: (prev.actors ?? []).map((a) =>
+                              a.id === selectedActor.id
+                                ? { ...a, leanDeg: nextLean }
+                                : a
+                            ),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Thanh trượt cho Đạo cụ đang chọn */}
+              {selectedProp && (() => {
+                const isFollowing = Boolean(selectedProp.follow);
+                const isSky = selectedProp.layer === 'sky';
+                const propX = isFollowing
+                  ? Math.round(
+                      typeof selectedProp.x === 'number' ? selectedProp.x : 0
+                    )
+                  : Math.round(resolveXCoord(selectedProp.x, 270));
+                const propY = Math.round(
+                  selectedProp.y ?? (isSky ? 200 : 0)
+                );
+                const propScale = Number((selectedProp.scale ?? 1.0).toFixed(2));
+                const propOpacity = Number(
+                  (selectedProp.opacity ?? 1.0).toFixed(2)
+                );
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          {isFollowing
+                            ? `Lệch Ngang theo "${selectedProp.follow}":`
+                            : 'Vị trí Ngang X:'}
+                        </span>
+                        <span className="font-mono font-bold text-tea-ink">
+                          {propX}px
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={isFollowing ? -80 : 80}
+                        max={isFollowing ? 80 : 460}
+                        step={1}
+                        value={propX}
+                        onChange={(e) => {
+                          const nextX = Number(e.target.value);
+                          const dx = nextX - propX;
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            props: (prev.props ?? []).map((p) =>
+                              p.id === selectedProp.id ? { ...p, x: nextX } : p
+                            ),
+                            timeline: isFollowing
+                              ? prev.timeline
+                              : (prev.timeline ?? []).map((c) => {
+                                  if (c.target !== selectedProp.id) return c;
+                                  if (c.toX === undefined && c.x === undefined) {
+                                    return c;
+                                  }
+                                  return {
+                                    ...c,
+                                    ...(c.toX !== undefined
+                                      ? {
+                                          toX: Math.round(
+                                            resolveXCoord(c.toX, propX) + dx
+                                          ),
+                                        }
+                                      : {}),
+                                    ...(c.x !== undefined
+                                      ? {
+                                          x: Math.round(
+                                            resolveXCoord(c.x, propX) + dx
+                                          ),
+                                        }
+                                      : {}),
+                                  };
+                                }),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          {isSky
+                            ? 'Cao độ Trời Y:'
+                            : 'Cao độ Y (âm = nâng lên cao):'}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-bold text-tea-ink">
+                            {!isSky && propY > 0 ? `+${propY}` : propY}px
+                          </span>
+                          {!isSky && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const dy = 0 - propY;
+                                applyLiveStageScriptMutation((prev) => ({
+                                  ...prev,
+                                  props: (prev.props ?? []).map((p) =>
+                                    p.id === selectedProp.id ? { ...p, y: 0 } : p
+                                  ),
+                                  timeline: (prev.timeline ?? []).map((c) => {
+                                    if (c.target !== selectedProp.id) return c;
+                                    if (c.toY === undefined && c.y === undefined) {
+                                      return c;
+                                    }
+                                    return {
+                                      ...c,
+                                      ...(c.toY !== undefined
+                                        ? { toY: Math.round(c.toY + dy) }
+                                        : {}),
+                                      ...(c.y !== undefined
+                                        ? { y: Math.round(c.y + dy) }
+                                        : {}),
+                                    };
+                                  }),
+                                }));
+                              }}
+                              className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink"
+                            >
+                              0
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min={isSky ? 130 : -90}
+                        max={isSky ? 280 : 40}
+                        step={1}
+                        value={propY}
+                        onChange={(e) => {
+                          const nextY = Number(e.target.value);
+                          const dy = nextY - propY;
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            props: (prev.props ?? []).map((p) =>
+                              p.id === selectedProp.id ? { ...p, y: nextY } : p
+                            ),
+                            timeline: (prev.timeline ?? []).map((c) => {
+                              if (c.target !== selectedProp.id) return c;
+                              if (c.toY === undefined && c.y === undefined) {
+                                return c;
+                              }
+                              return {
+                                ...c,
+                                ...(c.toY !== undefined
+                                  ? { toY: Math.round(c.toY + dy) }
+                                  : {}),
+                                ...(c.y !== undefined
+                                  ? { y: Math.round(c.y + dy) }
+                                  : {}),
+                              };
+                            }),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          Kích cỡ đạo cụ (Scale):
+                        </span>
+                        <span className="font-mono font-bold text-tea-accent">
+                          {propScale.toFixed(2)}x
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0.4}
+                        max={2.2}
+                        step={0.02}
+                        value={propScale}
+                        onChange={(e) => {
+                          const nextS = Number(e.target.value);
+                          const ratio = propScale > 0.1 ? nextS / propScale : 1;
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            props: (prev.props ?? []).map((p) =>
+                              p.id === selectedProp.id ? { ...p, scale: nextS } : p
+                            ),
+                            timeline: (prev.timeline ?? []).map((c) =>
+                              c.target === selectedProp.id && c.scale !== undefined
+                                ? {
+                                    ...c,
+                                    scale:
+                                      Math.round(c.scale * ratio * 100) / 100,
+                                  }
+                                : c
+                            ),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-tea-bg/40 border border-tea-border/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-tea-muted">
+                          Độ rõ ban đầu (Opacity):
+                        </span>
+                        <span className="font-mono font-bold text-tea-ink">
+                          {Math.round(propOpacity * 100)}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={propOpacity}
+                        onChange={(e) => {
+                          const nextOp = Number(e.target.value);
+                          applyLiveStageScriptMutation((prev) => ({
+                            ...prev,
+                            props: (prev.props ?? []).map((p) =>
+                              p.id === selectedProp.id
+                                ? { ...p, opacity: nextOp }
+                                : p
+                            ),
+                          }));
+                        }}
+                        className="w-full accent-tea-accent"
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
 
         {isScriptOpen && (
           <div className="p-4 rounded-xl border border-tea-accent/45 bg-white space-y-3">
@@ -1446,17 +2179,16 @@ export const StoryDirectorDesk: React.FC<Props> = ({
             </h2>
           </div>
           <span className="text-[11px] font-medium text-tea-muted">
-            Một chất giấy dó · Bốn sắc nước trà
+            2 nền giấy sáng · 1 nền đêm Ô Long Cổ
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {(
             [
               'MINIMAL_LIGHT',
               'MINIMAL_DARK',
               'WARM_NOIR',
-              'SLATE_CALM',
             ] as const
           ).map((tid) => {
             const pal = THEME_PALETTES[tid];
@@ -1512,117 +2244,595 @@ export const StoryDirectorDesk: React.FC<Props> = ({
           })}
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white/75 border border-tea-border flex items-center justify-between gap-4">
-          <div>
-            <div className="text-xs font-semibold text-tea-ink">
-              Thời lượng đích (`12s – 22s`, mặc định chuẩn kênh `15s`)
+        {/* MODULE 6: BẢNG ĐẠO DIỄN VISUAL DNA — ĐỘC BẢN TRONG KHUÔN KHỔ (4 TRỤC CHỐNG TRÙNG pHash) */}
+        <div className="p-4 rounded-xl bg-white/85 border border-tea-border space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="text-xs font-bold text-tea-ink flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-tea-accent" />
+                Visual DNA · Độc Bản Trong Khuôn Khổ (4 Trục Chống Trùng pHash)
+              </div>
+              <div className="text-[11px] text-tea-muted">
+                {resolvedDna.isLegacyLocked
+                  ? 'Đang khóa nguyên bản Chén 01–07 (Legacy Lock A.2) để giữ 100% thiết kế đã xuất.'
+                  : `Đang chạy: ${resolvedDna.layout} · ${resolvedDna.lightingGobo} · ${resolvedDna.shotMode} · ${resolvedDna.pivotMechanic}`}
+              </div>
             </div>
-            <div className="text-[11px] text-tea-muted">
-              Tự động giãn nhịp hiện từng dòng chữ, khớp Foley Pivot và khép vòng Seamless Loop cuối bài
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="range"
-              min={12}
-              max={22}
-              step={1}
-              value={props.targetDurationSeconds ?? 15}
-              onChange={(e) =>
+
+            <button
+              type="button"
+              onClick={() => {
+                const nextSalt = dnaSalt + 1;
+                setDnaSalt(nextSalt);
+                const suggested = suggestDistinctVisualDNA(
+                  props,
+                  resolvedScriptForDna,
+                  [resolvedDna.layout],
+                  [resolvedDna.lightingGobo],
+                  dnaSalt
+                );
                 onUpdateProps({
                   ...props,
-                  targetDurationSeconds: Number(e.target.value),
-                })
-              }
-              className="w-28 accent-tea-accent"
-            />
-            <span className="w-12 text-right font-mono text-xs font-bold text-tea-accent">
-              {props.targetDurationSeconds ?? 15}s
-            </span>
+                  visualDNA: suggested,
+                });
+              }}
+              className="px-3 py-1.5 rounded-xl bg-tea-ink text-tea-paper text-[11px] font-semibold hover:bg-tea-accent transition flex items-center gap-1.5 shrink-0"
+              title="Sinh ngẫu nhiên có kiểm soát 1 tổ hợp Visual DNA khác với cấu hình hiện tại (giữ nguyên Ràng buộc B.3)"
+            >
+              <Dices className="w-3.5 h-3.5" /> Đảo DNA Khác
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-1.5 rounded-xl bg-tea-paper/80 p-1 border border-tea-border">
+            {(
+              [
+                {
+                  id: 'AUTO' as VisualDNAMode,
+                  label: '🎲 Tự động Seed',
+                },
+                {
+                  id: 'CUSTOM' as VisualDNAMode,
+                  label: '🎛️ Chỉnh tay 4 Trục',
+                },
+                {
+                  id: 'LEGACY_LOCK' as VisualDNAMode,
+                  label: '🔒 Khóa nguyên bản',
+                },
+              ]
+            ).map((modeOpt) => {
+              const active = activeDnaMode === modeOpt.id;
+              return (
+                <button
+                  key={modeOpt.id}
+                  type="button"
+                  onClick={() => {
+                    if (modeOpt.id === 'AUTO') {
+                      onUpdateProps({
+                        ...props,
+                        visualDNA: {
+                          mode: 'AUTO',
+                          forceSolidStyle: true,
+                        },
+                      });
+                    } else if (modeOpt.id === 'CUSTOM') {
+                      applyCustomDnaPatch({});
+                    } else {
+                      onUpdateProps({
+                        ...props,
+                        visualDNA: {
+                          mode: 'LEGACY_LOCK',
+                        },
+                      });
+                    }
+                  }}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold transition flex items-center justify-center gap-1 ${
+                    active
+                      ? 'bg-tea-ink text-tea-paper shadow-2xs'
+                      : 'text-tea-muted hover:text-tea-ink'
+                  }`}
+                >
+                  {modeOpt.id === 'LEGACY_LOCK' && (
+                    <Lock className="w-3 h-3 shrink-0" />
+                  )}
+                  <span className="truncate">{modeOpt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {resolvedDna.downgradedAsymmetricThird && (
+            <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-300 text-[11px] text-amber-900 flex items-start gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+              <span>
+                {asymmetricGuard.blockedBySyllables ? (
+                  <>
+                    Ràng buộc B.3: Quote dài {asymmetricGuard.syllableCount} âm tiết (&gt;{' '}
+                    {ASYMMETRIC_THIRD_MAX_SYLLABLES} âm) nên bố cục{' '}
+                    <code>ASYMMETRIC_THIRD</code> đã tự chuyển sang{' '}
+                    <code>WINDOW_FRAME</code> để tránh ép cột chữ hẹp <code>614px</code>.
+                  </>
+                ) : (
+                  <>
+                    Ràng buộc B.3: Cảnh có {asymmetricGuard.actorCount} nhân vật cách xa (
+                    {asymmetricGuard.actorSpanX}px) nên bố cục{' '}
+                    <code>ASYMMETRIC_THIRD</code> đã tự chuyển về{' '}
+                    <code>WINDOW_FRAME</code> để tránh nhân vật bị thu nhỏ li ti. Bấm{' '}
+                    <strong>1/3 Độc bản</strong> hoặc bật <strong>Cận đạo cụ (MACRO_PROP)</strong> nếu muốn ép khung 1/3.
+                  </>
+                )}
+              </span>
+            </div>
+          )}
+
+          <div
+            className={`space-y-3 transition-opacity ${
+              resolvedDna.isLegacyLocked ? 'opacity-65' : 'opacity-100'
+            }`}
+          >
+            {/* Trục 1: Bố cục Khung (Layout Variant) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="font-semibold text-tea-ink">
+                  Trục 1 · Bố cục khung (Safe Đa Kênh · Chống trùng pHash)
+                </span>
+                <span className="font-mono text-[10px] text-tea-muted">
+                  Line Đỏ Chu Sa dọc theo chữ
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {(
+                  [
+                    {
+                      id: 'CLASSIC_TOP_STAGE' as LayoutVariant,
+                      title: 'Cổ điển',
+                      sub: 'Tranh trên · Chữ dưới',
+                    },
+                    {
+                      id: 'SKY_QUOTE_BOTTOM_STAGE' as LayoutVariant,
+                      title: 'Chân mây',
+                      sub: 'Chữ trên · Tranh dưới',
+                    },
+                    {
+                      id: 'WINDOW_FRAME' as LayoutVariant,
+                      title: 'Cửa sổ Á Đông',
+                      sub: 'Khung vòm tĩnh tại',
+                    },
+                    {
+                      id: 'ASYMMETRIC_THIRD' as LayoutVariant,
+                      title: '1/3 Độc bản',
+                      sub: asymmetricGuard.blockedBySyllables
+                        ? `Khóa >28 âm (${syllableAudit.count} âm)`
+                        : asymmetricGuard.allowed
+                          ? 'Khung lệch 1/3 gọn'
+                          : 'Kèm Cận MACRO_PROP',
+                    },
+                  ]
+                ).map((item) => {
+                  const active = resolvedDna.layout === item.id;
+                  const disabledBySyllables =
+                    item.id === 'ASYMMETRIC_THIRD' &&
+                    asymmetricGuard.blockedBySyllables;
+                  const needsMacroForB3 =
+                    item.id === 'ASYMMETRIC_THIRD' &&
+                    !asymmetricGuard.allowed &&
+                    !asymmetricGuard.blockedBySyllables;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      disabled={disabledBySyllables}
+                      onClick={() =>
+                        applyCustomDnaPatch(
+                          needsMacroForB3
+                            ? {
+                                layout: 'ASYMMETRIC_THIRD',
+                                shotMode: 'MACRO_PROP',
+                              }
+                            : { layout: item.id }
+                        )
+                      }
+                      title={
+                        disabledBySyllables
+                          ? `Quote dài ${asymmetricGuard.syllableCount} âm (> ${ASYMMETRIC_THIRD_MAX_SYLLABLES} âm) nên bị khóa khỏi 1/3 Độc bản để giữ cột chữ >= 650px`
+                          : needsMacroForB3
+                            ? `Cảnh có ${asymmetricGuard.actorCount} nhân vật cách ${asymmetricGuard.actorSpanX}px — bấm sẽ tự bật kèm MACRO_PROP theo Ràng buộc B.3`
+                            : item.sub
+                      }
+                      className={`p-2 rounded-xl border text-left transition ${
+                        disabledBySyllables
+                          ? 'border-tea-border bg-tea-paper/60 opacity-55 cursor-not-allowed'
+                          : active
+                            ? 'border-tea-accent bg-tea-accent/10 ring-1 ring-tea-accent/25'
+                            : 'border-tea-border bg-white hover:border-tea-accent/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[11px] font-semibold text-tea-ink truncate">
+                          {item.title}
+                        </span>
+                        {needsMacroForB3 && (
+                          <span className="px-1 rounded bg-amber-500/15 text-amber-800 text-[9px] font-mono shrink-0">
+                            B.3
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[9.5px] text-tea-muted truncate mt-0.5">
+                        {item.sub}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Trục 2: Ánh sáng Gobo (Gradient thuần 60fps - B.2) */}
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-semibold text-tea-ink">
+                Trục 2 · Ánh sáng Gobo (Gradient mượt 60fps · Zero-Blur)
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {(
+                  [
+                    { id: 'NONE' as LightingGobo, label: 'Phẳng tịnh' },
+                    { id: 'FOLIAGE_DAPPLE' as LightingGobo, label: '🍃 Bóng lá' },
+                    { id: 'WINDOW_SLATS' as LightingGobo, label: '🪟 Nan cửa' },
+                    { id: 'WARM_LANTERN' as LightingGobo, label: '🏮 Đèn lồng' },
+                    { id: 'PORCH_MIST' as LightingGobo, label: '🌫️ Sương hiên' },
+                  ]
+                ).map((g) => {
+                  const active = resolvedDna.lightingGobo === g.id;
+                  return (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() =>
+                        applyCustomDnaPatch({ lightingGobo: g.id })
+                      }
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${
+                        active
+                          ? 'border-tea-accent bg-tea-accent text-white'
+                          : 'border-tea-border bg-white text-tea-ink hover:border-tea-accent'
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Trục 3 & Trục 4: Góc quay, Mảng đặc & Cú máy Pivot */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-tea-border/60">
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-semibold text-tea-ink">
+                  Trục 3 · Góc quay &amp; Nét nhân vật
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(
+                    [
+                      { id: 'SOLID_SCENE' as ShotMode, label: 'Toàn cảnh' },
+                      { id: 'BRUSH_DRAW' as ShotMode, label: 'Vẽ nét Hồi I' },
+                      { id: 'MACRO_PROP' as ShotMode, label: 'Cận đạo cụ' },
+                    ]
+                  ).map((sh) => {
+                    const active = resolvedDna.shotMode === sh.id;
+                    return (
+                      <button
+                        key={sh.id}
+                        type="button"
+                        onClick={() =>
+                          applyCustomDnaPatch({ shotMode: sh.id })
+                        }
+                        className={`px-2.5 py-1 rounded-lg text-[10.5px] font-semibold border transition ${
+                          active
+                            ? 'border-tea-ink bg-tea-ink text-tea-paper'
+                            : 'border-tea-border bg-white text-tea-ink hover:border-tea-accent'
+                        }`}
+                      >
+                        {sh.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none text-[11px] text-tea-ink">
+                  <input
+                    type="checkbox"
+                    checked={resolvedDna.forceSolidStyle}
+                    onChange={(e) =>
+                      applyCustomDnaPatch({
+                        forceSolidStyle: e.target.checked,
+                      })
+                    }
+                    className="accent-tea-accent rounded"
+                  />
+                  <span>Ưu tiên Mảng Đặc (Solid Silhouette) nổi khối</span>
+                </label>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-tea-ink">
+                    Trục 4 · Cú máy Pivot &amp; Chân trời
+                  </span>
+                  <span className="font-mono text-[10.5px] font-bold text-tea-accent">
+                    {resolvedDna.horizonOffsetPx >= 0
+                      ? `+${resolvedDna.horizonOffsetPx}`
+                      : resolvedDna.horizonOffsetPx}
+                    px
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {(
+                    [
+                      {
+                        id: 'PARALLAX_DRIFT' as PivotMechanic,
+                        label: 'Trượt sâu',
+                      },
+                      {
+                        id: 'PULLBACK_REVEAL' as PivotMechanic,
+                        label: 'Kéo rộng',
+                      },
+                      {
+                        id: 'ACCENT_PUSH_IN' as PivotMechanic,
+                        label: 'Đẩy cận',
+                      },
+                      {
+                        id: 'SPOTLIGHT_DIM' as PivotMechanic,
+                        label: 'Tụ sáng',
+                      },
+                    ]
+                  ).map((pm) => {
+                    const active = resolvedDna.pivotMechanic === pm.id;
+                    return (
+                      <button
+                        key={pm.id}
+                        type="button"
+                        onClick={() =>
+                          applyCustomDnaPatch({ pivotMechanic: pm.id })
+                        }
+                        className={`px-2 py-1 rounded-lg text-[10.5px] font-semibold border transition ${
+                          active
+                            ? 'border-tea-accent bg-tea-accent text-white'
+                            : 'border-tea-border bg-white text-tea-ink hover:border-tea-accent'
+                        }`}
+                      >
+                        {pm.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-2 pt-0.5">
+                  <input
+                    type="range"
+                    min={-24}
+                    max={24}
+                    step={2}
+                    value={resolvedDna.horizonOffsetPx}
+                    onChange={(e) =>
+                      applyCustomDnaPatch({
+                        horizonOffsetPx: Number(e.target.value),
+                      })
+                    }
+                    className="flex-1 accent-tea-accent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => applyCustomDnaPatch({ horizonOffsetPx: 0 })}
+                    className="px-1.5 py-0.5 rounded bg-tea-paper border border-tea-border text-[9.5px] font-mono text-tea-muted hover:text-tea-ink"
+                  >
+                    0px
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Âm thanh Gốc Foley Stereo -14.0 LUFS (Original Audio 100% — Nhạc xu hướng lót 3%–8% trên TikTok) */}
+        <div className="p-3.5 rounded-xl bg-white/75 border border-tea-border space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold text-tea-ink">
+                Thời lượng &amp; Phá chữ ký 15.0s (`{(sync.durationInFrames / sync.fps).toFixed(2)}s · {sync.durationInFrames} frames`)
+              </div>
+              <div className="text-[11px] text-tea-muted">
+                Tự động giãn theo số âm tiết + seed để tránh trùng thời lượng cứng 900f ngoài kênh mà vẫn khép vòng Seamless Loop
+              </div>
+            </div>
+            <div className="inline-flex rounded-lg border border-tea-border bg-tea-paper p-0.5 text-[11px] font-semibold shrink-0">
+              {(
+                [
+                  { id: 'AUTO_SEED' as DurationMode, label: '🎲 Động (13.5–16.5s)' },
+                  { id: 'FIXED' as DurationMode, label: '📌 Cố định' },
+                ]
+              ).map((dm) => {
+                const active = (props.durationMode ?? 'FIXED') === dm.id;
+                return (
+                  <button
+                    key={dm.id}
+                    type="button"
+                    onClick={() =>
+                      onUpdateProps({
+                        ...props,
+                        durationMode: dm.id,
+                      })
+                    }
+                    className={`px-2.5 py-1 rounded-md transition ${
+                      active
+                        ? 'bg-tea-ink text-tea-paper shadow-2xs'
+                        : 'text-tea-muted hover:text-tea-ink'
+                    }`}
+                  >
+                    {dm.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {props.durationMode !== 'AUTO_SEED' && (
+            <div className="flex items-center justify-end gap-3 pt-1.5 border-t border-tea-border/50">
+              <span className="text-[11px] text-tea-muted">Thời lượng cố định:</span>
+              <input
+                type="range"
+                min={12}
+                max={22}
+                step={0.5}
+                value={props.targetDurationSeconds ?? 15}
+                onChange={(e) =>
+                  onUpdateProps({
+                    ...props,
+                    durationMode: 'FIXED',
+                    targetDurationSeconds: Number(e.target.value),
+                  })
+                }
+                className="w-32 accent-tea-accent"
+              />
+              <span className="w-14 text-right font-mono text-xs font-bold text-tea-accent">
+                {props.targetDurationSeconds ?? 15}s
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Kiến trúc Âm thanh 3 Chế Độ (Siêu nhẹ Pivot Accent / Im lặng ghép nhạc TikTok / Foley Đầy đủ) */}
         <div className="p-4 rounded-xl bg-white/85 border border-tea-accent/35 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="text-xs font-bold text-tea-ink flex items-center gap-1.5">
                 <Volume2 className="w-4 h-4 text-tea-accent" />
-                Âm Thanh Gốc — Foley Stereo Chuẩn -14.0 LUFS (48 kHz)
+                Âm Thanh Xuất Video — 3 Chế Độ Tinh Gọn (48 kHz AAC)
               </div>
               <div className="text-[11px] text-tea-muted">
-                0.0s rót trà &amp; giấy tuyên · Hồi I cọ mực · Hồi II điểm thanh âm đúng frame Pivot ({pivotTimeSec}s) · Hồi III gió hiên
+                {props.bgm?.audioMode === 'TIKTOK_SILENT'
+                  ? 'Mode 1: Rãnh AAC im lặng siêu nhẹ — ghép 100% nhạc xu hướng trực tiếp trên TikTok/Reels'
+                  : props.bgm?.audioMode === 'FOLEY_MASTER'
+                    ? `Mode 3: Foley Đầy đủ -14.0 LUFS · Điểm thanh âm tại Pivot (${pivotTimeSec}s)`
+                    : `Mode 2 (Mặc định): Nền dither tĩnh -55 dBFS + Đúng 1 tiếng điểm Pivot (${pivotTimeSec}s)`}
               </div>
             </div>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/12 text-emerald-800 border border-emerald-500/30">
-              Original Audio 100% · -14 LUFS
+              {props.bgm?.audioMode ?? 'PIVOT_ACCENT'}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-tea-border/60">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-medium text-tea-muted mr-1">
-                Tiếng điểm Hồi II:
-              </span>
-              {(
-                [
-                  { id: 'AUTO' as FoleyPivotStyle, label: '✨ Tự động theo Mood' },
-                  { id: 'TEA_CUP' as FoleyPivotStyle, label: '🍵 Chén sứ khay gỗ' },
-                  { id: 'WIND_CHIME' as FoleyPivotStyle, label: '🎐 Chuông đồng trầm' },
-                  { id: 'WOOD_SEAL' as FoleyPivotStyle, label: '🟥 Đóng triện gỗ' },
-                ]
-              ).map((st) => {
-                const cur = props.bgm?.foleyPivotStyle ?? 'AUTO';
-                const active = cur === st.id;
-                return (
-                  <button
-                    key={st.id}
-                    type="button"
-                    onClick={() =>
-                      onUpdateProps({
-                        ...props,
-                        bgm: {
-                          audioMode: 'FOLEY_MASTER',
-                          foleyPivotStyle: st.id,
-                        },
-                      })
-                    }
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${
-                      active
-                        ? 'border-tea-accent bg-tea-accent text-white'
-                        : 'border-tea-border bg-white text-tea-ink hover:border-tea-accent'
-                    }`}
-                  >
-                    {st.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={toggleFoleyPivotPreview}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition ${
-                isPreviewingFoley
-                  ? 'bg-tea-accent text-white'
-                  : 'bg-tea-ink text-tea-paper hover:bg-tea-accent'
-              }`}
-              title="Nghe thử tiếng cọ mực Hồi I chuyển sang tiếng điểm Đỏ Chu Sa đúng tại giây Pivot"
-            >
-              {isPreviewingFoley ? (
-                <>
-                  <Square className="w-3 h-3 fill-current" /> Dừng Foley
-                </>
-              ) : (
-                <>
-                  <Volume2 className="w-3.5 h-3.5" /> Nghe thử Foley quanh Pivot
-                </>
-              )}
-            </button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {(
+              [
+                {
+                  id: 'PIVOT_ACCENT' as AudioMode,
+                  title: '🎯 Mode 2 · Điểm Pivot',
+                  desc: 'Nền -55dBFS + 1 tiếng chạm tại Pivot (Nhẹ & giữ điểm nhấn)',
+                },
+                {
+                  id: 'TIKTOK_SILENT' as AudioMode,
+                  title: '🔇 Mode 1 · Im Lặng',
+                  desc: 'Chỉ xuất AAC rỗng để lồng 100% nhạc kho TikTok',
+                },
+                {
+                  id: 'FOLEY_MASTER' as AudioMode,
+                  title: '🍵 Mode 3 · Foley Đầy Đủ',
+                  desc: 'Trọn bộ trà, cọ giấy, mưa & -14 LUFS cho Shorts độc lập',
+                },
+              ]
+            ).map((m) => {
+              const curMode: AudioMode = props.bgm?.audioMode ?? 'PIVOT_ACCENT';
+              const active = curMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() =>
+                    onUpdateProps({
+                      ...props,
+                      bgm: {
+                        audioMode: m.id,
+                        foleyPivotStyle: props.bgm?.foleyPivotStyle ?? 'AUTO',
+                      },
+                    })
+                  }
+                  className={`p-2 rounded-xl border text-left transition ${
+                    active
+                      ? 'border-tea-accent bg-tea-accent/8 ring-1 ring-tea-accent/25'
+                      : 'border-tea-border bg-white/70 hover:border-tea-accent/40'
+                  }`}
+                >
+                  <div className="text-[11.5px] font-semibold text-tea-ink">
+                    {m.title}
+                  </div>
+                  <div className="text-[10px] text-tea-muted leading-snug mt-0.5">
+                    {m.desc}
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
+          {(props.bgm?.audioMode ?? 'PIVOT_ACCENT') !== 'TIKTOK_SILENT' && (
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-tea-border/60">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-medium text-tea-muted mr-1">
+                  Tiếng điểm Hồi II:
+                </span>
+                {(
+                  [
+                    { id: 'AUTO' as FoleyPivotStyle, label: '✨ Tự động theo Mood' },
+                    { id: 'TEA_CUP' as FoleyPivotStyle, label: '🍵 Chén sứ khay gỗ' },
+                    { id: 'WIND_CHIME' as FoleyPivotStyle, label: '🎐 Chuông đồng trầm' },
+                    { id: 'WOOD_SEAL' as FoleyPivotStyle, label: '🟥 Đóng triện gỗ' },
+                  ]
+                ).map((st) => {
+                  const cur = props.bgm?.foleyPivotStyle ?? 'AUTO';
+                  const active = cur === st.id;
+                  return (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() =>
+                        onUpdateProps({
+                          ...props,
+                          bgm: {
+                            audioMode: props.bgm?.audioMode ?? 'PIVOT_ACCENT',
+                            foleyPivotStyle: st.id,
+                          },
+                        })
+                      }
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition ${
+                        active
+                          ? 'border-tea-accent bg-tea-accent text-white'
+                          : 'border-tea-border bg-white text-tea-ink hover:border-tea-accent'
+                      }`}
+                    >
+                      {st.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={toggleFoleyPivotPreview}
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 transition ${
+                  isPreviewingFoley
+                    ? 'bg-tea-accent text-white'
+                    : 'bg-tea-ink text-tea-paper hover:bg-tea-accent'
+                }`}
+                title="Nghe thử âm thanh quanh giây Pivot theo chế độ đang chọn"
+              >
+                {isPreviewingFoley ? (
+                  <>
+                    <Square className="w-3 h-3 fill-current" /> Dừng Audio
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5" /> Nghe thử quanh Pivot
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           <div className="text-[10.5px] text-tea-muted bg-tea-bg/45 rounded-lg px-2.5 py-1.5 border border-tea-border/60">
-            Xuất MP4 Master sạch 100% bản quyền để giữ nhãn <strong>Original Audio</strong> đa kênh; khi đăng TikTok chỉ cần lót thêm nhạc xu hướng ở mức <strong>3% – 8%</strong>.
+            Xuất MP4 Constrained CRF (~2.5–4.0 MB, sạch metadata `Lavf`). Chế độ <strong>Mode 2 (Pivot Accent)</strong> giữ 1 nhịp chạm Đỏ Chu Sa rõ nét ngay cả khi lót nhạc kho TikTok/Reels.
           </div>
         </div>
       </section>

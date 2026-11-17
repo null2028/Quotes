@@ -12,4 +12,5 @@ public/audio/*.wav
 *.log
 .env
 .env.*
+.gemini/
 .DS_Store

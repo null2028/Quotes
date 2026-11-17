@@ -1,9 +1,16 @@
 import {
+  AudioMode,
+  DurationMode,
   FoleyPivotStyle,
   VideoInputProps,
   StageTuning,
+  VisualDNASpec,
 } from '../../src/schemas/videoSchema';
-import { StageScript } from '../../src/stage/stageScriptSchema';
+import {
+  CustomPropDefinition,
+  StageScript,
+} from '../../src/stage/stageScriptSchema';
+import { StageLayoutWarning } from '../../src/automation/geminiBundleBridge';
 
 export type RenderJobStatus =
   | 'draft'
@@ -86,6 +93,9 @@ export interface SceneCodeResponse {
 }
 
 export interface CupBundleImport {
+  bundleVersion?: string;
+  mode?: 'create_new' | 'overwrite_cup';
+  targetCupId?: string;
   cupId?: string;
   title?: string;
   author?: string;
@@ -93,13 +103,26 @@ export interface CupBundleImport {
   textFormat?: 'POEM' | 'PROSE';
   segments: string[];
   pivotWord?: string;
+  customCaption?: string;
+  seedComment?: string;
+  publishSlot?: PublishSlot | string;
+  publishMood?: string;
+  publishTopic?: string;
+  sourceRecordId?: string;
+  pacingMode?: 'CONTEMPLATIVE' | 'WRY_BATHOS';
   themeVariant?: string;
   themeId?: string;
+  durationMode?: DurationMode;
   targetDurationSeconds?: number;
   stageTuning?: StageTuning;
+  visualDNA?: VisualDNASpec;
   bgm?: {
+    audioMode?: AudioMode;
     foleyPivotStyle?: FoleyPivotStyle;
   };
+  customProps?: Record<string, CustomPropDefinition>;
+  stageScript?: StageScript;
+  layoutWarnings?: StageLayoutWarning[];
   sceneId?: string;
   scene?: {
     sceneId: string;
@@ -140,6 +163,16 @@ export interface AirtableTableCache {
   recordCount: number;
 }
 
+export interface AirtableBridgeReceipt {
+  batchId: string;
+  status: 'applied' | 'error';
+  appliedAt: string;
+  mode: 'sync_only' | 'patch_and_sync';
+  updatedCount: number;
+  createdCount: number;
+  message: string;
+}
+
 export interface AirtableWorkspaceCache {
   syncedAt: string;
   selectedBaseId: string;
@@ -147,4 +180,5 @@ export interface AirtableWorkspaceCache {
   selectedTableId: string;
   bases: AirtableBaseSummary[];
   tables: AirtableTableCache[];
+  lastBridgeReceipt?: AirtableBridgeReceipt;
 }

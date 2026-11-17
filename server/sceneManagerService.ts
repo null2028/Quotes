@@ -1,17 +1,22 @@
 import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
-import { z } from 'zod';
 import {
-  FoleyPivotStyleEnum,
-  StageTuningSchema,
   VideoInputProps,
   VideoInputSchema,
 } from '../src/schemas/videoSchema';
 import {
-  ensureValidPivotSubstring,
   validateAndNormalizeVideoProps,
 } from '../src/automation/validator';
+import { formatCupSeoFileName } from '../src/automation/fileNaming';
+import {
+  applyAutoHeadroomFix,
+  auditStageVisualLayout,
+  sanitizeAndNormalizeCupBundle,
+  sanitizeGeneratedTsxSceneCode,
+  sanitizeStageScriptObject,
+  StageLayoutWarning,
+} from '../src/automation/geminiBundleBridge';
 import {
   buildTraNguoiCaption,
   CupRecord,
@@ -375,10 +380,18 @@ export function upsertCustomSceneCode(params: {
   onInvalidateBundle?: () => void;
 }): { scene: VaultSceneMeta; scenes: VaultSceneMeta[]; cups: CupRecord[] } {
   const safeSceneId = normalizeCustomSceneId(params.sceneId);
-  const rawCode = params.tsxCode.trim();
-  if (!rawCode) {
+  const rawInputCode = params.tsxCode.trim();
+  if (!rawInputCode) {
     throw new Error('Nội dung mã nguồn tsxCode không được để trống.');
   }
+
+  const healed = sanitizeGeneratedTsxSceneCode(
+    rawInputCode,
+    safeSceneId,
+    [],
+    params.name
+  );
+  const rawCode = healed.tsxCode;
 
   const detectedName = extractExportedComponentName(rawCode);
   const componentName = detectedName || toSceneComponentName(safeSceneId);
@@ -522,50 +535,6 @@ export function deleteCustomScene(
   return { scenes: nextScenes, cups: loadCups() };
 }
 
-const CupBundleImportSchema = z.object({
-  cupId: z.string().optional(),
-  title: z.string().optional(),
-  textFormat: z.enum(['POEM', 'PROSE']).default('POEM'),
-  segments: z.array(z.string().min(1)).min(1).max(6),
-  pivotWord: z.string().optional(),
-  themeVariant: z.string().optional(),
-  themeId: z.string().optional(),
-  targetDurationSeconds: z.number().min(8).max(30).default(15),
-  stageTuning: StageTuningSchema.optional(),
-  bgm: z
-    .object({
-      foleyPivotStyle: FoleyPivotStyleEnum.optional().default('AUTO'),
-    })
-    .optional(),
-  sceneId: z.string().optional(),
-  scene: z
-    .object({
-      sceneId: z.string(),
-      name: z.string().optional(),
-      description: z.string().optional(),
-      act1: z.string().optional(),
-      act2AtPivot: z.string().optional(),
-      act3Afterimage: z.string().optional(),
-      redProp: z.string().optional(),
-      tsxCode: z.string().optional(),
-    })
-    .optional(),
-});
-
-function resolveThemeId(
-  rawTheme?: string
-): 'MINIMAL_LIGHT' | 'MINIMAL_DARK' | 'WARM_NOIR' | 'SLATE_CALM' {
-  const key = (rawTheme || '').trim().toUpperCase();
-  if (key === 'MINIMAL_DARK' || key === 'DARK') return 'MINIMAL_DARK';
-  if (key === 'WARM_NOIR' || key === 'WARM_SEPIA' || key === 'SEPIA') {
-    return 'WARM_NOIR';
-  }
-  if (key === 'SLATE_CALM' || key === 'COOL_NIGHT' || key === 'NIGHT') {
-    return 'SLATE_CALM';
-  }
-  return 'MINIMAL_LIGHT';
-}
-
 export function importDirectorBundle(
   rawPayload: unknown,
   onInvalidateBundle?: () => void
@@ -573,91 +542,198 @@ export function importDirectorBundle(
   cup: CupRecord;
   cups: CupRecord[];
   scenes: VaultSceneMeta[];
+  seedComment?: string;
+  layoutWarnings: StageLayoutWarning[];
+  autoFixesApplied: string[];
 } {
-  const parsed = CupBundleImportSchema.parse(rawPayload);
+  const existingCups = loadCups();
+  const wrapper =
+    rawPayload && typeof rawPayload === 'object' && !Array.isArray(rawPayload)
+      ? (rawPayload as Record<string, unknown>)
+      : {};
 
-  let targetSceneId =
-    parsed.scene?.sceneId || parsed.sceneId || 'BOULDER_TO_BENCH';
+  const requestedMode: 'create_new' | 'overwrite_cup' =
+    wrapper.mode === 'overwrite_cup' ? 'overwrite_cup' : 'create_new';
+  const requestedTargetId =
+    typeof wrapper.targetCupId === 'string' && wrapper.targetCupId.trim()
+      ? wrapper.targetCupId.trim()
+      : undefined;
+  const autoFixHeadroom = Boolean(wrapper.autoFixHeadroom);
 
-  if (parsed.scene?.tsxCode && parsed.scene.tsxCode.trim()) {
-    const upserted = upsertCustomSceneCode({
-      sceneId: parsed.scene.sceneId,
-      name: parsed.scene.name || parsed.title || 'Cảnh Mới',
-      description: parsed.scene.description,
-      act1: parsed.scene.act1 || parsed.scene.description,
-      act2AtPivot: parsed.scene.act2AtPivot,
-      act3Afterimage: parsed.scene.act3Afterimage,
-      redProp: parsed.scene.redProp,
-      tsxCode: parsed.scene.tsxCode,
-      onInvalidateBundle,
-    });
-    targetSceneId = upserted.scene.sceneId;
+  const fallbackTargetCup = requestedTargetId
+    ? existingCups.find((c) => c.id === requestedTargetId)
+    : undefined;
+
+  const actualSource =
+    typeof wrapper.rawText === 'string' && wrapper.rawText.trim()
+      ? wrapper.rawText
+      : wrapper.bundle !== undefined
+        ? wrapper.bundle
+        : rawPayload;
+
+  const bundle = sanitizeAndNormalizeCupBundle(actualSource, {
+    defaultMode: requestedMode,
+    targetCupId: requestedTargetId,
+    fallbackCupProps: fallbackTargetCup
+      ? {
+          title: fallbackTargetCup.props.title,
+          segments: fallbackTargetCup.props.segments,
+          pivotWord: fallbackTargetCup.props.pivotWord,
+          textFormat: fallbackTargetCup.props.textFormat,
+        }
+      : undefined,
+  });
+
+  // 1. Lưu các customProps mới vào data/custom-props.json trước khi nạp StageScript
+  const customPropEntries = Object.entries(bundle.customProps);
+  if (customPropEntries.length > 0) {
+    const customMap = loadCustomPropsMap();
+    for (const [propName, propDef] of customPropEntries) {
+      customMap[propName] = propDef;
+    }
+    saveCustomPropsMap(customMap);
   }
 
-  const cups = loadCups();
-  const existingIdx = parsed.cupId
-    ? cups.findIndex((c) => c.id === parsed.cupId)
-    : -1;
+  // 2. Xử lý Cảnh sân khấu (Hỗ trợ song song Lớp 1 StageScript Khớp Động JSON & Lớp 2 Tự Biên Dịch .tsx + Fallback an toàn)
+  let targetSceneId = bundle.sceneId || 'BOULDER_TO_BENCH';
+  let finalLayoutWarnings = bundle.layoutWarnings;
+  const finalAutoFixes = [...bundle.autoFixesApplied];
+  let installedTsxOk = false;
 
-  const nextNum =
+  if (bundle.tsxCode && bundle.tsxMeta) {
+    try {
+      const upsertedTsx = upsertCustomSceneCode({
+        sceneId: bundle.tsxMeta.sceneId,
+        name: bundle.tsxMeta.name || bundle.title || 'Cảnh Mới',
+        description: bundle.tsxMeta.description,
+        act1: bundle.tsxMeta.act1 || bundle.tsxMeta.description,
+        act2AtPivot: bundle.tsxMeta.act2AtPivot,
+        act3Afterimage: bundle.tsxMeta.act3Afterimage,
+        redProp: bundle.tsxMeta.redProp,
+        tsxCode: bundle.tsxCode,
+        onInvalidateBundle,
+      });
+      targetSceneId = upsertedTsx.scene.sceneId;
+      installedTsxOk = true;
+      finalAutoFixes.push(
+        `Đã tự biên dịch & nạp nóng mô-đun cảnh "${targetSceneId}" vào Kho Sân Khấu qua Vite HMR`
+      );
+    } catch (tsxErr: unknown) {
+      if (!bundle.stageScript) {
+        throw tsxErr;
+      }
+      finalAutoFixes.push(
+        'Mô-đun .tsx có lỗi cú pháp -> Đã tự rollback an toàn và chuyển mượt sang bản StageScript JSON dự phòng'
+      );
+    }
+  }
+
+  if (bundle.stageScript && !installedTsxOk) {
+    let scriptToSave = bundle.stageScript;
+    if (autoFixHeadroom && finalLayoutWarnings.length > 0) {
+      scriptToSave = applyAutoHeadroomFix(scriptToSave, finalLayoutWarnings);
+      finalLayoutWarnings = auditStageVisualLayout(
+        scriptToSave,
+        loadCustomPropsMap()
+      );
+      finalAutoFixes.push(
+        'Đã tự động nâng cao độ đạo cụ vòm/mái để thoáng đỉnh đầu nhân vật'
+      );
+    }
+
+    const upsertedScript = upsertStageScript({
+      sceneId:
+        scriptToSave.sceneId ||
+        bundle.sceneId ||
+        `SCRIPT_${bundle.title || 'MOI'}`,
+      name: scriptToSave.name || `Kịch Bản — ${bundle.title}`,
+      description: scriptToSave.description,
+      rawScript: scriptToSave,
+    });
+    targetSceneId = upsertedScript.scene.sceneId;
+    onInvalidateBundle?.();
+  }
+
+  // 3. Xác định Chén đích (Tạo Chén tiếp theo hoặc Ghi đè Chén đang mở)
+  const cups = loadCups();
+  let existingIdx = -1;
+  if (bundle.mode === 'overwrite_cup' && bundle.targetCupId) {
+    existingIdx = cups.findIndex((c) => c.id === bundle.targetCupId);
+  } else if (bundle.cupId) {
+    existingIdx = cups.findIndex((c) => c.id === bundle.cupId);
+  }
+
+  let maxNum = 0;
+  for (const c of cups) {
+    const m = c.id.match(/\d+/) || c.cupNumber.match(/\d+/);
+    if (m) maxNum = Math.max(maxNum, parseInt(m[0], 10));
+  }
+
+  const resolvedNum =
     existingIdx !== -1
       ? Number(cups[existingIdx].cupNumber) || existingIdx + 1
-      : cups.length + 1;
-  const cupNumber = String(nextNum).padStart(2, '0');
-  const cupId = parsed.cupId?.trim() || `quote-${String(nextNum).padStart(3, '0')}`;
-
-  const validPivot = ensureValidPivotSubstring(
-    parsed.segments,
-    parsed.pivotWord || ''
-  );
-  const resolvedTheme = resolveThemeId(parsed.themeVariant || parsed.themeId);
+      : maxNum + 1;
+  const cupNumber = String(resolvedNum).padStart(2, '0');
+  const cupId =
+    existingIdx !== -1
+      ? cups[existingIdx].id
+      : bundle.cupId || `quote-${String(resolvedNum).padStart(3, '0')}`;
 
   const prevCup = existingIdx !== -1 ? cups[existingIdx] : null;
 
   const fullProps: VideoInputProps = validateAndNormalizeVideoProps(
     VideoInputSchema.parse({
       id: cupId,
-      textFormat: parsed.textFormat,
-      title: parsed.title ?? prevCup?.props.title ?? 'Tĩnh',
-      segments: parsed.segments,
-      pivotWord: validPivot,
+      textFormat: bundle.textFormat,
+      title: bundle.title || prevCup?.props.title || 'Trà Sớm',
+      author: bundle.author || prevCup?.props.author || '',
+      customCaption: bundle.customCaption ?? prevCup?.props.customCaption,
+      publishSlot: bundle.publishSlot ?? prevCup?.props.publishSlot,
+      publishMood: bundle.publishMood || prevCup?.props.publishMood,
+      publishTopic: bundle.publishTopic || prevCup?.props.publishTopic,
+      sourceRecordId: bundle.sourceRecordId ?? prevCup?.props.sourceRecordId,
+      fontSizeScale: bundle.fontSizeScale,
+      segments: bundle.segments,
+      pivotWord: bundle.pivotWord,
       highlightStyle: 'BOTH',
-      targetDurationSeconds: parsed.targetDurationSeconds ?? 15,
+      durationMode: bundle.durationMode,
+      targetDurationSeconds: bundle.targetDurationSeconds,
       typingSpeedMsPerChar: 55,
       holdAfterFinishSeconds: 5.5,
-      themeId: resolvedTheme,
-      stageTuning: parsed.stageTuning ??
-        prevCup?.props.stageTuning ?? {
-          offsetX: 0,
-          offsetY: 0,
-          scale: 1,
-          strokeScale: 1,
-        },
+      themeId: bundle.themeId,
+      stageTuning: bundle.stageTuning,
+      ...(bundle.visualDNA ? { visualDNA: bundle.visualDNA } : {}),
       motion: {
         sceneId: targetSceneId,
         archetype: targetSceneId,
-        pacingMode: 'CONTEMPLATIVE',
-        stateA: { intensity: 0.85, spread: 0.25, tiltDeg: -14 },
-        stateB: { intensity: 0.05, spread: 0.65, tiltDeg: 0 },
+        pacingMode: bundle.pacingMode,
+        stateA:
+          bundle.pacingMode === 'WRY_BATHOS'
+            ? { intensity: 0.78, spread: 0.22, tiltDeg: -12 }
+            : { intensity: 0.85, spread: 0.25, tiltDeg: -14 },
+        stateB: { intensity: 0.08, spread: 0.72, tiltDeg: 0 },
       },
       bgm: {
-        audioMode: 'FOLEY_MASTER',
-        foleyPivotStyle:
-          parsed.bgm?.foleyPivotStyle ??
-          prevCup?.props.bgm?.foleyPivotStyle ??
-          'AUTO',
+        audioMode: bundle.audioMode ?? 'PIVOT_ACCENT',
+        foleyPivotStyle: bundle.foleyPivotStyle,
       },
       brandText: 'TRÀ NGUỘI',
     })
   );
+
+  const seoFileName = `${formatCupSeoFileName(cupNumber, {
+    title: fullProps.title,
+    pivotWord: fullProps.pivotWord,
+    mood: fullProps.publishMood,
+    topic: fullProps.publishTopic,
+  })}.mp4`;
 
   const cupRecord: CupRecord = {
     id: cupId,
     cupNumber,
     status: 'draft',
     progress: 0,
-    videoUrl: prevCup?.videoUrl,
-    thumbUrl: prevCup?.thumbUrl,
+    seoFileName,
     captionText: buildTraNguoiCaption(cupId, fullProps),
     props: fullProps,
   };
@@ -676,6 +752,9 @@ export function importDirectorBundle(
     cup: hydratedCup,
     cups: hydratedAll,
     scenes: loadVaultMeta(),
+    seedComment: bundle.seedComment,
+    layoutWarnings: finalLayoutWarnings,
+    autoFixesApplied: finalAutoFixes,
   };
 }
 
@@ -814,16 +893,20 @@ export function upsertStageScript(params: {
     }
   }
 
-  const parsedResult = StageScriptSchema.safeParse(candidateObj);
-  if (!parsedResult.success) {
-    throw new Error(
-      `Lỗi cấu trúc StageScript (Zod Validation):\n${formatStageScriptZodError(
-        parsedResult.error
-      )}`
-    );
-  }
-
-  const scriptData = parsedResult.data;
+  const scriptData =
+    candidateObj && typeof candidateObj === 'object' && !Array.isArray(candidateObj)
+      ? sanitizeStageScriptObject(candidateObj as Record<string, unknown>)
+      : (() => {
+          const parsedResult = StageScriptSchema.safeParse(candidateObj);
+          if (!parsedResult.success) {
+            throw new Error(
+              `Lỗi cấu trúc StageScript (Zod Validation):\n${formatStageScriptZodError(
+                parsedResult.error
+              )}`
+            );
+          }
+          return parsedResult.data;
+        })();
   const finalSceneId = normalizeScriptSceneId(
     params.sceneId || scriptData.sceneId,
     params.name || scriptData.name

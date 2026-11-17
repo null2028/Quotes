@@ -95,11 +95,26 @@ export const studioApi = {
       body: JSON.stringify(params),
     }),
 
-  importBundle: (bundlePayload: CupBundleImport | unknown) =>
+  importBundle: (bundlePayload: {
+    rawText?: string;
+    bundle?: CupBundleImport | unknown;
+    mode?: 'create_new' | 'overwrite_cup';
+    targetCupId?: string;
+    autoFixHeadroom?: boolean;
+  } | unknown) =>
     requestJson<{
       cup: CupRecord;
       cups: CupRecord[];
       scenes: VaultSceneMeta[];
+      seedComment?: string;
+      layoutWarnings?: Array<{
+        code: string;
+        severity: 'warn' | 'info';
+        targetId: string;
+        message: string;
+        suggestedLiftY?: number;
+      }>;
+      autoFixesApplied?: string[];
     }>('/api/bundles/import', {
       method: 'POST',
       body: JSON.stringify(bundlePayload),
@@ -111,7 +126,7 @@ export const studioApi = {
     title?: string;
     rawText?: string;
     pivotWord?: string;
-    themeId?: 'MINIMAL_LIGHT' | 'DARK_CONTEMPLATIVE';
+    themeId?: 'MINIMAL_LIGHT' | 'MINIMAL_DARK' | 'WARM_NOIR';
     sceneId?: string;
     props?: Partial<VideoInputProps>;
   }) =>
@@ -120,11 +135,30 @@ export const studioApi = {
       body: JSON.stringify(payload || {}),
     }),
 
-  updateCup: (id: string, props: VideoInputProps) =>
-    requestJson<{ cup: CupRecord }>(`/api/cups/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      body: JSON.stringify({ props }),
-    }),
+  updateCup: (
+    id: string,
+    props: VideoInputProps,
+    options?: { resetToDraft?: boolean }
+  ) =>
+    requestJson<{ cup: CupRecord; cups?: CupRecord[] }>(
+      `/api/cups/${encodeURIComponent(id)}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({
+          props,
+          ...(options?.resetToDraft ? { resetToDraft: true } : {}),
+        }),
+      }
+    ),
+
+  reopenCupAsDraft: (id: string) =>
+    requestJson<{ cup: CupRecord; cups?: CupRecord[] }>(
+      `/api/cups/${encodeURIComponent(id)}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ resetToDraft: true }),
+      }
+    ),
 
   deleteCup: (id: string) =>
     requestJson<{ cups: CupRecord[] }>(`/api/cups/${encodeURIComponent(id)}`, {

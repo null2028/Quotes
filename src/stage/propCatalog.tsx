@@ -1,6 +1,7 @@
 import React from 'react';
+import { useVideoConfig } from 'remotion';
 import { evolvePath } from '@remotion/paths';
-import { ThemePalette } from '../theme/palettes';
+import { ThemePalette, isDarkThemePalette } from '../theme/palettes';
 import { RisingSteam, NotificationRings } from '../kit/Atmosphere';
 import {
   CustomPropDefinition,
@@ -163,52 +164,52 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 5. Vò rượu gốm cổ Mai Bình / Thiên Cầu thanh tao (cổ thon, vai tròn đầy, dây lụa buộc cổ có 2 dải tua rủ mềm, bóng mực 0.08)
+  // 5. Vò rượu gốm cổ Mai Bình / Thiên Cầu thanh tao (chuẩn hóa tỷ lệ đặt bàn/đất cao 19px, đáy tại 0,0)
   wine_jar: {
     anchorType: 'ground',
-    emitterOffset: [0, -28],
-    tiltPivot: [-1.6, -0.5],
+    emitterOffset: [0, -19],
+    tiltPivot: [-1.2, -0.5],
     shapes: [
       {
-        d: 'M -4.8 -28 L 4.8 -28 L 3.8 -22.5 C 8.8 -19.0 9.0 -8.5 5.2 0 L -5.2 0 C -9.0 -8.5 -8.8 -19.0 -3.8 -22.5 Z',
+        d: 'M -3.4 -19 L 3.4 -19 L 2.7 -15.2 C 6.2 -12.8 6.4 -5.8 3.6 0 L -3.6 0 C -6.4 -5.8 -6.2 -12.8 -2.7 -15.2 Z',
         fill: 'bg',
         fillOpacity: 0.12,
         role: 'ink',
       },
       {
-        d: 'M -3.4 -21.8 C -7.4 -18.0 -7.6 -8.2 -4.2 -1.0 C -5.6 -8.0 -5.4 -16.0 -2.2 -21.0 Z',
+        d: 'M -2.4 -14.8 C -5.2 -12.2 -5.4 -5.5 -3.0 -0.8 C -4.0 -5.4 -3.8 -10.8 -1.6 -14.2 Z',
         fill: 'ink',
         fillOpacity: 0.08,
         role: 'ink',
         strokeScale: 0,
       },
       {
-        d: 'M 3.6 -19.5 C 6.2 -16.5 6.4 -10.2 4.2 -4.5',
+        d: 'M 2.5 -13.2 C 4.4 -11.2 4.5 -6.8 3.0 -3.0',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.62,
         opacity: 0.52,
       },
       {
-        d: 'M -5.6 -28 Q 0 -27.2 5.6 -28',
+        d: 'M -3.9 -19 Q 0 -18.4 3.9 -19',
         fill: 'none',
         role: 'ink',
         strokeScale: 0.95,
       },
       {
-        d: 'M -4.1 -22.5 Q 0 -21.6 4.1 -22.5',
+        d: 'M -2.9 -15.2 Q 0 -14.6 2.9 -15.2',
         fill: 'none',
         role: 'accent',
         strokeScale: 0.85,
       },
       {
-        d: 'M 1.8 -22.2 C 3.6 -19.5 5.0 -16.5 4.2 -13.5',
+        d: 'M 1.3 -15.0 C 2.5 -13.2 3.5 -11.2 3.0 -9.2',
         fill: 'none',
         role: 'accent',
         strokeScale: 0.62,
       },
       {
-        d: 'M 2.6 -22.2 C 5.0 -20.2 6.6 -17.8 6.2 -14.8',
+        d: 'M 1.8 -15.0 C 3.5 -13.6 4.6 -12.0 4.4 -10.0',
         fill: 'none',
         role: 'accent',
         strokeScale: 0.58,
@@ -216,27 +217,27 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 6. Chén trà / chén rượu gốm thanh nhã (đáy tại 0,0)
+  // 6. Chén trà / chén rượu gốm thanh nhã (cao 6.2px, rộng 9.6px, đáy tại 0,0)
   small_cup: {
     anchorType: 'ground',
-    emitterOffset: [0, -6.8],
+    emitterOffset: [0, -6.5],
     tiltPivot: [-1.2, -0.5],
     shapes: [
       {
-        d: 'M -5.2 -6.5 Q -4.5 -1.4 -2.8 0 L 2.8 0 Q 4.5 -1.4 5.2 -6.5 Q 0 -5.6 -5.2 -6.5 Z',
+        d: 'M -4.8 -6.2 Q -4.2 -1.3 -2.6 0 L 2.6 0 Q 4.2 -1.3 4.8 -6.2 Q 0 -5.4 -4.8 -6.2 Z',
         fill: 'bg',
         fillOpacity: 0.13,
         role: 'ink',
       },
       {
-        d: 'M -3.8 -5.2 Q -3.2 -1.8 -1.8 -0.6',
+        d: 'M -3.5 -5.0 Q -3.0 -1.6 -1.6 -0.6',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.5,
       },
       {
-        d: 'M -5.2 -6.5 Q 0 -7.3 5.2 -6.5',
+        d: 'M -4.8 -6.2 Q 0 -7.0 4.8 -6.2',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.72,
@@ -245,47 +246,47 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 7. Bát cơm gốm thủ công + đôi đũa tre vuốt thon (đáy tại 0,0)
+  // 7. Bát cơm gốm thủ công + đôi đũa tre vuốt thon (chuẩn hóa tỷ lệ rộng 16.8px, cao 8.2px, đáy tại 0,0)
   rice_bowl: {
     anchorType: 'ground',
-    emitterOffset: [0, -14.5],
-    tiltPivot: [-2.0, -0.8],
+    emitterOffset: [0, -9.2],
+    tiltPivot: [-1.4, -0.6],
     shapes: [
       {
-        d: 'M -14.2 -13.5 C -13.8 -5.0 -8.6 -1.2 -5.0 0 Q 0 0.8 5.0 0 C 8.6 -1.2 13.8 -5.0 14.2 -13.5 Q 0 -12.0 -14.2 -13.5 Z',
+        d: 'M -8.4 -8.2 C -8.1 -3.0 -5.2 -0.8 -3.0 0 Q 0 0.5 3.0 0 C 5.2 -0.8 8.1 -3.0 8.4 -8.2 Q 0 -7.3 -8.4 -8.2 Z',
         fill: 'bg',
         fillOpacity: 0.13,
         role: 'ink',
       },
       {
-        d: 'M -11.5 -11.8 C -10.8 -5.5 -6.8 -2.0 -3.8 -0.8 C -6.0 -3.2 -8.2 -6.8 -9.2 -11.5 Z',
+        d: 'M -6.8 -7.2 C -6.4 -3.4 -4.0 -1.2 -2.2 -0.5 C -3.6 -2.0 -4.8 -4.2 -5.4 -7.0 Z',
         fill: 'ink',
         fillOpacity: 0.08,
         role: 'ink',
         strokeScale: 0,
       },
       {
-        d: 'M -14.2 -13.5 Q 0 -15.0 14.2 -13.5',
+        d: 'M -8.4 -8.2 Q 0 -9.2 8.4 -8.2',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.65,
         opacity: 0.58,
       },
       {
-        d: 'M 9.8 -10.5 C 9.2 -6.2 6.4 -3.2 3.5 -1.8',
+        d: 'M 5.8 -6.4 C 5.4 -3.8 3.8 -2.0 2.1 -1.1',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.5,
       },
       {
-        d: 'M -10.5 -15.8 C -1.5 -18.2 7.5 -20.6 16.2 -22.8',
+        d: 'M -6.2 -9.6 C -0.9 -11.0 4.5 -12.5 9.8 -13.8',
         fill: 'none',
         role: 'accent',
         strokeScale: 0.82,
       },
       {
-        d: 'M -10.2 -13.8 C -1.2 -15.4 7.8 -17.0 16.5 -18.4',
+        d: 'M -6.0 -8.4 C -0.7 -9.4 4.6 -10.4 10.0 -11.2',
         fill: 'none',
         role: 'accent',
         strokeScale: 0.78,
@@ -293,65 +294,65 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 8. Chiếc cốc thủy tinh/gốm cao + ống hút cong & 3 hạt trân châu mực loang (đáy tại 0,0)
+  // 8. Chiếc cốc thủy tinh/cà phê/trà sữa + ống hút cong (chuẩn hóa tỷ lệ cao 13.5px, ống hút tới -18.8px, đáy tại 0,0)
   tall_cup: {
     anchorType: 'ground',
-    emitterOffset: [0, -26.5],
-    tiltPivot: [-1.8, -0.8],
+    emitterOffset: [0, -14.2],
+    tiltPivot: [-1.2, -0.5],
     shapes: [
       {
-        d: 'M -9.2 -25.8 C -8.4 -16.5 -7.3 -7.2 -6.4 0 Q 0 1.0 6.4 0 C 7.3 -7.2 8.4 -16.5 9.2 -25.8 Q 0 -24.4 -9.2 -25.8 Z',
+        d: 'M -5.2 -13.5 C -4.7 -8.6 -4.1 -3.8 -3.6 0 Q 0 0.6 3.6 0 C 4.1 -3.8 4.7 -8.6 5.2 -13.5 Q 0 -12.7 -5.2 -13.5 Z',
         fill: 'bg',
         fillOpacity: 0.12,
         role: 'ink',
       },
       {
-        d: 'M -7.4 -23.5 C -6.8 -15.2 -6.0 -7.0 -5.0 -1.2 C -5.8 -7.5 -6.2 -15.5 -6.2 -23.2 Z',
+        d: 'M -4.2 -12.2 C -3.8 -7.9 -3.4 -3.6 -2.8 -0.6 C -3.3 -3.9 -3.5 -8.1 -3.5 -12.0 Z',
         fill: 'ink',
         fillOpacity: 0.07,
         role: 'ink',
         strokeScale: 0,
       },
       {
-        d: 'M -9.2 -25.8 Q 0 -27.2 9.2 -25.8',
+        d: 'M -5.2 -13.5 Q 0 -14.3 5.2 -13.5',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.68,
         opacity: 0.62,
       },
       {
-        d: 'M -7.8 -17.5 Q -1.5 -16.2 7.8 -17.8',
+        d: 'M -4.4 -9.2 Q -0.8 -8.5 4.4 -9.4',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.5,
       },
       {
-        d: 'M 1.6 -14.5 C 3.4 -23.5 5.0 -31.5 6.4 -35.8 Q 8.2 -37.2 11.2 -36.4',
+        d: 'M 0.9 -7.6 C 1.9 -12.2 2.8 -16.4 3.6 -18.6 Q 4.6 -19.4 6.3 -18.9',
         fill: 'none',
         role: 'accent',
         strokeScale: 0.85,
       },
       {
-        circle: [-2.8, -4.8, 1.65],
+        circle: [-1.6, -2.5, 0.95],
         fill: 'accent',
         fillOpacity: 0.25,
         role: 'accent',
-        strokeScale: 0.65,
+        strokeScale: 0.62,
       },
       {
-        circle: [1.6, -4.2, 1.65],
+        circle: [0.9, -2.2, 0.95],
         fill: 'accent',
         fillOpacity: 0.25,
         role: 'accent',
-        strokeScale: 0.65,
+        strokeScale: 0.62,
       },
       {
-        circle: [3.6, -8.2, 1.55],
+        circle: [2.0, -4.3, 0.9],
         fill: 'accent',
         fillOpacity: 0.22,
         role: 'accent',
-        strokeScale: 0.62,
+        strokeScale: 0.6,
       },
     ],
   },
@@ -359,30 +360,30 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
   // 9. Tảng đá cuội / Thái Hồ thạch bất đối xứng kiểu thủy mặc (đáy tại 0,0)
   boulder: {
     anchorType: 'ground',
-    emitterOffset: [0, -35],
+    emitterOffset: [0, -28],
     shapes: [
       {
-        d: 'M -21.5 -3.5 C -25.5 -19.5 -15.5 -36.5 1.5 -37.5 C 16.5 -38.2 25.2 -21.5 21.5 -3.5 C 18.5 0.5 -18.5 0.5 -21.5 -3.5 Z',
+        d: 'M -18.5 -3.0 C -22.0 -16.5 -13.5 -30.5 1.2 -31.5 C 14.0 -32.0 21.5 -18.0 18.5 -3.0 C 15.8 0.4 -15.8 0.4 -18.5 -3.0 Z',
         fill: 'bg',
         fillOpacity: 0.14,
         role: 'ink',
       },
       {
-        d: 'M -19.2 -4.2 C -22.0 -17.5 -14.0 -31.5 -1.5 -34.5 C -10.5 -28.5 -15.5 -16.5 -14.2 -3.8 Z',
+        d: 'M -16.5 -3.6 C -18.8 -14.8 -12.0 -26.5 -1.2 -29.0 C -8.8 -24.0 -13.2 -14.0 -12.0 -3.2 Z',
         fill: 'ink',
         fillOpacity: 0.08,
         role: 'ink',
         strokeScale: 0,
       },
       {
-        d: 'M -10.5 -25.5 C -5.5 -20.5 -2.2 -17.8 6.5 -21.5',
+        d: 'M -8.8 -21.5 C -4.6 -17.2 -1.8 -15.0 5.5 -18.0',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.62,
         opacity: 0.54,
       },
       {
-        d: 'M 4.5 -13.5 C 9.5 -11.5 14.2 -13.8 16.5 -17.5',
+        d: 'M 3.8 -11.5 C 8.0 -9.8 12.0 -11.6 14.0 -14.8',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
@@ -391,45 +392,45 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 10. Chồng sách cổ / hộp giấy thủ công buộc dây lụa (đáy tại 0,0)
+  // 10. Chồng sách cổ / hộp hồ sơ buộc dây lụa (chuẩn hóa tỷ lệ cao 24px, đáy tại 0,0)
   box_stack: {
     anchorType: 'ground',
-    emitterOffset: [0, -38],
+    emitterOffset: [0, -25],
     shapes: [
       {
-        d: 'M -15.8 -13.5 Q 0 -14.2 15.8 -13.5 Q 16.4 -6.8 15.8 0 Q 0 0.5 -15.8 0 Q -16.4 -6.8 -15.8 -13.5 Z',
+        d: 'M -11.5 -8.8 Q 0 -9.2 11.5 -8.8 Q 12.0 -4.4 11.5 0 Q 0 0.4 -11.5 0 Q -12.0 -4.4 -11.5 -8.8 Z',
         fill: 'bg',
         fillOpacity: 0.13,
         role: 'ink',
       },
       {
-        d: 'M -13.6 -26.2 Q 0 -26.8 13.6 -26.2 Q 14.2 -19.8 13.6 -13.5 Q 0 -13.0 -13.6 -13.5 Q -14.2 -19.8 -13.6 -26.2 Z',
+        d: 'M -9.8 -17.0 Q 0 -17.4 9.8 -17.0 Q 10.2 -12.8 9.8 -8.8 Q 0 -8.4 -9.8 -8.8 Q -10.2 -12.8 -9.8 -17.0 Z',
         fill: 'bg',
         fillOpacity: 0.12,
         role: 'ink',
       },
       {
-        d: 'M -10.8 -37.2 Q 0 -37.8 10.8 -37.2 Q 11.4 -31.8 10.8 -26.2 Q 0 -25.8 -10.8 -26.2 Q -11.4 -31.8 -10.8 -37.2 Z',
+        d: 'M -7.8 -24.2 Q 0 -24.6 7.8 -24.2 Q 8.2 -20.6 7.8 -17.0 Q 0 -16.6 -7.8 -17.0 Q -8.2 -20.6 -7.8 -24.2 Z',
         fill: 'bg',
         fillOpacity: 0.11,
         role: 'ink',
       },
       {
-        d: 'M -11.5 -6.8 Q 0 -6.2 11.5 -6.8',
+        d: 'M -8.4 -4.4 Q 0 -4.0 8.4 -4.4',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.48,
       },
       {
-        d: 'M -9.5 -19.8 Q 0 -19.2 9.5 -19.8',
+        d: 'M -6.8 -12.8 Q 0 -12.4 6.8 -12.8',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.48,
       },
       {
-        d: 'M 2.5 -26.2 C 3.8 -22.5 5.2 -19.5 4.2 -16.2',
+        d: 'M 1.8 -17.0 C 2.8 -14.6 3.8 -12.6 3.0 -10.5',
         fill: 'none',
         role: 'accent',
         strokeScale: 0.68,
@@ -437,26 +438,26 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 11. Chiếc ô giấy dầu phương Đông (hỗ trợ morphProgress từ cụp sang xòe)
+  // 11. Chiếc ô giấy dầu phương Đông (chuẩn hóa khoảng thở đỉnh đầu: khi xòe tán ô ở y = -34..-20 so với tay -24 -> đỉnh ô ở -58 trên đầu)
   umbrella: {
     anchorType: 'hand',
-    emitterOffset: [0, -28],
+    emitterOffset: [0, -30],
     shapes: [
       // Trạng thái cụp
       {
-        d: 'M 0 -28 C 0.2 -15 0.2 -2 0 10 Q -3.8 14.8 -6.8 10.8',
+        d: 'M 0 -26 C 0.2 -14 0.2 -2 0 8 Q -3.4 12.2 -6.0 8.8',
         fill: 'none',
         role: 'ink',
         strokeScale: 0.9,
       },
       {
-        d: 'M 0 -28 C -2.8 -19 -4.8 -11 -5.2 -5.5 Q 0 -4.2 5.2 -5.5 C 4.8 -11 2.8 -19 0 -28 Z',
+        d: 'M 0 -26 C -2.6 -18 -4.4 -10 -4.8 -5.0 Q 0 -3.8 4.8 -5.0 C 4.4 -10 2.6 -18 0 -26 Z',
         fill: 'bg',
         fillOpacity: 0.13,
         role: 'ink',
       },
       {
-        d: 'M -0.4 -24 C -1.6 -16 -2.2 -10 -2.0 -5.5',
+        d: 'M -0.4 -22 C -1.4 -15 -2.0 -9 -1.8 -5.0',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
@@ -464,28 +465,28 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
       },
     ],
     altShapes: [
-      // Trạng thái xòe rộng màu Đỏ Gạch mực loang
+      // Trạng thái xòe rộng màu Đỏ Chu Sa, cao thoáng trên đỉnh đầu nhân vật
       {
-        d: 'M 0 -24 C 0.2 -12 0.2 0 0 12 Q -3.8 16.2 -6.8 12.0',
+        d: 'M 0 -29 C 0.2 -15 0.2 -2 0 8 Q -3.4 12.2 -6.0 8.8',
         fill: 'none',
         role: 'ink',
         strokeScale: 0.9,
       },
       {
-        d: 'M -24 -9.5 C -16 -26 -6 -32 0 -32 C 6 -32 16 -26 24 -9.5 Q 16 -13.2 8 -10.0 Q 0 -13.5 -8 -10.0 Q -16 -13.2 -24 -9.5 Z',
+        d: 'M -28 -18.5 C -19 -32 -7 -36 0 -36 C 7 -36 19 -32 28 -18.5 Q 18.5 -21.8 9.2 -19.0 Q 0 -22.0 -9.2 -19.0 Q -18.5 -21.8 -28 -18.5 Z',
         fill: 'accent',
-        fillOpacity: 0.2,
+        fillOpacity: 0.24,
         role: 'accent',
       },
       {
-        d: 'M 0 -31.5 C -4 -23 -7 -16 -8 -10.0',
+        d: 'M 0 -35.5 C -4.5 -28 -8 -23 -9.2 -19.0',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.52,
       },
       {
-        d: 'M 0 -31.5 C 4 -23 7 -16 8 -10.0',
+        d: 'M 0 -35.5 C 4.5 -28 8 -23 9.2 -19.0',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
@@ -494,51 +495,51 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 12. Ghế gỗ công viên nét vẽ tay mềm mại (đáy tại 0,0)
+  // 12. Ghế gỗ công viên chuẩn nhân trắc học (mặt ghế tại y = -10.5 khớp hông nhân vật ngồi, tựa lưng tại -22.5, đáy tại 0,0)
   bench: {
     anchorType: 'ground',
-    emitterOffset: [0, -23],
+    emitterOffset: [0, -22.5],
     shapes: [
       {
-        d: 'M -23.5 -23.2 Q 0 -24.2 23.5 -23.2 Q 24.2 -18.5 23.5 -15.5 Q 0 -16.2 -23.5 -15.5 Q -24.2 -18.5 -23.5 -23.2 Z',
+        d: 'M -23.5 -22.5 Q 0 -23.4 23.5 -22.5 Q 24.2 -18.0 23.5 -15.0 Q 0 -15.6 -23.5 -15.0 Q -24.2 -18.0 -23.5 -22.5 Z',
         fill: 'bg',
         fillOpacity: 0.11,
         role: 'ink',
       },
       {
-        d: 'M -26.0 -12.0 Q 0 -12.8 26.0 -12.0 Q 25.0 -9.5 23.5 -9.5 Q 0 -10.2 -23.5 -9.5 Q -25.0 -9.5 -26.0 -12.0 Z',
+        d: 'M -26.0 -10.8 Q 0 -11.5 26.0 -10.8 Q 25.0 -8.6 23.5 -8.6 Q 0 -9.2 -23.5 -8.6 Q -25.0 -8.6 -26.0 -10.8 Z',
         fill: 'bg',
-        fillOpacity: 0.13,
+        fillOpacity: 0.14,
         role: 'ink',
       },
       {
-        d: 'M -18.5 -19.5 Q 0 -20.2 18.5 -19.5',
+        d: 'M -18.5 -18.8 Q 0 -19.4 18.5 -18.8',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.5,
       },
       {
-        d: 'M -19.2 -23.0 C -18.8 -14.0 -19.0 -6.0 -19.8 0',
+        d: 'M -19.2 -22.3 C -18.8 -13.5 -19.0 -5.8 -19.8 0',
         fill: 'none',
         role: 'ink',
         strokeScale: 0.92,
       },
       {
-        d: 'M 19.2 -23.0 C 18.8 -14.0 19.0 -6.0 19.8 0',
+        d: 'M 19.2 -22.3 C 18.8 -13.5 19.0 -5.8 19.8 0',
         fill: 'none',
         role: 'ink',
         strokeScale: 0.92,
       },
       {
-        d: 'M -23.5 -17.5 Q -25.8 -14.5 -23.5 -11.5',
+        d: 'M -23.5 -16.5 Q -25.8 -13.5 -23.5 -10.5',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.62,
         opacity: 0.55,
       },
       {
-        d: 'M 23.5 -17.5 Q 25.8 -14.5 23.5 -11.5',
+        d: 'M 23.5 -16.5 Q 25.8 -13.5 23.5 -10.5',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.62,
@@ -1134,6 +1135,87 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
   },
 };
 
+function inferDefaultShapePivot(s: InlineShape): [number, number] {
+  if (s.circle) return [s.circle[0], s.circle[1]];
+  if (s.ellipse) return [s.ellipse[0], s.ellipse[1]];
+  if (s.rect) return [s.rect[0] + s.rect[2] / 2, s.rect[1] + s.rect[3] / 2];
+  if (s.line) return [s.line[0], s.line[1]];
+  if (s.d) {
+    const m = s.d.match(/^\s*M\s*(-?\d+(?:\.\d+)?)[\s,]+(-?\d+(?:\.\d+)?)/i);
+    if (m) return [Number(m[1]), Number(m[2])];
+  }
+  return [0, 0];
+}
+
+function computeShapeAnimTransform(
+  s: InlineShape,
+  propState: EvaluatedPropState
+): string | undefined {
+  const anim = s.anim;
+  if (!anim) return undefined;
+
+  const [px, py] = anim.pivot ?? inferDefaultShapePivot(s);
+  const cycles = Math.max(1, Math.round((anim.speed ?? 1) * 6));
+  const phaseRad = (anim.phase ?? 0) * Math.PI * 2;
+  const theta = propState.loopProgress * Math.PI * 2 * cycles + phaseRad;
+  const actMult = anim.driveByMotion ? propState.motionActivity : 1;
+
+  switch (anim.type) {
+    case 'spin': {
+      const dir = anim.direction ?? 1;
+      if (anim.driveByMotion) {
+        const radius = s.circle
+          ? Math.max(3, s.circle[2])
+          : Math.max(4, anim.amplitude ?? 9);
+        const deg = (propState.travelDist / radius) * (180 / Math.PI) * dir;
+        if (Math.abs(deg) < 0.02) return undefined;
+        return `rotate(${deg.toFixed(2)}, ${px.toFixed(2)}, ${py.toFixed(2)})`;
+      }
+      const spinCycles = Math.max(1, Math.round((anim.speed ?? 1) * 3));
+      const deg =
+        (propState.loopProgress * 360 * spinCycles +
+          (anim.phase ?? 0) * 360) *
+        dir;
+      return `rotate(${deg.toFixed(2)}, ${px.toFixed(2)}, ${py.toFixed(2)})`;
+    }
+
+    case 'swing': {
+      const amp = (anim.amplitude ?? 16) * actMult;
+      const deg = Math.sin(theta) * amp;
+      if (Math.abs(deg) < 0.02) return undefined;
+      return `rotate(${deg.toFixed(2)}, ${px.toFixed(2)}, ${py.toFixed(2)})`;
+    }
+
+    case 'flutter': {
+      const flutterMult = anim.driveByMotion
+        ? 0.35 + 0.65 * propState.motionActivity
+        : 1;
+      const amp = (anim.amplitude ?? 10) * flutterMult;
+      const deg =
+        (Math.sin(theta) * 0.68 + Math.sin(theta * 2 + 0.9) * 0.32) * amp;
+      if (Math.abs(deg) < 0.02) return undefined;
+      return `rotate(${deg.toFixed(2)}, ${px.toFixed(2)}, ${py.toFixed(2)})`;
+    }
+
+    case 'bob': {
+      const amp = (anim.amplitude ?? 2.6) * actMult;
+      const dy = Math.sin(theta) * amp;
+      if (Math.abs(dy) < 0.02) return undefined;
+      return `translate(0, ${dy.toFixed(2)})`;
+    }
+
+    case 'pulse': {
+      const amp = (anim.amplitude ?? 0.1) * actMult;
+      const sc = Math.max(0.2, 1 + Math.sin(theta) * amp);
+      if (Math.abs(sc - 1) < 0.002) return undefined;
+      return `translate(${px.toFixed(2)}, ${py.toFixed(2)}) scale(${sc.toFixed(3)}) translate(${(-px).toFixed(2)}, ${(-py).toFixed(2)})`;
+    }
+
+    default:
+      return undefined;
+  }
+}
+
 function renderShapeList(
   shapes: InlineShape[],
   propState: EvaluatedPropState,
@@ -1142,6 +1224,8 @@ function renderShapeList(
   isAfterPivot: boolean
 ): React.ReactNode {
   const allowAccent = isAfterPivot && propState.isAccentActive;
+  const isDark = isDarkThemePalette(palette.id);
+  const accentPropColor = palette.accentProp || palette.accent;
 
   return shapes.map((s, idx) => {
     if (s.show === 'before_pivot' && isAfterPivot) return null;
@@ -1156,7 +1240,7 @@ function renderShapeList(
       : s.role
         ? s.role === 'accent'
           ? allowAccent
-            ? palette.accent
+            ? accentPropColor
             : propState.color
           : resolveRoleColor(s.role, palette, !isAfterPivot)
         : propState.color;
@@ -1169,13 +1253,13 @@ function renderShapeList(
           ? strokeColor
           : s.fill === 'accent'
             ? allowAccent
-              ? palette.accent
+              ? accentPropColor
               : strokeColor
             : s.fill === 'secondary'
               ? palette.inkSecondary
               : palette.inkPrimary;
 
-    const resolvedFillOpacity =
+    const baseFillOpacity =
       !s.fill || s.fill === 'none' || isNegativeCarve
         ? 0
         : s.fillOpacity !== undefined
@@ -1185,13 +1269,21 @@ function renderShapeList(
             : s.fill === 'accent' && allowAccent
               ? 0.24
               : 0.14;
+    const resolvedFillOpacity =
+      isDark && s.fill === 'accent' && allowAccent
+        ? Math.min(0.68, Math.max(0.46, baseFillOpacity * 2.1))
+        : baseFillOpacity;
 
     const sw =
       s.strokeScale === 0 ? 0 : baseStrokeWidth * (s.strokeScale ?? 1);
     const dash = s.dashed ? '4.0 4.0' : undefined;
-    const shapeOpacity = s.opacity ?? 1;
+    const rawShapeOpacity = s.opacity ?? 1;
+    const shapeOpacity =
+      isDark && s.role === 'secondary'
+        ? Math.max(0.62, rawShapeOpacity)
+        : rawShapeOpacity;
 
-    // Xử lý splitProgress (tách 2 nửa trái/phải bay tản và mờ dần)
+    // Xử lý splitProgress (tách 2 nửa trái/phải bay tản và mờ dần) + khớp động anim con
     let splitTransform: string | undefined;
     let splitOpacityMult = 1;
     if (propState.splitProgress > 0.001 && s.splitSide) {
@@ -1203,54 +1295,98 @@ function renderShapeList(
       splitOpacityMult = Math.max(0, 1 - propState.splitProgress * 0.85);
     }
 
+    const animTransform = computeShapeAnimTransform(s, propState);
+    const combinedTransform =
+      [splitTransform, animTransform].filter(Boolean).join(' ') || undefined;
+
+    const isDrawing = propState.drawProgress < 0.999;
+    // Pha 2 (CHOREO-04): Two-Phase Slow Calligraphic Stroke-Then-Wash
+    // - Loại bỏ triệt để xung đột chồng 2 tầng cubic ease-out gây hiện tượng chớp nét.
+    // - Các nét con (shapes) trong cùng đạo cụ được vẽ tuần tự gối nhau (staggerSpan tới 0.48),
+    //   mỗi nét lướt theo đường cong Cosine S-Curve (0.5 - 0.5 * cos(pi * t)) êm đềm.
+    // - Kể cả các mảng đặc có strokeScale = 0 cũng được phác viền mảnh dẫn hướng trước khi màu mực loang đầy (0.52 -> 1.00).
+    const totalShapes = Math.max(1, shapes.length);
+    const staggerSpan =
+      totalShapes > 1 ? Math.min(0.48, (totalShapes - 1) * 0.14) : 0;
+    const shapeWindowStart =
+      totalShapes > 1 ? (idx / (totalShapes - 1)) * staggerSpan : 0;
+    const shapeWindowDuration = Math.max(0.35, 1 - staggerSpan);
+    const localDraw = isDrawing
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            (propState.drawProgress - shapeWindowStart) / shapeWindowDuration
+          )
+        )
+      : 1;
+    const rawStrokeP = isDrawing
+      ? Math.max(0, Math.min(1, localDraw / 0.85))
+      : 1;
+    const strokeP = isDrawing
+      ? 0.5 - 0.5 * Math.cos(Math.PI * rawStrokeP)
+      : 1;
+    const rawWashP = isDrawing
+      ? Math.max(0, Math.min(1, (localDraw - 0.52) / 0.48))
+      : 1;
+    const drawFillMult = isDrawing
+      ? 0.5 - 0.5 * Math.cos(Math.PI * rawWashP)
+      : 1;
+    const rawInkGate = isDrawing ? Math.max(0, Math.min(1, strokeP / 0.22)) : 1;
+    const strokeInkGate = isDrawing
+      ? 0.5 - 0.5 * Math.cos(Math.PI * rawInkGate)
+      : 1;
+
+    // Nếu mảng hình đặc có sw === 0 (strokeScale: 0), trong lúc đang vẽ (isDrawing) ta tạo nét phác cọ mảnh
+    // rồi thu mờ dần khi mảng mực bên trong đã thấm đầy để mọi chi tiết đều được họa nét từ tốn.
+    const guideStrokeWidth =
+      isDrawing && sw === 0 && !isNegativeCarve
+        ? baseStrokeWidth * 0.68 * (1 - drawFillMult * 0.88)
+        : 0;
+    const activeStrokeWidth = sw > 0 ? sw : guideStrokeWidth;
+    const activeStrokeColor =
+      sw > 0
+        ? strokeColor
+        : rawFillColor !== 'none'
+          ? rawFillColor
+          : strokeColor;
+
+    const strokeSelfDrawProps =
+      isDrawing && !s.dashed && activeStrokeWidth > 0.01
+        ? {
+            pathLength: 1000,
+            strokeDasharray: '1000',
+            strokeDashoffset: (1000 * (1 - strokeP)).toFixed(1),
+          }
+        : {
+            strokeDasharray: dash,
+          };
+
     const commonProps = {
       fill: rawFillColor,
-      fillOpacity: resolvedFillOpacity,
-      stroke: sw > 0 ? strokeColor : 'none',
-      strokeWidth: sw,
-      strokeOpacity: 0.88,
+      fillOpacity: resolvedFillOpacity * drawFillMult,
+      stroke: activeStrokeWidth > 0.01 ? activeStrokeColor : 'none',
+      strokeWidth: activeStrokeWidth,
+      strokeOpacity: (sw > 0 ? 0.88 : 0.72) * strokeInkGate,
       strokeLinecap: 'round' as const,
       strokeLinejoin: 'round' as const,
-      strokeDasharray: dash,
       opacity: shapeOpacity * splitOpacityMult,
-      transform: splitTransform,
+      transform: combinedTransform,
+      ...strokeSelfDrawProps,
     };
 
     const needsOpaqueBacking = isWashClosed || resolvedFillOpacity >= 0.85;
 
     if (s.d) {
-      if (propState.drawProgress < 0.999 && !s.dashed) {
-        const evo = evolvePath(
-          Math.max(0.001, propState.drawProgress),
-          s.d
-        );
-        return (
-          <g key={idx}>
-            {needsOpaqueBacking && (
-              <path
-                d={s.d}
-                fill={palette.background}
-                stroke="none"
-                transform={splitTransform}
-              />
-            )}
-            <path
-              {...commonProps}
-              d={s.d}
-              strokeDasharray={evo.strokeDasharray}
-              strokeDashoffset={evo.strokeDashoffset}
-            />
-          </g>
-        );
-      }
       return (
         <g key={idx}>
-          {needsOpaqueBacking && (
+          {needsOpaqueBacking && drawFillMult > 0.005 && (
             <path
               d={s.d}
               fill={palette.background}
               stroke="none"
-              transform={splitTransform}
+              opacity={drawFillMult}
+              transform={combinedTransform}
             />
           )}
           <path {...commonProps} d={s.d} />
@@ -1260,21 +1396,35 @@ function renderShapeList(
 
     if (s.line) {
       const [x1, y1, x2, y2] = s.line;
-      return <line key={idx} {...commonProps} x1={x1} y1={y1} x2={x2} y2={y2} />;
+      const curX2 = isDrawing ? x1 + (x2 - x1) * strokeP : x2;
+      const curY2 = isDrawing ? y1 + (y2 - y1) * strokeP : y2;
+      return (
+        <line
+          key={idx}
+          {...commonProps}
+          strokeDasharray={dash}
+          strokeDashoffset={undefined}
+          x1={x1}
+          y1={y1}
+          x2={curX2}
+          y2={curY2}
+        />
+      );
     }
 
     if (s.circle) {
       const [cx, cy, r] = s.circle;
       return (
         <g key={idx}>
-          {s.fill && s.fill !== 'none' && (
+          {s.fill && s.fill !== 'none' && drawFillMult > 0.005 && (
             <circle
               cx={cx}
               cy={cy}
               r={r}
               fill={palette.background}
               stroke="none"
-              transform={splitTransform}
+              opacity={drawFillMult}
+              transform={combinedTransform}
             />
           )}
           <circle {...commonProps} cx={cx} cy={cy} r={r} />
@@ -1286,7 +1436,7 @@ function renderShapeList(
       const [x, y, width, height, rx] = s.rect;
       return (
         <g key={idx}>
-          {needsOpaqueBacking && (
+          {needsOpaqueBacking && drawFillMult > 0.005 && (
             <rect
               x={x}
               y={y}
@@ -1295,7 +1445,8 @@ function renderShapeList(
               rx={rx ?? 0}
               fill={palette.background}
               stroke="none"
-              transform={splitTransform}
+              opacity={drawFillMult}
+              transform={combinedTransform}
             />
           )}
           <rect
@@ -1314,7 +1465,7 @@ function renderShapeList(
       const [cx, cy, rx, ry] = s.ellipse;
       return (
         <g key={idx}>
-          {needsOpaqueBacking && (
+          {needsOpaqueBacking && drawFillMult > 0.005 && (
             <ellipse
               cx={cx}
               cy={cy}
@@ -1322,7 +1473,8 @@ function renderShapeList(
               ry={ry}
               fill={palette.background}
               stroke="none"
-              transform={splitTransform}
+              opacity={drawFillMult}
+              transform={combinedTransform}
             />
           )}
           <ellipse {...commonProps} cx={cx} cy={cy} rx={rx} ry={ry} />
@@ -1341,6 +1493,7 @@ export const StagePropRenderer: React.FC<{
   frame: number;
   isAfterPivot: boolean;
   customPropsMap?: Record<string, CustomPropDefinition>;
+  flipX?: boolean;
 }> = ({
   propState,
   palette,
@@ -1348,7 +1501,9 @@ export const StagePropRenderer: React.FC<{
   frame,
   isAfterPivot,
   customPropsMap,
+  flipX = false,
 }) => {
+  const { durationInFrames } = useVideoConfig();
   if (propState.opacity <= 0.01) return null;
 
   const isFar = propState.layer === 'far';
@@ -1368,11 +1523,12 @@ export const StagePropRenderer: React.FC<{
   const effectiveStrokeWidth =
     baseFineStroke / Math.pow(Math.max(0.5, propState.scale), 0.78);
 
+  const isDarkPropTheme = isDarkThemePalette(palette.id);
   const layerOpacity =
     propState.focusRole === 'ambient'
-      ? Math.min(0.48, propState.opacity)
+      ? Math.min(isDarkPropTheme ? 0.56 : 0.48, propState.opacity)
       : propState.focusRole === 'support' || isFar
-        ? Math.min(0.52, propState.opacity)
+        ? Math.min(isDarkPropTheme ? 0.64 : 0.52, propState.opacity)
         : Math.min(1, propState.opacity);
 
   // Tìm định nghĩa shapes & altShapes: ưu tiên inline trên prop -> customPropsMap -> BUILT_IN_PROP_CATALOG
@@ -1388,10 +1544,11 @@ export const StagePropRenderer: React.FC<{
 
   const { emitters } = propState;
 
-  // Khăn voan cô dâu tự động bay xuôi về phía sau lưng đối diện hướng facing của nhân vật
+  // Khăn voan cô dâu hoặc nhân vật khớp động (actor.rig) tự lật hướng ngang theo chiều di chuyển
   const veilScaleX =
-    propState.type === 'bridal_veil' &&
-    propState.attachedActorFacing === 'left'
+    flipX ||
+    (propState.type === 'bridal_veil' &&
+      propState.attachedActorFacing === 'left')
       ? -1
       : 1;
 
@@ -1419,9 +1576,12 @@ export const StagePropRenderer: React.FC<{
 
   // Làn khói/hương (steam) luôn bay thẳng đứng hướng lên trời từ đúng miệng đạo cụ (hoặc từ vệt rượu loang sát miệng khi nghiêng đổ)
   const steamScale = Math.min(2.2, Math.max(0.9, propState.scale * 0.78));
-  const steamPhase = (frame / 60) * 0.35 * Math.PI * 1.35;
+  const safeDur = Math.max(30, durationInFrames || 900);
+  const steamCycles = Math.max(2, Math.round((safeDur / 60) * 0.25));
+  const steamPhase =
+    ((frame % safeDur) / safeDur) * Math.PI * 2 * steamCycles;
   const sDrift1 = Math.sin(steamPhase) * 1.8 * steamScale;
-  const sDrift2 = Math.cos(steamPhase * 0.9) * 1.6 * steamScale;
+  const sDrift2 = Math.cos(steamPhase + 1.05) * 1.6 * steamScale;
   const steamBaseX = rx + (spillCx - rx) * 0.42 * emitters.spill;
   const steamBaseY =
     ry +

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useVideoConfig } from 'remotion';
 
 function periodicCycle(
   frame: number | undefined,
@@ -11,6 +12,19 @@ function periodicCycle(
   return ((rawFrame / periodFrames + offsetRatio) % 1 + 1) % 1;
 }
 
+/**
+ * Chuẩn hóa chu kỳ tuần hoàn theo tổng số frame thực tế của Video để
+ * mọi thời lượng động (810f, 840f, 930f, 990f...) đều khớp Seamless Loop frame[0] === frame[end].
+ */
+function resolveLoopPeriodFrames(
+  totalFrames: number,
+  nominalFramesAt900: number
+): number {
+  const safeTotal = Math.max(30, totalFrames || 900);
+  const cycles = Math.max(1, Math.round(safeTotal / nominalFramesAt900));
+  return safeTotal / cycles;
+}
+
 export const SlowRain: React.FC<{
   frame?: number;
   phase?: number;
@@ -19,11 +33,18 @@ export const SlowRain: React.FC<{
   count?: number;
   shelterZone?: { minX: number; maxX: number; topY: number };
 }> = ({ frame = 0, phase, opacity = 1, color, count = 15, shelterZone }) => {
+  const { durationInFrames } = useVideoConfig();
   if (opacity <= 0.01) return null;
+  const periodFrames = resolveLoopPeriodFrames(durationInFrames, 180);
   return (
     <g opacity={opacity * 0.44}>
       {Array.from({ length: count }).map((_, i) => {
-        const cycle = periodicCycle(frame, phase, 180, (i * 0.173) % 1);
+        const cycle = periodicCycle(
+          frame,
+          phase,
+          periodFrames,
+          (i * 0.173) % 1
+        );
         const rx = 85 + ((i * 31) % 360) - cycle * 38;
         const ry = 75 + cycle * 245;
         let x2 = rx - 6.8;
@@ -72,13 +93,20 @@ export const WindBreeze: React.FC<{
   direction = 'left',
   count = 5,
 }) => {
+  const { durationInFrames } = useVideoConfig();
   if (opacity <= 0.01) return null;
   const dir = direction === 'left' ? -1 : 1;
+  const periodFrames = resolveLoopPeriodFrames(durationInFrames, 300);
 
   return (
     <g opacity={opacity * 0.36}>
       {Array.from({ length: count }).map((_, i) => {
-        const cycle = periodicCycle(frame, phase, 300, (i * 0.219) % 1);
+        const cycle = periodicCycle(
+          frame,
+          phase,
+          periodFrames,
+          (i * 0.219) % 1
+        );
         const startX = direction === 'left' ? 455 : 85;
         const wx = startX + dir * cycle * 360;
         const wy = 185 + i * 32 + Math.sin(cycle * Math.PI * 2 + i) * 5;
@@ -117,9 +145,11 @@ export const NotificationRings: React.FC<{
   opacity = 1,
   maxRadius = 26,
 }) => {
+  const { durationInFrames } = useVideoConfig();
   if (opacity <= 0.01) return null;
-  const p1 = periodicCycle(frame, phase, 180, 0);
-  const p2 = periodicCycle(frame, phase, 180, 0.5);
+  const periodFrames = resolveLoopPeriodFrames(durationInFrames, 180);
+  const p1 = periodicCycle(frame, phase, periodFrames, 0);
+  const p2 = periodicCycle(frame, phase, periodFrames, 0.5);
 
   return (
     <g transform={`translate(${x}, ${y})`} opacity={opacity}>
@@ -154,11 +184,18 @@ export const FallingLeaves: React.FC<{
   accentColor?: string;
   count?: number;
 }> = ({ frame = 0, phase, opacity = 1, color, accentColor, count = 7 }) => {
+  const { durationInFrames } = useVideoConfig();
   if (opacity <= 0.01) return null;
+  const periodFrames = resolveLoopPeriodFrames(durationInFrames, 450);
   return (
     <g opacity={opacity}>
       {Array.from({ length: count }).map((_, i) => {
-        const cycle = periodicCycle(frame, phase, 450, (i * 0.167) % 1);
+        const cycle = periodicCycle(
+          frame,
+          phase,
+          periodFrames,
+          (i * 0.167) % 1
+        );
         const sway = Math.sin(cycle * Math.PI * 4 + i) * 14;
         const lx = 120 + ((i * 49) % 300) + sway;
         const ly = 165 + cycle * 180;
@@ -190,9 +227,11 @@ export const RisingSteam: React.FC<{
   opacity?: number;
   height?: number;
 }> = ({ x, y, frame, phase, color, opacity = 1, height = 30 }) => {
+  const { durationInFrames } = useVideoConfig();
   if (opacity <= 0.01) return null;
-  const c1 = periodicCycle(frame, phase, 300, 0);
-  const c2 = periodicCycle(frame, phase, 300, 0.5);
+  const periodFrames = resolveLoopPeriodFrames(durationInFrames, 300);
+  const c1 = periodicCycle(frame, phase, periodFrames, 0);
+  const c2 = periodicCycle(frame, phase, periodFrames, 0.5);
 
   const renderWisp = (cycle: number, key: number, xShift: number) => {
     const fade = Math.sin(cycle * Math.PI) * opacity;
@@ -295,10 +334,12 @@ export const CelestialBody: React.FC<{
   opacity,
   progress,
 }) => {
+  const { durationInFrames } = useVideoConfig();
   const actualX = x ?? cx ?? 420;
   const actualY = y ?? cy ?? 125;
   const baseRadius = radius ?? r ?? 25;
-  const breathCycle = periodicCycle(frame, undefined, 300, 0);
+  const periodFrames = resolveLoopPeriodFrames(durationInFrames, 300);
+  const breathCycle = periodicCycle(frame, undefined, periodFrames, 0);
   const pulseMult = 1 + Math.sin(breathCycle * Math.PI * 2) * 0.028;
   const actualRadius = baseRadius * pulseMult;
   const actualOpacity = opacity ?? progress ?? 1;

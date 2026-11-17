@@ -1,0 +1,248 @@
+{
+  "sceneId": "SCRIPT_P032_QUYET_TAM_3_GIAY",
+  "name": "Quyết Tâm Tồn Tại Đúng 3 Giây",
+  "description": "Nhân vật ngồi nghiêm trang bên bàn trà đêm với chiếc hộp đậy kín lên chiếc ví; chạm điểm lật, nắp hộp nhấc lên để lộ chiếc ví Đỏ Chu Sa và nhân vật lập tức cầm ví đi thẳng ra ngoài.",
+  "act1": "Đường chân trời kéo nét cọ chậm rãi; ghế, bàn trà thấp, tách trà bốc khói, nhân vật và chiếc hộp phong ấn trên bàn lần lượt định hình trên nền Ô Long Cổ.",
+  "act2AtPivot": "Chạm '… để sang mai!', nhân vật với tay nhấc bổng nắp hộp; chiếc ví Đỏ Chu Sa lộ ra sáng rực trên bàn trà.",
+  "act3Afterimage": "Nhân vật đứng dậy cầm chiếc ví Đỏ Chu Sa thong thả bước sang phải rời khỏi bàn, trước khi toàn cảnh thu hồi nét cọ khép vòng lặp.",
+  "redProp": "Chiếc ví da gập (`wallet`) bừng sắc Đỏ Chu Sa (#F06A4E) sau khi nắp hộp phong ấn được nhấc lên",
+  "tags": [
+    "solid_style",
+    "hài hước",
+    "cuối tháng",
+    "cú bẻ lái"
+  ],
+  "terrain": {
+    "type": "flat",
+    "y": 352,
+    "startX": 96,
+    "endX": 444
+  },
+  "atmosphere": [
+    {
+      "id": "night_steam",
+      "type": "steam",
+      "x": 226,
+      "y": 330,
+      "count": 4,
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "opacity": 0.28
+    }
+  ],
+  "actors": [
+    {
+      "id": "hero",
+      "x": 185,
+      "scale": 1.1,
+      "facing": "right",
+      "pose": "sit_lean",
+      "leanDeg": 5,
+      "sitProgress": 1,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "layer": "fore"
+    }
+  ],
+  "props": [
+    {
+      "id": "chair",
+      "type": "stool",
+      "x": 183,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1,
+      "colorRole": "ink",
+      "focusRole": "support",
+      "anchorType": "ground"
+    },
+    {
+      "id": "tea_table",
+      "type": "low_tea_table",
+      "x": 216,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1,
+      "colorRole": "ink",
+      "focusRole": "support",
+      "anchorType": "ground"
+    },
+    {
+      "id": "small_cup",
+      "type": "small_cup",
+      "x": 227,
+      "y": -14.2,
+      "layer": "fore",
+      "scale": 0.65,
+      "colorRole": "secondary",
+      "focusRole": "support",
+      "anchorType": "ground"
+    },
+    {
+      "id": "wallet",
+      "x": 212,
+      "y": -14.2,
+      "layer": "mid",
+      "scale": 1,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "anchorType": "ground",
+      "emitterOffset": [
+        0,
+        -5
+      ],
+      "shapes": [
+        {
+          "rect": [
+            -8,
+            -9,
+            16,
+            9,
+            2
+          ],
+          "fill": "none",
+          "role": "ink",
+          "strokeScale": 1.05
+        },
+        {
+          "rect": [
+            -2,
+            -6,
+            4,
+            3,
+            1
+          ],
+          "fill": "none",
+          "role": "ink",
+          "strokeScale": 0.9
+        },
+        {
+          "line": [
+            -6,
+            -2,
+            6,
+            -2
+          ],
+          "role": "secondary",
+          "strokeScale": 0.7,
+          "dashed": true
+        }
+      ]
+    },
+    {
+      "id": "vault_lid",
+      "x": 212,
+      "y": -14.2,
+      "layer": "fore",
+      "scale": 1,
+      "colorRole": "ink",
+      "focusRole": "support",
+      "anchorType": "ground",
+      "shapes": [
+        {
+          "rect": [
+            -11,
+            -13,
+            22,
+            13,
+            2
+          ],
+          "fill": "bg",
+          "fillOpacity": 1,
+          "role": "ink",
+          "strokeScale": 1.1
+        },
+        {
+          "circle": [
+            0,
+            -15,
+            2
+          ],
+          "fill": "none",
+          "role": "ink",
+          "strokeScale": 0.95
+        },
+        {
+          "line": [
+            -7,
+            -6.5,
+            7,
+            -6.5
+          ],
+          "role": "secondary",
+          "strokeScale": 0.75
+        }
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "at": "line_2",
+      "duration": 1.3,
+      "target": "hero",
+      "leanDeg": 8
+    },
+    {
+      "at": "line_3+0.15s",
+      "duration": 1,
+      "target": "hero",
+      "pose": "reach_out",
+      "leanDeg": 2,
+      "sitProgress": 1
+    },
+    {
+      "at": "pivot-0.2s",
+      "duration": 0.6,
+      "target": "vault_lid",
+      "y": -14.2,
+      "toY": -38,
+      "opacity": 0
+    },
+    {
+      "at": "pivot",
+      "duration": 0.55,
+      "target": "wallet",
+      "colorRole": "accent",
+      "emitters": {
+        "pulseRing": 0.52,
+        "glow": 0.28
+      }
+    },
+    {
+      "at": "pivot+0.55s",
+      "duration": 0.85,
+      "target": "hero",
+      "x": 185,
+      "toX": 204,
+      "pose": "stand",
+      "leanDeg": 0,
+      "sitProgress": 0
+    },
+    {
+      "at": "pivot+0.55s",
+      "duration": 0.85,
+      "target": "wallet",
+      "x": 212,
+      "toX": 216,
+      "y": -14.2,
+      "toY": -24
+    },
+    {
+      "at": "pivot+1.45s",
+      "duration": 4.2,
+      "target": "hero",
+      "x": 204,
+      "toX": 318,
+      "pose": "walk"
+    },
+    {
+      "at": "pivot+1.45s",
+      "duration": 4.2,
+      "target": "wallet",
+      "x": 216,
+      "toX": 330,
+      "y": -24,
+      "toY": -24
+    }
+  ]
+}

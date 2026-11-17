@@ -1,0 +1,224 @@
+{
+  "goodCases": [
+    {
+      "folder": "good_01_chen_08_chiec_o",
+      "cupFile": "quote-008.json",
+      "scriptId": "SCRIPT_CHIEC_O_RONG_CHO_NHAU",
+      "mp4": "output/quote-008/Chén 08 - Chiếc ô.mp4",
+      "motif": "01. Chạm – Đồng cảm & Che chở (Umbrella Morph + Spotlight Dim)",
+      "timestamps": {
+        "durationSec": 14.02,
+        "lineStartsSec": [
+          0.35,
+          2.6,
+          4.85
+        ],
+        "pivotLineIndex": 2,
+        "pivotSec": 5.23,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 4.38,
+          "03_at_pivot": 5.98,
+          "04_afterimage": 10.93
+        }
+      }
+    },
+    {
+      "folder": "good_02_chen_09_ky_uc",
+      "cupFile": "quote-009.json",
+      "scriptId": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
+      "mp4": "output/quote-009/Chén 09 - Ký ức.mp4",
+      "motif": "04. Ngẫm – Dư âm & Buông bỏ (Memory Note Float + DissolveToCloud)",
+      "timestamps": {
+        "durationSec": 16.0,
+        "lineStartsSec": [
+          0.35,
+          2.3,
+          4.25,
+          6.2
+        ],
+        "pivotLineIndex": 3,
+        "pivotSec": 6.58,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.73,
+          "03_at_pivot": 7.33,
+          "04_afterimage": 12.48
+        }
+      }
+    },
+    {
+      "folder": "good_03_chen_10_nguoi_nha",
+      "cupFile": "quote-010.json",
+      "scriptId": "SCRIPT_CONG_RAO_HOA_MAI_HIEN_CHUNG",
+      "mp4": "output/quote-010/Chén 10 - Người nhà.mp4",
+      "motif": "02. Lật – Cú bẻ lái bằng hình ảnh (Gate Morphs to Shared Roof)",
+      "timestamps": {
+        "durationSec": 15.02,
+        "lineStartsSec": [
+          0.35,
+          2.3,
+          4.25,
+          6.2
+        ],
+        "pivotLineIndex": 3,
+        "pivotSec": 6.58,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.73,
+          "03_at_pivot": 7.33,
+          "04_afterimage": 11.71
+        }
+      }
+    },
+    {
+      "folder": "good_04_chen_12_vitamin_em",
+      "cupFile": "quote-012.json",
+      "scriptId": "SCRIPT_DUNG_NGHI_NGUYEN_TO_A_C_D_HOA_EM",
+      "mp4": "output/quote-012/Chén 12 - Vitamin Em.mp4",
+      "motif": "03. Chơi – Liên tưởng & Chơi chữ (Lab Flasks A-C-D Morph to Silhouette)",
+      "timestamps": {
+        "durationSec": 14.51,
+        "lineStartsSec": [
+          0.35,
+          2.24,
+          4.12,
+          6.01
+        ],
+        "pivotLineIndex": 3,
+        "pivotSec": 6.39,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.54,
+          "03_at_pivot": 7.14,
+          "04_afterimage": 11.32
+        }
+      }
+    },
+    {
+      "folder": "good_05_chen_15_khoe_tung",
+      "cupFile": "quote-015.json",
+      "scriptId": "SCRIPT_GANH_NANG_COM_AO_HOA_DON_DOPING",
+      "mp4": "output/quote-015/Chén 15 - Khỏe tưng.mp4",
+      "motif": "02/03. Đồ vật tác động & Bẻ lái công sở (Cinnabar Bill Doping Wake-Up)",
+      "timestamps": {
+        "durationSec": 16.0,
+        "lineStartsSec": [
+          0.35,
+          2.3,
+          4.25,
+          6.2
+        ],
+        "pivotLineIndex": 3,
+        "pivotSec": 6.58,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.73,
+          "03_at_pivot": 7.33,
+          "04_afterimage": 12.48
+        }
+      }
+    },
+    {
+      "folder": "good_06_chen_17_cap_nhat",
+      "cupFile": "quote-017.json",
+      "scriptId": "SCRIPT_P022_LICH_BAN_CHUA_CAP_NHAT",
+      "mp4": "output/quote-017/Chén 17 - Cập nhật.mp4",
+      "motif": "04. Ngẫm – Một vật một câu chuyện (Frozen Desk Calendar Page)",
+      "timestamps": {
+        "durationSec": 14.02,
+        "lineStartsSec": [
+          0.35,
+          2.17,
+          3.99,
+          5.82
+        ],
+        "pivotLineIndex": 3,
+        "pivotSec": 6.2,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.35,
+          "03_at_pivot": 6.95,
+          "04_afterimage": 10.93
+        }
+      }
+    }
+  ],
+  "badCases": [
+    {
+      "folder": "bad_01_chen_16_de_sang_mai_qua_tai_dao_cu",
+      "cupFile": "quote-016.json",
+      "scriptId": "SCRIPT_DE_SANG_MAI",
+      "mp4": "output/quote-016/Chén 16 - Để sang mai.mp4",
+      "errorCategory": "Lỗi dữ liệu JSON + Lỗi quy tắc đặt cảnh + Lỗi Engine (Layer fore & Atmosphere default accent)",
+      "timestamps": {
+        "durationSec": 15.51,
+        "lineStartsSec": [
+          0.35,
+          2.3,
+          4.25,
+          6.2
+        ],
+        "pivotLineIndex": 3,
+        "pivotSec": 6.58,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.73,
+          "03_at_pivot": 7.33,
+          "04_afterimage": 12.1
+        }
+      }
+    },
+    {
+      "folder": "bad_02_chen_14_bien_ban_hop_v1_lech_ty_le_va_lo_lung",
+      "cupFile": "quote-014.json",
+      "scriptId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG",
+      "scriptIdFixed": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V7",
+      "mp4": "output/quote-014/Chén 14 - Biên bản sáng thứ Hai.mp4",
+      "mp4Fixed": "output/quote-014/Chén 14 - Thứ 2.mp4",
+      "errorCategory": "Lỗi quy tắc đặt cảnh & điểm neo (Ghế công viên bench thu nhỏ + Đạo cụ bay lơ lửng y=-29 phải sửa 7 bản V1..V7)",
+      "timestamps": {
+        "durationSec": 14.51,
+        "lineStartsSec": [
+          0.35,
+          1.76,
+          3.18,
+          4.59,
+          6.01
+        ],
+        "pivotLineIndex": 4,
+        "pivotSec": 6.39,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.54,
+          "03_at_pivot": 7.14,
+          "04_afterimage": 11.32
+        }
+      }
+    },
+    {
+      "folder": "bad_03_script_p032_quyet_tam_3_giay_invisible_furniture_va_hop_den",
+      "cupFile": "quote-016.json",
+      "scriptId": "SCRIPT_P032_QUYET_TAM_3_GIAY",
+      "mp4": "output/quote-013/Chén 13 - Người anh yêu.mp4",
+      "errorCategory": "Lỗi Prompt/Skill Mismatch + Lỗi dữ liệu JSON (Đạo cụ stool/low_tea_table không tồn tại trong catalog -> tàng hình; thiếu type; vault_lid hộp đen che khuất; đi xuyên bàn)",
+      "timestamps": {
+        "durationSec": 15.02,
+        "lineStartsSec": [
+          0.35,
+          2.3,
+          4.25,
+          6.2
+        ],
+        "pivotLineIndex": 3,
+        "pivotSec": 6.58,
+        "frames": {
+          "01_intro": 1.1,
+          "02_pre_pivot": 5.73,
+          "03_at_pivot": 7.33,
+          "04_afterimage": 11.71
+        }
+      }
+    }
+  ]
+}

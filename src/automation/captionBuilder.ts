@@ -330,8 +330,7 @@ export function generateSeedCommentForCup(
   const isNightContemplative =
     effectiveSlot === 'Night' ||
     props.themeId === 'MINIMAL_DARK' ||
-    props.themeId === 'WARM_NOIR' ||
-    String(props.themeId) === 'DARK_CONTEMPLATIVE';
+    props.themeId === 'WARM_NOIR';
 
   const isOfficeOrWordplay =
     props.motion?.pacingMode === 'WRY_BATHOS' ||

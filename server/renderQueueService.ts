@@ -1,28 +1,32 @@
 import fs from 'fs';
 import path from 'path';
+import { spawnSync } from 'child_process';
 import { bundle } from '@remotion/bundler';
 import { selectComposition, renderMedia } from '@remotion/renderer';
 import { VideoInputProps, VideoInputSchema } from '../src/schemas/videoSchema';
+import { isDarkThemePalette } from '../src/theme/palettes';
 import {
   auditVietnameseSyllables,
   computeTimelineSync,
 } from '../src/engine/timelineSync';
 import {
-  getFoleyMasterFileName,
-  synthesizeCupFoleyAudio,
+  getAudioMasterFileName,
+  synthesizeCupAudioByMode,
 } from '../src/engine/foleyEngine';
 import { validateAndNormalizeVideoProps } from '../src/automation/validator';
 import { resolveCupCaption } from '../src/automation/captionBuilder';
-import {
-  formatCupBaseFileName,
-  formatCupSeoFileName,
-} from '../src/automation/fileNaming';
+import { formatCupBaseFileName } from '../src/automation/fileNaming';
 import {
   CustomPropDefinition,
   StageScript,
   StageScriptSchema,
 } from '../src/stage/stageScriptSchema';
 import { incrementSceneUsage } from './sceneManagerService';
+import {
+  resolveLayoutGeometry,
+  resolveVisualDNA,
+} from '../src/engine/visualDnaResolver';
+import { resolveStageScript } from '../src/stage/stageScriptRegistry';
 import {
   CupRecord,
   loadCups,
@@ -39,11 +43,72 @@ const CUSTOM_PROPS_PATH = path.resolve(PROJECT_ROOT, 'data/custom-props.json');
 const PUBLIC_AUDIO_DIR = path.resolve(PROJECT_ROOT, 'public/audio');
 const OUTPUT_ROOT = path.resolve(PROJECT_ROOT, 'output');
 const VIDEOS_EXPORT_DIR = path.resolve(PROJECT_ROOT, 'videos');
-const VIDEOS_SEO_MASTER_DIR = path.resolve(VIDEOS_EXPORT_DIR, 'seo-master');
 
 let cachedBundleLocation: string | null = null;
 let isWorkerRunning = false;
 const pendingCupQueue: string[] = [];
+let cachedSupportsNoiseFilter: boolean | null = null;
+
+interface FfmpegBinaryResolution {
+  ffmpegBin: string;
+  ffprobeBin: string;
+  env: NodeJS.ProcessEnv;
+}
+
+function resolveRemotionFfmpegBinaries(): FfmpegBinaryResolution {
+  const compositorDir = path.resolve(
+    PROJECT_ROOT,
+    `node_modules/@remotion/compositor-${process.platform}-${process.arch}`
+  );
+  const bundledFfmpeg = path.resolve(compositorDir, 'ffmpeg');
+  const bundledFfprobe = path.resolve(compositorDir, 'ffprobe');
+  const hasBundled = fs.existsSync(bundledFfmpeg) && fs.existsSync(bundledFfprobe);
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  if (hasBundled) {
+    env.DYLD_LIBRARY_PATH = env.DYLD_LIBRARY_PATH
+      ? `${compositorDir}:${env.DYLD_LIBRARY_PATH}`
+      : compositorDir;
+    env.LD_LIBRARY_PATH = env.LD_LIBRARY_PATH
+      ? `${compositorDir}:${env.LD_LIBRARY_PATH}`
+      : compositorDir;
+  }
+  return {
+    ffmpegBin: hasBundled ? bundledFfmpeg : 'ffmpeg',
+    ffprobeBin: hasBundled ? bundledFfprobe : 'ffprobe',
+    env,
+  };
+}
+
+function checkFfmpegSupportsNoiseFilter(): boolean {
+  if (cachedSupportsNoiseFilter !== null) {
+    return cachedSupportsNoiseFilter;
+  }
+  const { ffmpegBin, env } = resolveRemotionFfmpegBinaries();
+  const res = spawnSync(ffmpegBin, ['-hide_banner', '-h', 'filter=noise'], {
+    env,
+    encoding: 'utf-8',
+  });
+  const combined = `${res.stdout || ''}\n${res.stderr || ''}`;
+  cachedSupportsNoiseFilter =
+    res.status === 0 && !/Unknown filter/i.test(combined);
+  return cachedSupportsNoiseFilter;
+}
+
+/**
+ * Ràng buộc B.4: Nối filter mới vào tham số -vf/-filter:v sẵn có (nếu Remotion đã đặt)
+ * thay vì truyền 2 cờ -vf xung đột lẫn nhau.
+ */
+function appendVideoFilterSafe(args: string[], filterExpr: string): void {
+  const vfIdx = args.findIndex((a) => a === '-vf' || a === '-filter:v');
+  if (vfIdx !== -1 && vfIdx + 1 < args.length) {
+    args[vfIdx + 1] = `${args[vfIdx + 1]},${filterExpr}`;
+  } else {
+    const encIdx = args.indexOf('libx264');
+    if (encIdx !== -1) {
+      args.splice(encIdx + 1, 0, '-vf', filterExpr);
+    }
+  }
+}
 
 export function buildTraNguoiCaption(id: string, props: VideoInputProps): string {
   return resolveCupCaption(id, props);
@@ -151,21 +216,24 @@ async function processRenderQueue(): Promise<void> {
         const syncInfo = computeTimelineSync(normalizedProps);
         const syllableInfo = auditVietnameseSyllables(normalizedProps.segments);
 
-        // Luôn tổng hợp file WAV Foley Stereo 48 kHz chuẩn hóa -14.0 LUFS (Original Audio 100%)
-        const foley = synthesizeCupFoleyAudio(normalizedProps, syncInfo);
-        const foleyFileName = getFoleyMasterFileName(normalizedProps.id);
-        const resolvedFoleyPivotStyle = foley.pivotStyle;
-        const wavBuf = Buffer.from(foley.wavBytes);
+        // Tổng hợp Audio theo 1 trong 3 chế độ (mặc định Mode 2 PIVOT_ACCENT với dither -55 dBFS siêu nhẹ)
+        const audioResult = synthesizeCupAudioByMode(normalizedProps, syncInfo);
+        const audioFileName = getAudioMasterFileName(
+          normalizedProps.id,
+          audioResult.audioMode
+        );
+        const resolvedFoleyPivotStyle = audioResult.pivotStyle;
+        const wavBuf = Buffer.from(audioResult.wavBytes);
 
         fs.mkdirSync(PUBLIC_AUDIO_DIR, { recursive: true });
-        fs.writeFileSync(path.resolve(PUBLIC_AUDIO_DIR, foleyFileName), wavBuf);
+        fs.writeFileSync(path.resolve(PUBLIC_AUDIO_DIR, audioFileName), wavBuf);
 
         const bundleAudioDir = path.resolve(
           cachedBundleLocation,
           'public/audio'
         );
         fs.mkdirSync(bundleAudioDir, { recursive: true });
-        fs.writeFileSync(path.resolve(bundleAudioDir, foleyFileName), wavBuf);
+        fs.writeFileSync(path.resolve(bundleAudioDir, audioFileName), wavBuf);
 
         updateCupInStore(nextCupId, (c) => ({
           ...c,
@@ -177,7 +245,6 @@ async function processRenderQueue(): Promise<void> {
         const jobOutDir = path.resolve(OUTPUT_ROOT, normalizedProps.id);
         fs.mkdirSync(jobOutDir, { recursive: true });
         fs.mkdirSync(VIDEOS_EXPORT_DIR, { recursive: true });
-        fs.mkdirSync(VIDEOS_SEO_MASTER_DIR, { recursive: true });
 
         const composition = await selectComposition({
           serveUrl: cachedBundleLocation,
@@ -189,24 +256,24 @@ async function processRenderQueue(): Promise<void> {
           target.cupNumber || normalizedProps.id,
           normalizedProps.title
         );
-        const seoBaseName = formatCupSeoFileName(
-          target.cupNumber || normalizedProps.id,
-          {
-            title: normalizedProps.title,
-            pivotWord: normalizedProps.pivotWord,
-            mood: normalizedProps.publishMood,
-            topic: normalizedProps.publishTopic,
-          }
-        );
 
         const videoFileName = `${cupBaseName}.mp4`;
-        const seoVideoFileName = `${seoBaseName}.mp4`;
 
         const videoOutPath = path.resolve(jobOutDir, videoFileName);
-        const seoOutPath = path.resolve(jobOutDir, seoVideoFileName);
+        const rawRenderTmpPath = path.resolve(jobOutDir, '.raw-render.mp4');
         const metaOutPath = path.resolve(jobOutDir, 'metadata.json');
 
         const h264Level = composition.fps > 30 ? '4.2' : '4.1';
+        const isDarkTheme = isDarkThemePalette(normalizedProps.themeId);
+        // -aq-mode 3 thiên vị bit cho vùng tối, nên nền tối dùng CRF 20 để dung lượng ổn định 2.5-4.2 MB
+        const targetCrf = isDarkTheme ? 20 : 19;
+        const maxRateStr = '5M';
+        const bufSizeStr = '10M';
+        const supportsNoiseFilter = checkFfmpegSupportsNoiseFilter();
+
+        if (fs.existsSync(rawRenderTmpPath)) {
+          fs.unlinkSync(rawRenderTmpPath);
+        }
 
         await renderMedia({
           composition,
@@ -214,14 +281,14 @@ async function processRenderQueue(): Promise<void> {
           codec: 'h264',
           imageFormat: 'png',
           pixelFormat: 'yuv420p',
-          videoBitrate: '10M',
-          encodingMaxRate: '12M',
-          encodingBufferSize: '20M',
+          crf: targetCrf,
+          encodingMaxRate: maxRateStr,
+          encodingBufferSize: bufSizeStr,
           x264Preset: 'medium',
           gopSize: composition.fps,
           colorSpace: 'bt709',
           audioCodec: 'aac',
-          audioBitrate: '192k',
+          audioBitrate: audioResult.audioMode === 'TIKTOK_SILENT' ? '96k' : '128k',
           sampleRate: 48000,
           enforceAudioTrack: true,
           ffmpegOverride: ({ args }) => {
@@ -235,15 +302,24 @@ async function processRenderQueue(): Promise<void> {
             if (!next.includes('-level:v') && !next.includes('-level')) {
               extraFlags.push('-level:v', h264Level);
             }
+            if (!next.includes('-aq-mode')) {
+              extraFlags.push('-aq-mode', '3', '-aq-strength', '1.08');
+            }
             if (extraFlags.length > 0) {
               next.splice(encoderIdx + 1, 0, ...extraFlags);
             }
+            if (supportsNoiseFilter) {
+              appendVideoFilterSafe(
+                next,
+                isDarkTheme ? 'noise=c0s=3:c0f=t+u' : 'noise=c0s=1.5:c0f=t+u'
+              );
+            }
             return next;
           },
-          outputLocation: videoOutPath,
+          outputLocation: rawRenderTmpPath,
           inputProps: normalizedProps,
           onProgress: ({ progress }) => {
-            const pct = Math.min(98, Math.max(10, Math.round(10 + progress * 88)));
+            const pct = Math.min(95, Math.max(10, Math.round(10 + progress * 85)));
             updateCupInStore(nextCupId, (c) => ({
               ...c,
               status: 'rendering',
@@ -252,16 +328,66 @@ async function processRenderQueue(): Promise<void> {
           },
         });
 
+        // Hậu xử lý Remux siêu tốc (<80ms): Xóa sạch dấu vết Lavf / Remotion và đóng creation_time thực tế
+        const { ffmpegBin, env: ffEnv } = resolveRemotionFfmpegBinaries();
+        const creationIso = new Date()
+          .toISOString()
+          .replace(/\.\d{3}Z$/, 'Z');
+        const remuxRes = spawnSync(
+          ffmpegBin,
+          [
+            '-y',
+            '-v',
+            'error',
+            '-i',
+            rawRenderTmpPath,
+            '-map',
+            '0',
+            '-c',
+            'copy',
+            '-map_metadata',
+            '-1',
+            '-fflags',
+            '+bitexact',
+            '-flags:v',
+            '+bitexact',
+            '-flags:a',
+            '+bitexact',
+            '-movflags',
+            '+faststart',
+            '-metadata',
+            `creation_time=${creationIso}`,
+            videoOutPath,
+          ],
+          { env: ffEnv, encoding: 'utf-8' }
+        );
+        if (remuxRes.status === 0 && fs.existsSync(videoOutPath)) {
+          if (fs.existsSync(rawRenderTmpPath)) {
+            fs.unlinkSync(rawRenderTmpPath);
+          }
+        } else {
+          // Dự phòng an toàn nếu remux gặp lỗi bất ngờ
+          fs.renameSync(rawRenderTmpPath, videoOutPath);
+        }
+
+        // Dọn các file cover PNG hoặc SEO MP4 dư trong thư mục jobOutDir (nếu có từ các lần render cũ)
+        for (const existingFile of fs.readdirSync(jobOutDir)) {
+          if (
+            existingFile !== videoFileName &&
+            existingFile !== 'metadata.json' &&
+            (existingFile.endsWith('-cover.png') || existingFile.endsWith('.mp4'))
+          ) {
+            try {
+              fs.unlinkSync(path.resolve(jobOutDir, existingFile));
+            } catch {
+              // ignore cleanup error
+            }
+          }
+        }
+
         fs.copyFileSync(
           videoOutPath,
           path.resolve(VIDEOS_EXPORT_DIR, videoFileName)
-        );
-        if (seoOutPath !== videoOutPath) {
-          fs.copyFileSync(videoOutPath, seoOutPath);
-        }
-        fs.copyFileSync(
-          videoOutPath,
-          path.resolve(VIDEOS_SEO_MASTER_DIR, seoVideoFileName)
         );
 
         const captionText = buildTraNguoiCaption(
@@ -270,11 +396,19 @@ async function processRenderQueue(): Promise<void> {
         );
         const activeSceneId =
           normalizedProps.motion.sceneId || normalizedProps.motion.archetype;
+        const resolvedScript = resolveStageScript(
+          activeSceneId,
+          normalizedProps.motion.stageScript
+        );
+        const resolvedVisualDNA = resolveVisualDNA(normalizedProps, resolvedScript);
+        const resolvedLayoutGeo = resolveLayoutGeometry(
+          resolvedVisualDNA.layout,
+          resolvedVisualDNA.brushOrientation
+        );
 
         const metadata = {
           id: normalizedProps.id,
           cupBaseName,
-          seoBaseName,
           title: normalizedProps.title,
           textFormat: normalizedProps.textFormat,
           syllableCount: syllableInfo.count,
@@ -282,6 +416,12 @@ async function processRenderQueue(): Promise<void> {
           captionText,
           pivotWord: normalizedProps.pivotWord,
           pivotFrame: syncInfo.pivotFrame,
+          recommendedCoverFrame: syncInfo.recommendedCoverFrame,
+          recommendedCoverSeconds: Number(
+            (syncInfo.recommendedCoverFrame / syncInfo.fps).toFixed(2)
+          ),
+          durationMode: normalizedProps.durationMode ?? 'FIXED',
+          durationInFrames: syncInfo.durationInFrames,
           durationSeconds: Number(
             (syncInfo.durationInFrames / syncInfo.fps).toFixed(2)
           ),
@@ -290,35 +430,65 @@ async function processRenderQueue(): Promise<void> {
             fps: composition.fps,
             codec: `h264-high-L${h264Level}`,
             colorSpace: 'bt709',
-            videoBitrate: '10M (max 12M)',
-            audio: 'aac-192k-48khz',
-            loudnessTarget: '-14.0 LUFS (-1.5 dBTP)',
-            audioMode: 'FOLEY_MASTER',
+            videoBitrate: `CRF ${targetCrf} (max ${maxRateStr})`,
+            audio: `aac-${audioResult.audioMode === 'TIKTOK_SILENT' ? '96k' : '128k'}-48khz`,
+            loudnessTarget:
+              audioResult.audioMode === 'FOLEY_MASTER'
+                ? '-14.0 LUFS (-1.5 dBTP)'
+                : audioResult.audioMode === 'PIVOT_ACCENT'
+                  ? '-55 dBFS dither + Pivot Hit'
+                  : 'Silent AAC 48kHz Stereo',
+            audioMode: audioResult.audioMode,
             foleyPivotStyle: resolvedFoleyPivotStyle,
-            foleyMasterWav: foleyFileName,
+            foleyMasterWav: audioFileName,
+            noiseFilterApplied: supportsNoiseFilter,
+            metadataSanitized: remuxRes.status === 0,
             faststart: true,
             seamlessLoop: true,
           },
           sceneId: activeSceneId,
           themeId: normalizedProps.themeId,
+          visualDNA: {
+            isLegacyLocked: resolvedVisualDNA.isLegacyLocked,
+            layout: resolvedVisualDNA.layout,
+            lightingGobo: resolvedVisualDNA.lightingGobo,
+            shotMode: resolvedVisualDNA.shotMode,
+            pivotMechanic: resolvedVisualDNA.pivotMechanic,
+            horizonOffsetPx: resolvedVisualDNA.horizonOffsetPx,
+            forceSolidStyle: resolvedVisualDNA.forceSolidStyle,
+            downgradedAsymmetricThird:
+              resolvedVisualDNA.downgradedAsymmetricThird,
+            typographyZoneY: [
+              resolvedLayoutGeo.typographyTop,
+              resolvedLayoutGeo.typographyMaxBottom,
+            ],
+            stageZoneY: [
+              resolvedLayoutGeo.stageTop,
+              resolvedLayoutGeo.stageTop + resolvedLayoutGeo.stageHeight,
+            ],
+          },
           videoFile: videoFileName,
-          seoVideoFile: seoVideoFileName,
         };
         fs.writeFileSync(metaOutPath, JSON.stringify(metadata, null, 2), 'utf-8');
 
         incrementSceneUsage(activeSceneId);
 
         const ts = Date.now();
-        updateCupInStore(nextCupId, (c) => ({
-          ...c,
-          status: 'completed',
-          progress: 100,
-          captionText,
-          seoFileName: seoVideoFileName,
-          videoUrl: `/output/${normalizedProps.id}/${encodeURIComponent(videoFileName)}?v=${ts}`,
-          seoVideoUrl: `/output/${normalizedProps.id}/${encodeURIComponent(seoVideoFileName)}?v=${ts}`,
-          thumbUrl: undefined,
-        }));
+        updateCupInStore(nextCupId, (c) => {
+          const {
+            seoFileName: _omitSeoName,
+            seoVideoUrl: _omitSeoUrl,
+            thumbUrl: _omitThumb,
+            ...restCup
+          } = c;
+          return {
+            ...restCup,
+            status: 'completed',
+            progress: 100,
+            captionText,
+            videoUrl: `/output/${normalizedProps.id}/${encodeURIComponent(videoFileName)}?v=${ts}`,
+          };
+        });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(`[RenderQueue] Lỗi khi xuất ${nextCupId}:`, msg);

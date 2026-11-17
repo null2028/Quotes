@@ -119,7 +119,7 @@ export function dehydrateCupForDisk(
     props: {
       ...cup.props,
       bgm: {
-        audioMode: 'FOLEY_MASTER',
+        audioMode: cup.props.bgm?.audioMode ?? 'PIVOT_ACCENT',
         foleyPivotStyle: cup.props.bgm?.foleyPivotStyle ?? 'AUTO',
       },
       motion: {

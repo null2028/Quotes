@@ -117,7 +117,7 @@ export function heuristicFallbackMapper(job: RawQuoteJobInput): VideoInputProps 
       stateB: { ...rule.recommendedStateB },
     },
     bgm: {
-      audioMode: 'FOLEY_MASTER',
+      audioMode: 'PIVOT_ACCENT',
       foleyPivotStyle: 'AUTO',
     },
     brandText: job.brandText ?? 'TRÀ NGUỘI',
@@ -154,7 +154,7 @@ export async function mapQuoteToVideoProps(
     themeId: job.themeId ?? 'MINIMAL_LIGHT',
     motion: llmParsed.motion,
     bgm: {
-      audioMode: 'FOLEY_MASTER',
+      audioMode: 'PIVOT_ACCENT',
       foleyPivotStyle: 'AUTO',
     },
     brandText: job.brandText ?? 'TRÀ NGUỘI',

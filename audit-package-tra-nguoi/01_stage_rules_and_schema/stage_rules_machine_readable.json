@@ -1,0 +1,183 @@
+{
+  "version": "V8.6.1 (Code-Verified 2026-11-17)",
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 60,
+    "sourceFile": "src/theme/palettes.ts"
+  },
+  "stageSvg": {
+    "STAGE_VIEWBOX": "62 126 416 250",
+    "xMin": 62,
+    "xMax": 478,
+    "width": 416,
+    "yMin": 126,
+    "yMax": 376,
+    "height": 250,
+    "centerX": 270,
+    "DEFAULT_GROUND_Y": 352,
+    "headroomAboveDefaultGround": 226,
+    "belowDefaultGround": 24,
+    "X_KEYWORD_MAP": {
+      "far_left": 115,
+      "left": 175,
+      "center_left": 225,
+      "center": 270,
+      "center_right": 315,
+      "right": 365,
+      "far_right": 425
+    },
+    "sourceFile": "src/stage/terrainSystem.ts (lines 12-26)"
+  },
+  "layoutsOn1080x1920": {
+    "header": {
+      "left": 132,
+      "top": 268,
+      "width": 816,
+      "height": 52,
+      "right": 948
+    },
+    "variants": {
+      "CLASSIC_TOP_STAGE": {
+        "stageLeft": 132,
+        "stageTop": 342,
+        "stageWidth": 816,
+        "stageHeight": 490,
+        "quoteLeft": 132,
+        "quoteTop": 862,
+        "quoteBottom": 1538,
+        "quoteWidth": 700,
+        "typographyMaxWidth": 678,
+        "frameMode": "OPEN"
+      },
+      "SKY_QUOTE_BOTTOM_STAGE": {
+        "stageLeft": 132,
+        "stageTop": 1032,
+        "stageWidth": 816,
+        "stageHeight": 496,
+        "quoteLeft": 132,
+        "quoteTop": 348,
+        "quoteBottom": 1008,
+        "quoteWidth": 700,
+        "typographyMaxWidth": 678,
+        "frameMode": "OPEN"
+      },
+      "WINDOW_FRAME": {
+        "stageLeft": 186,
+        "stageTop": 356,
+        "stageWidth": 620,
+        "stageHeight": 454,
+        "quoteLeft": 132,
+        "quoteTop": 846,
+        "quoteBottom": 1538,
+        "quoteWidth": 700,
+        "typographyMaxWidth": 678,
+        "frameMode": "WINDOW_ARCH (SVG clip/frame M 122 362 L 122 246 A 148 114 0 0 1 418 246 L 418 362 -> X=122..418)"
+      },
+      "ASYMMETRIC_THIRD": {
+        "stageLeft": 132,
+        "stageTop": 358,
+        "stageWidth": 388,
+        "stageHeight": 332,
+        "quoteLeft": 168,
+        "quoteTop": 718,
+        "quoteBottom": 1538,
+        "quoteWidth": 664,
+        "typographyMaxWidth": 642,
+        "frameMode": "CIRCLE_MEDALLION",
+        "guardCondition": "canUseAsymmetricThird: syllableCount <= 28 AND (shotMode === 'MACRO_PROP' OR actorCount <= 1 OR actorSpanX <= 56), else downgrades to WINDOW_FRAME"
+      }
+    },
+    "sourceFile": "src/engine/visualDnaResolver.ts (lines 146-248) & src/theme/palettes.ts (lines 89-105)"
+  },
+  "layerRenderOrderAndParallax": [
+    {
+      "order": 1,
+      "item": "sky props",
+      "parallaxMultiplier": 0.25,
+      "yReference": "Absolute SVG Y (pose.y directly, NOT added to terrain.y)"
+    },
+    {
+      "order": 2,
+      "item": "atmosphere items (sun, hollow_sun, crescent,clouds, stars, rain, etc.)",
+      "parallaxMultiplier": 0.25,
+      "yReference": "Absolute SVG Y"
+    },
+    {
+      "order": 3,
+      "item": "far props",
+      "parallaxMultiplier": 0.55,
+      "yReference": "terrainPt.y + pose.y"
+    },
+    {
+      "order": 4,
+      "item": "far actors",
+      "parallaxMultiplier": 0.55,
+      "yReference": "terrainPt.y"
+    },
+    {
+      "order": 5,
+      "item": "spotlight radial gradient (when SPOTLIGHT_DIM)",
+      "parallaxMultiplier": 1.0,
+      "yReference": "focusTargetX, focusTargetY"
+    },
+    {
+      "order": 6,
+      "item": "TerrainRenderer (ground line + 2.2s horizon sweep)",
+      "parallaxMultiplier": 1.0,
+      "yReference": "groundY = 352 + horizonOffsetPx"
+    },
+    {
+      "order": 7,
+      "item": "mid props (rendered BEHIND mid actors)",
+      "parallaxMultiplier": 1.0,
+      "yReference": "terrainPt.y + pose.y"
+    },
+    {
+      "order": 8,
+      "item": "mid actors (rendered IN FRONT OF mid props)",
+      "parallaxMultiplier": 1.0,
+      "yReference": "terrainPt.y"
+    },
+    {
+      "order": 9,
+      "item": "fore actors (rendered BEHIND fore props!)",
+      "parallaxMultiplier": 1.25,
+      "yReference": "terrainPt.y"
+    },
+    {
+      "order": 10,
+      "item": "fore props (rendered IN FRONT OF fore actors!)",
+      "parallaxMultiplier": 1.25,
+      "yReference": "terrainPt.y + pose.y"
+    }
+  ],
+  "actorSocketsAndAnthropometrics": {
+    "CloakedTraveler": {
+      "standingHeightPx": "60 * scale (head center at y = -48*s, head radius = 6.6*s, top of head = -54.6*s, feet at y = 0)",
+      "seatedHipY": "-19.5 * s (drops from -25.5*s standing)",
+      "seatedKnee": "x = dir * 11.8 * s, y = -13.5 * s",
+      "seatedFoot": "x = dir * 13.5 * s, y = 0",
+      "sockets": {
+        "head": {
+          "x": "actor.x + leanShiftX * 0.85",
+          "y": "actor.y - 49 * s + sitDrop"
+        },
+        "back": {
+          "x": "actor.x - dir * 9.5 * s + leanShiftX * 0.4",
+          "y": "actor.y - 26 * s + sitDrop * 0.7"
+        },
+        "ground_front": {
+          "x": "actor.x + dir * 24 * s",
+          "y": "getTerrainPoint(gx).y"
+        },
+        "hand": {
+          "reachExtra": "give|reach_out: 18, hold_up: 14, push: 19, default: 12",
+          "handBaseY": "hold_up: -41, give: -25, default: -28",
+          "x": "actor.x + dir * reachExtra * s + leanShiftX * 0.65",
+          "y": "actor.y + handBaseY * s + sitDrop * 0.8"
+        }
+      }
+    }
+  }
+}

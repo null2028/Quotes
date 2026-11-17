@@ -1,0 +1,67 @@
+{
+  "id": "quote-011",
+  "cupNumber": "11",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Yêu lâu mà lơ là dễ mất điểm, nên cứ phải theo đuổi lại từ đầu với công suất nhân đôi.\nNgười thương của bạn thuộc hệ hay dỗi hay hệ mặt dày đây?\n\n#tranguoi #thathinh #tinhyeu #haihuoc #tho4cau",
+  "props": {
+    "id": "quote-011",
+    "textFormat": "POEM",
+    "title": "Gấp đôi",
+    "author": "",
+    "customCaption": "Yêu lâu mà lơ là dễ mất điểm, nên cứ phải theo đuổi lại từ đầu với công suất nhân đôi.\nNgười thương của bạn thuộc hệ hay dỗi hay hệ mặt dày đây?\n\n#tranguoi #thathinh #tinhyeu #haihuoc #tho4cau",
+    "publishSlot": "Anytime",
+    "publishMood": "Hài hước",
+    "publishTopic": "Tình yêu",
+    "fontSizeScale": 0.94,
+    "segments": [
+      "Dù có em rồi, tôi vẫn tán,",
+      "Đến khi em phát ngán thì thôi.",
+      "Mà bao giờ em bảo chán tôi,",
+      "Thì tôi tán lại gấp đôi lúc đầu."
+    ],
+    "pivotWord": "gấp đôi lúc đầu",
+    "highlightStyle": "BOTH",
+    "durationMode": "AUTO_SEED",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_DARK",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 6,
+      "scale": 1.06,
+      "strokeScale": 1
+    },
+    "visualDNA": {
+      "mode": "CUSTOM",
+      "layout": "CLASSIC_TOP_STAGE",
+      "lightingGobo": "WARM_LANTERN",
+      "shotMode": "BRUSH_DRAW",
+      "pivotMechanic": "PULLBACK_REVEAL",
+      "horizonOffsetPx": 2,
+      "forceSolidStyle": true
+    },
+    "motion": {
+      "sceneId": "CUSTOM_TAN_LAI_GAP_DOI",
+      "archetype": "CUSTOM_TAN_LAI_GAP_DOI",
+      "pacingMode": "WRY_BATHOS",
+      "stateA": {
+        "intensity": 0.78,
+        "spread": 0.22,
+        "tiltDeg": -12
+      },
+      "stateB": {
+        "intensity": 0.08,
+        "spread": 0.72,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "PIVOT_ACCENT",
+      "foleyPivotStyle": "WOOD_SEAL"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-011/Ch%C3%A9n%2011%20-%20G%E1%BA%A5p%20%C4%91%C3%B4i.mp4?v=1794836483831"
+}

@@ -1,7 +1,9 @@
 import { interpolate, interpolateColors, Easing } from 'remotion';
 import { TimelineSyncResult } from '../engine/timelineSync';
+import { ResolvedVisualDNA } from '../engine/visualDnaResolver';
 import { ThemePalette } from '../theme/palettes';
 import { levitateWeightless } from '../kit/SlowMotionVerbs';
+import type { TravelerPoseWeights } from '../kit/CloakedTraveler';
 import {
   ColorRole,
   FocusRole,
@@ -52,7 +54,7 @@ export function resolveRoleColor(
   isPrePivot = false
 ): string {
   if (role === 'accent') {
-    return isPrePivot ? palette.inkPrimary : palette.accent;
+    return isPrePivot ? palette.inkPrimary : palette.accentProp || palette.accent;
   }
   if (role === 'secondary') return palette.inkSecondary;
   return palette.inkPrimary;
@@ -376,6 +378,7 @@ function evaluateColorChannel(
 
 export interface EvaluatedActorState {
   id: string;
+  rig?: string;
   layer: StageLayer;
   focusRole?: FocusRole;
   x: number;
@@ -385,6 +388,7 @@ export interface EvaluatedActorState {
   scale: number;
   facing: 'left' | 'right';
   pose: StageTravelerPose;
+  poseWeights: TravelerPoseWeights;
   leanDeg: number;
   sitProgress: number;
   walkPhase: number;
@@ -394,6 +398,7 @@ export interface EvaluatedActorState {
   showTeaCup: number;
   dissolveToCloud: number;
   dissolveCloudProgress: number;
+  drawProgress: number;
   opacity: number;
 }
 
@@ -410,6 +415,9 @@ export interface EvaluatedPropState {
   color: string;
   isAccentActive: boolean;
   attachedActorFacing?: 'left' | 'right';
+  loopProgress: number;
+  motionActivity: number;
+  travelDist: number;
   drawProgress: number;
   morphProgress: number;
   splitProgress: number;
@@ -432,9 +440,32 @@ export interface CompiledStageFrame {
     panX: number;
     panY: number;
   };
+  layerParallaxX: {
+    sky: number;
+    far: number;
+    mid: number;
+    fore: number;
+  };
+  spotlight: {
+    strength: number;
+    focusX: number;
+    focusY: number;
+  };
   actors: EvaluatedActorState[];
   actorMap: Record<string, EvaluatedActorState>;
   props: EvaluatedPropState[];
+}
+
+export function applyHorizonOffsetToTerrain(
+  terrain: NormalizedTerrainConfig,
+  horizonOffsetPx: number
+): NormalizedTerrainConfig {
+  if (!horizonOffsetPx) return terrain;
+  const dy = horizonOffsetPx * 0.45;
+  return {
+    ...terrain,
+    y: Math.max(305, Math.min(368, Number((terrain.y + dy).toFixed(2)))),
+  };
 }
 
 export function resolveActorSocketWorldPos(
@@ -445,7 +476,7 @@ export function resolveActorSocketWorldPos(
 ): { x: number; y: number } {
   const dir = actor.facing === 'right' ? 1 : -1;
   const s = actor.scale;
-  const sitDrop = actor.sitProgress * 11.5 * s;
+  const sitDrop = actor.sitProgress * 1.6 * s;
   const leanRad = (actor.leanDeg * Math.PI) / 180;
   const leanShiftX = Math.sin(leanRad) * 18 * s * dir;
 
@@ -499,7 +530,8 @@ export function evaluateStageScriptAtFrame(
   script: StageScript,
   frame: number,
   timeline: TimelineSyncResult,
-  palette: ThemePalette
+  palette: ThemePalette,
+  visualDNA?: ResolvedVisualDNA
 ): CompiledStageFrame {
   const { fps, durationInFrames } = timeline;
   const safeTotalFrames = Math.max(2, durationInFrames);
@@ -545,7 +577,10 @@ export function evaluateStageScriptAtFrame(
     bridgeSegs
   ).value;
 
-  const terrain = normalizeTerrainConfig(script.terrain, evaluatedBridge);
+  const rawTerrain = normalizeTerrainConfig(script.terrain, evaluatedBridge);
+  const activeHorizonOffsetPx =
+    visualDNA && !visualDNA.isLegacyLocked ? visualDNA.horizonOffsetPx : 0;
+  const terrain = applyHorizonOffsetToTerrain(rawTerrain, activeHorizonOffsetPx);
 
   const camZoomSegs: NumericSegment[] = [];
   const camPanXSegs: NumericSegment[] = [];
@@ -586,18 +621,49 @@ export function evaluateStageScriptAtFrame(
   let evaluatedPanX: number;
   let evaluatedPanY: number;
 
+  const pStart = Math.max(1, timeline.pivotFrame - Math.round(0.2 * fps));
+  const pEnd = Math.min(
+    safeTotalFrames - Math.round(1.5 * fps),
+    pStart + Math.round(2.4 * fps)
+  );
+  const pivotCurve = interpolate(
+    frame,
+    [0, pStart, Math.max(pStart + 1, pEnd)],
+    [0, 0.22, 1],
+    {
+      easing: Easing.inOut(Easing.cubic),
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
+  const activePivotMechanic =
+    visualDNA && !visualDNA.isLegacyLocked
+      ? visualDNA.pivotMechanic
+      : 'ACCENT_PUSH_IN';
+
   if (camZoomSegs.length > 0) {
     evaluatedZoom = evaluateNumericChannel(
       frame,
       baseZoomInit,
       camZoomSegs
     ).value;
+    if (activePivotMechanic === 'PULLBACK_REVEAL') {
+      evaluatedZoom = Number(
+        (evaluatedZoom * (1.065 - 0.085 * pivotCurve)).toFixed(4)
+      );
+    }
+  } else if (activePivotMechanic === 'PULLBACK_REVEAL') {
+    const breathZoom = Math.sin(loopProgress * Math.PI * 2) * 0.003;
+    evaluatedZoom =
+      baseZoomInit * (1.085 - 0.1 * pivotCurve + breathZoom);
+  } else if (activePivotMechanic === 'PARALLAX_DRIFT') {
+    const breathZoom = Math.sin(loopProgress * Math.PI * 2) * 0.004;
+    evaluatedZoom =
+      baseZoomInit *
+      (1.015 + 0.018 * Math.sin(pivotCurve * Math.PI * 0.5) + breathZoom);
+  } else if (activePivotMechanic === 'SPOTLIGHT_DIM') {
+    evaluatedZoom = baseZoomInit * (1.012 + 0.024 * pivotCurve);
   } else {
-    const pStart = Math.max(1, timeline.pivotFrame - Math.round(0.15 * fps));
-    const pEnd = Math.min(
-      safeTotalFrames - Math.round(1.5 * fps),
-      pStart + Math.round(2.4 * fps)
-    );
     const autoPush = interpolate(
       frame,
       [0, pStart, Math.max(pStart + 1, pEnd)],
@@ -622,6 +688,38 @@ export function evaluateStageScriptAtFrame(
     evaluatedPanX = basePanXInit + Math.sin(loopProgress * Math.PI * 2) * 1.4;
   }
 
+  let layerParallaxX = { sky: 0, far: 0, mid: 0, fore: 0 };
+  if (activePivotMechanic === 'PARALLAX_DRIFT') {
+    const panDrift = (pivotCurve - 0.35) * 9.5;
+    evaluatedPanX = Number((evaluatedPanX + panDrift * 0.45).toFixed(2));
+    layerParallaxX = {
+      sky: Number((-panDrift * 0.28).toFixed(2)),
+      far: Number((panDrift * 0.38).toFixed(2)),
+      mid: Number((-panDrift * 0.65).toFixed(2)),
+      fore: Number((panDrift * 1.15).toFixed(2)),
+    };
+  }
+
+  const spotlightStrength =
+    activePivotMechanic === 'SPOTLIGHT_DIM'
+      ? Number(
+          interpolate(
+            frame,
+            [
+              0,
+              pStart,
+              Math.max(pStart + 1, timeline.pivotFrame + Math.round(0.3 * fps)),
+            ],
+            [0.06, 0.14, 0.36],
+            {
+              easing: Easing.out(Easing.cubic),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }
+          ).toFixed(3)
+        )
+      : 0;
+
   if (camPanYSegs.length > 0) {
     evaluatedPanY = evaluateNumericChannel(
       frame,
@@ -629,11 +727,6 @@ export function evaluateStageScriptAtFrame(
       camPanYSegs
     ).value;
   } else {
-    const pStart = Math.max(1, timeline.pivotFrame - Math.round(0.15 * fps));
-    const pEnd = Math.min(
-      safeTotalFrames - Math.round(1.5 * fps),
-      pStart + Math.round(2.4 * fps)
-    );
     const autoLiftY = interpolate(
       frame,
       [0, pStart, Math.max(pStart + 1, pEnd)],
@@ -668,6 +761,27 @@ export function evaluateStageScriptAtFrame(
       const dissolveSegs: NumericSegment[] = [];
       const facingEvents: Array<{ frame: number; value: 'left' | 'right' }> = [];
       const poseEvents: Array<{ frame: number; value: StageTravelerPose }> = [];
+      const poseRampFrames = Math.max(8, Math.round(0.45 * fps));
+      const poseWeightChannels: Array<{
+        poseName: StageTravelerPose;
+        key: keyof TravelerPoseWeights;
+      }> = [
+        { poseName: 'look_up', key: 'lookUp' },
+        { poseName: 'reach_out', key: 'reachOut' },
+        { poseName: 'give', key: 'give' },
+        { poseName: 'hold_up', key: 'holdUp' },
+        { poseName: 'push', key: 'push' },
+      ];
+      const poseWeightSegs: Record<
+        keyof TravelerPoseWeights,
+        NumericSegment[]
+      > = {
+        lookUp: [],
+        reachOut: [],
+        give: [],
+        holdUp: [],
+        push: [],
+      };
       const colorEvents: Array<{
         startFrame: number;
         endFrame: number;
@@ -757,6 +871,13 @@ export function evaluateStageScriptAtFrame(
         }
         if (cue.pose !== undefined) {
           poseEvents.push({ frame: startF, value: cue.pose });
+          for (const { poseName, key } of poseWeightChannels) {
+            poseWeightSegs[key].push({
+              startFrame: startF,
+              endFrame: startF + poseRampFrames,
+              toValue: cue.pose === poseName ? 1 : 0,
+            });
+          }
         }
         if (cue.colorRole !== undefined) {
           colorEvents.push({
@@ -798,10 +919,11 @@ export function evaluateStageScriptAtFrame(
       const walkPhase =
         xSegs.length > 0
           ? (curWalk.cumDist / stridePx) * Math.PI
-          : loopProgress * Math.PI * 2 * 10;
+          : loopProgress * Math.PI * 2 * 6;
 
+      // Số nguyên chẵn 4 để cả sin(breathPhase) lẫn cos(breathPhase * 0.5) khép vòng 100% (~3.75s/nhịp thở tĩnh)
       const breathPhase =
-        loopProgress * Math.PI * 2 * 16 + actorIdx * 1.15;
+        loopProgress * Math.PI * 2 * 4 + actorIdx * 1.15;
 
       const baseOpacity = evaluateNumericChannel(
         frame,
@@ -822,7 +944,7 @@ export function evaluateStageScriptAtFrame(
       ).value;
       const sitProgress = evaluateNumericChannel(
         frame,
-        actor.sitProgress ?? 0,
+        actor.sitProgress ?? (actor.pose === 'sit_lean' ? 1 : 0),
         sitSegs
       ).value;
       const initTea =
@@ -843,15 +965,27 @@ export function evaluateStageScriptAtFrame(
         actor.facing ?? 'right',
         facingEvents
       );
-      let pose = evaluateDiscreteChannel(
-        frame,
-        actor.pose ?? 'stand',
-        poseEvents
-      );
-      if (walkActivity > 0.08 && pose === 'stand') {
+      const initialPose = actor.pose ?? 'stand';
+      let pose = evaluateDiscreteChannel(frame, initialPose, poseEvents);
+      if (walkActivity > 0.22 && pose === 'stand') {
         pose = 'walk';
       } else if (walkActivity === 0 && pose === 'walk') {
         pose = 'stand';
+      }
+
+      const poseWeights: TravelerPoseWeights = {
+        lookUp: 0,
+        reachOut: 0,
+        give: 0,
+        holdUp: 0,
+        push: 0,
+      };
+      for (const { poseName, key } of poseWeightChannels) {
+        poseWeights[key] = evaluateNumericChannel(
+          frame,
+          initialPose === poseName ? 1 : 0,
+          poseWeightSegs[key]
+        ).value;
       }
 
       const terrainPt = getTerrainPoint(terrain, curX, phase);
@@ -882,6 +1016,7 @@ export function evaluateStageScriptAtFrame(
 
       const state: EvaluatedActorState = {
         id: actor.id,
+        rig: actor.rig,
         layer: actor.layer ?? 'mid',
         focusRole: actor.focusRole,
         x: curX,
@@ -891,6 +1026,7 @@ export function evaluateStageScriptAtFrame(
         scale,
         facing,
         pose,
+        poseWeights,
         leanDeg: leanDeg + terrainPt.angleDeg * 0.35,
         sitProgress,
         walkPhase,
@@ -900,6 +1036,7 @@ export function evaluateStageScriptAtFrame(
         showTeaCup: isPrePivot ? 0 : showTeaCup,
         dissolveToCloud,
         dissolveCloudProgress,
+        drawProgress: 1,
         opacity: Math.max(
           0,
           Math.min(1, baseOpacity * enterLeaveMult * dissolveOpacityMult)
@@ -1047,33 +1184,55 @@ export function evaluateStageScriptAtFrame(
       { follow: initFollow, x: initX, y: initY },
       prop
     );
+    let travelDist = 0;
+    let motionActivity = 0;
 
     for (const seg of posSegments) {
       if (frame < seg.startFrame) break;
+      const fromW = resolvePropPoseToWorld(seg.fromPose, prop);
+      const toW = resolvePropPoseToWorld(seg.toPose, prop);
       if (frame >= seg.endFrame) {
         activeFollow = seg.toPose.follow;
-        worldPos = resolvePropPoseToWorld(seg.toPose, prop);
+        worldPos = toW;
+        travelDist += toW.x - fromW.x;
         continue;
       }
       activeFollow = seg.toPose.follow ?? seg.fromPose.follow;
       const span = Math.max(1, seg.endFrame - seg.startFrame);
       const rawP = Math.max(0, Math.min(1, (frame - seg.startFrame) / span));
       const p = CINEMAGRAPH_EASING(rawP);
-      const fromW = resolvePropPoseToWorld(seg.fromPose, prop);
-      const toW = resolvePropPoseToWorld(seg.toPose, prop);
+      const pPrev = CINEMAGRAPH_EASING(
+        Math.max(0, Math.min(1, (frame - 1 - seg.startFrame) / span))
+      );
+      const pNext = CINEMAGRAPH_EASING(
+        Math.max(0, Math.min(1, (frame + 1 - seg.startFrame) / span))
+      );
       const arcOffset = seg.arcY ? 4 * p * (1 - p) * seg.arcY : 0;
       worldPos = {
         x: fromW.x + (toW.x - fromW.x) * p,
         y: fromW.y + (toW.y - fromW.y) * p + arcOffset,
       };
+      travelDist += (toW.x - fromW.x) * p;
+      const speedPx =
+        Math.hypot(toW.x - fromW.x, toW.y - fromW.y) * (pNext - pPrev) * 0.5;
+      motionActivity =
+        speedPx <= 0.01 ? 0 : Math.min(1, (speedPx - 0.01) / 0.34);
       break;
     }
 
     let attachedActorFacing: 'left' | 'right' | undefined;
     if (activeFollow) {
       const [actorId] = activeFollow.split(':');
-      if (actorMap[actorId]) {
-        attachedActorFacing = actorMap[actorId].facing;
+      const targetActor = actorMap[actorId];
+      if (targetActor) {
+        attachedActorFacing = targetActor.facing;
+        motionActivity = Math.max(motionActivity, targetActor.walkActivity);
+        const dirSign = targetActor.facing === 'left' ? -1 : 1;
+        travelDist +=
+          dirSign *
+          (targetActor.walkPhase / Math.PI) *
+          8.8 *
+          Math.max(0.6, targetActor.scale);
       }
     }
 
@@ -1307,6 +1466,9 @@ export function evaluateStageScriptAtFrame(
       color: colorEval.color,
       isAccentActive,
       attachedActorFacing,
+      loopProgress,
+      motionActivity,
+      travelDist,
       drawProgress,
       morphProgress,
       splitProgress,
@@ -1323,9 +1485,220 @@ export function evaluateStageScriptAtFrame(
     };
   });
 
+  // Kiến trúc Khai bút Mở màn 4 Pha V8.6.1 (Hướng C — Slow Calligraphic Layered Choreography):
+  // - CHOREO-03 (Trọng lực Nhân quả chậm rãi): Lớp nền/Cửa sổ/Ghế ngồi vẽ trước (Tier 1: 0.40s..2.25s)
+  //   -> Bàn & Đạo cụ mặt đất vẽ tiếp theo (Tier 2: 1.15s..3.10s)
+  //   -> Vật đặt trên mặt bàn vẽ sau khi có bàn (Tier 3: 1.95s..3.85s)
+  //   -> Nhân vật ngồi tự họa nét sau khi ghế đã thành hình (1.20s..3.05s); nhân vật đi bộ họa nét ở 0.35s..2.00s.
+  // - CHOREO-06 (Bảo toàn Cue Câu Thơ): Đạo cụ và nhân vật có enterAt (như walking_bill ở câu 3) giữ nguyên mốc cue
+  //   và tự họa nét thư pháp chậm rãi trong 1.50s..1.55s.
+  if (!visualDNA || !visualDNA.isLegacyLocked) {
+    const timeScale = visualDNA?.shotMode === 'BRUSH_DRAW' ? 1.12 : 1.0;
+
+    props.forEach((p, propIdx) => {
+      const hasExplicitEnterAt = p.spec.enterAt !== undefined;
+      const enterFrame = hasExplicitEnterAt
+        ? resolveCueFrame(p.spec.enterAt, timeline)
+        : 0;
+
+      if (hasExplicitEnterAt && enterFrame > 6) {
+        // Đạo cụ xuất hiện theo nhịp câu thơ (ví dụ câu 2, câu 3, hoặc pivot)
+        const cueDrawEnd = enterFrame + Math.round(1.55 * timeScale * fps);
+        const cueDraw = interpolate(
+          frame,
+          [enterFrame, Math.max(enterFrame + 1, cueDrawEnd)],
+          [0, 1],
+          {
+            easing: Easing.linear,
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          }
+        );
+        p.drawProgress = Number(Math.min(p.drawProgress, cueDraw).toFixed(3));
+        return;
+      }
+
+      // Phân tầng Trọng lực Nhân quả cho các đạo cụ bối cảnh Hồi I
+      const idTypeKey = `${p.id} ${p.type}`.toLowerCase();
+      const isSeatingOrFar =
+        p.layer === 'far' ||
+        p.layer === 'sky' ||
+        /chair|bench|stool|seat|window|gate|arch|tree/.test(idTypeKey);
+      const isTabletopOrAttached =
+        (p.spec.y ?? 0) <= -11 ||
+        Boolean(p.spec.follow) ||
+        /calendar|laptop|bowl|cup|teapot|tray|pad|chart|book|vase|lamp|clock|note|letter|envelope|pen|phone|candle/.test(
+          idTypeKey
+        );
+
+      let tierStartSec = 1.15;
+      let tierDurSec = 1.95;
+      if (isSeatingOrFar) {
+        tierStartSec = 0.4 + Math.min(propIdx, 3) * 0.14;
+        tierDurSec = 1.85;
+      } else if (isTabletopOrAttached) {
+        tierStartSec = 1.95 + Math.min(propIdx, 3) * 0.14;
+        tierDurSec = 1.85;
+      } else {
+        tierStartSec = 1.15 + Math.min(propIdx, 3) * 0.14;
+        tierDurSec = 1.95;
+      }
+
+      const staggerStart = Math.round(tierStartSec * timeScale * fps);
+      const staggerEnd = Math.min(
+        Math.max(
+          staggerStart + Math.round(1.2 * fps),
+          timeline.pivotFrame - Math.round(0.2 * fps)
+        ),
+        staggerStart + Math.round(tierDurSec * timeScale * fps)
+      );
+
+      // Dùng Easing.linear ở tầng Track để bộ vẽ nét trong propCatalog điều tiết Cosine S-Curve mượt mà không bị nhân đôi gia tốc
+      const propDraw = interpolate(
+        frame,
+        [staggerStart, Math.max(staggerStart + 1, staggerEnd)],
+        [0, 1],
+        {
+          easing: Easing.linear,
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+      const propInkGate = interpolate(
+        frame,
+        [
+          staggerStart,
+          Math.max(staggerStart + 1, staggerStart + Math.round(0.35 * fps)),
+        ],
+        [0, 1],
+        {
+          easing: Easing.inOut(Easing.sin),
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+
+      p.drawProgress = Number(Math.min(p.drawProgress, propDraw).toFixed(3));
+      p.opacity = Number((p.opacity * propInkGate).toFixed(3));
+    });
+
+    actors.forEach((actor, actorIdx) => {
+      const actorSpec = (script.actors ?? [])[actorIdx];
+      const hasExplicitEnterAt = actorSpec?.enterAt !== undefined;
+      const enterFrame = hasExplicitEnterAt
+        ? resolveCueFrame(actorSpec?.enterAt, timeline)
+        : 0;
+      if (hasExplicitEnterAt && enterFrame > 6) {
+        const cueActorEnd = enterFrame + Math.round(1.5 * timeScale * fps);
+        const cueActorDraw = interpolate(
+          frame,
+          [enterFrame, Math.max(enterFrame + 1, cueActorEnd)],
+          [0, 1],
+          {
+            easing: Easing.linear,
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          }
+        );
+        actor.drawProgress = Number(cueActorDraw.toFixed(3));
+        return;
+      }
+
+      const isSeatedInitially =
+        actor.sitProgress >= 0.5 || actorSpec?.pose === 'sit_lean';
+      const actorStartSec = isSeatedInitially
+        ? (1.2 + actorIdx * 0.16) * timeScale
+        : (0.35 + actorIdx * 0.16) * timeScale;
+      const actorDurSec = (isSeatedInitially ? 1.85 : 1.65) * timeScale;
+      const aStart = Math.round(actorStartSec * fps);
+      const aEnd = Math.min(
+        Math.max(
+          aStart + Math.round(1.15 * fps),
+          timeline.pivotFrame - Math.round(0.2 * fps)
+        ),
+        aStart + Math.round(actorDurSec * fps)
+      );
+
+      const actorDraw = interpolate(frame, [aStart, aEnd], [0, 1], {
+        easing: Easing.linear,
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
+      const actorInkGate = interpolate(
+        frame,
+        [aStart, Math.max(aStart + 1, aStart + Math.round(0.35 * fps))],
+        [0, 1],
+        {
+          easing: Easing.inOut(Easing.sin),
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+      actor.drawProgress = Number(actorDraw.toFixed(3));
+      actor.opacity = Number((actor.opacity * actorInkGate).toFixed(3));
+      if (isSeatedInitially && actorDraw < 1) {
+        const settleEase = 0.5 - 0.5 * Math.cos(Math.PI * actorDraw);
+        actor.y = Number((actor.y - (1 - settleEase) * 1.8).toFixed(2));
+      }
+    });
+
+    if (visualDNA?.shotMode === 'MACRO_PROP') {
+      const focalProp =
+        props.find((p) => p.spec.focusRole === 'hero') ??
+        props.find((p) => p.spec.colorRole === 'accent') ??
+        props.find((p) => p.layer === 'mid' || p.layer === 'fore') ??
+        props[0];
+      if (focalProp) {
+        const macroZoomProgress = interpolate(
+          frame,
+          [0, Math.max(1, timeline.pivotFrame + Math.round(0.3 * fps))],
+          [0.28, 1],
+          {
+            easing: Easing.inOut(Easing.cubic),
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          }
+        );
+        camera.zoom = Number(
+          Math.min(
+            1.52,
+            camera.zoom * (1.22 + 0.18 * macroZoomProgress)
+          ).toFixed(4)
+        );
+        const targetPanX = Math.max(-96, Math.min(96, focalProp.x - 270));
+        const targetPanY = Math.max(
+          -88,
+          Math.min(42, focalProp.y - 16 - 315)
+        );
+        camera.panX = Number(
+          (camera.panX * 0.35 + targetPanX * 0.65).toFixed(2)
+        );
+        camera.panY = Number(
+          (camera.panY * 0.35 + targetPanY * 0.65).toFixed(2)
+        );
+        for (const actor of actors) {
+          actor.opacity = Number((actor.opacity * 0.14).toFixed(3));
+        }
+      }
+    }
+  }
+
+  const focalTarget =
+    props.find((p) => p.spec.focusRole === 'hero') ??
+    props.find((p) => p.spec.colorRole === 'accent') ??
+    actors.find((a) => a.focusRole === 'hero') ??
+    actors[0] ??
+    props[0];
+
   return {
     terrain,
     camera,
+    layerParallaxX,
+    spotlight: {
+      strength: spotlightStrength,
+      focusX: focalTarget ? focalTarget.x : 270,
+      focusY: focalTarget ? focalTarget.y - 16 : 315,
+    },
     actors,
     actorMap,
     props,

@@ -15,6 +15,8 @@ import { StreetlampSoloBenchScene } from './built-in/StreetlampSoloBenchScene';
 import { BrokenBranchSproutScene } from './built-in/BrokenBranchSproutScene';
 import { HourglassTeaBrewScene } from './built-in/HourglassTeaBrewScene';
 import { CustomThiepHongNguoiXuaScene } from './custom/CustomThiepHongNguoiXuaScene';
+import { CustomTanLaiGapDoiScene } from './custom/CustomTanLaiGapDoiScene';
+import { CustomKeHoachTietKiemScene } from './custom/CustomKeHoachTietKiemScene';
 // [AUTO-CUSTOM-IMPORTS]
 
 export const SCENE_VAULT_REGISTRY: Record<
@@ -44,6 +46,8 @@ export const SCENE_VAULT_REGISTRY: Record<
   GAUGE_TRANSITION: PassingClockHandsScene,
   CUSTOM_BOULDER_TO_BENCH: CustomThiepHongNguoiXuaScene,
   CUSTOM_THIEP_HONG_NGUOI_XUA: CustomThiepHongNguoiXuaScene,
+  CUSTOM_TAN_LAI_GAP_DOI: CustomTanLaiGapDoiScene,
+  CUSTOM_KE_HOACH_TIET_KIEM: CustomKeHoachTietKiemScene,
   // [AUTO-CUSTOM-ENTRIES]
 };
 

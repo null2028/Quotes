@@ -1,5 +1,721 @@
 [
   {
+    "sceneId": "SCRIPT_DE_SANG_MAI",
+    "name": "Chén 16: Khóa Ví Để Sang Mai (Tối Giản 1 Ví Trên Bàn)",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản sân khấu khai báo JSON (V7.0 StageScript)",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_P032_QUYET_TAM_3_GIAY",
+    "name": "Quyết Tâm Tồn Tại Đúng 3 Giây",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đường chân trời kéo nét cọ chậm rãi; ghế, bàn trà thấp, tách trà bốc khói, nhân vật và chiếc hộp phong ấn trên bàn lần lượt định hình trên nền Ô Long Cổ.",
+    "act2AtPivot": "Chạm '… để sang mai!', nhân vật với tay nhấc bổng nắp hộp; chiếc ví Đỏ Chu Sa lộ ra sáng rực trên bàn trà.",
+    "act3Afterimage": "Nhân vật đứng dậy cầm chiếc ví Đỏ Chu Sa thong thả bước sang phải rời khỏi bàn, trước khi toàn cảnh thu hồi nét cọ khép vòng lặp.",
+    "redProp": "Chiếc ví da gập (`wallet`) bừng sắc Đỏ Chu Sa (#F06A4E) sau khi nắp hộp phong ấn được nhấc lên",
+    "tags": [
+      "solid_style",
+      "hài hước",
+      "cuối tháng",
+      "cú bẻ lái"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_GANH_NANG_COM_AO_HOA_DON_DOPING",
+    "name": "Gánh Nặng Đường Chiều & Bùa Hóa Đơn Tiếp Sức",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đường chân trời kéo nét cọ 2.20s; ghế đá ở giữa, kiện hàng bên trái, phong bì tách biệt bên phải và nhân vật lần lượt phác nét thư pháp. Nhân vật khom lưng đẩy chậm kiện hàng một đoạn rồi bỏ lại phía sau, bước sang ngồi gục trên ghế đá ở câu 3.",
+    "act2AtPivot": "Chạm 'lại khỏe tưng!', phong bì bên phải bung cao thành tờ hóa đơn răng cưa Đỏ Chu Sa (#C54129) kèm tiếng cộp dấu mộc; nhân vật đứng thẳng dậy trước ghế, đưa tay đón tờ hóa đơn.",
+    "act3Afterimage": "Vòng sóng thu gọn nhường chỗ cho quầng ấm dịu; nhân vật ưỡn thẳng lưng cầm tờ hóa đơn Đỏ Chu Sa như lá bùa tiếp sức, sải bước khoan thai về phía phải suốt 5.8s trước khi toàn cảnh thu hồi nét cọ về trang giấy trắng.",
+    "redProp": "Tờ hóa đơn răng cưa Đỏ Chu Sa (#C54129) khắc chữ và dấu mộc giấy sáng, bung lên tách biệt bên phải ghế rồi theo tay nhân vật tiến bước",
+    "tags": [
+      "solid_style",
+      "chiều tà",
+      "hài hước",
+      "công việc"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_P022_LICH_BAN_CHUA_CAP_NHAT",
+    "name": "Lịch Bàn Đỏ Chu Sa Chưa Kịp Sang Trang (P022)",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân vật ngồi tĩnh lặng trên ghế std_chair bên bàn std_work_desk, ngoài khung cửa sổ porch_window lá thu trôi qua nhưng tờ lịch bàn vẫn đứng yên.",
+    "act2AtPivot": "Chạm 'chưa chịu cập nhật', cuốn lịch để bàn desk_calendar bừng sắc Đỏ Chu Sa (#CE472E); nhân vật khẽ đưa tay chạm vào mép lịch nhưng ngập ngừng giữ lại.",
+    "act3Afterimage": "Nhân vật hạ nhẹ bàn tay đặt lên mặt bàn, tựa lưng trầm ngâm nhìn trang lịch Đỏ Chu Sa giữa nhịp gió nhẹ ngoài hiên.",
+    "redProp": "Cuốn lịch để bàn (desk_calendar) hiện trang lịch Đỏ Chu Sa (#CE472E) trên mặt bàn làm việc",
+    "tags": [
+      "solid_style",
+      "chiêm nghiệm",
+      "buông bỏ",
+      "mối quan hệ",
+      "P022"
+    ],
+    "usageCount": 6
+  },
+  {
+    "sceneId": "SCRIPT_P019_TO_HOA_DON_PHAN_CHU_V4",
+    "name": "Tờ Hóa Đơn Phản Chủ V4",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân vật bước vội tất tả về phía ghế bên bàn làm việc nhỏ, rồi ngồi sụp xuống gục lưng mệt mỏi.",
+    "act2AtPivot": "Từ câu 3 tờ hóa đơn bước vào, chạm 'lại khỏe tưng' bật Đỏ Chu Sa, nhân vật bật dậy dứt khoát trở lại bàn làm việc.",
+    "act3Afterimage": "Nhân vật đứng thẳng hào hứng bên bàn làm việc, tờ hóa đơn đứng đối diện giữ nhịp.",
+    "redProp": "Tờ hóa đơn giấy sáng bật vạch tổng cộng và dấu chấm than Đỏ Chu Sa",
+    "tags": [
+      "solid_style",
+      "tự trào",
+      "đồ vật phản chủ",
+      "buổi sáng"
+    ],
+    "usageCount": 6
+  },
+  {
+    "sceneId": "SCRIPT_P019_TO_HOA_DON_PHAN_CHU_V3",
+    "name": "Tờ Hóa Đơn Phản Chủ",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân vật ngồi trên ghế tựa, gập gối chống tay mệt mỏi; tờ hóa đơn giấy trắng viền mực đứng chờ ở phía phải.",
+    "act2AtPivot": "Chạm 'lại khỏe tưng', tờ hóa đơn sải bước tới sát mặt bật vạch tổng cộng và dấu chấm than Đỏ Chu Sa, nhân vật bật dậy thẳng tắp.",
+    "act3Afterimage": "Nhân vật bước nhanh về phía trước, tờ hóa đơn lững thững bước theo sau giữ nhịp vòng lặp mượt.",
+    "redProp": "Tờ hóa đơn giấy sáng bật vạch tổng cộng và dấu chấm than Đỏ Chu Sa",
+    "tags": [
+      "solid_style",
+      "tự trào",
+      "đồ vật phản chủ",
+      "buổi sáng"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_P019_TO_HOA_DON_PHAN_CHU_V2",
+    "name": "Tờ Hóa Đơn Phản Chủ",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân vật ngồi gục lưng mệt mỏi trên ghế; tờ hóa đơn giấy trắng viền mực đứng chờ ở phía phải.",
+    "act2AtPivot": "Chạm 'lại khỏe tưng', tờ hóa đơn sải bước tới sát mặt bật vạch tổng cộng và dấu chấm than Đỏ Chu Sa, nhân vật bật dậy thẳng tắp.",
+    "act3Afterimage": "Nhân vật bước nhanh về phía trước, tờ hóa đơn lững thững bước theo sau giữ nhịp vòng lặp mượt.",
+    "redProp": "Tờ hóa đơn giấy sáng bật vạch tổng cộng và dấu chấm than Đỏ Chu Sa",
+    "tags": [
+      "solid_style",
+      "tự trào",
+      "đồ vật phản chủ",
+      "buổi sáng"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_P019_TO_HOA_DON_PHAN_CHU",
+    "name": "Tờ Hóa Đơn Phản Chủ",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân vật ngồi gục lưng mệt mỏi trên ghế; tờ hóa đơn mực đen đứng im quan sát ở phía bên phải.",
+    "act2AtPivot": "Chạm 'lại khỏe tưng', tờ hóa đơn sải bước tới sát mặt bật khung tổng cộng Đỏ Chu Sa, nhân vật bật dậy thẳng tắp ngay lập tức.",
+    "act3Afterimage": "Nhân vật hăm hở bước tiếp, phía sau tờ hóa đơn vẫn lững thững theo sát không buông.",
+    "redProp": "Tờ hóa đơn chân dài bật vạch tổng cộng và dấu chấm than Đỏ Chu Sa",
+    "tags": [
+      "solid_style",
+      "tự trào",
+      "đồ vật phản chủ",
+      "buổi sáng"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "CUSTOM_KE_HOACH_TIET_KIEM",
+    "name": "Hũ Tiết Kiệm Hóa Bó Hoa",
+    "category": "TRAVELER",
+    "origin": "custom",
+    "act1": "Nét cọ mềm mở ra trên nền giấy. Nhân vật lần lượt thả những đồng xu vào hũ tiết kiệm; mọi nét vẽ giữ màu mực, nhịp điệu chậm và gọn.",
+    "act2AtPivot": "Tại cụm 'để sang mai', hũ tiết kiệm tan đi và bó hoa Đỏ Chu Sa hiện ra trong tay nhân vật. Một đồng xu cuối cùng lăn lại trên mặt đất như dấu vết của kế hoạch vừa bị hoãn.",
+    "act3Afterimage": "Nhân vật bước về phía người đang chờ dưới sảnh, đưa bó hoa ra. Hai người dừng gần nhau, nghiêng nhẹ như bắt đầu trò chuyện; chuyển động tiếp tục thật khẽ đến hết vòng.",
+    "redProp": "Bó hoa Đỏ Chu Sa xuất hiện từ hũ tiết kiệm; một đồng xu cuối cùng lăn chậm trên mặt đất.",
+    "tags": [
+      "custom",
+      "workbench"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "CUSTOM_TAN_LAI_GAP_DOI",
+    "name": "Một Nhành Chu Sa Hóa Bó Hoa Đón Em Xoay Lại",
+    "category": "TRAVELER",
+    "origin": "custom",
+    "act1": "Nét cọ uốn mềm trải mặt đất, Anh hiện lên cầm 1 nhành hồng Đỏ Chu Sa còn Em đứng quay lưng làm kiêu.",
+    "act2AtPivot": "Chạm 'gấp đôi lúc đầu', 1 bông hoa bung thành bó hồng Đỏ Chu Sa gói giấy lớn, Em xoay người lại bước về phía Anh.",
+    "act3Afterimage": "Hai người bước sát lại cùng nâng bó hoa, nghiêng đầu trò chuyện êm đềm trong khi đôi trái tim nhỏ trôi thật chậm lên trời.",
+    "redProp": "Nhành hoa Đỏ Chu Sa nở thành bó hồng lớn kèm trái tim vẽ tay bay chậm giữa hai người",
+    "tags": [
+      "custom",
+      "workbench"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_MOT_BONG_HOA_BO_HOA_EM_QUAY_LAI",
+    "name": "Một Nhành Hoa Hóa Bó Hoa Đón Em Quay Lại",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nét cọ mặt đất chạy xong, Anh hiện lên cầm một nhành hoa đơn sắc chìa ra, còn Em đứng quay lưng về phía Anh làm ngơ.",
+    "act2AtPivot": "Dòng 3 Em nghiêng lưng dỗi xa hơn; chạm 'gấp đôi lúc đầu', nhành hoa trên tay Anh bung thành bó hoa Đỏ Chu Sa lớn và Em xoay người quay lại.",
+    "act3Afterimage": "Em đưa tay chạm bó hoa, một trái tim nhỏ nét Đỏ Chu Sa hiện giữa hai người rồi bay lượn nhẹ lên trời và tan êm.",
+    "redProp": "Bó hoa gói giấy nở rộ bông Đỏ Chu Sa trên tay Anh cùng trái tim nhỏ bay bồng bềnh giữa hai người",
+    "tags": [
+      "solid_style",
+      "hài hước",
+      "thả thính",
+      "tình yêu"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_NHANH_HOA_LE_HOA_XE_HOA_GAP_DOI",
+    "name": "Nhành Hoa Lẻ Hóa Xe Hoa Đầy Ắp",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nét cọ mặt đất chạy xong, Anh hiện lên bên trái trao nhành hoa nhỏ đơn sắc còn Em đứng bên phải nghiêng người làm cao.",
+    "act2AtPivot": "Dòng 3 Em ngả người làm ngơ; chạm đúng chữ 'gấp đôi lúc đầu', chậu hoa nhỏ hóa chiếc xe hoa Đỏ Chu Sa đầy ắp kèm dải lụa bay.",
+    "act3Afterimage": "Anh đẩy nhẹ tay cầm xe hoa mời tự hào, Em nghiêng người đưa tay chạm bó hoa đỏ rực rỡ.",
+    "redProp": "Chiếc xe gỗ chở giỏ hoa Đỏ Chu Sa nở đầy ắp có dải lụa đỏ bay nhẹ",
+    "tags": [
+      "solid_style",
+      "hài hước",
+      "thả thính",
+      "tình yêu"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V7",
+    "name": "Biểu Đồ Bàn Họp Hóa Tô Nóng Bốc Khói",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đường mặt đất phóng một nét mực từ tốn trong 0.95s, sau đó bàn họp, nhân viên ghi sổ, Sếp và khung biểu đồ lần lượt loang rõ.",
+    "act2AtPivot": "Sếp nghiêng người khen ngợi; đúng chữ 'quán nào gần đây', khung biểu đồ trên bàn hóa chiếc tô Đỏ Chu Sa gác đũa bốc làn khói mềm.",
+    "act3Afterimage": "Nhân viên ngả lưng dừng bút ngắm tô nóng thơm lừng trước khi toàn cảnh tan nhẹ về trang giấy mới.",
+    "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc ba làn khói nóng đặt trên mặt bàn họp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "công sở",
+      "hài hước"
+    ],
+    "usageCount": 4
+  },
+  {
+    "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V6",
+    "name": "Biểu Đồ Bàn Họp Hóa Tô Nóng Bốc Khói",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đường mặt đất phóng một nét mực mở màn, sau đó bàn họp, nhân viên ghi sổ và Sếp đứng thuyết trình lần lượt hiện rõ.",
+    "act2AtPivot": "Sếp nghiêng người khen ngợi; đúng chữ 'quán nào gần đây', khung biểu đồ trên bàn hóa chiếc tô Đỏ Chu Sa gác đũa bốc làn khói mềm.",
+    "act3Afterimage": "Nhân viên ngả lưng dừng bút ngắm tô nóng thơm lừng trước khi toàn cảnh tan nhẹ về trang giấy mới.",
+    "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc ba làn khói nóng đặt trên mặt bàn họp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "công sở",
+      "hài hước"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V5",
+    "name": "Biểu Đồ Bàn Họp Hóa Tô Nóng Bốc Khói",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đường mặt đất trải nét mực từ trái sang phải, nhân viên cúi ghi sổ bên bàn họp còn Sếp đứng đối diện thuyết trình.",
+    "act2AtPivot": "Sếp nghiêng người khen ngợi; đúng chữ 'quán nào gần đây', khung biểu đồ trên bàn hóa chiếc tô Đỏ Chu Sa gác đũa bốc làn khói mềm.",
+    "act3Afterimage": "Nhân viên ngả lưng dừng bút ngắm tô nóng thơm lừng ngay trên bàn họp.",
+    "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc ba làn khói nóng đặt trên mặt bàn họp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "công sở",
+      "hài hước"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V4",
+    "name": "Biểu Đồ Bàn Họp Hóa Tô Nóng Bốc Khói",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân viên ngồi trên ghế văn phòng cúi ghi sổ bên bàn họp, Sếp đứng đối diện thuyết trình bên khung biểu đồ cột thoáng nét.",
+    "act2AtPivot": "Sếp nghiêng người khen ngợi; đúng chữ 'quán nào gần đây', khung biểu đồ trên bàn hóa chiếc tô Đỏ Chu Sa gác đũa bốc làn khói mềm.",
+    "act3Afterimage": "Nhân viên ngả lưng dừng bút ngắm tô nóng thơm lừng ngay trên bàn họp.",
+    "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc ba làn khói nóng đặt trên mặt bàn họp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "công sở",
+      "hài hước"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V3",
+    "name": "Biểu Đồ Bàn Họp Hóa Tô Nóng Bốc Khói",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân viên ngồi trên ghế văn phòng cúi ghi sổ bên bàn họp, Sếp đứng đối diện thuyết trình bên khung biểu đồ cột thoáng nét.",
+    "act2AtPivot": "Sếp nghiêng người khen ngợi; đúng chữ 'quán nào gần đây', khung biểu đồ trên bàn hóa chiếc tô Đỏ Chu Sa gác đũa bốc làn khói mềm.",
+    "act3Afterimage": "Nhân viên ngả lưng ngẩng mặt ngắm tô nóng thơm lừng ngay trên bàn họp.",
+    "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc ba làn khói nóng đặt trên mặt bàn họp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "công sở",
+      "hài hước"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V2",
+    "name": "Biểu Đồ Bàn Họp Hóa Tô Nóng Bốc Khói",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nhân viên ngồi ghế tựa thấp sát mép bàn ghi chép, Sếp đứng đối diện bên khung biểu đồ cột tăng trưởng đặt trên bàn họp.",
+    "act2AtPivot": "Sếp nghiêng người khen ngợi; đúng chữ 'quán nào gần đây', khung biểu đồ trên bàn hóa chiếc tô Đỏ Chu Sa gác đũa bốc làn khói mềm.",
+    "act3Afterimage": "Nhân viên ngẩng lên nhìn tô nóng thơm lừng ngay trên mặt bàn họp trong sự tán thưởng của Sếp.",
+    "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc ba làn khói nóng đặt trên bàn họp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "công sở",
+      "hài hước"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG",
+    "name": "Biểu Đồ Phòng Họp Hóa Tô Nóng Bốc Khói",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Bên khung cửa kính văn phòng, Nhân viên ngồi ghế chăm chú ghi chép còn Sếp đứng bên bảng biểu đồ cột màu mực.",
+    "act2AtPivot": "Sếp gật đầu khen ngợi; chạm 'quán nào gần đây', bảng biểu đồ biến thành chiếc tô lớn Đỏ Chu Sa gác đũa bốc khói.",
+    "act3Afterimage": "Nhân viên ngẩng mặt mơ màng ngắm tô nóng Đỏ Chu Sa thơm lừng ngay giữa buổi họp giao ban.",
+    "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc làn khói nóng giữa phòng họp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "công sở",
+      "hài hước"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_DUNG_NGHI_NGUYEN_TO_A_C_D_HOA_EM",
+    "name": "Đứng Ngẫm Nguyên Tố A–C–D Tan Biến Hóa Nguyên Tố Em",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng sớm thoáng đãng không vướng đạo cụ nền, Anh bước chậm vào đứng ngẫm nghĩ làm hiện lần lượt ba ô nguyên tố viền rỗng A, C, D; cuối câu 3, Em thong thả bước từ lề phải vào.",
+    "act2AtPivot": "Chạm câu 4 và 'gây nhớ, gây thương', Anh hạ tay bước tới đón Em, ba ô A–C–D hóa nhẹ bẫng bay lên cao rồi tan biến sạch, để lộ Ô Nguyên Tố Em Đỏ Chu Sa đính tim nhỏ hiện lên giữa hai người.",
+    "act3Afterimage": "Hai bóng người đưa tay trao và đón nhận ngay dưới ô nguyên tố Em Đỏ Chu Sa đang khẽ nhịp êm ái trước khi nối vòng.",
+    "redProp": "Ô Nguyên Tố [Em ♥] viền rỗng Đỏ Chu Sa hiện lên ở trung tâm sau khi ba ô A, C, D tan biến",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "tối giản"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "SCRIPT_NGOI_NGHI_NGUYEN_TO_A_C_D_HOA_EM",
+    "name": "Ngồi Ngẫm Nguyên Tố A–C–D Tan Biến Hóa Nguyên Tố Em",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Anh ngồi tựa trên ghế băng dưới nắng sớm, ba ô nguyên tố viền rỗng A, C, D lần lượt hiện lên theo từng câu thơ; cuối câu 3, Em thong thả bước từ phải vào làm Anh đứng dậy khỏi ghế.",
+    "act2AtPivot": "Chạm câu 4 và 'gây nhớ, gây thương', Anh bước tới đón Em, ba ô A–C–D bay bồng bềnh lên cao rồi tan biến sạch, để lộ Ô Nguyên Tố Em Đỏ Chu Sa đính tim nhỏ hiện lên giữa hai người.",
+    "act3Afterimage": "Hai bóng người đưa tay trao và đón nhận ngay dưới ô nguyên tố Em Đỏ Chu Sa đang khẽ nhịp êm ái trong nắng mai.",
+    "redProp": "Ô Nguyên Tố [Em ♥] viền rỗng Đỏ Chu Sa hiện lên ở trung tâm sau khi ba ô A, C, D tan biến",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "tối giản"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BANG_TUAN_HOAN_GHEP_TIM_DO",
+    "name": "Bảng Tuần Hoàn Tự Ghép Thành Trái Tim Ô Vuông Đỏ Chu Sa",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Anh cầm que chỉ bước dọc bảng tuần hoàn gồm 16 ô vuông viền rỗng tra cứu qua các ký hiệu A, C, D rồi dừng lại trầm ngâm đúng lúc Em thong thả bước vào từ lề phải.",
+    "act2AtPivot": "Chạm 'gây nhớ, gây thương', cả 16 ô nguyên tố đồng loạt rời khung bảng, bay vòng cung vào trung tâm ghép khít thành Trái Tim Ô Vuông Đỏ Chu Sa tỏa sóng chuông gió.",
+    "act3Afterimage": "Anh buông que chỉ tiến lại gần đưa tay trao, Em nâng tay đón nhận ngay dưới trái tim ghép ô Đỏ Chu Sa đang khẽ nhịp êm đềm.",
+    "redProp": "Trái Tim Ghép Ô (Mosaic Heart 16 ô vuông viền rỗng) màu Đỏ Chu Sa thở nhịp ở trung tâm",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "biến hình"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BANG_TUAN_HOAN_NGUYEN_TO_EM",
+    "name": "Bảng Tuần Hoàn & Ô Nguyên Tố Em Đỏ Chu Sa",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng sớm, Anh cầm que chỉ bước dọc tấm bảng tuần hoàn bậc thang, lần lượt chỉ lên các ô A, C, D rồi dừng lại đăm chiêu trước ô khuyết nét đứt đúng lúc Em thong thả bước vào từ lề phải.",
+    "act2AtPivot": "Chạm 'gây nhớ, gây thương', Anh hạ que chỉ bước sang đón Em; ô khuyết trên bảng tuần hoàn bật ra chính giữa hóa thành Ô Nguyên Tố Em Đỏ Chu Sa đính trái tim nhỏ ở góc số hiệu.",
+    "act3Afterimage": "Bảng tuần hoàn lùi dịu làm nền phía sau, hai bóng người đưa tay trao và đón nhận ngay dưới ô nguyên tố Em Đỏ Chu Sa đang nhịp sáng êm đềm.",
+    "redProp": "Ô Nguyên Tố [Em ♥] viền rỗng Đỏ Chu Sa đính trái tim nhỏ ở góc số hiệu lơ lửng giữa hai người",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "chơi chữ"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_PIN_CAN_SAC_TIM_DO_V2",
+    "name": "Viên Pin Cạn Hóa Pin Trái Tim Đỏ (Diễn Xuất 3 Hồi)",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng sớm, Anh khom vai bước chậm rã rời dưới viên pin viền rỗng chỉ còn 1 vạch yếu; đến câu 3, Em thong thả bước từ phải vào khiến Anh đứng thẳng dậy.",
+    "act2AtPivot": "Chạm 'gây nhớ, gây thương', Anh bước nhanh tới, viên pin lướt ra chính giữa sạc đầy trái tim Đỏ Chu Sa đập nhịp, hai người vươn tay trao và đón nhận.",
+    "act3Afterimage": "Hai bóng người nhẹ nhàng hạ tay đứng sóng đôi bình yên dưới viên pin trái tim Đỏ Chu Sa trước khi khép vòng lặp.",
+    "redProp": "Trái tim Đỏ Chu Sa đập nhịp bên trong khung pin viền rỗng trong suốt ở trung tâm",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "hiện đại"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_PIN_CAN_SAC_TIM_DO",
+    "name": "Viên Pin Cạn Hóa Pin Trái Tim Đỏ",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Anh đứng hơi chùng vai đối diện Em, phía trên là viên pin viền rỗng chỉ còn một vạch mờ và hai ô nét đứt trống.",
+    "act2AtPivot": "Chạm 'gây nhớ, gây thương', viên pin sáng bừng trái tim Đỏ Chu Sa đập nhịp nhẹ kèm tiếng chuông trong, Anh ngẩng đầu hướng về Em.",
+    "act3Afterimage": "Hai bóng người đứng gần nhau dưới viên pin trái tim Đỏ Chu Sa lơ lửng êm dịu trước khi khép vòng lặp.",
+    "redProp": "Trái tim Đỏ Chu Sa đập nhịp bên trong khung pin viền rỗng trong suốt",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "hiện đại"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BANG_DO_MAT_HOA_O_CUA_EM",
+    "name": "Bảng Đo Thị Lực Hóa Ô Cửa Có Bóng Em",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Anh đứng ngước nhìn tấm bảng đo thị lực treo cao có chữ A đầu dòng và các vạch chữ nhỏ dần.",
+    "act2AtPivot": "Chạm 'gây nhớ, gây thương', bảng đo mắt mở hai cánh chớp thành ô cửa sổ vòm ấm áp có bóng Em cùng trái tim Đỏ Chu Sa đập khẽ.",
+    "act3Afterimage": "Anh khẽ nghiêng mình ngắm ô cửa sáng ấm trong làn gió nhẹ trước khi thu hồi mượt về khung đầu.",
+    "redProp": "Trái tim Đỏ Chu Sa tỏa sáng dưới vòm cửa sổ mở hai cánh chớp có bóng Em",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "chơi chữ thị giác"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_VIEN_NANG_NO_HOA_TIM",
+    "name": "Viên Nang Tách Vỏ Nở Nhành Hoa Tim",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng lá dịu trên nền Men Lam Sương, Anh và Em đứng tĩnh lặng hai bên viên nang vitamin đặt nghiêng ở tâm sân khấu.",
+    "act2AtPivot": "Chạm 'gây nhớ, gây thương', viên nang mở nắp vỏ sang bên, nhành hoa tim Đỏ Chu Sa vươn lên tỏa sóng chuông gió, Anh nghiêng mình trao thiện ý.",
+    "act3Afterimage": "Nhành hoa tim Đỏ Chu Sa khẽ đung đưa vi mô giữa hai bóng người bình yên trước khi thu hồi mượt về khung đầu.",
+    "redProp": "Nhành hoa trái tim Đỏ Chu Sa vươn lên từ viên nang đã mở nắp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "ẩn dụ"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_DIEN_TAM_DO_HOA_NHIP_TIM_DO",
+    "name": "Đường Điện Tâm Đồ Hóa Nhịp Tim Đỏ Chu Sa",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới vòm nắng sớm, Anh và Em đứng tĩnh tại đối diện nhau dưới đường sóng sinh học đều đặn màu mực than.",
+    "act2AtPivot": "Chạm 'gây nhớ, gây thương', đường sóng ở giữa hóa thành nhịp đập trái tim Đỏ Chu Sa rung nhẹ, hai người ngước nhìn nhau.",
+    "act3Afterimage": "Hai bóng người đứng bình yên dưới nhịp tim Đỏ Chu Sa trong làn gió mai trước khi khép vòng lặp.",
+    "redProp": "Đường điện tâm đồ uốn thành trái tim Đỏ Chu Sa đập nhịp vi mô ở trung tâm",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính",
+      "tối giản"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_XE_DAP_HOA_DO_GAP_DOI_V2",
+    "name": "Chiếc Xe Đạp Cổ & Giỏ Hoa Đỏ Gấp Đôi",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản sân khấu khai báo JSON (V7.0 StageScript)",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_XE_DAP_CO_GIO_HOA_DO_GAP_DOI",
+    "name": "Chiếc Xe Đạp Cổ & Giỏ Hoa Đỏ Tràn Đôi",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng sớm, Em đứng quay lưng làm ngơ bên lề phải; Tôi thong thả dắt chiếc xe đạp cổ chở một nhành nụ nhỏ lăn bánh tiến lại gần.",
+    "act2AtPivot": "Chạm 'gấp đôi lúc đầu', xe dừng êm trước mặt Em, giỏ xe bung tràn hoa đỏ cùng cặp bóng bay Trái Tim Đôi Đỏ Chu Sa vươn cao thoáng đãng.",
+    "act3Afterimage": "Em xoay người lại đối diện đầu xe, hai bóng áo choàng đứng yên bình bên chiếc xe đạp hoa đỏ trước khi nối vòng.",
+    "redProp": "Giỏ Hoa Đỏ & Cặp Bóng Bay Tim Đôi Đỏ Chu Sa (#CE472E) trên ghi-đông xe đạp",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_GHE_DAI_BO_HOA_DOI_TINH_TAI",
+    "name": "Ghế Dài Công Viên & Bó Hoa Đôi Đỏ Chu Sa",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Trên chiếc ghế dài dưới nắng sớm, Em ngồi tựa ngả lưng ngó lơ vẻ phát ngán, Tôi ngồi cạnh giấu sau lưng một nhành nụ nhỏ.",
+    "act2AtPivot": "Chạm 'gấp đôi lúc đầu', nhành nụ sau lưng bung thành Bó Hoa Đôi Đỏ Chu Sa đưa ra phía trước, Tôi khẽ nghiêng người trêu.",
+    "act3Afterimage": "Em hết ngán khẽ nghiêng đầu lại phía Tôi, hai bóng áo choàng ngồi sóng đôi bình yên cạnh bó hoa đỏ.",
+    "redProp": "Bó Hoa Đôi Đỏ Chu Sa (#CE472E) đưa ra bất ngờ từ sau lưng",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_MOT_TIM_MANH_HOA_TIM_DOI_TINH_TAI",
+    "name": "Một Tim Mảnh Hóa Cặp Tim Đôi Tĩnh Tại",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản sân khấu khai báo JSON (V7.0 StageScript)",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_BAC_THEM_DOA_HONG_DO_TINH_TAI",
+    "name": "Bậc Thềm Quán Khuya & Ánh Trăng Hóa Đóa Hồng Đỏ",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới trăng non, nậm rượu mực sương nằm lại chân thềm; Anh ngồi tựa tĩnh lặng trên bậc dưới ngước nhìn Em đứng nghiêng mỉm cười trên thềm cao.",
+    "act2AtPivot": "Chạm 'là người anh yêu', nhành nụ giữa bậc thềm bừng nở thành Đóa Hồng Đỏ Chu Sa điểm hai giọt sương lấp lánh, Anh đứng dậy khẽ nâng tay trao.",
+    "act3Afterimage": "Hai bóng áo choàng đứng yên bình trên bậc thềm nhìn đóa hồng đỏ khẽ nghiêng nhịp chậm giữa đêm thanh.",
+    "redProp": "Đóa Hồng Đỏ Chu Sa (#CE472E) điểm sương lấp lánh đung đưa vi mô",
+    "tags": [
+      "solid_style",
+      "lục bát",
+      "lãng mạn",
+      "tĩnh tại"
+    ],
+    "usageCount": 5
+  },
+  {
+    "sceneId": "SCRIPT_GHE_DA_CHUONG_GIO_DO_TINH_TAI",
+    "name": "Ghế Đá Ngõ Nhỏ & Chuông Gió Đỏ Ngân Vang",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng sớm êm và ghế đá ngõ nhỏ, nậm rượu mực sương bị bỏ lại góc xa; Anh và Em đứng cách nhau một khoảng thở tĩnh tại trò chuyện.",
+    "act2AtPivot": "Chạm 'là người anh yêu', chuông gió treo trên cành cao bừng sắc Đỏ Chu Sa khẽ đung đưa ngân vang, tỏa vòng sóng âm dịu dàng.",
+    "act3Afterimage": "Em nhích nhẹ nửa bước lại gần Anh, thẻ chuông đỏ lay thật khẽ trong gió sớm bình yên trước khi nối vòng.",
+    "redProp": "Chuông Gió & Thẻ Giấy Đỏ Chu Sa (#CE472E) treo cành cao đung đưa vi mô",
+    "tags": [
+      "solid_style",
+      "lục bát",
+      "lãng mạn",
+      "tĩnh tại"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_NAM_RUOU_HOA_VOAN_LUA_DO",
+    "name": "Nậm Rượu Chiều Hóa Vương Miện & Voan Lụa Đỏ",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng chiều êm, nậm rượu mực than nằm lặng bên trái; Anh đứng tĩnh tại hướng sang phải đón Em khẽ bước chậm vào ở câu thứ hai.",
+    "act2AtPivot": "Chạm 'là người anh yêu', nậm rượu hóa Vương Miện & Dải Voan Lụa Đỏ Chu Sa rủ mềm bay khẽ theo gió chiều trên đầu Em, Anh nghiêng mình trao trọn ánh nhìn.",
+    "act3Afterimage": "Hai bóng áo choàng đứng gần đối diện trong khoảng lặng dịu dàng, tà voan lụa đỏ khẽ lay êm đềm trước khi tan mượt về đầu vòng lặp.",
+    "redProp": "Vương Miện Nhỏ & Tà Voan Lụa Đỏ Chu Sa (#CE472E) rủ mềm",
+    "tags": [
+      "solid_style",
+      "lục bát",
+      "lãng mạn",
+      "tĩnh tại"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_NAM_RUOU_HOA_VOAN_DO_TINH_TAI",
+    "name": "Nậm Rượu Chiều Hóa Khăn Voan Đỏ Trao Tay",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng chiều êm, nậm rượu mực than nằm lặng bên trái; Anh đứng tĩnh tại hướng sang phải đón Em khẽ bước chậm vào ở câu thứ hai.",
+    "act2AtPivot": "Chạm 'là người anh yêu', nậm rượu hóa Dải Khăn Voan Đỏ Chu Sa phấp phới nhẹ cao thoáng trên đầu Em, Anh khẽ nghiêng mình đưa tay trao.",
+    "act3Afterimage": "Hai bóng áo choàng đứng gần đối diện trong khoảng lặng dịu dàng, dải voan đỏ khẽ thở theo gió nhẹ trước khi tan mượt về đầu vòng lặp.",
+    "redProp": "Dải Khăn Voan & Cài Tóc Đỏ Chu Sa (#CE472E) phấp phới vi mô cao thoáng",
+    "tags": [
+      "solid_style",
+      "lục bát",
+      "lãng mạn",
+      "tĩnh tại"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_NAM_RUOU_HOA_TIM_LONG_LANH",
+    "name": "Nậm Rượu Lạnh Lơ Hóa Vầng Tim Đỏ Lấp Lánh",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới trăng lưỡi liềm, Anh quay lưng khỏi nậm rượu mực than bên trái, ngoái nhìn Em nhẹ bước vào ở câu thứ hai.",
+    "act2AtPivot": "Chạm 'là người anh yêu', nậm rượu biến hình vươn cao thành Trái Tim Đỏ Chu Sa điểm tia sao long lanh giữa khung hình, Anh bước tới nghiêng mình ngẩn ngơ.",
+    "act3Afterimage": "Em bước lại đứng gần đối diện Anh, vầng tim đỏ và ánh sao khẽ nhịp êm đềm trên nền giấy trà trước khi nối vòng.",
+    "redProp": "Trái Tim Đỏ Chu Sa (#CE472E) điểm tia sao long lanh lơ lửng cao thoáng",
+    "tags": [
+      "solid_style",
+      "lục bát",
+      "lãng mạn",
+      "thả thính"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_CAU_DA_LONG_DEN_DO_SOI_DOI",
+    "name": "Cầu Đá Phố Đêm & Lồng Đèn Đỏ Soi Bóng Đôi",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới trăng non, nậm rượu mực sương nằm lại chân dốc; Anh đứng trên nhịp cầu ngoái nhìn Em thong thả bước lên mỉm cười.",
+    "act2AtPivot": "Chạm 'là người anh yêu', đèn treo trên đỉnh cầu bừng sáng thành Lồng Đèn Đỏ Chu Sa đung đưa điểm tia long lanh, Anh bước tới trao trọn ánh nhìn.",
+    "act3Afterimage": "Hai bóng áo choàng đứng sóng đôi bình yên trên đỉnh vòm cầu dưới ánh lồng đèn đỏ ấm áp.",
+    "redProp": "Lồng Đèn Tròn Đỏ Chu Sa (#CE472E) đung đưa cao thoáng trên đỉnh cầu đá",
+    "tags": [
+      "solid_style",
+      "lục bát",
+      "lãng mạn",
+      "thả thính"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_GHE_DA_DOI_CHEN_TRA_DO",
+    "name": "Ghế Đá Lệch Nhịp & Đôi Chén Trà Đỏ Dâng Đầy",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Bên chiếc ghế dài, Tôi nâng một chén trà nhỏ mời làm quen, Em ngồi đầu ghế bên kia ngó lơ vẻ phát ngán.",
+    "act2AtPivot": "Chạm 'gấp đôi lúc đầu', chén trà hóa Khay Đôi Chén Trà Đỏ Chu Sa bốc khói ấm gấp đôi, Tôi bước sát lại dâng tận nơi.",
+    "act3Afterimage": "Em hết giận xoay người sang đón nhận, làn hơi trà bay lững lờ nối mượt giữa hai người trên nền giấy trà.",
+    "redProp": "Khay Đôi Chén Trà Đỏ Chu Sa (#CE472E) bốc làn khói ấm đôi",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_NHANH_MAM_HOA_TAN_O_DOI",
+    "name": "Nhành Mầm Nhỏ Hóa Tán Ô Đôi Che Chung",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Gió nhẹ lướt ngang, Tôi theo sau bên nhành mầm nhỏ kiên nhẫn 'tán', Em bước đi trước làm ngơ rồi dừng lại lúc bảo chán.",
+    "act2AtPivot": "Chạm 'gấp đôi lúc đầu', nhành mầm vươn cao hóa Tán Ô Đôi Đỏ Chu Sa rộng gấp đôi, Tôi bước vào nâng cán ô che chung.",
+    "act3Afterimage": "Em xoay người bước lùi vào gọn dưới bóng tán đỏ sóng đôi bình yên cùng Tôi.",
+    "redProp": "Vòm Tán Ô Đôi Đỏ Chu Sa (#CE472E) vươn cao che trọn hai người",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_MOT_THU_HOA_TIM_DOI",
+    "name": "Một Phong Thư Hóa Cặp Tim Đôi",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Dưới nắng sớm, Tôi nâng phong thư nhỏ ngay tầm tay trao, Em khẽ ngả người lùi nửa bước vẻ phát ngán.",
+    "act2AtPivot": "Chạm 'gấp đôi lúc đầu', phong thư bay vào giữa vươn cao thành cặp Trái Tim Đôi Đỏ Chu Sa rực ấm, Tôi bước tới nâng trọn cả đôi.",
+    "act3Afterimage": "Em hết dỗi nhích lại gần đối diện Tôi, hai bóng áo choàng đứng yên bình dưới cặp tim đỏ khẽ nhịp trước khi nối vòng.",
+    "redProp": "Cặp Trái Tim Đôi Đỏ Chu Sa (#CE472E) bay lơ lửng cao thoáng",
+    "tags": [
+      "solid_style",
+      "buổi sáng",
+      "hài hước",
+      "thả thính"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_CONG_RAO_HOA_MAI_HIEN_CHUNG",
+    "name": "Cổng Rào Đề Phòng Hóa Mái Hiên Chung",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Nắng mai dịu trải ngang ngõ nhỏ, hai bóng người lạ mờ xám lướt vội phía xa; Kẻ Lữ Hành đứng giữ khoảng cách sau khung cổng rào gỗ cài then nét mực tàu, khựng lại ngước nhìn khi bóng Người Thương thong thả bước tới trong nắng sớm",
+    "act2AtPivot": "Chạm cụm từ 'là người nhà', Kẻ Lữ Hành nghiêng người đưa tay mời — khung cổng rào gỗ lập tức vươn cao biến hình thành vòm mái hiên ngói Đỏ Chu Sa ấm áp khắc khe ngói âm bản che trọn khoảng hiên giữa hai người",
+    "act3Afterimage": "Dưới vòm mái hiên nhà Đỏ Chu Sa ngập nắng sớm, Người Thương bước hẳn vào đứng sóng đôi bình yên cùng Kẻ Lữ Hành dưới một nóc nhà trước khi hòa nhịp nối vòng mượt mà",
+    "redProp": "Vòm mái hiên nhà Đỏ Chu Sa (#CE472E) uốn cong thanh thoát khắc khe ngói âm bản kèm bùa tim nhỏ dưới xà hiên, hóa thân trực tiếp từ khung cổng rào gỗ đề phòng",
+    "tags": [
+      "solid_style",
+      "người nhà",
+      "người lạ",
+      "thả thính",
+      "buổi sáng",
+      "hài hước"
+    ],
+    "usageCount": 2
+  },
+  {
     "sceneId": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
     "name": "Trạm Dừng Giai Điệu & Nốt Nhạc Đỏ Chu Sa Bên Ghế Trống",
     "category": "TRAVELER",
@@ -15,7 +731,7 @@
       "nốt nhạc",
       "ghế trống"
     ],
-    "usageCount": 2
+    "usageCount": 6
   },
   {
     "sceneId": "SCRIPT_CHIEC_O_RONG_CHO_NHAU",
@@ -33,7 +749,7 @@
       "tình yêu",
       "ý nhị"
     ],
-    "usageCount": 3
+    "usageCount": 9
   },
   {
     "sceneId": "SCRIPT_CHAM_CONG_NGONG_TRUA",

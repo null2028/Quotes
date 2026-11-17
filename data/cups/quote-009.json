@@ -18,15 +18,25 @@
     ],
     "pivotWord": "vẫn ngồi đợi ta",
     "highlightStyle": "BOTH",
+    "durationMode": "AUTO_SEED",
     "targetDurationSeconds": 15,
     "typingSpeedMsPerChar": 55,
     "holdAfterFinishSeconds": 5.5,
-    "themeId": "MINIMAL_LIGHT",
+    "themeId": "WARM_NOIR",
     "stageTuning": {
       "offsetX": -35,
       "offsetY": -36,
       "scale": 1.09,
       "strokeScale": 1
+    },
+    "visualDNA": {
+      "mode": "CUSTOM",
+      "layout": "SKY_QUOTE_BOTTOM_STAGE",
+      "lightingGobo": "WINDOW_SLATS",
+      "shotMode": "BRUSH_DRAW",
+      "pivotMechanic": "PARALLAX_DRIFT",
+      "horizonOffsetPx": 12,
+      "forceSolidStyle": true
     },
     "motion": {
       "sceneId": "SCRIPT_NGUOI_LU_HANH_VA_KY_UC",
@@ -44,11 +54,10 @@
       }
     },
     "bgm": {
-      "audioMode": "FOLEY_MASTER",
+      "audioMode": "PIVOT_ACCENT",
       "foleyPivotStyle": "AUTO"
     },
     "brandText": "TRÀ NGUỘI"
   },
-  "videoUrl": "/output/quote-009/Ch%C3%A9n%2009%20-%20K%C3%BD%20%E1%BB%A9c.mp4?v=1794482011001",
-  "seoFileName": "chen-09-ky-uc-hoai-niem-tra-nguoi.mp4"
+  "videoUrl": "/output/quote-009/Ch%C3%A9n%2009%20-%20K%C3%BD%20%E1%BB%A9c.mp4?v=1794641918763"
 }

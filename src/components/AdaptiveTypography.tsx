@@ -14,6 +14,11 @@ import {
 } from '../engine/timelineSync';
 import { ThemePalette, LAYOUT_TOKENS } from '../theme/palettes';
 import { VideoInputProps } from '../schemas/videoSchema';
+import {
+  LayoutGeometry,
+  ResolvedVisualDNA,
+  resolveLayoutGeometry,
+} from '../engine/visualDnaResolver';
 
 const { fontFamily: notoSerifFontFamily } = loadNotoSerifFont('normal', {
   weights: ['400', '500', '600'],
@@ -143,7 +148,7 @@ function estimateBottomBlockHeightPx(params: {
     sealMarginTop,
   } = params;
 
-  const avgCharWidth = quoteFontSize * 0.53;
+  const avgCharWidth = quoteFontSize * 0.49;
   const maxCharsPerLine = Math.max(16, Math.floor(maxTextWidthPx / avgCharWidth));
 
   let quoteBlockHeight = 0;
@@ -171,9 +176,17 @@ export const AdaptiveTypography: React.FC<{
   props: VideoInputProps;
   sync: TimelineSyncResult;
   palette: ThemePalette;
-}> = ({ props, sync, palette }) => {
+  visualDNA?: ResolvedVisualDNA;
+  layoutGeo?: LayoutGeometry;
+}> = ({ props, sync, palette, visualDNA, layoutGeo }) => {
   const frame = useCurrentFrame();
-  const { swissGrid } = LAYOUT_TOKENS;
+  const { typography } = LAYOUT_TOKENS;
+  const activeGeo =
+    layoutGeo ??
+    resolveLayoutGeometry(
+      visualDNA?.layout ?? 'CLASSIC_TOP_STAGE',
+      visualDNA?.brushOrientation
+    );
 
   const safeDuration = Math.max(2, sync.durationInFrames);
   // Hướng 1 Seamless Loop: Từ 14.20s -> 15.00s (Frame 852 -> 899 @ 60fps), toàn bộ khối chữ tan êm về 0
@@ -196,39 +209,6 @@ export const AdaptiveTypography: React.FC<{
   const typoLoopBlend = 0.5 - 0.5 * Math.cos(Math.PI * rawLoopU);
 
   const segmentTexts = sync.segmentTimings.map((s) => s.text);
-  const cleanLines = segmentTexts
-    .map((s) => stripInlineMarkdown(s).trim())
-    .filter((s) => s.length > 0);
-  const activeLineCount = cleanLines.length;
-  const maxCleanLineLen = Math.max(...cleanLines.map((s) => s.length), 0);
-  const totalCleanChars = cleanLines.reduce((acc, s) => acc + s.length, 0);
-
-  let autoBaseFontSize: number;
-  let lineHeight: number;
-  let rowGapPx: number;
-
-  if (
-    activeLineCount <= 4 &&
-    maxCleanLineLen <= 28 &&
-    totalCleanChars <= 175
-  ) {
-    autoBaseFontSize = 50;
-    lineHeight = 1.48;
-    rowGapPx = 12;
-  } else if (
-    activeLineCount <= 5 &&
-    maxCleanLineLen <= 42 &&
-    totalCleanChars <= 175
-  ) {
-    autoBaseFontSize = 44;
-    lineHeight = 1.48;
-    rowGapPx = 10;
-  } else {
-    autoBaseFontSize =
-      maxCleanLineLen > 52 || totalCleanChars > 220 ? 38 : 40;
-    lineHeight = 1.48;
-    rowGapPx = 8;
-  }
 
   const rawAuthor = (props.author ?? '').trim();
   const hasAuthor = rawAuthor.length > 0;
@@ -238,57 +218,92 @@ export const AdaptiveTypography: React.FC<{
       : `— ${rawAuthor}`
     : '';
 
-  const fontSizeScale = props.fontSizeScale ?? 1.0;
-  let quoteFontSize = Math.max(
-    30,
-    Math.round(autoBaseFontSize * fontSizeScale)
+  // Khóa cỡ chữ chuẩn cố định toàn kênh (42px ở 1.00x), biên tinh chỉnh nhất quán [38px..48px] (0.88x..1.15x)
+  const effectiveScale = Math.max(
+    0.88,
+    Math.min(1.15, props.fontSizeScale ?? 1.0)
   );
-  let authorFontSize = Math.max(24, Math.round(quoteFontSize * 0.66));
-  let sealMarginTop = 28;
+  let quoteFontSize = Math.max(
+    typography.minFontSize,
+    Math.min(
+      typography.maxFontSize,
+      Math.round(typography.baseFontSize * effectiveScale)
+    )
+  );
+  let lineHeight = 1.52;
+  let rowGapPx = 16;
+  let sealMarginTop = 34;
+  let authorFontSize = Math.max(23, Math.round(quoteFontSize * 0.66));
 
   const maxAllowedHeight =
-    swissGrid.typographyMaxBottom - swissGrid.typographyTop;
+    activeGeo.typographyMaxBottom - activeGeo.typographyTop;
 
+  // Tầng A: Nếu đoạn trích dẫn dài chạm trần đáy Safe Zone, ưu tiên co nhẹ khoảng thưa dọc TRƯỚC để giữ nguyên cỡ chữ chuẩn
   while (
-    quoteFontSize > 28 &&
+    (rowGapPx > 10 || sealMarginTop > 22 || lineHeight > 1.42) &&
     estimateBottomBlockHeightPx({
       segmentTexts,
       quoteFontSize,
       lineHeight,
       rowGapPx,
-      maxTextWidthPx: swissGrid.typographyMaxWidth,
+      maxTextWidthPx: activeGeo.typographyMaxWidth,
       hasAuthor,
       authorFontSize,
       sealMarginTop,
     }) > maxAllowedHeight
   ) {
-    quoteFontSize -= 2;
-    authorFontSize = Math.max(22, Math.round(quoteFontSize * 0.66));
-    if (quoteFontSize <= 38) {
-      rowGapPx = Math.max(6, rowGapPx - 1);
-      lineHeight = 1.42;
-      sealMarginTop = 22;
+    if (rowGapPx > 10) {
+      rowGapPx = Math.max(10, rowGapPx - 2);
+    } else if (sealMarginTop > 22) {
+      sealMarginTop = Math.max(22, sealMarginTop - 4);
+    } else {
+      lineHeight = Math.max(1.42, Number((lineHeight - 0.03).toFixed(2)));
     }
   }
 
+  // Tầng B: Chỉ khi trích dẫn văn học siêu dài vẫn vượt trần mới giảm từng 1px và khóa cứng sàn tuyệt đối ở minFontSize (38px)
+  while (
+    quoteFontSize > typography.minFontSize &&
+    estimateBottomBlockHeightPx({
+      segmentTexts,
+      quoteFontSize,
+      lineHeight,
+      rowGapPx,
+      maxTextWidthPx: activeGeo.typographyMaxWidth,
+      hasAuthor,
+      authorFontSize,
+      sealMarginTop,
+    }) > maxAllowedHeight
+  ) {
+    quoteFontSize -= 1;
+    authorFontSize = Math.max(22, Math.round(quoteFontSize * 0.66));
+  }
+
+  const maxCharsPerVisualLine = Math.max(
+    18,
+    Math.floor(activeGeo.typographyMaxWidth / (quoteFontSize * 0.49))
+  );
   const lineWeights = sync.segmentTimings.map((seg) => {
     const cleanLen = stripInlineMarkdown(seg.text).trim().length;
     if (cleanLen === 0) return 0;
-    return Math.max(1, Math.ceil(cleanLen / 30));
+    return Math.max(1, Math.ceil(cleanLen / maxCharsPerVisualLine));
   });
   const totalVisualLines = Math.max(
     1,
     lineWeights.reduce((a, b) => a + b, 0)
   );
 
-  // Hướng 1: Đồng nhất 100% hiệu ứng thấm mực mềm mại cho CẢ 4 DÒNG (kể cả Dòng 1 từ 0.35s)
+  // Hướng 1: Đồng nhất 100% hiệu ứng thấm mực mềm mại và thanh nét Đỏ Chu Sa kéo xuống chậm rãi theo đường cong Cosine S-Curve
   const revealProgresses = sync.segmentTimings.map((seg) =>
     interpolate(
       frame,
-      [seg.startFrame, Math.max(seg.startFrame + 1, seg.endTypingFrame)],
+      [
+        seg.startFrame,
+        Math.max(seg.startFrame + 1, seg.endTypingFrame + Math.round(0.35 * sync.fps)),
+      ],
       [0, 1],
       {
-        easing: Easing.out(Easing.cubic),
+        easing: Easing.inOut(Easing.sin),
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       }
@@ -303,24 +318,6 @@ export const AdaptiveTypography: React.FC<{
     (sum, prog, idx) => sum + prog * (lineWeights[idx] / totalVisualLines),
     0
   );
-
-  const firstActiveSeg = sync.segmentTimings.find(
-    (s) => stripInlineMarkdown(s.text).trim().length > 0
-  );
-  const railLeadStart =
-    firstActiveSeg?.startFrame ?? sync.introBufferFrames;
-  const baseRailOpacity =
-    interpolate(
-      frame,
-      [railLeadStart, railLeadStart + Math.round(0.45 * sync.fps)],
-      [0, 0.7],
-      {
-        easing: Easing.out(Easing.cubic),
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      }
-    ) *
-    (1 - typoLoopBlend);
 
   const authorStartFrame =
     sync.allTextFinishedFrame + Math.round(0.25 * sync.fps);
@@ -365,62 +362,74 @@ export const AdaptiveTypography: React.FC<{
     interpolate(rawSealProgress, [0, 1], [8, 0]) - typoLoopBlend * 2;
 
   const serifStack = `${notoSerifFontFamily}, 'Noto Serif', Georgia, serif`;
-  const railToTextOffsetPx = 32;
+  const railToTextOffsetPx = typography.railOffsetPx;
 
   return (
     <div
       style={{
         position: 'absolute',
-        top: swissGrid.typographyTop,
-        left: swissGrid.marginLeft,
-        width: swissGrid.quoteBlockWidth,
-        maxHeight: maxAllowedHeight,
-        paddingTop: 8,
+        top: activeGeo.typographyTop,
+        left: activeGeo.typographyLeft,
+        width: activeGeo.quoteBlockWidth,
+        height: maxAllowedHeight,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingTop: 4,
+        paddingBottom: 4,
+        boxSizing: 'border-box',
         overflow: 'hidden',
       }}
     >
+      {/* Đệm đàn hồi phía trên theo Archetype layout để giữ liên kết sân khấu */}
       <div
         style={{
+          flexGrow: activeGeo.topSpacerFlexGrow,
+          flexShrink: 1,
+          flexBasis: 0,
+          maxHeight: activeGeo.topSpacerMaxPx,
+        }}
+      />
+
+      {/* Nguyên khối [Quote + Tác giả + • TRÀ NGUỘI] tự cân bằng trên–dưới mượt mà, cố định chiều cao từ 0.0s */}
+      <div
+        style={{
+          flexShrink: 0,
           display: 'flex',
           flexDirection: 'column',
-          width: 'fit-content',
-          maxWidth: swissGrid.quoteBlockWidth,
         }}
       >
         <div
           style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: 'fit-content',
+            maxWidth: activeGeo.quoteBlockWidth,
+          }}
+        >
+        <div
+          style={{
             position: 'relative',
             paddingLeft: railToTextOffsetPx,
-            maxWidth: swissGrid.quoteBlockWidth,
+            maxWidth: activeGeo.quoteBlockWidth,
             display: 'flex',
             flexDirection: 'column',
             rowGap: rowGapPx,
           }}
         >
+          {/* Line Đỏ Chu Sa dọc 1 nét liền đều từ đầu đến cuối, chạy dài theo sự xuất hiện của từng dòng quote */}
           <div
             style={{
               position: 'absolute',
-              left: 1,
-              top: 8,
-              bottom: 8,
-              width: 1.5,
-              backgroundColor: palette.surfaceSubtle,
-              opacity: baseRailOpacity,
-            }}
-          />
-
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 8,
-              bottom: 8,
-              width: 3.5,
-              backgroundColor: palette.accent,
-              transformOrigin: 'top center',
-              transform: `scaleY(${activeRailScaleY.toFixed(4)})`,
-              opacity: 1 - typoLoopBlend,
-              borderRadius: 2,
+              left: 2,
+              top: 6,
+              width: 3.2,
+              height: `calc((100% - 12px) * ${Math.max(0, Math.min(1, activeRailScaleY)).toFixed(4)})`,
+              backgroundColor: palette.accentText || palette.accent,
+              pointerEvents: 'none',
+              opacity:
+                activeRailScaleY > 0.004
+                  ? Math.min(1, activeRailScaleY * 4) * (1 - typoLoopBlend)
+                  : 0,
             }}
           />
 
@@ -463,7 +472,7 @@ export const AdaptiveTypography: React.FC<{
               ? interpolateColors(
                   pivotRevealP,
                   [0.15, 0.85],
-                  [palette.inkPrimary, palette.accent]
+                  [palette.inkPrimary, palette.accentText || palette.accent]
                 )
               : palette.inkPrimary;
 
@@ -471,7 +480,7 @@ export const AdaptiveTypography: React.FC<{
               <div
                 key={seg.index}
                 style={{
-                  maxWidth: swissGrid.typographyMaxWidth,
+                  maxWidth: activeGeo.typographyMaxWidth,
                   opacity: lineProgress,
                   transform: `translateY(${translateY.toFixed(2)}px)`,
                   filter:
@@ -483,7 +492,7 @@ export const AdaptiveTypography: React.FC<{
                   textAlign: 'left',
                   overflowWrap: 'break-word',
                   wordBreak: 'normal',
-                  textWrap: 'pretty',
+                  textWrap: props.textFormat === 'POEM' ? 'wrap' : 'pretty',
                   willChange: 'opacity, transform, filter',
                 }}
               >
@@ -526,39 +535,49 @@ export const AdaptiveTypography: React.FC<{
         )}
       </div>
 
-      <div
-        style={{
-          marginTop: sealMarginTop,
-          paddingLeft: railToTextOffsetPx,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          opacity: sealProgress * 0.88,
-          transform: `translateY(${sealTranslateY.toFixed(2)}px)`,
-        }}
-      >
-        <span
+        <div
           style={{
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            backgroundColor: palette.accent,
-            display: 'inline-block',
-          }}
-        />
-        <span
-          style={{
-            fontFamily: `${beVietnamProFontFamily}, 'Be Vietnam Pro', sans-serif`,
-            fontSize: 20,
-            letterSpacing: '0.24em',
-            textTransform: 'uppercase',
-            color: palette.inkSecondary,
-            fontWeight: 500,
+            marginTop: sealMarginTop,
+            paddingLeft: railToTextOffsetPx,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            opacity: sealProgress * 0.88,
+            transform: `translateY(${sealTranslateY.toFixed(2)}px)`,
           }}
         >
-          {props.brandText}
-        </span>
+          <span
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              backgroundColor: palette.accentText || palette.accent,
+              display: 'inline-block',
+            }}
+          />
+          <span
+            style={{
+              fontFamily: `${beVietnamProFontFamily}, 'Be Vietnam Pro', sans-serif`,
+              fontSize: 20,
+              letterSpacing: '0.24em',
+              textTransform: 'uppercase',
+              color: palette.inkSecondary,
+              fontWeight: 500,
+            }}
+          >
+            {props.brandText}
+          </span>
+        </div>
       </div>
+
+      {/* Đệm đàn hồi phía dưới */}
+      <div
+        style={{
+          flexGrow: activeGeo.bottomSpacerFlexGrow,
+          flexShrink: 1,
+          flexBasis: 0,
+        }}
+      />
     </div>
   );
 };

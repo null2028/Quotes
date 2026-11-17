@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import {
   AirtableBaseSummary,
+  AirtableBridgeReceipt,
   AirtableFieldMeta,
   AirtableRecordItem,
   AirtableTableCache,
@@ -22,6 +23,7 @@ import {
 import { studioApi } from '../api';
 import { CURRENT_AIRTABLE_BATCH_JOB } from '../airtableBatchJob';
 import {
+  QUOTE_LIBRARY_TABLE_ID,
   TRACKER_TABLE_NAME,
   syncAllCupsToAirtableTracker,
 } from '../airtableCupTracker';
@@ -45,7 +47,7 @@ interface AirtableSyncModalProps {
     title: string;
     rawText: string;
     pivotWord?: string;
-    themeId?: 'MINIMAL_LIGHT' | 'DARK_CONTEMPLATIVE';
+    themeId?: 'MINIMAL_LIGHT' | 'MINIMAL_DARK' | 'WARM_NOIR';
   }) => Promise<void>;
   onTrackerMapUpdated?: (map: Record<string, CupAirtableTrackMeta>) => void;
 }
@@ -88,7 +90,8 @@ async function fetchAirtableViaProxy<T>(
 export async function syncFullAirtableWorkspace(
   cleanToken: string,
   preferredBaseId?: string,
-  preferredTableId?: string
+  preferredTableId?: string,
+  bridgeReceipt?: AirtableBridgeReceipt
 ): Promise<AirtableWorkspaceCache> {
   const basesRes = await fetchAirtableViaProxy<{
     bases: AirtableBaseSummary[];
@@ -164,10 +167,36 @@ export async function syncFullAirtableWorkspace(
     selectedTableId: nextTableId,
     bases,
     tables: tablesWithRecords,
+    ...(bridgeReceipt ? { lastBridgeReceipt: bridgeReceipt } : {}),
   };
 
   await studioApi.saveAirtableCache(nextCache);
   return nextCache;
+}
+
+async function persistBridgeErrorReceipt(
+  batchId: string,
+  mode: 'sync_only' | 'patch_and_sync',
+  message: string
+): Promise<void> {
+  try {
+    const existing = await studioApi.getAirtableCache();
+    if (!existing.cache) return;
+    await studioApi.saveAirtableCache({
+      ...existing.cache,
+      lastBridgeReceipt: {
+        batchId,
+        status: 'error',
+        appliedAt: new Date().toISOString(),
+        mode,
+        updatedCount: 0,
+        createdCount: 0,
+        message,
+      },
+    });
+  } catch {
+    // ignore local cache write error
+  }
 }
 
 async function executeAirtableBatchJobInternal(
@@ -183,10 +212,49 @@ async function executeAirtableBatchJobInternal(
     return { status: 'already_done' };
   }
 
+  const isSyncOnly =
+    job.mode === 'sync_only' ||
+    (job.records.length === 0 &&
+      (!job.createRecords || job.createRecords.length === 0) &&
+      !job.ensureTable);
+  const effectiveMode: 'sync_only' | 'patch_and_sync' = isSyncOnly
+    ? 'sync_only'
+    : 'patch_and_sync';
+
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 25000);
 
   try {
+    if (isSyncOnly) {
+      const tempMsg = `🍵 Đã làm mới trực tiếp kho Airtable (${job.description})!`;
+      const receipt: AirtableBridgeReceipt = {
+        batchId: job.batchId,
+        status: 'applied',
+        appliedAt: new Date().toISOString(),
+        mode: 'sync_only',
+        updatedCount: 0,
+        createdCount: 0,
+        message: tempMsg,
+      };
+      const syncedCache = await syncFullAirtableWorkspace(
+        token,
+        job.baseId,
+        job.tableId,
+        receipt
+      );
+      window.clearTimeout(timer);
+      window.localStorage.setItem(APPLIED_BATCH_KEY, job.batchId);
+      const totalRows = syncedCache.tables.reduce(
+        (sum, t) => sum + t.recordCount,
+        0
+      );
+      return {
+        status: 'applied',
+        message: `🍵 Đã kéo trực tiếp ${syncedCache.tables.length} bảng (${totalRows} bản ghi) mới nhất từ Airtable về máy!`,
+        targetTableId: syncedCache.selectedTableId,
+      };
+    }
+
     let targetTableId = job.tableId || '';
     let createdTableFlag = false;
 
@@ -234,10 +302,12 @@ async function executeAirtableBatchJobInternal(
             schemaErr instanceof Error ? schemaErr.message : String(schemaErr);
           if (/403|permission|not authorized|invalid_permissions/i.test(rawMsg)) {
             window.clearTimeout(timer);
+            const permMsg =
+              'Đang chờ bật quyền schema.bases:write trên Airtable Token. Sau khi bạn tích chọn schema.bases:write và bấm Save trên trang Airtable, chỉ cần bấm "Đồng bộ mới"!';
+            await persistBridgeErrorReceipt(job.batchId, effectiveMode, permMsg);
             return {
               status: 'error',
-              message:
-                'Đang chờ bật quyền schema.bases:write trên Airtable Token. Sau khi bạn tích chọn schema.bases:write và bấm Save trên trang Airtable, chỉ cần bấm "Đồng bộ mới"!',
+              message: permMsg,
             };
           }
           throw schemaErr;
@@ -245,89 +315,140 @@ async function executeAirtableBatchJobInternal(
       }
     }
 
-    if (!targetTableId) {
-      throw new Error('Không xác định được tableId đích trên Airtable.');
-    }
-
-    for (let i = 0; i < job.records.length; i += 10) {
-      const chunk = job.records.slice(i, i + 10);
-      await fetchAirtableViaProxy(
-        `/${encodeURIComponent(job.baseId)}/${encodeURIComponent(targetTableId)}`,
-        token,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            records: chunk.map((r) => ({
-              id: r.id,
-              fields: r.fields,
-            })),
-            typecast: true,
-          }),
-          signal: controller.signal,
-        }
-      );
-      if (i + 10 < job.records.length) {
-        await new Promise((r) => setTimeout(r, 260));
+    const groupedPatches = new Map<
+      string,
+      Array<{ id: string; fields: Record<string, unknown> }>
+    >();
+    for (const r of job.records) {
+      const resolvedTbl = r.tableId || targetTableId;
+      if (!resolvedTbl) {
+        throw new Error('Không xác định được tableId đích cho bản ghi PATCH.');
       }
+      const safeFields = { ...r.fields };
+      if (resolvedTbl === QUOTE_LIBRARY_TABLE_ID && !job.allowOriginalEdit) {
+        delete safeFields['Nội dung nguyên văn'];
+      }
+      const list = groupedPatches.get(resolvedTbl) || [];
+      list.push({ id: r.id, fields: safeFields });
+      groupedPatches.set(resolvedTbl, list);
     }
 
-    let createdCount = 0;
-    if (Array.isArray(job.createRecords) && job.createRecords.length > 0) {
-      const existingCheck = await fetchAirtableViaProxy<{
-        records: AirtableRecordItem[];
-      }>(
-        `/${encodeURIComponent(job.baseId)}/${encodeURIComponent(
-          targetTableId
-        )}?fields%5B%5D=ID&pageSize=100`,
-        token,
-        { signal: controller.signal }
-      );
-      const existingIds = new Set(
-        (existingCheck.records || []).map((r) => String(r.fields.ID || '').trim())
-      );
-      const toCreate = job.createRecords.filter(
-        (item) => !existingIds.has(item.code)
-      );
-
-      for (let i = 0; i < toCreate.length; i += 10) {
-        const chunk = toCreate.slice(i, i + 10);
+    let updatedCount = 0;
+    for (const [tblId, rows] of groupedPatches.entries()) {
+      for (let i = 0; i < rows.length; i += 10) {
+        const chunk = rows.slice(i, i + 10);
         await fetchAirtableViaProxy(
-          `/${encodeURIComponent(job.baseId)}/${encodeURIComponent(targetTableId)}`,
+          `/${encodeURIComponent(job.baseId)}/${encodeURIComponent(tblId)}`,
           token,
           {
-            method: 'POST',
+            method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              records: chunk.map((r) => ({
-                fields: r.fields,
-              })),
+              records: chunk,
               typecast: true,
             }),
             signal: controller.signal,
           }
         );
-        createdCount += chunk.length;
-        if (i + 10 < toCreate.length) {
+        updatedCount += chunk.length;
+        if (i + 10 < rows.length) {
           await new Promise((r) => setTimeout(r, 260));
+        }
+      }
+    }
+
+    let createdCount = 0;
+    if (Array.isArray(job.createRecords) && job.createRecords.length > 0) {
+      const groupedCreates = new Map<
+        string,
+        Array<{ code: string; fields: Record<string, unknown> }>
+      >();
+      for (const item of job.createRecords) {
+        const resolvedTbl = item.tableId || targetTableId;
+        if (!resolvedTbl) {
+          throw new Error('Không xác định được tableId đích khi thêm bản ghi.');
+        }
+        const list = groupedCreates.get(resolvedTbl) || [];
+        list.push(item);
+        groupedCreates.set(resolvedTbl, list);
+      }
+
+      for (const [tblId, items] of groupedCreates.entries()) {
+        const existingCheck = await fetchAirtableViaProxy<{
+          records: AirtableRecordItem[];
+        }>(
+          `/${encodeURIComponent(job.baseId)}/${encodeURIComponent(
+            tblId
+          )}?pageSize=100`,
+          token,
+          { signal: controller.signal }
+        );
+        const existingIds = new Set(
+          (existingCheck.records || []).map((r) =>
+            String(
+              r.fields['Mã Production'] ||
+                r.fields.ID ||
+                r.fields['Mã Chén'] ||
+                ''
+            ).trim()
+          )
+        );
+        const toCreate = items.filter((item) => !existingIds.has(item.code));
+
+        for (let i = 0; i < toCreate.length; i += 10) {
+          const chunk = toCreate.slice(i, i + 10);
+          await fetchAirtableViaProxy(
+            `/${encodeURIComponent(job.baseId)}/${encodeURIComponent(tblId)}`,
+            token,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                records: chunk.map((r) => ({
+                  fields: r.fields,
+                })),
+                typecast: true,
+              }),
+              signal: controller.signal,
+            }
+          );
+          createdCount += chunk.length;
+          if (i + 10 < toCreate.length) {
+            await new Promise((r) => setTimeout(r, 260));
+          }
         }
       }
     }
 
     window.clearTimeout(timer);
 
-    window.localStorage.setItem(APPLIED_BATCH_KEY, job.batchId);
-    await syncFullAirtableWorkspace(token, job.baseId, targetTableId);
-
     const tableMsg = job.ensureTable
       ? createdTableFlag
         ? `Đã tạo mới bảng "${job.ensureTable.name}" và nạp ${createdCount} bản ghi lên Airtable!`
         : `Đã đồng bộ vào bảng "${job.ensureTable.name}" (thêm mới ${createdCount} bản ghi) trên Airtable!`
-      : `Đã cập nhật ${job.records.length} bài và thêm mới ${createdCount} bài lên Airtable!`;
+      : `🍵 Đã đẩy trực tiếp ${updatedCount} bản cập nhật và ${createdCount} bài mới lên Airtable!`;
+
+    const receipt: AirtableBridgeReceipt = {
+      batchId: job.batchId,
+      status: 'applied',
+      appliedAt: new Date().toISOString(),
+      mode: 'patch_and_sync',
+      updatedCount,
+      createdCount,
+      message: tableMsg,
+    };
+
+    window.localStorage.setItem(APPLIED_BATCH_KEY, job.batchId);
+    await syncFullAirtableWorkspace(
+      token,
+      job.baseId,
+      targetTableId || undefined,
+      receipt
+    );
 
     return {
       status: 'applied',
@@ -337,15 +458,19 @@ async function executeAirtableBatchJobInternal(
   } catch (err: unknown) {
     window.clearTimeout(timer);
     if (err instanceof DOMException && err.name === 'AbortError') {
+      const timeoutMsg =
+        'Kết nối Airtable quá thời gian chờ. Bạn hãy bấm "Thử lại" để đẩy lại gói dữ liệu nhé.';
+      await persistBridgeErrorReceipt(job.batchId, effectiveMode, timeoutMsg);
       return {
         status: 'needs_restart',
-        message:
-          'Kết nối Airtable quá thời gian chờ. Bạn hãy bấm "Thử lại" để đẩy lại gói dữ liệu nhé.',
+        message: timeoutMsg,
       };
     }
+    const errText = err instanceof Error ? err.message : String(err);
+    await persistBridgeErrorReceipt(job.batchId, effectiveMode, errText);
     return {
       status: 'error',
-      message: err instanceof Error ? err.message : String(err),
+      message: errText,
     };
   }
 }
@@ -388,7 +513,7 @@ function extractRecordForCup(
   title: string;
   content: string;
   pivotWord?: string;
-  themeId?: 'MINIMAL_LIGHT' | 'DARK_CONTEMPLATIVE';
+  themeId?: 'MINIMAL_LIGHT' | 'MINIMAL_DARK' | 'WARM_NOIR';
 } {
   const entries = Object.entries(record.fields)
     .map(([k, v]) => ({ key: k, text: formatCellValue(v) }))
@@ -433,9 +558,9 @@ function extractRecordForCup(
 
   const rawPivot = formatCellValue(record.fields['Pivot Word (Đỏ Chu Sa)']);
   const slot = formatCellValue(record.fields['Thời điểm phù hợp']);
-  const themeId: 'MINIMAL_LIGHT' | 'DARK_CONTEMPLATIVE' | undefined =
+  const themeId: 'MINIMAL_LIGHT' | 'MINIMAL_DARK' | 'WARM_NOIR' | undefined =
     slot === 'Night'
-      ? 'DARK_CONTEMPLATIVE'
+      ? 'WARM_NOIR'
       : slot
         ? 'MINIMAL_LIGHT'
         : undefined;

@@ -43,6 +43,13 @@ export interface NormalizedTerrainConfig {
   gapCenterX: number;
   gapHalfWidth: number;
   bridgeProgress: number;
+  stepCount: number;
+  stepRise: number;
+  stairsStartX: number;
+  stairsEndX: number;
+  points: Array<[number, number]>;
+  smooth: boolean;
+  customSvgD?: string;
 }
 
 export function normalizeTerrainConfig(
@@ -68,14 +75,42 @@ export function normalizeTerrainConfig(
       gapCenterX: 270,
       gapHalfWidth: 48,
       bridgeProgress: dynamicBridgeProgress ?? 0,
+      stepCount: 4,
+      stepRise: -8,
+      stairsStartX: 190,
+      stairsEndX: 350,
+      points: [],
+      smooth: true,
     };
   }
 
+  const rawPoints = Array.isArray(input.points)
+    ? [...input.points]
+        .filter(
+          (pt): pt is [number, number] =>
+            Array.isArray(pt) &&
+            pt.length >= 2 &&
+            Number.isFinite(pt[0]) &&
+            Number.isFinite(pt[1])
+        )
+        .sort((a, b) => a[0] - b[0])
+    : [];
+
+  const inferredType: TerrainType =
+    input.type ?? (rawPoints.length >= 2 ? 'custom_path' : 'flat');
+
+  const defaultStartX =
+    rawPoints.length >= 2 ? Math.min(70, rawPoints[0][0]) : 70;
+  const defaultEndX =
+    rawPoints.length >= 2
+      ? Math.max(470, rawPoints[rawPoints.length - 1][0])
+      : 470;
+
   return {
-    type: input.type ?? 'flat',
-    y: input.y ?? DEFAULT_GROUND_Y,
-    startX: input.startX ?? 70,
-    endX: input.endX ?? 470,
+    type: inferredType,
+    y: input.y ?? (rawPoints.length >= 2 ? rawPoints[0][1] : DEFAULT_GROUND_Y),
+    startX: input.startX ?? defaultStartX,
+    endX: input.endX ?? defaultEndX,
     angleDeg: input.angleDeg ?? -10,
     hillCenterX: resolveXCoord(input.hillCenterX, 270),
     hillHeight: input.hillHeight ?? 24,
@@ -88,6 +123,13 @@ export function normalizeTerrainConfig(
     gapCenterX: resolveXCoord(input.gapCenterX, 270),
     gapHalfWidth: input.gapHalfWidth ?? 48,
     bridgeProgress: dynamicBridgeProgress ?? input.bridgeProgress ?? 0,
+    stepCount: Math.max(1, Math.min(16, Math.round(input.stepCount ?? 4))),
+    stepRise: input.stepRise ?? -8,
+    stairsStartX: resolveXCoord(input.stairsStartX, 190),
+    stairsEndX: resolveXCoord(input.stairsEndX, 350),
+    points: rawPoints,
+    smooth: input.smooth ?? true,
+    customSvgD: input.customSvgD,
   };
 }
 
@@ -170,6 +212,83 @@ export function getTerrainPoint(
       return { y: baseY, angleDeg: 0 };
     }
 
+    case 'stairs': {
+      const sStart = Math.min(cfg.stairsStartX, cfg.stairsEndX - 24);
+      const sEnd = Math.max(cfg.stairsEndX, sStart + 24);
+      const steps = Math.max(1, cfg.stepCount);
+      const stepW = (sEnd - sStart) / steps;
+      const totalRise = cfg.stepRise * steps;
+
+      if (x <= sStart) {
+        return { y: baseY, angleDeg: 0 };
+      }
+      if (x >= sEnd) {
+        return { y: baseY + totalRise, angleDeg: 0 };
+      }
+
+      // Chuyển tiếp mượt quanh gờ bậc (~28% bề rộng bậc) để bước chân leo bậc êm 60fps
+      const rawPos = (x - sStart) / stepW;
+      const stepIdx = Math.min(steps - 1, Math.floor(rawPos));
+      const frac = rawPos - stepIdx;
+      const bevelZone = 0.28;
+      let localLift = 1;
+      let slope = 0;
+      if (frac < bevelZone) {
+        const u = frac / bevelZone;
+        localLift = 0.5 * (1 - Math.cos(Math.PI * u));
+        slope =
+          (cfg.stepRise * 0.5 * Math.PI * Math.sin(Math.PI * u)) /
+          Math.max(1, stepW * bevelZone);
+      }
+      const y = baseY + cfg.stepRise * (stepIdx + localLift);
+      const angleDeg = Math.max(
+        -18,
+        Math.min(18, (Math.atan(slope) * 180) / Math.PI)
+      );
+      return { y, angleDeg };
+    }
+
+    case 'custom_path': {
+      const pts = cfg.points;
+      if (!pts || pts.length < 2) {
+        return { y: baseY, angleDeg: 0 };
+      }
+      if (x <= pts[0][0]) {
+        return { y: pts[0][1], angleDeg: 0 };
+      }
+      const last = pts[pts.length - 1];
+      if (x >= last[0]) {
+        return { y: last[1], angleDeg: 0 };
+      }
+
+      for (let i = 0; i < pts.length - 1; i++) {
+        const [x0, y0] = pts[i];
+        const [x1, y1] = pts[i + 1];
+        if (x >= x0 && x <= x1) {
+          const dx = Math.max(0.001, x1 - x0);
+          const dy = y1 - y0;
+          const u = (x - x0) / dx;
+          if (cfg.smooth !== false && dx >= 6) {
+            const y = y0 + dy * 0.5 * (1 - Math.cos(Math.PI * u));
+            const slope = (dy * 0.5 * Math.PI * Math.sin(Math.PI * u)) / dx;
+            const angleDeg = Math.max(
+              -26,
+              Math.min(26, (Math.atan(slope) * 180) / Math.PI)
+            );
+            return { y, angleDeg };
+          }
+          const y = y0 + dy * u;
+          // Với gờ thẳng đứng (dx < 5), giữ góc nghiêng êm nhẹ để nhân vật không bị đổ ngang
+          const angleDeg =
+            dx < 5
+              ? 0
+              : Math.max(-24, Math.min(24, (Math.atan2(dy, dx) * 180) / Math.PI));
+          return { y, angleDeg };
+        }
+      }
+      return { y: last[1], angleDeg: 0 };
+    }
+
     default:
       return { y: baseY, angleDeg: 0 };
   }
@@ -193,7 +312,15 @@ export const TerrainRenderer: React.FC<{
   accentStroke,
   solidHorizon = false,
 }) => {
-  const safeDraw = Math.max(0.001, Math.min(1, drawProgress));
+  const safeDraw = Math.max(0, Math.min(1, drawProgress));
+  if (safeDraw <= 0.002) {
+    return null;
+  }
+  const evoDraw = Math.max(0.001, safeDraw);
+  const rawInkGate = Math.max(0, Math.min(1, safeDraw / 0.18));
+  const inkAlpha = 0.5 - 0.5 * Math.cos(Math.PI * rawInkGate);
+  const rawShadowGate = Math.max(0, Math.min(1, (safeDraw - 0.45) / 0.55));
+  const shadowAlphaMult = 0.5 - 0.5 * Math.cos(Math.PI * rawShadowGate);
   const fineHorizonStrokeWidth = solidHorizon ? 1.28 : 1.15;
   const gradId = `terrain-fade-grad-${terrain.type}-${Math.round(terrain.startX)}-${Math.round(terrain.endX)}-${solidHorizon ? 's' : 'w'}`;
   const span = Math.max(40, terrain.endX - terrain.startX);
@@ -244,7 +371,7 @@ export const TerrainRenderer: React.FC<{
   if (terrain.type === 'flat' || terrain.type === 'fork') {
     const mainPath = `M ${terrain.startX} ${terrain.y} L ${terrain.endX} ${terrain.y}`;
     const shadowPath = `M ${shadowStartX.toFixed(1)} ${(terrain.y + 2.2).toFixed(1)} L ${shadowEndX.toFixed(1)} ${(terrain.y + 2.2).toFixed(1)}`;
-    const mainEvo = evolvePath(safeDraw, mainPath);
+    const mainEvo = evolvePath(evoDraw, mainPath);
 
     let forkNode: React.ReactNode = null;
     if (terrain.type === 'fork') {
@@ -262,13 +389,13 @@ export const TerrainRenderer: React.FC<{
         strokeWidth: 1.0,
         strokeLinecap: 'round',
         strokeDasharray: '5 5',
-        opacity: safeDraw * 0.48,
+        opacity: shadowAlphaMult * 0.48,
       });
     }
 
     return React.createElement(
       'g',
-      { opacity: safeDraw },
+      { opacity: inkAlpha },
       gradientDefs,
       forkNode,
       React.createElement('path', {
@@ -286,7 +413,7 @@ export const TerrainRenderer: React.FC<{
         stroke,
         strokeWidth: solidHorizon ? 0.52 : 0.85,
         strokeLinecap: 'round',
-        opacity: solidHorizon ? 0.14 : 0.1,
+        opacity: (solidHorizon ? 0.14 : 0.1) * shadowAlphaMult,
       })
     );
   }
@@ -308,10 +435,10 @@ export const TerrainRenderer: React.FC<{
     }
     const d = cmds.join(' ');
     const shadowD = shadowCmds.join(' ');
-    const evo = evolvePath(safeDraw, d);
+    const evo = evolvePath(evoDraw, d);
     return React.createElement(
       'g',
-      { opacity: safeDraw },
+      { opacity: inkAlpha },
       gradientDefs,
       React.createElement('path', {
         d,
@@ -328,7 +455,7 @@ export const TerrainRenderer: React.FC<{
         stroke,
         strokeWidth: 0.85,
         strokeLinecap: 'round',
-        opacity: 0.1,
+        opacity: 0.1 * shadowAlphaMult,
       })
     );
   }
@@ -341,7 +468,7 @@ export const TerrainRenderer: React.FC<{
     const waterEnd = terrain.waterSide === 'right' ? terrain.endX : shoreX;
 
     const landPath = `M ${landStart} ${terrain.y} L ${landEnd} ${terrain.y}`;
-    const landEvo = evolvePath(safeDraw, landPath);
+    const landEvo = evolvePath(evoDraw, landPath);
 
     const steps = 36;
     const waveCmds: string[] = [];
@@ -354,11 +481,11 @@ export const TerrainRenderer: React.FC<{
       );
     }
     const wavePath = waveCmds.join(' ');
-    const waveEvo = evolvePath(safeDraw, wavePath);
+    const waveEvo = evolvePath(evoDraw, wavePath);
 
     return React.createElement(
       'g',
-      { opacity: safeDraw },
+      { opacity: inkAlpha },
       gradientDefs,
       React.createElement('path', {
         d: landPath,
@@ -381,6 +508,134 @@ export const TerrainRenderer: React.FC<{
     );
   }
 
+  if (terrain.type === 'stairs') {
+    const sStart = Math.min(terrain.stairsStartX, terrain.stairsEndX - 24);
+    const sEnd = Math.max(terrain.stairsEndX, sStart + 24);
+    const steps = Math.max(1, terrain.stepCount);
+    const stepW = (sEnd - sStart) / steps;
+    const cmds: string[] = [
+      `M ${terrain.startX.toFixed(1)} ${terrain.y.toFixed(1)}`,
+      `L ${sStart.toFixed(1)} ${terrain.y.toFixed(1)}`,
+    ];
+    for (let i = 0; i < steps; i++) {
+      const riserX = sStart + i * stepW;
+      const treadEnd = sStart + (i + 1) * stepW;
+      const stepY = terrain.y + terrain.stepRise * (i + 1);
+      cmds.push(`L ${riserX.toFixed(1)} ${stepY.toFixed(1)}`);
+      cmds.push(`L ${treadEnd.toFixed(1)} ${stepY.toFixed(1)}`);
+    }
+    const finalY = terrain.y + terrain.stepRise * steps;
+    cmds.push(`L ${terrain.endX.toFixed(1)} ${finalY.toFixed(1)}`);
+    const d = cmds.join(' ');
+    const evo = evolvePath(evoDraw, d);
+
+    return React.createElement(
+      'g',
+      { opacity: inkAlpha },
+      gradientDefs,
+      terrain.customSvgD
+        ? React.createElement('path', {
+            d: terrain.customSvgD,
+            fill: 'none',
+            stroke: secondaryStroke,
+            strokeWidth: 0.9,
+            strokeLinecap: 'round',
+            strokeLinejoin: 'round',
+            opacity: 0.42 * shadowAlphaMult,
+          })
+        : null,
+      React.createElement('path', {
+        d,
+        fill: 'none',
+        stroke: `url(#${gradId})`,
+        strokeWidth: fineHorizonStrokeWidth,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+        strokeDasharray: evo.strokeDasharray,
+        strokeDashoffset: evo.strokeDashoffset,
+      })
+    );
+  }
+
+  if (terrain.type === 'custom_path') {
+    const pts = terrain.points;
+    let d: string;
+    let shadowD = '';
+    if (!pts || pts.length < 2) {
+      d = `M ${terrain.startX} ${terrain.y} L ${terrain.endX} ${terrain.y}`;
+    } else if (terrain.smooth === false) {
+      const polyPts: Array<[number, number]> = [];
+      if (terrain.startX < pts[0][0] - 1) {
+        polyPts.push([terrain.startX, pts[0][1]]);
+      }
+      polyPts.push(...pts);
+      const last = pts[pts.length - 1];
+      if (terrain.endX > last[0] + 1) {
+        polyPts.push([terrain.endX, last[1]]);
+      }
+      d = polyPts
+        .map(
+          ([px, py], idx) =>
+            `${idx === 0 ? 'M' : 'L'} ${px.toFixed(1)} ${py.toFixed(1)}`
+        )
+        .join(' ');
+    } else {
+      const steps = 64;
+      const cmds: string[] = [];
+      const shadowCmds: string[] = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const px = terrain.startX + t * (terrain.endX - terrain.startX);
+        const pt = getTerrainPoint(terrain, px, phase);
+        cmds.push(`${i === 0 ? 'M' : 'L'} ${px.toFixed(1)} ${pt.y.toFixed(1)}`);
+        if (t >= 0.14 && t <= 0.86) {
+          shadowCmds.push(
+            `${shadowCmds.length === 0 ? 'M' : 'L'} ${px.toFixed(1)} ${(pt.y + 2.4).toFixed(1)}`
+          );
+        }
+      }
+      d = cmds.join(' ');
+      shadowD = shadowCmds.join(' ');
+    }
+    const evo = evolvePath(evoDraw, d);
+    return React.createElement(
+      'g',
+      { opacity: inkAlpha },
+      gradientDefs,
+      terrain.customSvgD
+        ? React.createElement('path', {
+            d: terrain.customSvgD,
+            fill: 'none',
+            stroke: secondaryStroke,
+            strokeWidth: 0.92,
+            strokeLinecap: 'round',
+            strokeLinejoin: 'round',
+            opacity: 0.45 * shadowAlphaMult,
+          })
+        : null,
+      React.createElement('path', {
+        d,
+        fill: 'none',
+        stroke: `url(#${gradId})`,
+        strokeWidth: fineHorizonStrokeWidth,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+        strokeDasharray: evo.strokeDasharray,
+        strokeDashoffset: evo.strokeDashoffset,
+      }),
+      shadowD
+        ? React.createElement('path', {
+            d: shadowD,
+            fill: 'none',
+            stroke,
+            strokeWidth: 0.82,
+            strokeLinecap: 'round',
+            opacity: 0.1 * shadowAlphaMult,
+          })
+        : null
+    );
+  }
+
   // cliff_gap
   const leftEdge = terrain.gapCenterX - terrain.gapHalfWidth;
   const rightEdge = terrain.gapCenterX + cfgGapHalf(terrain);
@@ -388,8 +643,8 @@ export const TerrainRenderer: React.FC<{
   const rightPath = `M ${rightEdge + 8} ${terrain.y + 42} L ${rightEdge} ${terrain.y} L ${terrain.endX} ${terrain.y}`;
   const bridgePath = `M ${leftEdge} ${terrain.y} Q ${terrain.gapCenterX} ${terrain.y - 14} ${rightEdge} ${terrain.y}`;
 
-  const leftEvo = evolvePath(safeDraw, leftPath);
-  const rightEvo = evolvePath(safeDraw, rightPath);
+  const leftEvo = evolvePath(evoDraw, leftPath);
+  const rightEvo = evolvePath(evoDraw, rightPath);
   const bridgeEvo = evolvePath(
     Math.max(0.001, terrain.bridgeProgress),
     bridgePath
@@ -397,7 +652,7 @@ export const TerrainRenderer: React.FC<{
 
   return React.createElement(
     'g',
-    { opacity: safeDraw },
+    { opacity: inkAlpha },
     gradientDefs,
     React.createElement('path', {
       d: leftPath,

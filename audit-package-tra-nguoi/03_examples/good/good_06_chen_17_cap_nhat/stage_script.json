@@ -1,0 +1,155 @@
+{
+  "sceneId": "SCRIPT_P022_LICH_BAN_CHUA_CAP_NHAT",
+  "name": "Lịch Bàn Đỏ Chu Sa Chưa Kịp Sang Trang (P022)",
+  "description": "Nhân vật ngồi bên bàn làm việc chuẩn nhân trắc học, lặng nhìn cuốn lịch để bàn đã quá hạn hóa Đỏ Chu Sa tại điểm lật nhưng bàn tay đưa ra vẫn ngập ngừng chưa lật sang trang mới.",
+  "act1": "Nhân vật ngồi tĩnh lặng trên ghế std_chair bên bàn std_work_desk, ngoài khung cửa sổ porch_window lá thu trôi qua nhưng tờ lịch bàn vẫn đứng yên.",
+  "act2AtPivot": "Chạm 'chưa chịu cập nhật', cuốn lịch để bàn desk_calendar bừng sắc Đỏ Chu Sa (#CE472E); nhân vật khẽ đưa tay chạm vào mép lịch nhưng ngập ngừng giữ lại.",
+  "act3Afterimage": "Nhân vật hạ nhẹ bàn tay đặt lên mặt bàn, tựa lưng trầm ngâm nhìn trang lịch Đỏ Chu Sa giữa nhịp gió nhẹ ngoài hiên.",
+  "redProp": "Cuốn lịch để bàn (desk_calendar) hiện trang lịch Đỏ Chu Sa (#CE472E) trên mặt bàn làm việc",
+  "tags": [
+    "solid_style",
+    "chiêm nghiệm",
+    "buông bỏ",
+    "mối quan hệ",
+    "P022"
+  ],
+  "terrain": {
+    "type": "flat",
+    "y": 352,
+    "startX": 96,
+    "endX": 444
+  },
+  "atmosphere": [
+    {
+      "id": "passing_breeze",
+      "type": "wind",
+      "y": 214,
+      "count": 3,
+      "direction": "right",
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "opacity": 0.34
+    },
+    {
+      "id": "autumn_leaves",
+      "type": "leaves",
+      "y": 226,
+      "count": 4,
+      "direction": "right",
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "opacity": 0.42
+    }
+  ],
+  "actors": [
+    {
+      "id": "hero",
+      "x": 220,
+      "scale": 1.24,
+      "facing": "right",
+      "pose": "sit_lean",
+      "leanDeg": 8,
+      "sitProgress": 1,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "layer": "fore"
+    }
+  ],
+  "props": [
+    {
+      "id": "window_bg",
+      "type": "porch_window",
+      "x": 162,
+      "y": 0,
+      "layer": "far",
+      "scale": 1.15,
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "idle": "none",
+      "anchorType": "ground"
+    },
+    {
+      "id": "work_chair",
+      "type": "std_chair",
+      "x": 218,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1.22,
+      "colorRole": "ink",
+      "idle": "none",
+      "anchorType": "ground"
+    },
+    {
+      "id": "work_desk",
+      "type": "std_work_desk",
+      "x": 266,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1.24,
+      "colorRole": "ink",
+      "idle": "none",
+      "anchorType": "ground"
+    },
+    {
+      "id": "old_calendar",
+      "type": "desk_calendar",
+      "x": 261,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1.24,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "idle": "none",
+      "anchorType": "ground"
+    }
+  ],
+  "timeline": [
+    {
+      "at": "line_2",
+      "duration": 1.6,
+      "target": "hero",
+      "pose": "sit_lean",
+      "leanDeg": 13,
+      "sitProgress": 1
+    },
+    {
+      "at": "pivot-0.25s",
+      "duration": 0.45,
+      "target": "old_calendar",
+      "scale": 1.32,
+      "morphProgress": 1
+    },
+    {
+      "at": "pivot",
+      "duration": 0.5,
+      "target": "old_calendar",
+      "colorRole": "accent",
+      "emitters": {
+        "pulseRing": 0.52,
+        "glow": 0.24
+      }
+    },
+    {
+      "at": "pivot-0.1s",
+      "duration": 0.9,
+      "target": "hero",
+      "pose": "reach_out",
+      "leanDeg": 15,
+      "sitProgress": 1
+    },
+    {
+      "at": "pivot+1.25s",
+      "duration": 2.4,
+      "target": "hero",
+      "pose": "give",
+      "leanDeg": 7,
+      "sitProgress": 1
+    },
+    {
+      "at": "pivot+1.4s",
+      "duration": 1.8,
+      "target": "old_calendar",
+      "scale": 1.26
+    }
+  ]
+}

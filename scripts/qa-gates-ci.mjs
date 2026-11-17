@@ -233,7 +233,7 @@ function classifyCupPillar(cup, airtableCupRecord) {
 }
 
 async function runGate2() {
-  console.log('=== [GATE 2] Kiểm toán Âm tiết (trần 40), SEO, Bình luận mồi, TN-Score, 60fps/132px & Cấu trúc Hướng 2 ===');
+  console.log('=== [GATE 2] Kiểm toán Âm tiết (trần 40), SEO, Bình luận mồi, TN-Score, 60fps / Safe Đa Kênh 3:4 & Cấu trúc Hướng 2 ===');
 
   const {
     STAGE_LEAD_IN_SECONDS,
@@ -241,7 +241,9 @@ async function runGate2() {
     auditVietnameseSyllables,
     computeTimelineSync,
   } = await import('../src/engine/timelineSync.ts');
-  const { LAYOUT_TOKENS } = await import('../src/theme/palettes.ts');
+  const { LAYOUT_TOKENS, THEME_PALETTES, isDarkThemePalette } = await import(
+    '../src/theme/palettes.ts'
+  );
   const { toAsciiKebabSlug, formatCupBaseFileName, formatCupSeoFileName } = await import(
     '../src/automation/fileNaming.ts'
   );
@@ -252,6 +254,22 @@ async function runGate2() {
     resolveCupCaption,
     stripBannedHashtags,
   } = await import('../src/automation/captionBuilder.ts');
+  const {
+    ASYMMETRIC_THIRD_MAX_SYLLABLES,
+    isLegacyPublishedCupId,
+    canUseAsymmetricThird,
+    resolveVisualDNA,
+    resolveLayoutGeometry,
+    suggestDistinctVisualDNA,
+  } = await import('../src/engine/visualDnaResolver.ts');
+  const { resolveStageScript } = await import('../src/stage/stageScriptRegistry.ts');
+  const { detectVisualDnaSequenceWarnings } = await import('../studio-ui/src/airtableCupTracker.ts');
+  const {
+    GEMINI_SKILL_MD,
+    GEMINI_SKILL_TEMPLATE_JSON,
+    buildGeminiSkillZipBytes,
+    sanitizeAndNormalizeCupBundle,
+  } = await import('../src/automation/geminiBundleBridge.ts');
 
   const unitChecks = [];
 
@@ -268,10 +286,12 @@ async function runGate2() {
 
   assertCheck(
     unitChecks,
-    'swissGrid giữ chuẩn marginLeft = 132px (> biên cắt 97px của 9:19.5)',
-    LAYOUT_TOKENS.swissGrid.marginLeft === 132 &&
-      LAYOUT_TOKENS.swissGrid.marginLeft > 97 &&
-      LAYOUT_TOKENS.swissGrid.marginLeft + LAYOUT_TOKENS.swissGrid.quoteBlockWidth < 983,
+    'swissGrid đạt chuẩn Safe Đa Kênh X=[132..833], Y=[180..1540] & Lưới 3:4 (headerTop >= 240, stageLeft = 132)',
+    LAYOUT_TOKENS.swissGrid.marginLeft >= 132 &&
+      LAYOUT_TOKENS.swissGrid.marginLeft + LAYOUT_TOKENS.swissGrid.quoteBlockWidth <= 833 &&
+      LAYOUT_TOKENS.swissGrid.headerTop >= 240 &&
+      LAYOUT_TOKENS.swissGrid.typographyMaxBottom <= 1540 &&
+      LAYOUT_TOKENS.swissGrid.stageLeft === 132,
     JSON.stringify(LAYOUT_TOKENS.swissGrid)
   );
 
@@ -365,7 +385,7 @@ async function runGate2() {
     sampleSync.durationInFrames - Math.round(TYPO_LOOP_FADE_SECONDS * LAYOUT_TOKENS.fps);
   assertCheck(
     unitChecks,
-    'computeTimelineSync chuẩn Hướng 1: mở chữ Dòng 1 tại 0.35s (frame 21), thấm mực đồng nhất & Seamless Loop (frame 852 -> 899)',
+    'computeTimelineSync chuẩn Hướng 1 (FIXED 15s): mở chữ Dòng 1 tại 0.35s (frame 21), thấm mực đồng nhất & Seamless Loop (frame 852 -> 899)',
     sampleSync.durationInFrames === 900 &&
       sampleSync.introBufferFrames === expectedLeadInFrames &&
       sampleSync.segmentTimings?.[0]?.startFrame === 21 &&
@@ -378,6 +398,49 @@ async function runGate2() {
       fourthLineStart: sampleSync.segmentTimings?.[3]?.startFrame,
       pivotFrame: sampleSync.pivotFrame,
       typoLoopStartFrame: expectedLoopFadeStart,
+    })
+  );
+
+  const sampleDynamicSync = computeTimelineSync({
+    id: 'quote-008',
+    textFormat: 'POEM',
+    segments: [
+      'Người ta xem dự báo để tránh ngày mưa.',
+      'Còn tôi xem… chỉ để biết ',
+      'hôm nào cần mang chiếc ô rộng hơn ngày thường.',
+    ],
+    pivotWord: 'chiếc ô rộng',
+    highlightStyle: 'BOTH',
+    targetDurationSeconds: 15,
+    durationMode: 'AUTO_SEED',
+    typingSpeedMsPerChar: 55,
+    holdAfterFinishSeconds: 5.5,
+    themeId: 'DARK_CONTEMPLATIVE',
+    motion: {
+      archetype: 'SCRIPT_CHIEC_O_RONG_CHO_NHAU',
+      pacingMode: 'CONTEMPLATIVE',
+      stateA: { intensity: 0.8, spread: 0.2, tiltDeg: -16 },
+      stateB: { intensity: 0.1, spread: 0.75, tiltDeg: 0 },
+    },
+    bgm: { audioMode: 'PIVOT_ACCENT', foleyPivotStyle: 'AUTO' },
+    brandText: 'TRÀ NGUỘI',
+  });
+  assertCheck(
+    unitChecks,
+    'computeTimelineSync (AUTO_SEED) chuẩn V8.5: thời lượng động !== 900f (bội 30f trong 810..990) & Ràng buộc B.1 Header dissolve sau Cover trước Pivot',
+    sampleDynamicSync.durationInFrames !== 900 &&
+      sampleDynamicSync.durationInFrames >= 810 &&
+      sampleDynamicSync.durationInFrames <= 990 &&
+      sampleDynamicSync.durationInFrames % 30 === 0 &&
+      sampleDynamicSync.recommendedCoverFrame + 18 <= sampleDynamicSync.headerDissolveStartFrame &&
+      sampleDynamicSync.headerDissolveEndFrame < sampleDynamicSync.pivotFrame,
+    JSON.stringify({
+      durationInFrames: sampleDynamicSync.durationInFrames,
+      coverFrame: sampleDynamicSync.recommendedCoverFrame,
+      headerDissolveStart: sampleDynamicSync.headerDissolveStartFrame,
+      headerDissolveEnd: sampleDynamicSync.headerDissolveEndFrame,
+      pivotFrame: sampleDynamicSync.pivotFrame,
+      loopRestoreStart: sampleDynamicSync.loopRestoreStartFrame,
     })
   );
 
@@ -461,8 +524,483 @@ async function runGate2() {
     JSON.stringify(tnWarn)
   );
 
+  // 4b. Unit Tests Studio V8.5 P1 (visualDNA Legacy Lock A.2, Asymmetric Guard B.3, Safe Zone Archetypes, Gobo Zero-Blur B.2)
+  const vdnaLegacy = resolveVisualDNA({
+    id: 'quote-003',
+    pivotWord: 'câu đơn',
+    themeId: 'MINIMAL_LIGHT',
+  });
+  const vdnaNew = resolveVisualDNA({
+    id: 'quote-099',
+    pivotWord: 'an nhiên',
+    themeId: 'DARK_CONTEMPLATIVE',
+  });
+  assertCheck(
+    unitChecks,
+    'P1 A.2 Legacy Lock giữ nguyên Chén 01–07 & bật forceSolidStyle cho Chén mới',
+    isLegacyPublishedCupId('quote-003') &&
+      vdnaLegacy.isLegacyLocked === true &&
+      vdnaLegacy.layout === 'CLASSIC_TOP_STAGE' &&
+      vdnaLegacy.lightingGobo === 'NONE' &&
+      vdnaLegacy.forceSolidStyle === false &&
+      vdnaNew.isLegacyLocked === false &&
+      vdnaNew.forceSolidStyle === true,
+    JSON.stringify({ vdnaLegacyLayout: vdnaLegacy.layout, vdnaNewSolid: vdnaNew.forceSolidStyle })
+  );
+
+  const spreadScript = {
+    actors: [
+      { id: 'a1', x: 140 },
+      { id: 'a2', x: 340 },
+    ],
+    props: [{ id: 'p1', type: 'lotus', focusRole: 'hero' }],
+  };
+  const b3Reject = canUseAsymmetricThird(spreadScript, 'SOLID_SCENE');
+  const b3MacroAllow = canUseAsymmetricThird(spreadScript, 'MACRO_PROP');
+  const b3SylAllow = canUseAsymmetricThird(spreadScript, 'MACRO_PROP', 28);
+  const b3SylReject = canUseAsymmetricThird(spreadScript, 'MACRO_PROP', 29);
+  const longSegments29 = [Array(29).fill('trà').join(' ')];
+  const vdnaDowngraded = resolveVisualDNA(
+    {
+      id: 'quote-009',
+      pivotWord: 'ký ức',
+      themeId: 'WARM_NOIR',
+      visualDNA: {
+        mode: 'CUSTOM',
+        layout: 'ASYMMETRIC_THIRD',
+        shotMode: 'SOLID_SCENE',
+      },
+    },
+    spreadScript
+  );
+  const vdnaSylDowngraded = resolveVisualDNA(
+    {
+      id: 'quote-011',
+      pivotWord: 'trà',
+      themeId: 'MINIMAL_LIGHT',
+      segments: longSegments29,
+      visualDNA: {
+        mode: 'CUSTOM',
+        layout: 'ASYMMETRIC_THIRD',
+        shotMode: 'MACRO_PROP',
+      },
+    },
+    spreadScript
+  );
+  const suggestedLong29 = suggestDistinctVisualDNA(
+    {
+      id: 'quote-011',
+      pivotWord: 'trà',
+      themeId: 'MINIMAL_LIGHT',
+      segments: longSegments29,
+      visualDNA: {
+        mode: 'CUSTOM',
+        layout: 'CLASSIC_TOP_STAGE',
+        shotMode: 'MACRO_PROP',
+      },
+    },
+    spreadScript,
+    ['CLASSIC_TOP_STAGE', 'SKY_QUOTE_BOTTOM_STAGE'],
+    [],
+    1
+  );
+  assertCheck(
+    unitChecks,
+    'P1 B.3 Chống thu nhỏ >=2 nhân vật cách xa vào ASYMMETRIC_THIRD & khóa trần <= 28 âm tiết',
+    ASYMMETRIC_THIRD_MAX_SYLLABLES === 28 &&
+      b3Reject.allowed === false &&
+      b3MacroAllow.allowed === true &&
+      b3SylAllow.allowed === true &&
+      b3SylReject.allowed === false &&
+      b3SylReject.blockedBySyllables === true &&
+      vdnaDowngraded.downgradedAsymmetricThird === true &&
+      vdnaDowngraded.layout === 'WINDOW_FRAME' &&
+      vdnaSylDowngraded.downgradedAsymmetricThird === true &&
+      vdnaSylDowngraded.layout === 'WINDOW_FRAME' &&
+      suggestedLong29.layout !== 'ASYMMETRIC_THIRD',
+    JSON.stringify({
+      b3Reject,
+      b3MacroAllow,
+      b3SylReject,
+      downgraded: vdnaDowngraded.layout,
+      downgradedSyl29: vdnaSylDowngraded.layout,
+      suggestedLong29Layout: suggestedLong29.layout,
+    })
+  );
+
+  const allLayoutsSafe = [
+    'CLASSIC_TOP_STAGE',
+    'SKY_QUOTE_BOTTOM_STAGE',
+    'WINDOW_FRAME',
+    'ASYMMETRIC_THIRD',
+  ].every((layoutName) => {
+    const dna = resolveVisualDNA({
+      id: 'quote-099',
+      pivotWord: 'tĩnh lặng',
+      themeId: 'WARM_NOIR',
+      visualDNA: {
+        mode: 'CUSTOM',
+        layout: layoutName,
+        shotMode: layoutName === 'ASYMMETRIC_THIRD' ? 'MACRO_PROP' : 'SOLID_SCENE',
+      },
+    });
+    const geo = resolveLayoutGeometry(layoutName, dna.brushOrientation);
+    const stageBottom = geo.stageTop + geo.stageHeight;
+    const noVerticalOverlap =
+      stageBottom <= geo.typographyTop || geo.typographyMaxBottom <= geo.stageTop;
+    return (
+      dna.brushOrientation === 'VERTICAL_BRUSH' &&
+      geo.brushOrientation === 'VERTICAL_BRUSH' &&
+      geo.typographyTop >= 342 &&
+      geo.typographyMaxBottom <= 1538 &&
+      geo.typographyLeft >= 132 &&
+      geo.typographyLeft + geo.quoteBlockWidth <= 832 &&
+      geo.stageTop >= 342 &&
+      stageBottom <= 1538 &&
+      noVerticalOverlap
+    );
+  });
+  assertCheck(
+    unitChecks,
+    'P1 4 Archetype bố cục khớp 100% Safe Zone, không chồng chéo & luôn giữ Line đỏ dọc theo chữ',
+    allLayoutsSafe,
+    'Kiểm tra lại resolveLayoutGeometry'
+  );
+
+  const hexToLum = (hex) => {
+    const clean = hex.replace('#', '');
+    const chan = [0, 2, 4].map((i) => {
+      const c = parseInt(clean.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * chan[0] + 0.7152 * chan[1] + 0.0722 * chan[2];
+  };
+  const contrastRatio = (a, b) => {
+    const la = hexToLum(a);
+    const lb = hexToLum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  };
+  const palettesSplitAccentOk = Object.values(THEME_PALETTES).every(
+    (pal) => Boolean(pal.accentText && pal.accentProp && pal.accentText !== pal.accentProp)
+  );
+  const darkPal = THEME_PALETTES.DARK_CONTEMPLATIVE;
+  const warmNoirPal = THEME_PALETTES.WARM_NOIR;
+  const darkWcagMetrics = {
+    inkPrimary: Number(contrastRatio(darkPal.background, darkPal.inkPrimary).toFixed(2)),
+    inkSecondary: Number(contrastRatio(darkPal.background, darkPal.inkSecondary).toFixed(2)),
+    accentText: Number(contrastRatio(darkPal.background, darkPal.accentText).toFixed(2)),
+    accentProp: Number(contrastRatio(darkPal.background, darkPal.accentProp).toFixed(2)),
+  };
+  const warmNoirWcagMetrics = {
+    inkPrimary: Number(contrastRatio(warmNoirPal.background, warmNoirPal.inkPrimary).toFixed(2)),
+    inkSecondary: Number(contrastRatio(warmNoirPal.background, warmNoirPal.inkSecondary).toFixed(2)),
+    accentText: Number(contrastRatio(warmNoirPal.background, warmNoirPal.accentText).toFixed(2)),
+    accentProp: Number(contrastRatio(warmNoirPal.background, warmNoirPal.accentProp).toFixed(2)),
+  };
+  const darkClassifierOk =
+    isDarkThemePalette('DARK_CONTEMPLATIVE') &&
+    isDarkThemePalette('WARM_NOIR') &&
+    !isDarkThemePalette('MINIMAL_LIGHT') &&
+    !isDarkThemePalette('MINIMAL_DARK') &&
+    !isDarkThemePalette('SLATE_CALM');
+  assertCheck(
+    unitChecks,
+    'Optical Patch: 5 bảng màu tách accentText/accentProp, phân loại 3 sáng / 2 tối (WARM_NOIR & DARK_CONTEMPLATIVE) đạt WCAG',
+    palettesSplitAccentOk &&
+      darkClassifierOk &&
+      darkWcagMetrics.inkPrimary >= 12 &&
+      darkWcagMetrics.inkSecondary >= 7.5 &&
+      darkWcagMetrics.accentText >= 4.5 &&
+      darkWcagMetrics.accentProp >= 4.0 &&
+      warmNoirWcagMetrics.inkPrimary >= 12 &&
+      warmNoirWcagMetrics.inkSecondary >= 7.5 &&
+      warmNoirWcagMetrics.accentText >= 4.5 &&
+      warmNoirWcagMetrics.accentProp >= 4.0,
+    JSON.stringify({ darkClassifierOk, darkWcagMetrics, warmNoirWcagMetrics })
+  );
+
+  const glowClassic = resolveVisualDNA({
+    id: 'quote-099',
+    pivotWord: 'tĩnh lặng',
+    themeId: 'DARK_CONTEMPLATIVE',
+    visualDNA: { mode: 'CUSTOM', layout: 'CLASSIC_TOP_STAGE' },
+  });
+  const glowBottom = resolveVisualDNA({
+    id: 'quote-099',
+    pivotWord: 'tĩnh lặng',
+    themeId: 'DARK_CONTEMPLATIVE',
+    visualDNA: { mode: 'CUSTOM', layout: 'SKY_QUOTE_BOTTOM_STAGE' },
+  });
+  const glowAsym = resolveVisualDNA({
+    id: 'quote-099',
+    pivotWord: 'tĩnh lặng',
+    themeId: 'DARK_CONTEMPLATIVE',
+    visualDNA: { mode: 'CUSTOM', layout: 'ASYMMETRIC_THIRD', shotMode: 'MACRO_PROP' },
+  });
+  assertCheck(
+    unitChecks,
+    'Optical Patch: Neo động Radial Glow (cx, cy) theo từng Layout & khóa Legacy Chén 01-07 tại (50, 44)',
+    glowClassic.vignetteCenter.yPct < 36 &&
+      glowBottom.vignetteCenter.yPct > 60 &&
+      glowAsym.vignetteCenter.xPct < 38 &&
+      vdnaLegacy.vignetteCenter.xPct === 50 &&
+      vdnaLegacy.vignetteCenter.yPct === 44,
+    JSON.stringify({
+      classic: glowClassic.vignetteCenter,
+      bottom: glowBottom.vignetteCenter,
+      asym: glowAsym.vignetteCenter,
+      legacy: vdnaLegacy.vignetteCenter,
+    })
+  );
+
+  const bgSource = fs.readFileSync(
+    path.join(ROOT, 'src/components/MinimalistBackground.tsx'),
+    'utf8'
+  );
+  const hasIllegalBlur = /feGaussianBlur|filter\s*:\s*['"`]?[^;]*blur\(/i.test(
+    bgSource
+  );
+  assertCheck(
+    unitChecks,
+    'P1 B.2 MinimalistBackground không dùng feGaussianBlur / CSS filter:blur',
+    !hasIllegalBlur,
+    'MinimalistBackground.tsx chứa blur filter gây nghẽn Chromium 60fps'
+  );
+
+  // 4c. Unit Tests Studio V8.5 P2 (suggestDistinctVisualDNA & Anti-Repeat Sequence Detector)
+  const sampleP2Props = {
+    id: 'quote-099',
+    pivotWord: 'tĩnh lặng',
+    themeId: 'DARK_CONTEMPLATIVE',
+    visualDNA: {
+      mode: 'CUSTOM',
+      layout: 'WINDOW_FRAME',
+      lightingGobo: 'WARM_LANTERN',
+      shotMode: 'SOLID_SCENE',
+      pivotMechanic: 'SPOTLIGHT_DIM',
+      horizonOffsetPx: 0,
+      forceSolidStyle: true,
+    },
+  };
+  const suggestedP2 = suggestDistinctVisualDNA(
+    sampleP2Props,
+    spreadScript,
+    ['WINDOW_FRAME'],
+    ['WARM_LANTERN'],
+    1
+  );
+  const resolvedSuggestedP2 = resolveVisualDNA(
+    { ...sampleP2Props, visualDNA: suggestedP2 },
+    spreadScript
+  );
+  assertCheck(
+    unitChecks,
+    'P2 suggestDistinctVisualDNA sinh biến thể CUSTOM mới khác avoidLayouts & tuân thủ B.3',
+    suggestedP2.mode === 'CUSTOM' &&
+      suggestedP2.layout !== 'WINDOW_FRAME' &&
+      suggestedP2.lightingGobo !== 'WARM_LANTERN' &&
+      resolvedSuggestedP2.downgradedAsymmetricThird === false,
+    JSON.stringify(suggestedP2)
+  );
+
+  const syntheticDupWarnings = detectVisualDnaSequenceWarnings([
+    {
+      id: 'quote-007',
+      cupNumber: '07',
+      status: 'completed',
+      progress: 100,
+      captionText: '',
+      props: {
+        id: 'quote-007',
+        themeId: 'MINIMAL_LIGHT',
+        segments: ['a'],
+        pivotWord: 'a',
+        motion: { archetype: 'BOULDER_TO_BENCH' },
+      },
+    },
+    {
+      id: 'quote-008',
+      cupNumber: '08',
+      status: 'draft',
+      progress: 0,
+      captionText: '',
+      props: {
+        id: 'quote-008',
+        themeId: 'MINIMAL_LIGHT',
+        segments: ['b'],
+        pivotWord: 'b',
+        motion: { archetype: 'BOULDER_TO_BENCH' },
+        visualDNA: { mode: 'CUSTOM', layout: 'CLASSIC_TOP_STAGE' },
+      },
+    },
+    {
+      id: 'quote-009',
+      cupNumber: '09',
+      status: 'draft',
+      progress: 0,
+      captionText: '',
+      props: {
+        id: 'quote-009',
+        themeId: 'MINIMAL_LIGHT',
+        segments: ['c'],
+        pivotWord: 'c',
+        motion: { archetype: 'BOULDER_TO_BENCH' },
+        visualDNA: { mode: 'CUSTOM', layout: 'CLASSIC_TOP_STAGE' },
+      },
+    },
+  ]);
+  const hasDupLayoutWarn = syntheticDupWarnings.some(
+    (w) => w.code === 'CONSECUTIVE_LAYOUT'
+  );
+  const hasLightStreakWarn = syntheticDupWarnings.some(
+    (w) => w.code === 'MONOTONE_LIGHT_STREAK'
+  );
+  const warmNoirBreakWarnings = detectVisualDnaSequenceWarnings([
+    {
+      id: 'quote-008',
+      cupNumber: '08',
+      status: 'draft',
+      progress: 0,
+      captionText: '',
+      props: {
+        id: 'quote-008',
+        themeId: 'MINIMAL_LIGHT',
+        segments: ['a'],
+        pivotWord: 'a',
+        motion: { archetype: 'BOULDER_TO_BENCH' },
+        visualDNA: { mode: 'CUSTOM', layout: 'CLASSIC_TOP_STAGE' },
+      },
+    },
+    {
+      id: 'quote-009',
+      cupNumber: '09',
+      status: 'draft',
+      progress: 0,
+      captionText: '',
+      props: {
+        id: 'quote-009',
+        themeId: 'WARM_NOIR',
+        segments: ['b'],
+        pivotWord: 'b',
+        motion: { archetype: 'BOULDER_TO_BENCH' },
+        visualDNA: { mode: 'CUSTOM', layout: 'SKY_QUOTE_BOTTOM_STAGE' },
+      },
+    },
+    {
+      id: 'quote-010',
+      cupNumber: '10',
+      status: 'draft',
+      progress: 0,
+      captionText: '',
+      props: {
+        id: 'quote-010',
+        themeId: 'MINIMAL_LIGHT',
+        segments: ['c'],
+        pivotWord: 'c',
+        motion: { archetype: 'BOULDER_TO_BENCH' },
+        visualDNA: { mode: 'CUSTOM', layout: 'WINDOW_FRAME' },
+      },
+    },
+  ]);
+  const warmNoirBreaksLightStreak = !warmNoirBreakWarnings.some(
+    (w) => w.code === 'MONOTONE_LIGHT_STREAK'
+  );
+
   // 5. Kiểm toán thực tế trên thư mục data/cups/*.json (Hướng 2) & data/airtable-cache.json
   const storeInfo = loadAllCupsForAudit();
+  const realDnaWarnings = detectVisualDnaSequenceWarnings(
+    storeInfo.items.map((item) => item.cup)
+  );
+  assertCheck(
+    unitChecks,
+    'P2 Anti-Repeat Detector bắt đúng trùng layout & chuỗi nền sáng (WARM_NOIR ngắt chuỗi sáng & kho Chén sạch)',
+    hasDupLayoutWarn &&
+      hasLightStreakWarn &&
+      warmNoirBreaksLightStreak &&
+      realDnaWarnings.length === 0,
+    JSON.stringify({
+      hasDupLayoutWarn,
+      hasLightStreakWarn,
+      warmNoirBreaksLightStreak,
+      realWarnings: realDnaWarnings.map((w) => w.message),
+    })
+  );
+
+  // 4d. Unit Tests Gemini Skill V8.5 (Template Schema, normalizeThemeId, PKZIP & Sync với .agents/docs)
+  const parsedGeminiTemplate = sanitizeAndNormalizeCupBundle(GEMINI_SKILL_TEMPLATE_JSON);
+  assertCheck(
+    unitChecks,
+    'Gemini Skill V8.5 Template JSON hợp lệ (v8.5, AUTO_SEED, PIVOT_ACCENT, visualDNA AUTO, không cảnh báo headroom)',
+    parsedGeminiTemplate.bundleVersion === '8.5' &&
+      parsedGeminiTemplate.durationMode === 'AUTO_SEED' &&
+      parsedGeminiTemplate.audioMode === 'PIVOT_ACCENT' &&
+      parsedGeminiTemplate.visualDNA?.mode === 'AUTO' &&
+      parsedGeminiTemplate.visualDNA?.forceSolidStyle === true &&
+      parsedGeminiTemplate.layoutWarnings.length === 0,
+    JSON.stringify({
+      bundleVersion: parsedGeminiTemplate.bundleVersion,
+      durationMode: parsedGeminiTemplate.durationMode,
+      audioMode: parsedGeminiTemplate.audioMode,
+      visualDNA: parsedGeminiTemplate.visualDNA,
+      layoutWarnings: parsedGeminiTemplate.layoutWarnings,
+    })
+  );
+
+  const probeTheme = (themeInput) =>
+    sanitizeAndNormalizeCupBundle({
+      segments: ['Dòng một thử nghiệm', 'Dòng hai điểm lật'],
+      pivotWord: 'điểm lật',
+      themeId: themeInput,
+    }).themeId;
+  assertCheck(
+    unitChecks,
+    'Gemini normalizeThemeId ưu tiên chuẩn 5 bảng màu (DARK_CONTEMPLATIVE / WARM_NOIR / WARM_DARK / DARK_NIGHT / MINIMAL_DARK)',
+    probeTheme('DARK_CONTEMPLATIVE') === 'DARK_CONTEMPLATIVE' &&
+      probeTheme('WARM_NOIR') === 'WARM_NOIR' &&
+      probeTheme('WARM_DARK') === 'WARM_NOIR' &&
+      probeTheme('DARK_NIGHT') === 'DARK_CONTEMPLATIVE' &&
+      probeTheme('MINIMAL_DARK') === 'MINIMAL_DARK',
+    JSON.stringify({
+      DARK_CONTEMPLATIVE: probeTheme('DARK_CONTEMPLATIVE'),
+      WARM_NOIR: probeTheme('WARM_NOIR'),
+      WARM_DARK: probeTheme('WARM_DARK'),
+      DARK_NIGHT: probeTheme('DARK_NIGHT'),
+      MINIMAL_DARK: probeTheme('MINIMAL_DARK'),
+    })
+  );
+
+  const skillZipBytes = buildGeminiSkillZipBytes();
+  const skillZipText = new TextDecoder('utf-8').decode(skillZipBytes);
+  const syncedSkillMdPath = path.join(ROOT, '.agents/skills/dao-dien-tra-nguoi/SKILL.md');
+  const syncedZipPath = path.join(ROOT, 'docs/dao-dien-tra-nguoi.zip');
+  const syncedSkillMatches =
+    fs.existsSync(syncedSkillMdPath) &&
+    fs.readFileSync(syncedSkillMdPath, 'utf8') === GEMINI_SKILL_MD &&
+    fs.existsSync(syncedZipPath) &&
+    Buffer.from(skillZipBytes).equals(fs.readFileSync(syncedZipPath));
+  assertCheck(
+    unitChecks,
+    'Gemini Skill V8.5 PKZIP & đồng bộ .agents/docs chứa đủ tham chiếu V8.5',
+    skillZipBytes[0] === 0x50 &&
+      skillZipBytes[1] === 0x4b &&
+      skillZipBytes[2] === 0x03 &&
+      skillZipBytes[3] === 0x04 &&
+      skillZipText.includes('SKILL.md') &&
+      skillZipText.includes('references/physics-and-props-v85.md') &&
+      skillZipText.includes('assets/cup-bundle-v85-template.json') &&
+      GEMINI_SKILL_MD.includes('DARK_CONTEMPLATIVE') &&
+      GEMINI_SKILL_MD.includes('WARM_NOIR') &&
+      GEMINI_SKILL_MD.includes('ASYMMETRIC_THIRD') &&
+      GEMINI_SKILL_MD.includes('AUTO_SEED') &&
+      GEMINI_SKILL_MD.includes('PIVOT_ACCENT') &&
+      GEMINI_SKILL_MD.includes('CupBundle V8.5') &&
+      syncedSkillMatches,
+    JSON.stringify({
+      zipMagic: Array.from(skillZipBytes.slice(0, 4)),
+      zipLength: skillZipBytes.length,
+      syncedSkillMatches,
+    })
+  );
   const airtablePath = path.join(ROOT, 'data/airtable-cache.json');
   const airtable = fs.existsSync(airtablePath) ? JSON.parse(fs.readFileSync(airtablePath, 'utf8')) : null;
 
@@ -656,6 +1194,33 @@ async function runGate2() {
     ghAnnotate('warning', `Gate 2: ${msg}`);
   }
 
+  // Kiểm chứng đa dạng hóa visualDNA trên nhóm Chén chưa xuất (08–13)
+  const unpublished08Plus = storeInfo.items
+    .filter(({ cup }) => !isLegacyPublishedCupId(cup.id))
+    .map(({ cup }) => {
+      const p = cup.props || {};
+      const sc = resolveStageScript(
+        p.motion?.sceneId || p.motion?.archetype,
+        p.motion?.stageScript
+      );
+      return {
+        cupNumber: cup.cupNumber,
+        vdna: resolveVisualDNA(p, sc),
+      };
+    });
+  const distinctLayouts = new Set(unpublished08Plus.map((x) => x.vdna.layout));
+  const distinctGobos = new Set(unpublished08Plus.map((x) => x.vdna.lightingGobo));
+  assertCheck(
+    unitChecks,
+    'P1 Đa dạng hóa visualDNA trên Chén 08–13 (>=3 layout & >=3 gobo)',
+    unpublished08Plus.length === 0 ||
+      (distinctLayouts.size >= 3 && distinctGobos.size >= 3),
+    JSON.stringify({
+      layouts: Array.from(distinctLayouts),
+      gobos: Array.from(distinctGobos),
+    })
+  );
+
   const allUnitsPass = unitChecks.every((u) => u.pass);
   const pass = allUnitsPass && hardViolations.length === 0;
 
@@ -722,7 +1287,7 @@ function runSummarize() {
   } else {
     const passedUnits = g2.unitChecks.filter((u) => u.pass).length;
     lines.push(`- **Trạng thái Gate 2**: ${g2.pass ? '✅ PASS' : '❌ FAIL'}`);
-    lines.push(`- **Unit Tests thuật toán cốt lõi**: \`${passedUnits}/${g2.unitChecks.length}\` PASS (Chuẩn \`60 fps\`, Lề \`132px\`, Hướng 1 \`0.35s / Loop 852->899\`, Trần \`40 âm tiết\`, Mốc \`TN-Score = ${g2.tnScoreBenchmarks.baseline100}đ\`)`);
+    lines.push(`- **Unit Tests thuật toán cốt lõi**: \`${passedUnits}/${g2.unitChecks.length}\` PASS (Chuẩn \`60 fps\`, Safe Đa Kênh \`158..832px\` & 3:4 \`Y>=268\`, Hướng 1 \`0.35s / Loop\` + \`AUTO_SEED\` B.1, Trần \`40 âm tiết\`, Mốc \`TN-Score = ${g2.tnScoreBenchmarks.baseline100}đ\`)`);
     lines.push('');
     lines.push('### Bảng kiểm toán từng Chén');
     lines.push('');

@@ -1,0 +1,137 @@
+{
+  "sceneId": "SCRIPT_BIEN_BAN_HOP_HOA_TO_BUN_NONG_V7",
+  "name": "Biểu Đồ Bàn Họp Hóa Tô Nóng Bốc Khói",
+  "description": "Nét cọ mặt đất chạy mở màn trên giấy trắng rồi bàn họp, nhân viên, Sếp và biểu đồ mới từ tốn hiện lên; chạm điểm lật biểu đồ KPI hóa tô nóng Đỏ Chu Sa.",
+  "act1": "Đường mặt đất phóng một nét mực từ tốn trong 0.95s, sau đó bàn họp, nhân viên ghi sổ, Sếp và khung biểu đồ lần lượt loang rõ.",
+  "act2AtPivot": "Sếp nghiêng người khen ngợi; đúng chữ 'quán nào gần đây', khung biểu đồ trên bàn hóa chiếc tô Đỏ Chu Sa gác đũa bốc làn khói mềm.",
+  "act3Afterimage": "Nhân viên ngả lưng dừng bút ngắm tô nóng thơm lừng trước khi toàn cảnh tan nhẹ về trang giấy mới.",
+  "redProp": "Chiếc tô Đỏ Chu Sa gác đôi đũa bốc ba làn khói nóng đặt trên mặt bàn họp",
+  "tags": [
+    "solid_style",
+    "buổi sáng",
+    "công sở",
+    "hài hước"
+  ],
+  "terrain": {
+    "type": "flat",
+    "y": 352,
+    "startX": -900,
+    "endX": -860
+  },
+  "atmosphere": [],
+  "actors": [
+    {
+      "id": "boss",
+      "x": 334,
+      "scale": 1.12,
+      "facing": "left",
+      "pose": "stand",
+      "leanDeg": -1,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "layer": "mid",
+      "enterAt": "1.75s",
+      "fadeDuration": 1.1
+    }
+  ],
+  "props": [
+    {
+      "id": "ground_line",
+      "type": "ground_brush_line",
+      "x": 270,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1,
+      "colorRole": "ink",
+      "drawProgress": 0,
+      "idle": "none",
+      "anchorType": "ground"
+    },
+    {
+      "id": "seated_staff",
+      "type": "seated_office_worker",
+      "x": 200,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1,
+      "colorRole": "ink",
+      "idle": "none",
+      "anchorType": "ground",
+      "enterAt": "1.35s",
+      "fadeDuration": 1.05
+    },
+    {
+      "id": "meeting_table",
+      "type": "conference_table_set",
+      "x": 264,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1,
+      "colorRole": "ink",
+      "idle": "none",
+      "anchorType": "ground",
+      "enterAt": "0.95s",
+      "fadeDuration": 1
+    },
+    {
+      "id": "chart_to_bowl",
+      "type": "tabletop_chart_to_bowl",
+      "x": 282,
+      "y": 0,
+      "layer": "mid",
+      "scale": 1,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "drawProgress": 0,
+      "idle": "none",
+      "anchorType": "ground",
+      "enterAt": "2.15s",
+      "fadeDuration": 1
+    }
+  ],
+  "timeline": [
+    {
+      "at": "start",
+      "duration": 0.95,
+      "target": "ground_line",
+      "drawProgress": 1
+    },
+    {
+      "at": "2.15s",
+      "duration": 1,
+      "target": "chart_to_bowl",
+      "drawProgress": 1
+    },
+    {
+      "at": "line_3-0.15s",
+      "duration": 1.1,
+      "target": "boss",
+      "pose": "give",
+      "leanDeg": 3
+    },
+    {
+      "at": "pivot",
+      "duration": 0.45,
+      "target": "chart_to_bowl",
+      "colorRole": "accent",
+      "morphProgress": 1,
+      "emitters": {
+        "pulseRing": 0.5,
+        "glow": 0.24
+      }
+    },
+    {
+      "at": "pivot+0.15s",
+      "duration": 0.45,
+      "target": "seated_staff",
+      "morphProgress": 1
+    },
+    {
+      "at": "pivot+1.4s",
+      "duration": 3.6,
+      "target": "boss",
+      "pose": "stand",
+      "leanDeg": -1
+    }
+  ]
+}

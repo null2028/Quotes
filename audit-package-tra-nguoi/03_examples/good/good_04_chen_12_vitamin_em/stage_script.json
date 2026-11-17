@@ -1,0 +1,350 @@
+{
+  "sceneId": "SCRIPT_DUNG_NGHI_NGUYEN_TO_A_C_D_HOA_EM",
+  "name": "Đứng Ngẫm Nguyên Tố A–C–D Tan Biến Hóa Nguyên Tố Em",
+  "description": "Anh đứng trầm ngâm suy nghĩ làm hiện lần lượt 3 ô nguyên tố A, C, D phía trên đầu; khi Em bước vào, ba ô cũ bay bồng bềnh tan biến, nhường chỗ cho Ô Nguyên Tố Em Đỏ Chu Sa hiện lên chính giữa hai người.",
+  "act1": "Dưới nắng sớm thoáng đãng không vướng đạo cụ nền, Anh bước chậm vào đứng ngẫm nghĩ làm hiện lần lượt ba ô nguyên tố viền rỗng A, C, D; cuối câu 3, Em thong thả bước từ lề phải vào.",
+  "act2AtPivot": "Chạm câu 4 và 'gây nhớ, gây thương', Anh hạ tay bước tới đón Em, ba ô A–C–D hóa nhẹ bẫng bay lên cao rồi tan biến sạch, để lộ Ô Nguyên Tố Em Đỏ Chu Sa đính tim nhỏ hiện lên giữa hai người.",
+  "act3Afterimage": "Hai bóng người đưa tay trao và đón nhận ngay dưới ô nguyên tố Em Đỏ Chu Sa đang khẽ nhịp êm ái trước khi nối vòng.",
+  "redProp": "Ô Nguyên Tố [Em ♥] viền rỗng Đỏ Chu Sa hiện lên ở trung tâm sau khi ba ô A, C, D tan biến",
+  "tags": [
+    "solid_style",
+    "buổi sáng",
+    "hài hước",
+    "thả thính",
+    "tối giản"
+  ],
+  "terrain": {
+    "type": "flat",
+    "y": 352,
+    "startX": 100,
+    "endX": 440
+  },
+  "atmosphere": [
+    {
+      "id": "morning_sun",
+      "type": "hollow_sun",
+      "x": 376,
+      "y": 170,
+      "radius": 13,
+      "colorRole": "secondary",
+      "focusRole": "support",
+      "opacity": 0.42
+    },
+    {
+      "id": "gentle_breeze",
+      "type": "wind",
+      "x": 270,
+      "y": 226,
+      "count": 3,
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "opacity": 0.22
+    }
+  ],
+  "actors": [
+    {
+      "id": "hero",
+      "x": 186,
+      "scale": 1.14,
+      "facing": "right",
+      "pose": "walk",
+      "leanDeg": 2,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "layer": "fore"
+    },
+    {
+      "id": "beloved",
+      "x": 374,
+      "scale": 1.09,
+      "facing": "left",
+      "pose": "walk",
+      "leanDeg": 2,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "layer": "mid",
+      "enterAt": "line_3-0.5s",
+      "fadeDuration": 1
+    }
+  ],
+  "props": [
+    {
+      "id": "thought_dots",
+      "type": "thought_bubble_dots",
+      "x": 212,
+      "y": -62,
+      "layer": "mid",
+      "scale": 1,
+      "opacity": 0,
+      "colorRole": "secondary",
+      "focusRole": "support",
+      "idle": {
+        "type": "float",
+        "speed": 0.35,
+        "amplitude": 0.32
+      },
+      "anchorType": "ground",
+      "saveAs": "thought_bubble_dots"
+    },
+    {
+      "id": "elem_a",
+      "type": "elem_tile_a",
+      "x": 176,
+      "y": -74,
+      "layer": "fore",
+      "scale": 0.72,
+      "opacity": 0,
+      "colorRole": "ink",
+      "idle": {
+        "type": "bob",
+        "speed": 0.35,
+        "amplitude": 0.38
+      },
+      "anchorType": "ground",
+      "saveAs": "elem_tile_a"
+    },
+    {
+      "id": "elem_c",
+      "type": "elem_tile_c",
+      "x": 208,
+      "y": -80,
+      "layer": "fore",
+      "scale": 0.72,
+      "opacity": 0,
+      "colorRole": "ink",
+      "idle": {
+        "type": "bob",
+        "speed": 0.35,
+        "amplitude": 0.38
+      },
+      "anchorType": "ground",
+      "saveAs": "elem_tile_c"
+    },
+    {
+      "id": "elem_d",
+      "type": "elem_tile_d",
+      "x": 240,
+      "y": -74,
+      "layer": "fore",
+      "scale": 0.72,
+      "opacity": 0,
+      "colorRole": "ink",
+      "idle": {
+        "type": "bob",
+        "speed": 0.35,
+        "amplitude": 0.38
+      },
+      "anchorType": "ground",
+      "saveAs": "elem_tile_d"
+    },
+    {
+      "id": "elem_em",
+      "type": "elem_tile_em",
+      "x": 270,
+      "y": -74,
+      "layer": "fore",
+      "scale": 0.72,
+      "opacity": 0,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "idle": "none",
+      "anchorType": "ground",
+      "emitterOffset": [
+        0,
+        0
+      ],
+      "saveAs": "elem_tile_em"
+    }
+  ],
+  "camera": {
+    "zoom": 1,
+    "panX": 0,
+    "panY": 0
+  },
+  "timeline": [
+    {
+      "at": "start+0.05s",
+      "duration": 1.25,
+      "target": "hero",
+      "toX": 206,
+      "pose": "walk",
+      "leanDeg": 2
+    },
+    {
+      "at": "start+0.35s",
+      "duration": 0.6,
+      "target": "thought_dots",
+      "opacity": 0.85
+    },
+    {
+      "at": "start+0.45s",
+      "duration": 0.95,
+      "target": "elem_a",
+      "toY": -88,
+      "scale": 1,
+      "opacity": 0.95
+    },
+    {
+      "at": "start+1.32s",
+      "duration": 0.9,
+      "target": "hero",
+      "pose": "hold_up",
+      "leanDeg": -2.5
+    },
+    {
+      "at": "line_2-0.05s",
+      "duration": 0.95,
+      "target": "elem_c",
+      "toY": -94,
+      "scale": 1,
+      "opacity": 0.95
+    },
+    {
+      "at": "line_2+0.15s",
+      "duration": 0.9,
+      "target": "hero",
+      "pose": "reach_out",
+      "leanDeg": -3.5
+    },
+    {
+      "at": "line_3-0.05s",
+      "duration": 0.95,
+      "target": "elem_d",
+      "toY": -88,
+      "scale": 1,
+      "opacity": 0.95
+    },
+    {
+      "at": "line_3+0.05s",
+      "duration": 0.9,
+      "target": "hero",
+      "pose": "hold_up",
+      "leanDeg": -2
+    },
+    {
+      "at": "line_3-0.45s",
+      "duration": 2.25,
+      "target": "beloved",
+      "toX": 306,
+      "pose": "walk",
+      "leanDeg": 1.5
+    },
+    {
+      "at": "line_3+1.4s",
+      "duration": 0.5,
+      "target": "thought_dots",
+      "opacity": 0
+    },
+    {
+      "at": "line_3+1.4s",
+      "duration": 0.55,
+      "target": "hero",
+      "pose": "stand",
+      "leanDeg": 1.5
+    },
+    {
+      "at": "line_4-0.16s",
+      "duration": 1.35,
+      "target": "elem_a",
+      "toX": 162,
+      "opacity": 0,
+      "floatAwayProgress": 1
+    },
+    {
+      "at": "line_4-0.08s",
+      "duration": 1.35,
+      "target": "elem_c",
+      "toX": 208,
+      "opacity": 0,
+      "floatAwayProgress": 1
+    },
+    {
+      "at": "line_4",
+      "duration": 1.35,
+      "target": "elem_d",
+      "toX": 254,
+      "opacity": 0,
+      "floatAwayProgress": 1
+    },
+    {
+      "at": "line_4-0.05s",
+      "duration": 1.1,
+      "target": "hero",
+      "toX": 248,
+      "pose": "walk",
+      "leanDeg": 3.5
+    },
+    {
+      "at": "pivot-0.28s",
+      "duration": 0.9,
+      "target": "elem_em",
+      "toY": -90,
+      "scale": 1.06,
+      "opacity": 1,
+      "morphProgress": 1
+    },
+    {
+      "at": "pivot-0.22s",
+      "duration": 0.95,
+      "target": "beloved",
+      "toX": 292,
+      "pose": "walk",
+      "leanDeg": 1
+    },
+    {
+      "at": "pivot",
+      "duration": 0.5,
+      "target": "elem_em",
+      "colorRole": "accent",
+      "emitters": {
+        "pulseRing": 0.5,
+        "glow": 0.24
+      }
+    },
+    {
+      "at": "pivot+0.22s",
+      "duration": 0.5,
+      "target": "hero",
+      "pose": "give",
+      "leanDeg": 2.5
+    },
+    {
+      "at": "pivot+0.78s",
+      "duration": 0.5,
+      "target": "beloved",
+      "pose": "reach_out",
+      "leanDeg": 1.5
+    },
+    {
+      "at": "pivot+0.9s",
+      "duration": 3.4,
+      "target": "elem_em",
+      "emitters": {
+        "pulseRing": 0,
+        "glow": 0.14
+      }
+    },
+    {
+      "at": "pivot+2.7s",
+      "duration": 2.2,
+      "target": "hero",
+      "pose": "stand",
+      "leanDeg": 1
+    },
+    {
+      "at": "pivot+2.8s",
+      "duration": 2.2,
+      "target": "beloved",
+      "pose": "stand",
+      "leanDeg": 0.5
+    },
+    {
+      "at": "pivot+0.3s",
+      "duration": 4.4,
+      "target": "camera",
+      "zoom": 1.045,
+      "panX": 6,
+      "panY": -2
+    }
+  ]
+}

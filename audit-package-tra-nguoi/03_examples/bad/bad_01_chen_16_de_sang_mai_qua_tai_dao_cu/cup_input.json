@@ -1,0 +1,67 @@
+{
+  "id": "quote-016",
+  "cupNumber": "16",
+  "status": "draft",
+  "progress": 0,
+  "seoFileName": "chen-16-de-sang-mai-tinh-yeu-tra-nguoi.mp4",
+  "captionText": "Cuối tháng quyết tâm giữ ví, mà người ấy vừa rủ ăn tối là dời sang mai liền :)) #tranguoi #thathinh #tinhyeu #haiuoc #cuoithang",
+  "props": {
+    "id": "quote-016",
+    "textFormat": "POEM",
+    "title": "Để sang mai",
+    "author": "",
+    "customCaption": "Cuối tháng quyết tâm giữ ví, mà người ấy vừa rủ ăn tối là dời sang mai liền :)) #tranguoi #thathinh #tinhyeu #haiuoc #cuoithang",
+    "publishSlot": "Night",
+    "publishMood": "Hài hước",
+    "publishTopic": "Tình yêu",
+    "fontSizeScale": 0.88,
+    "segments": [
+      "Cuối tháng tiền vơi, khẽ thở dài,",
+      "Khóa ví nằm im, chẳng ra ngoài.",
+      "Vừa hay người ấy hẹn ăn tối,",
+      "Chuyện giữ hầu bao… để sang mai!"
+    ],
+    "pivotWord": "… để sang mai!",
+    "highlightStyle": "BOTH",
+    "durationMode": "AUTO_SEED",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 4,
+      "scale": 1.05,
+      "strokeScale": 1
+    },
+    "visualDNA": {
+      "mode": "CUSTOM",
+      "layout": "CLASSIC_TOP_STAGE",
+      "lightingGobo": "NONE",
+      "shotMode": "SOLID_SCENE",
+      "pivotMechanic": "ACCENT_PUSH_IN",
+      "horizonOffsetPx": 11,
+      "forceSolidStyle": true
+    },
+    "motion": {
+      "sceneId": "SCRIPT_DE_SANG_MAI",
+      "archetype": "SCRIPT_DE_SANG_MAI",
+      "pacingMode": "WRY_BATHOS",
+      "stateA": {
+        "intensity": 0.78,
+        "spread": 0.22,
+        "tiltDeg": -12
+      },
+      "stateB": {
+        "intensity": 0.08,
+        "spread": 0.72,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "PIVOT_ACCENT",
+      "foleyPivotStyle": "WOOD_SEAL"
+    },
+    "brandText": "TRÀ NGUỘI"
+  }
+}

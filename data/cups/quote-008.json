@@ -18,15 +18,25 @@
     ],
     "pivotWord": "chiếc ô rộng",
     "highlightStyle": "BOTH",
+    "durationMode": "AUTO_SEED",
     "targetDurationSeconds": 15,
     "typingSpeedMsPerChar": 55,
     "holdAfterFinishSeconds": 5.5,
-    "themeId": "MINIMAL_LIGHT",
+    "themeId": "WARM_NOIR",
     "stageTuning": {
       "offsetX": 0,
       "offsetY": 0,
       "scale": 1,
       "strokeScale": 1
+    },
+    "visualDNA": {
+      "mode": "CUSTOM",
+      "layout": "WINDOW_FRAME",
+      "lightingGobo": "WARM_LANTERN",
+      "shotMode": "SOLID_SCENE",
+      "pivotMechanic": "SPOTLIGHT_DIM",
+      "horizonOffsetPx": -10,
+      "forceSolidStyle": true
     },
     "motion": {
       "sceneId": "SCRIPT_CHIEC_O_RONG_CHO_NHAU",
@@ -44,12 +54,10 @@
       }
     },
     "bgm": {
-      "audioMode": "FOLEY_MASTER",
+      "audioMode": "PIVOT_ACCENT",
       "foleyPivotStyle": "AUTO"
     },
     "brandText": "TRÀ NGUỘI"
   },
-  "videoUrl": "/output/quote-008/Ch%C3%A9n%2008%20-%20Chi%E1%BA%BFc%20%C3%B4.mp4?v=1794529599788",
-  "seoFileName": "chen-08-chiec-o-chiec-o-rong-tra-nguoi.mp4",
-  "seoVideoUrl": "/output/quote-008/chen-08-chiec-o-chiec-o-rong-tra-nguoi.mp4?v=1794529599788"
+  "videoUrl": "/output/quote-008/Ch%C3%A9n%2008%20-%20Chi%E1%BA%BFc%20%C3%B4.mp4?v=1794641879738"
 }

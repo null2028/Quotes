@@ -104,7 +104,7 @@ export const SAMPLE_RUPTURE_HEAL_INPUT: VideoInputProps = {
   targetDurationSeconds: 15,
   typingSpeedMsPerChar: 55,
   holdAfterFinishSeconds: 5.5,
-  themeId: 'SLATE_CALM',
+  themeId: 'MINIMAL_LIGHT',
   motion: {
     archetype: 'LINE_RUPTURE_HEAL',
     pacingMode: 'CONTEMPLATIVE',

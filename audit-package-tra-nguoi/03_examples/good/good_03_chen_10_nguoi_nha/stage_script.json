@@ -1,0 +1,248 @@
+{
+  "sceneId": "SCRIPT_CONG_RAO_HOA_MAI_HIEN_CHUNG",
+  "name": "Cổng Rào Đề Phòng Hóa Mái Hiên Chung",
+  "description": "Dưới nắng sớm thanh lành khi hai bóng người lạ vội vã lướt ngang phía xa, Kẻ Lữ Hành đứng nép sau khung cổng rào gỗ cài then để giữ khoảng cách đúng lời mẹ dặn; vừa chạm ánh nhìn của Người Thương bước tới trong nắng mai, thanh chắn cổng rào mở toang rồi vươn cao hóa thành vòm mái hiên nhà Đỏ Chu Sa ấm áp che chung cả hai người.",
+  "act1": "Nắng mai dịu trải ngang ngõ nhỏ, hai bóng người lạ mờ xám lướt vội phía xa; Kẻ Lữ Hành đứng giữ khoảng cách sau khung cổng rào gỗ cài then nét mực tàu, khựng lại ngước nhìn khi bóng Người Thương thong thả bước tới trong nắng sớm",
+  "act2AtPivot": "Chạm cụm từ 'là người nhà', Kẻ Lữ Hành nghiêng người đưa tay mời — khung cổng rào gỗ lập tức vươn cao biến hình thành vòm mái hiên ngói Đỏ Chu Sa ấm áp khắc khe ngói âm bản che trọn khoảng hiên giữa hai người",
+  "act3Afterimage": "Dưới vòm mái hiên nhà Đỏ Chu Sa ngập nắng sớm, Người Thương bước hẳn vào đứng sóng đôi bình yên cùng Kẻ Lữ Hành dưới một nóc nhà trước khi hòa nhịp nối vòng mượt mà",
+  "redProp": "Vòm mái hiên nhà Đỏ Chu Sa (#CE472E) uốn cong thanh thoát khắc khe ngói âm bản kèm bùa tim nhỏ dưới xà hiên, hóa thân trực tiếp từ khung cổng rào gỗ đề phòng",
+  "tags": [
+    "solid_style",
+    "người nhà",
+    "người lạ",
+    "thả thính",
+    "buổi sáng",
+    "hài hước"
+  ],
+  "terrain": {
+    "type": "flat",
+    "y": 352,
+    "startX": 96,
+    "endX": 444
+  },
+  "atmosphere": [
+    {
+      "id": "morning_sun",
+      "type": "hollow_sun",
+      "x": 358,
+      "y": 174,
+      "radius": 14,
+      "colorRole": "secondary",
+      "focusRole": "support",
+      "opacity": 0.46
+    },
+    {
+      "id": "morning_breeze",
+      "type": "wind",
+      "count": 2,
+      "direction": "right",
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "opacity": 0.24,
+      "leaveAt": "pivot+1.2s",
+      "fadeDuration": 2
+    }
+  ],
+  "actors": [
+    {
+      "id": "stranger_1",
+      "x": 212,
+      "scale": 0.86,
+      "facing": "left",
+      "pose": "walk",
+      "leanDeg": 14,
+      "opacity": 0.2,
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "layer": "far",
+      "leaveAt": "line_2+0.7s",
+      "fadeDuration": 1.6
+    },
+    {
+      "id": "stranger_2",
+      "x": 328,
+      "scale": 0.82,
+      "facing": "right",
+      "pose": "walk",
+      "leanDeg": 15,
+      "opacity": 0.17,
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "layer": "far",
+      "leaveAt": "line_2+1.0s",
+      "fadeDuration": 1.6
+    },
+    {
+      "id": "hero",
+      "x": 238,
+      "scale": 1.16,
+      "facing": "right",
+      "pose": "stand",
+      "leanDeg": -5,
+      "opacity": 1,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "layer": "fore"
+    },
+    {
+      "id": "beloved",
+      "x": 368,
+      "scale": 1.11,
+      "facing": "left",
+      "pose": "walk",
+      "leanDeg": 4,
+      "opacity": 0.95,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "layer": "mid",
+      "enterAt": "line_3-0.35s",
+      "fadeDuration": 1.2
+    }
+  ],
+  "props": [
+    {
+      "id": "morning_cloud_left",
+      "type": "cloud_wisp",
+      "x": 182,
+      "y": 182,
+      "layer": "sky",
+      "scale": 0.98,
+      "opacity": 0.3,
+      "colorRole": "secondary",
+      "focusRole": "ambient",
+      "idle": {
+        "type": "float",
+        "speed": 0.68,
+        "amplitude": 0.5
+      }
+    },
+    {
+      "id": "stepping_stones",
+      "type": "porch_stepping_stones",
+      "x": 318,
+      "y": 1.4,
+      "layer": "mid",
+      "scale": 1,
+      "opacity": 0,
+      "colorRole": "secondary",
+      "focusRole": "support",
+      "anchorType": "ground"
+    },
+    {
+      "id": "home_gate_roof",
+      "type": "gate_to_shared_roof",
+      "x": 268,
+      "y": 0,
+      "layer": "fore",
+      "scale": 1,
+      "rotate": 0,
+      "opacity": 0.96,
+      "colorRole": "ink",
+      "focusRole": "hero",
+      "anchorType": "ground",
+      "emitterOffset": [
+        0,
+        -52
+      ]
+    }
+  ],
+  "camera": {
+    "zoom": 1,
+    "panX": 0,
+    "panY": 0
+  },
+  "timeline": [
+    {
+      "at": "start",
+      "duration": 3.6,
+      "target": "stranger_1",
+      "toX": 112
+    },
+    {
+      "at": "start+0.2s",
+      "duration": 3.8,
+      "target": "stranger_2",
+      "toX": 424
+    },
+    {
+      "at": "line_3-0.35s",
+      "duration": 2.25,
+      "target": "beloved",
+      "toX": 308,
+      "leanDeg": 1
+    },
+    {
+      "at": "line_3-0.1s",
+      "duration": 1.5,
+      "target": "stepping_stones",
+      "opacity": 0.62
+    },
+    {
+      "at": "line_3+0.15s",
+      "duration": 1.5,
+      "target": "hero",
+      "toX": 246,
+      "pose": "look_up",
+      "leanDeg": 2
+    },
+    {
+      "at": "pivot-0.35s",
+      "duration": 0.72,
+      "target": "home_gate_roof",
+      "toX": 269,
+      "scale": 1.08,
+      "opacity": 1,
+      "morphProgress": 1
+    },
+    {
+      "at": "pivot-0.2s",
+      "duration": 0.9,
+      "target": "hero",
+      "toX": 252,
+      "pose": "give",
+      "leanDeg": 3
+    },
+    {
+      "at": "pivot",
+      "duration": 0.5,
+      "target": "home_gate_roof",
+      "colorRole": "accent",
+      "emitters": {
+        "pulseRing": 0.52,
+        "glow": 0.24
+      }
+    },
+    {
+      "at": "pivot+0.3s",
+      "duration": 2.9,
+      "target": "beloved",
+      "toX": 286,
+      "pose": "stand",
+      "leanDeg": -1
+    },
+    {
+      "at": "pivot+1.4s",
+      "duration": 2.8,
+      "target": "hero",
+      "pose": "stand",
+      "leanDeg": 1
+    },
+    {
+      "at": "pivot+0.9s",
+      "duration": 3.6,
+      "target": "home_gate_roof",
+      "emitters": {
+        "pulseRing": 0,
+        "glow": 0.16
+      }
+    },
+    {
+      "at": "pivot+0.35s",
+      "duration": 4.6,
+      "target": "camera",
+      "zoom": 1.048,
+      "panX": 4,
+      "panY": -2
+    }
+  ]
+}

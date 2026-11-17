@@ -39,6 +39,26 @@ export const TravelerPoseSchema = z.enum([
 ]);
 export type StageTravelerPose = z.infer<typeof TravelerPoseSchema>;
 
+export const ShapeAnimTypeEnum = z.enum([
+  'spin',
+  'swing',
+  'bob',
+  'pulse',
+  'flutter',
+]);
+export type ShapeAnimType = z.infer<typeof ShapeAnimTypeEnum>;
+
+export const ShapeAnimSchema = z.object({
+  type: ShapeAnimTypeEnum,
+  pivot: z.tuple([z.number(), z.number()]).optional(),
+  speed: z.number().optional(),
+  amplitude: z.number().optional(),
+  phase: z.number().optional(),
+  direction: z.union([z.literal(1), z.literal(-1)]).optional(),
+  driveByMotion: z.boolean().optional(),
+});
+export type ShapeAnim = z.infer<typeof ShapeAnimSchema>;
+
 export const InlineShapeSchema = z.object({
   d: z.string().optional(),
   line: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
@@ -58,6 +78,7 @@ export const InlineShapeSchema = z.object({
   show: z.enum(['always', 'before_pivot', 'after_pivot']).optional(),
   splitSide: z.enum(['left', 'right']).optional(),
   opacity: z.number().min(0).max(1).optional(),
+  anim: ShapeAnimSchema.optional(),
 });
 
 export type InlineShape = z.infer<typeof InlineShapeSchema>;
@@ -79,6 +100,8 @@ export const TerrainTypeEnum = z.enum([
   'fork',
   'water_shore',
   'cliff_gap',
+  'stairs',
+  'custom_path',
 ]);
 
 export type TerrainType = z.infer<typeof TerrainTypeEnum>;
@@ -104,6 +127,16 @@ export const TerrainConfigSchema = z.union([
     bridgeProgress: z.number().min(0).max(1).optional(),
     bridgeAt: TimeExprSchema.optional(),
     bridgeDuration: z.number().optional(),
+    stepCount: z.number().int().min(1).max(16).optional(),
+    stepRise: z.number().optional(),
+    stairsStartX: XCoordSchema.optional(),
+    stairsEndX: XCoordSchema.optional(),
+    points: z
+      .array(z.tuple([z.number(), z.number()]))
+      .min(2)
+      .optional(),
+    smooth: z.boolean().optional(),
+    customSvgD: z.string().optional(),
   }),
 ]);
 
@@ -143,6 +176,7 @@ export type AtmosphereItem = z.infer<typeof AtmosphereItemSchema>;
 
 export const ActorSpecSchema = z.object({
   id: z.string().min(1, 'Actor cần có id (VD: "hero", "ex")'),
+  rig: z.string().optional(),
   x: XCoordSchema.optional(),
   yOffset: z.number().optional(),
   scale: z.number().min(0.2).max(3.5).optional(),

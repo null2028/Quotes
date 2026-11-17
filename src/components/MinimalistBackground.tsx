@@ -1,31 +1,22 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
 import { loadFont as loadBeVietnamProFont } from '@remotion/google-fonts/BeVietnamPro';
-import { loadFont as loadNotoSerifFont } from '@remotion/google-fonts/NotoSerif';
-import { ThemePalette, LAYOUT_TOKENS } from '../theme/palettes';
+import {
+  ThemePalette,
+  LAYOUT_TOKENS,
+  isDarkThemePalette,
+} from '../theme/palettes';
+import { TimelineSyncResult } from '../engine/timelineSync';
+import {
+  LightingGobo,
+  PaperMoteSpec,
+  ResolvedVisualDNA,
+} from '../engine/visualDnaResolver';
 
 const { fontFamily: beVietnamProFontFamily } = loadBeVietnamProFont('normal', {
   weights: ['500', '600'],
   subsets: ['vietnamese', 'latin'],
 });
-
-const { fontFamily: notoSerifFontFamily } = loadNotoSerifFont('normal', {
-  weights: ['600'],
-  subsets: ['vietnamese', 'latin'],
-});
-
-interface PaperMoteSpec {
-  baseX: number;
-  baseY: number;
-  ampX: number;
-  ampY: number;
-  harmX: number;
-  harmY: number;
-  phase: number;
-  r: number;
-  alpha: number;
-  isAccent?: boolean;
-}
 
 const PAPER_MOTES: PaperMoteSpec[] = [
   { baseX: 198, baseY: 390, ampX: 26, ampY: 18, harmX: 1, harmY: 2, phase: 0.2, r: 1.9, alpha: 0.16 },
@@ -44,26 +35,176 @@ const PAPER_MOTES: PaperMoteSpec[] = [
   { baseX: 564, baseY: 1368, ampX: 30, ampY: 20, harmX: 2, harmY: 1, phase: 5.6, r: 1.5, alpha: 0.12 },
 ];
 
+const LightingGoboLayer: React.FC<{
+  gobo: LightingGobo;
+  palette: ThemePalette;
+  loopProgress: number;
+}> = ({ gobo, palette, loopProgress }) => {
+  if (gobo === 'NONE') return null;
+  const tau = Math.PI * 2;
+  const isDark = isDarkThemePalette(palette.id);
+  const w1 = 1 - Math.cos(loopProgress * tau);
+  const w2 = 1 - Math.cos(loopProgress * tau * 2);
+
+  if (gobo === 'FOLIAGE_DAPPLE') {
+    const spot1X = 24 + w1 * 3.5;
+    const spot1Y = 20 + w2 * 2.2;
+    const spot2X = 76 - w1 * 3.0;
+    const spot2Y = 58 + w1 * 2.5;
+    const warmHighlight = isDark
+      ? 'rgba(218, 224, 236, 0.085)'
+      : 'rgba(255, 251, 240, 0.42)';
+    const leafShade = isDark
+      ? 'rgba(6, 8, 12, 0.24)'
+      : 'rgba(32, 26, 20, 0.055)';
+    return (
+      <AbsoluteFill style={{ pointerEvents: 'none' }}>
+        <AbsoluteFill
+          style={{
+            background: [
+              `radial-gradient(circle 420px at ${spot1X.toFixed(2)}% ${spot1Y.toFixed(2)}%, ${warmHighlight} 0%, transparent 72%)`,
+              `radial-gradient(circle 360px at ${spot2X.toFixed(2)}% ${spot2Y.toFixed(2)}%, ${leafShade} 0%, transparent 74%)`,
+              `linear-gradient(128deg, ${leafShade} 0%, transparent 38%, ${leafShade} 68%, transparent 100%)`,
+            ].join(', '),
+          }}
+        />
+      </AbsoluteFill>
+    );
+  }
+
+  if (gobo === 'WINDOW_SLATS') {
+    const shift = w1 * 2.4;
+    const beam = isDark
+      ? 'rgba(232, 220, 198, 0.085)'
+      : 'rgba(255, 250, 236, 0.36)';
+    const slat = isDark
+      ? 'rgba(8, 10, 15, 0.22)'
+      : 'rgba(34, 28, 22, 0.06)';
+    return (
+      <AbsoluteFill style={{ pointerEvents: 'none' }}>
+        <AbsoluteFill
+          style={{
+            background: `linear-gradient(118deg, ${slat} 0%, ${slat} ${(14 + shift).toFixed(2)}%, ${beam} ${(22 + shift).toFixed(2)}%, ${beam} ${(31 + shift).toFixed(2)}%, ${slat} ${(39 + shift).toFixed(2)}%, ${slat} ${(48 + shift).toFixed(2)}%, ${beam} ${(56 + shift).toFixed(2)}%, ${beam} ${(64 + shift).toFixed(2)}%, ${slat} ${(74 + shift).toFixed(2)}%, transparent 100%)`,
+          }}
+        />
+      </AbsoluteFill>
+    );
+  }
+
+  if (gobo === 'WARM_LANTERN') {
+    const cx = 50 + w1 * 2.1;
+    const cy = 34 + w2 * 1.6;
+    const coreGlow = isDark
+      ? 'rgba(236, 196, 146, 0.13)'
+      : 'rgba(255, 244, 222, 0.44)';
+    const midGlow = isDark
+      ? 'rgba(218, 168, 114, 0.045)'
+      : 'rgba(246, 230, 200, 0.16)';
+    const outerShade = isDark
+      ? 'rgba(8, 9, 13, 0.26)'
+      : 'rgba(42, 34, 26, 0.05)';
+    return (
+      <AbsoluteFill style={{ pointerEvents: 'none' }}>
+        <AbsoluteFill
+          style={{
+            background: `radial-gradient(ellipse 68% 48% at ${cx.toFixed(2)}% ${cy.toFixed(2)}%, ${coreGlow} 0%, ${midGlow} 38%, transparent 68%, ${outerShade} 100%)`,
+          }}
+        />
+      </AbsoluteFill>
+    );
+  }
+
+  // PORCH_MIST
+  const mistX = 48 + w1 * 4.0;
+  const mistY = 44 + w2 * 2.0;
+  const mistTone = isDark
+    ? 'rgba(202, 212, 226, 0.075)'
+    : 'rgba(252, 250, 245, 0.42)';
+  const mistSoft = isDark
+    ? 'rgba(176, 188, 206, 0.035)'
+    : 'rgba(236, 232, 224, 0.22)';
+  return (
+    <AbsoluteFill style={{ pointerEvents: 'none' }}>
+      <AbsoluteFill
+        style={{
+          background: [
+            `radial-gradient(ellipse 92% 38% at ${mistX.toFixed(2)}% ${mistY.toFixed(2)}%, ${mistTone} 0%, ${mistSoft} 45%, transparent 78%)`,
+            `linear-gradient(180deg, transparent 16%, ${mistSoft} 50%, transparent 86%)`,
+          ].join(', '),
+        }}
+      />
+    </AbsoluteFill>
+  );
+};
+
 export const MinimalistBackground: React.FC<{
   palette: ThemePalette;
   brandText?: string;
   title?: string;
   jobId?: string;
-}> = ({ palette, title, jobId = '01' }) => {
+  sync?: TimelineSyncResult;
+  visualDNA?: ResolvedVisualDNA;
+}> = ({ palette, title, jobId = '01', sync, visualDNA }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const { swissGrid } = LAYOUT_TOKENS;
 
-  const safeTotalFrames = Math.max(1, durationInFrames);
+  const safeTotalFrames = Math.max(2, durationInFrames);
   const loopProgress = (frame % safeTotalFrames) / safeTotalFrames;
   const tau = Math.PI * 2;
 
-  const bgCenterX = 50 + Math.sin(loopProgress * tau) * 2.2;
-  const bgCenterY = 44 + Math.cos(loopProgress * tau) * 1.8;
+  const vc = visualDNA?.vignetteCenter ?? {
+    xPct: 50,
+    yPct: 44,
+    ampXPct: 1.4,
+    ampYPct: 1.1,
+  };
+  const bgCenterX = vc.xPct + (1 - Math.cos(loopProgress * tau)) * vc.ampXPct;
+  const bgCenterY =
+    vc.yPct + (1 - Math.cos(loopProgress * tau * 2)) * vc.ampYPct;
+  const isDark = isDarkThemePalette(palette.id);
+
+  const grainShiftX = (1 - Math.cos(loopProgress * tau * 2)) * 18;
+  const grainShiftY = (1 - Math.cos(loopProgress * tau * 3)) * 16;
 
   const breathWave = 0.5 + 0.5 * Math.cos(loopProgress * tau * 8);
   const dotOpacity = 0.74 + breathWave * 0.26;
   const dotScale = 0.93 + breathWave * 0.13;
+
+  // Ràng buộc B.1: Header CHÉN XX giữ sắc nét qua mốc Ảnh Bìa 3:4 (recommendedCoverFrame + 18f),
+  // tan mực hoàn toàn trước pivotFrame, và thu hồi khớp frame[0] === frame[end].
+  let headerOpacity = 1;
+  let headerLiftY = 0;
+  if (sync) {
+    if (frame <= sync.headerDissolveStartFrame) {
+      headerOpacity = 1;
+      headerLiftY = 0;
+    } else if (frame < sync.headerDissolveEndFrame) {
+      const span = Math.max(
+        1,
+        sync.headerDissolveEndFrame - sync.headerDissolveStartFrame
+      );
+      const u = Math.max(
+        0,
+        Math.min(1, (frame - sync.headerDissolveStartFrame) / span)
+      );
+      const ease = 0.5 - 0.5 * Math.cos(Math.PI * u);
+      headerOpacity = 1 - ease;
+      headerLiftY = -3.2 * ease;
+    } else if (frame < sync.loopRestoreStartFrame) {
+      headerOpacity = 0;
+      headerLiftY = -3.2;
+    } else {
+      const span = Math.max(1, safeTotalFrames - 1 - sync.loopRestoreStartFrame);
+      const u = Math.max(
+        0,
+        Math.min(1, (frame - sync.loopRestoreStartFrame) / span)
+      );
+      const ease = 0.5 - 0.5 * Math.cos(Math.PI * u);
+      headerOpacity = ease;
+      headerLiftY = 2.4 * (1 - ease);
+    }
+  }
 
   const numMatch = jobId.match(/\d+/);
   const issueNumber = numMatch ? numMatch[0].slice(-2).padStart(2, '0') : '01';
@@ -77,26 +218,44 @@ export const MinimalistBackground: React.FC<{
         background: `radial-gradient(ellipse at ${bgCenterX.toFixed(2)}% ${bgCenterY.toFixed(2)}%, ${palette.background} 0%, ${palette.backgroundEdge} 100%)`,
       }}
     >
-      <svg
-        width="100%"
-        height="100%"
+      {isDark && (
+        <AbsoluteFill
+          style={{
+            pointerEvents: 'none',
+            background: `radial-gradient(circle 460px at ${bgCenterX.toFixed(2)}% ${bgCenterY.toFixed(2)}%, rgba(234, 230, 223, 0.048) 0%, rgba(223, 84, 56, 0.018) 38%, transparent 74%)`,
+          }}
+        />
+      )}
+      <LightingGoboLayer
+        gobo={visualDNA?.lightingGobo ?? 'NONE'}
+        palette={palette}
+        loopProgress={loopProgress}
+      />
+      <div
         style={{
           position: 'absolute',
-          inset: 0,
+          left: -48,
+          top: -48,
+          width: LAYOUT_TOKENS.width + 96,
+          height: LAYOUT_TOKENS.height + 96,
+          transform: `translate3d(${grainShiftX.toFixed(2)}px, ${grainShiftY.toFixed(2)}px, 0)`,
           opacity: palette.grainOpacity,
           pointerEvents: 'none',
+          willChange: 'transform',
         }}
       >
-        <filter id="minimal-grain">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.8"
-            numOctaves={3}
-            stitchTiles="stitch"
-          />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#minimal-grain)" />
-      </svg>
+        <svg width="100%" height="100%">
+          <filter id="minimal-grain">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.8"
+              numOctaves={3}
+              stitchTiles="stitch"
+            />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#minimal-grain)" />
+        </svg>
+      </div>
 
       <svg
         width={LAYOUT_TOKENS.width}
@@ -108,7 +267,7 @@ export const MinimalistBackground: React.FC<{
           pointerEvents: 'none',
         }}
       >
-        {PAPER_MOTES.map((m, idx) => {
+        {(visualDNA?.motes ?? PAPER_MOTES).map((m, idx) => {
           const thetaX = loopProgress * tau * m.harmX + m.phase;
           const thetaY = loopProgress * tau * m.harmY + m.phase * 1.3;
           const cx = m.baseX + Math.sin(thetaX) * m.ampX;
@@ -120,7 +279,11 @@ export const MinimalistBackground: React.FC<{
               cx={cx.toFixed(2)}
               cy={cy.toFixed(2)}
               r={m.r}
-              fill={m.isAccent ? palette.accent : palette.inkSecondary}
+              fill={
+                m.isAccent
+                  ? palette.accentProp || palette.accent
+                  : palette.inkSecondary
+              }
               opacity={(m.alpha * shimmer).toFixed(3)}
             />
           );
@@ -131,13 +294,16 @@ export const MinimalistBackground: React.FC<{
         style={{
           position: 'absolute',
           top: swissGrid.headerTop,
-          left: swissGrid.marginLeft,
-          width: swissGrid.contentWidth,
+          left: swissGrid.headerLeft,
+          width: swissGrid.headerWidth,
           height: swissGrid.headerHeight,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           borderBottom: `1.5px solid ${palette.surfaceSubtle}`,
+          opacity: headerOpacity,
+          transform: `translateY(${headerLiftY.toFixed(2)}px)`,
+          willChange: 'opacity, transform',
         }}
       >
         <span
@@ -157,34 +323,14 @@ export const MinimalistBackground: React.FC<{
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
           }}
         >
-          <span
-            style={{
-              width: 22,
-              height: 22,
-              borderRadius: 4,
-              border: `1.35px solid ${palette.accent}`,
-              color: palette.accent,
-              fontFamily: `${notoSerifFontFamily}, serif`,
-              fontSize: 13,
-              fontWeight: 600,
-              lineHeight: 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 0.78,
-            }}
-          >
-            茶
-          </span>
           <span
             style={{
               width: 9,
               height: 9,
               borderRadius: '50%',
-              backgroundColor: palette.accent,
+              backgroundColor: palette.accentText || palette.accent,
               display: 'inline-block',
               opacity: dotOpacity,
               transform: `scale(${dotScale.toFixed(3)})`,

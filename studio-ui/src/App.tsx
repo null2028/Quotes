@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { BookOpen, Database, Power } from 'lucide-react';
+import { BookOpen, Database, Power, Sparkles } from 'lucide-react';
 import { studioApi } from './api';
 import {
   CupAirtableTrackMeta,
@@ -12,6 +12,7 @@ import { CupQueueSidebar } from './components/CupQueueSidebar';
 import { StoryDirectorDesk } from './components/StoryDirectorDesk';
 import { LivePhonePreview } from './components/LivePhonePreview';
 import { VaultExplorerModal } from './components/VaultExplorerModal';
+import { GeminiBundleImportModal } from './components/GeminiBundleImportModal';
 import {
   AirtableSyncModal,
   TOKEN_STORAGE_KEY,
@@ -21,21 +22,50 @@ import {
 import { CURRENT_AIRTABLE_BATCH_JOB } from './airtableBatchJob';
 import {
   TRACKER_TABLE_NAME,
+  getStoredCupTrackMap,
   hasSavedAirtableToken,
   hydrateCupsWithLocalTrack,
   resolveEffectiveCupTrackMeta,
+  saveStoredCupTrackMap,
   syncAllCupsToAirtableTracker,
   upsertSingleCupOnAirtableTracker,
 } from './airtableCupTracker';
+
+function getCupNumericOrder(cup: CupRecord): number {
+  const match = cup.cupNumber.match(/\d+/) || cup.id.match(/\d+/);
+  return match ? parseInt(match[0], 10) : 0;
+}
+
+function isCupWorking(cup: CupRecord): boolean {
+  return (
+    cup.publishTrack?.publishStatus !== 'published' &&
+    cup.status !== 'completed'
+  );
+}
+
+function pickDefaultActiveCupId(list: CupRecord[]): string {
+  if (list.length === 0) return '';
+  const sortedDesc = [...list].sort((a, b) => {
+    const diff = getCupNumericOrder(b) - getCupNumericOrder(a);
+    return diff !== 0 ? diff : b.id.localeCompare(a.id);
+  });
+  const latestWorking = sortedDesc.find(isCupWorking);
+  return latestWorking?.id || sortedDesc[0]?.id || '';
+}
 
 export const App: React.FC = () => {
   const [cups, setCups] = useState<CupRecord[]>([]);
   const [activeCupId, setActiveCupId] = useState<string>('');
   const [selectedCupIds, setSelectedCupIds] = useState<string[]>([]);
+  const [justRenderedCupIds, setJustRenderedCupIds] = useState<string[]>([]);
+  const [editedArchivedCupIds, setEditedArchivedCupIds] = useState<string[]>(
+    []
+  );
 
   const [vaultScenes, setVaultScenes] = useState<VaultSceneMeta[]>([]);
 
   const [isVaultOpen, setIsVaultOpen] = useState(false);
+  const [isGeminiImportOpen, setIsGeminiImportOpen] = useState(false);
   const [isAirtableOpen, setIsAirtableOpen] = useState(false);
   const [isShutDown, setIsShutDown] = useState(false);
   const [airtableBanner, setAirtableBanner] = useState<{
@@ -80,7 +110,7 @@ export const App: React.FC = () => {
         prevStatusMapRef.current[c.id] = c.status;
       }
       if (selectFirstIfEmpty && hydrated.length > 0) {
-        setActiveCupId((prev) => prev || hydrated[0].id);
+        setActiveCupId((prev) => prev || pickDefaultActiveCupId(hydrated));
       }
       setVaultScenes(vaultRes.scenes);
       return hydrated;
@@ -170,6 +200,7 @@ export const App: React.FC = () => {
       try {
         const res = await studioApi.getRenderStatus();
         const hydrated = hydrateCupsWithLocalTrack(res.cups);
+        const finishedIdsInTick: string[] = [];
 
         for (const nextCup of hydrated) {
           const prevStatus = prevStatusMapRef.current[nextCup.id];
@@ -180,6 +211,10 @@ export const App: React.FC = () => {
               prevStatus === 'bundling' ||
               prevStatus === 'rendering') &&
             nextCup.status === 'completed';
+
+          if (justFinished) {
+            finishedIdsInTick.push(nextCup.id);
+          }
 
           if (justFinished && hasSavedAirtableToken()) {
             const targetStatus =
@@ -202,6 +237,15 @@ export const App: React.FC = () => {
           }
         }
 
+        if (finishedIdsInTick.length > 0) {
+          setJustRenderedCupIds((prev) =>
+            Array.from(new Set([...prev, ...finishedIdsInTick]))
+          );
+          setEditedArchivedCupIds((prev) =>
+            prev.filter((id) => !finishedIdsInTick.includes(id))
+          );
+        }
+
         setCups(hydrated);
       } catch {
         // ignore transient network error
@@ -211,10 +255,18 @@ export const App: React.FC = () => {
     return () => window.clearInterval(timer);
   }, [cups, applyCupTrackMeta]);
 
-  const activeCup = cups.find((c) => c.id === activeCupId) || cups[0];
+  const activeCup =
+    cups.find((c) => c.id === activeCupId) ||
+    cups.find((c) => c.id === pickDefaultActiveCupId(cups)) ||
+    cups[0];
 
   const handleUpdateActiveCupProps = (nextProps: VideoInputProps) => {
     if (!activeCup) return;
+    if (activeCup.status === 'completed') {
+      setEditedArchivedCupIds((prev) =>
+        prev.includes(activeCup.id) ? prev : [...prev, activeCup.id]
+      );
+    }
     setCups((prev) =>
       prev.map((c) =>
         c.id === activeCup.id ? { ...c, props: nextProps } : c
@@ -245,6 +297,27 @@ export const App: React.FC = () => {
         console.error('Lỗi tự động lưu Chén:', err);
       }
     }, 280);
+  };
+
+  const handleReopenCupAsDraft = async (cupId: string) => {
+    const res = await studioApi.reopenCupAsDraft(cupId);
+    const storedMap = getStoredCupTrackMap();
+    const prevTrack = storedMap[cupId];
+    if (prevTrack && prevTrack.publishStatus === 'rendered') {
+      storedMap[cupId] = {
+        ...prevTrack,
+        publishStatus: 'draft',
+      };
+      saveStoredCupTrackMap(storedMap);
+    }
+    setCups((prev) => {
+      const nextRaw =
+        res.cups ?? prev.map((c) => (c.id === res.cup.id ? res.cup : c));
+      return hydrateCupsWithLocalTrack(nextRaw);
+    });
+    setJustRenderedCupIds((prev) => prev.filter((id) => id !== cupId));
+    setEditedArchivedCupIds((prev) => prev.filter((id) => id !== cupId));
+    setActiveCupId(cupId);
   };
 
   if (isShutDown) {
@@ -282,6 +355,17 @@ export const App: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
+          {/* Nút Nạp Gói Gemini 1 Chạm -> Xem Live Preview Ngay */}
+          <button
+            type="button"
+            onClick={() => setIsGeminiImportOpen(true)}
+            className="px-3.5 py-1.5 rounded-xl bg-tea-accent text-white text-xs font-bold hover:bg-tea-accentHover shadow-xs flex items-center gap-1.5 transition"
+            title="Dán gói kịch bản JSON từ Gemini Web để xem Live Preview 60fps ngay lập tức"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Nạp Gói Gemini</span>
+          </button>
+
           {/* Nút Kho Nội Dung & Tủ Chén Lịch Đăng Airtable */}
           <button
             type="button"
@@ -363,7 +447,16 @@ export const App: React.FC = () => {
           cups={cups}
           activeCupId={activeCup?.id || ''}
           selectedCupIds={selectedCupIds}
+          justRenderedCupIds={justRenderedCupIds}
+          editedArchivedCupIds={editedArchivedCupIds}
           onSelectCup={(id) => setActiveCupId(id)}
+          onOpenGeminiImport={() => setIsGeminiImportOpen(true)}
+          onDismissJustRendered={(cupId?: string) =>
+            setJustRenderedCupIds((prev) =>
+              cupId ? prev.filter((x) => x !== cupId) : []
+            )
+          }
+          onReopenCupAsDraft={handleReopenCupAsDraft}
           onToggleBatchSelect={(id) =>
             setSelectedCupIds((prev) =>
               prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -382,6 +475,7 @@ export const App: React.FC = () => {
                 segments,
                 pivotWord,
                 highlightStyle: 'BOTH',
+                durationMode: 'AUTO_SEED',
                 targetDurationSeconds: 15,
                 typingSpeedMsPerChar: 55,
                 holdAfterFinishSeconds: 5.5,
@@ -400,7 +494,7 @@ export const App: React.FC = () => {
                   stateB: { intensity: 0.05, spread: 0.65, tiltDeg: 0 },
                 },
                 bgm: {
-                  audioMode: 'FOLEY_MASTER',
+                  audioMode: 'PIVOT_ACCENT',
                   foleyPivotStyle: 'AUTO',
                 },
                 brandText: 'TRÀ NGUỘI',
@@ -433,12 +527,22 @@ export const App: React.FC = () => {
           }}
           onDeleteCup={async (id) => {
             const res = await studioApi.deleteCup(id);
-            setCups(hydrateCupsWithLocalTrack(res.cups));
-            if (activeCupId === id && res.cups[0]) {
-              setActiveCupId(res.cups[0].id);
+            const hydrated = hydrateCupsWithLocalTrack(res.cups);
+            setCups(hydrated);
+            setJustRenderedCupIds((prev) => prev.filter((x) => x !== id));
+            setEditedArchivedCupIds((prev) => prev.filter((x) => x !== id));
+            setSelectedCupIds((prev) => prev.filter((x) => x !== id));
+            if (activeCupId === id) {
+              setActiveCupId(pickDefaultActiveCupId(hydrated));
             }
           }}
           onEnqueueBatchRender={async (ids) => {
+            setJustRenderedCupIds((prev) =>
+              prev.filter((x) => !ids.includes(x))
+            );
+            setEditedArchivedCupIds((prev) =>
+              prev.filter((x) => !ids.includes(x))
+            );
             const res = await studioApi.enqueueRender(ids);
             setCups(hydrateCupsWithLocalTrack(res.cups));
             setSelectedCupIds([]);
@@ -478,6 +582,12 @@ export const App: React.FC = () => {
               cup={activeCup}
               onUpdateProps={handleUpdateActiveCupProps}
               onRenderSingleCup={async (cupId) => {
+                setJustRenderedCupIds((prev) =>
+                  prev.filter((x) => x !== cupId)
+                );
+                setEditedArchivedCupIds((prev) =>
+                  prev.filter((x) => x !== cupId)
+                );
                 await studioApi.updateCup(cupId, activeCup.props);
                 const res = await studioApi.enqueueRender([cupId]);
                 setCups(hydrateCupsWithLocalTrack(res.cups));
@@ -554,6 +664,71 @@ export const App: React.FC = () => {
           }
         }}
         onTrackerMapUpdated={applyFullTrackerMap}
+      />
+
+      {/* HỘP THOẠI NẠP GÓI KỊCH BẢN GEMINI 1 CHẠM -> XEM PREVIEW NGAY */}
+      <GeminiBundleImportModal
+        isOpen={isGeminiImportOpen}
+        activeCup={activeCup}
+        onClose={() => setIsGeminiImportOpen(false)}
+        onImportBundle={async ({
+          rawText,
+          mode,
+          targetCupId,
+          autoFixHeadroom,
+        }) => {
+          const res = await studioApi.importBundle({
+            rawText,
+            mode,
+            targetCupId,
+            autoFixHeadroom,
+          });
+
+          const storedMap = getStoredCupTrackMap();
+          const prevTrack = storedMap[res.cup.id];
+          const nextTrack: CupAirtableTrackMeta = resolveEffectiveCupTrackMeta({
+            ...res.cup,
+            publishTrack: {
+              ...prevTrack,
+              publishStatus: prevTrack?.publishStatus || 'draft',
+              slot: res.cup.props.publishSlot || prevTrack?.slot || 'Anytime',
+              mood: res.cup.props.publishMood || prevTrack?.mood || 'Nhẹ nhàng',
+              seedComment: res.seedComment || prevTrack?.seedComment,
+            },
+          });
+          storedMap[res.cup.id] = nextTrack;
+          saveStoredCupTrackMap(storedMap);
+
+          setVaultScenes(res.scenes);
+          const hydrated = hydrateCupsWithLocalTrack(res.cups);
+          setCups(hydrated);
+          setJustRenderedCupIds((prev) =>
+            prev.filter((x) => x !== res.cup.id)
+          );
+          setEditedArchivedCupIds((prev) =>
+            prev.filter((x) => x !== res.cup.id)
+          );
+          setActiveCupId(res.cup.id);
+
+          const fixNote =
+            res.autoFixesApplied && res.autoFixesApplied.length > 0
+              ? ` (${res.autoFixesApplied.join(' · ')})`
+              : '';
+          setAirtableBanner({
+            tone: 'ok',
+            text: `✨ Đã nạp thành công Chén ${res.cup.cupNumber} — "${res.cup.props.title}" từ Gemini lên <Player> 60fps!${fixNote}`,
+          });
+
+          if (hasSavedAirtableToken()) {
+            void upsertSingleCupOnAirtableTracker(res.cup, {
+              slot: nextTrack.slot,
+              mood: nextTrack.mood,
+              seedComment: nextTrack.seedComment,
+            })
+              .then((meta) => applyCupTrackMeta(res.cup.id, meta))
+              .catch(() => undefined);
+          }
+        }}
       />
     </div>
   );
