@@ -365,14 +365,11 @@ export const DeclarativeStagePlayer: React.FC<{
         : rawItemOpacity * 0.95;
     if (itemOpacity <= 0.01) return null;
 
+    // Mặt trời / mặt trăng mặc định màu mực phụ (secondary) để không tự bừng Đỏ Chu Sa từ 0.00s;
+    // chỉ ring_pulse (hiệu ứng nhịp tại Pivot) giữ mặc định accent. Muốn đỏ thì khai báo colorRole: "accent".
     const baseRole =
       item.colorRole ??
-      (item.type === 'sun' ||
-      item.type === 'hollow_sun' ||
-      item.type === 'crescent' ||
-      item.type === 'ring_pulse'
-        ? 'accent'
-        : 'secondary');
+      (item.type === 'ring_pulse' ? 'accent' : 'secondary');
     const colorNow = resolveRoleColor(baseRole, palette, isPrePivot);
     const colorZero = resolveRoleColor(baseRole, palette, true);
     const color =

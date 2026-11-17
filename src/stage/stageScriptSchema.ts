@@ -264,6 +264,8 @@ export const TimelineCueSchema = z.object({
   at: TimeExprSchema.optional(),
   when: TimeExprSchema.optional(),
   duration: z.number().min(0.05).max(15).optional(),
+  // Giữ nguyên `duration` khai báo cho cue sau Pivot (không bị kéo giãn thành 3.8s Cinemagraph)
+  exactDuration: z.boolean().optional(),
   target: z.string().min(1, 'Cue trong timeline[] cần chỉ rõ target (id của actor/prop hoặc "camera"/"terrain")'),
   // Vị trí & Điểm neo
   x: XCoordSchema.optional(),

@@ -613,7 +613,7 @@ export function detectVisualDnaSequenceWarnings(
         warnings.push({
           code: 'MONOTONE_LIGHT_STREAK',
           cups: activeLabels,
-          message: `${lightStreak.length} Chén nền sáng liên tiếp (${activeLabels.join(' → ')}) — nên xen 1 Chén «Mực Đêm Trầm» hoặc «Ô Long Cổ».`,
+          message: `${lightStreak.length} Chén nền sáng liên tiếp (${activeLabels.join(' → ')}) — nên xen 1 Chén nền đêm «Ô Long Cổ» (WARM_NOIR).`,
         });
       }
     }

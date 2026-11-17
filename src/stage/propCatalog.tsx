@@ -45,6 +45,14 @@ export type BuiltInPropName = (typeof BUILT_IN_PROP_NAMES)[number];
  * - Đạo cụ mặt đất: (0, 0) là đáy tiếp đất, vẽ âm lên trên (y < 0).
  * - Đạo cụ cầm tay / gắn đầu / bay: (0, 0) là tâm gắn kết.
  */
+/**
+ * Tên gọi tắt mà kịch bản AI hay dùng nhưng không có trong kho đạo cụ.
+ * Chỉ áp dụng khi tên gốc không tồn tại (tránh ghế/bàn bị tàng hình).
+ */
+export const PROP_TYPE_ALIASES: Record<string, string> = {
+  stool: 'std_chair',
+};
+
 export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
   // 1. Cánh thư giấy uốn cong mềm mại trong gió + nếp gấp thanh mảnh & dấu triện tròn nhỏ
   envelope: {
@@ -1533,7 +1541,12 @@ export const StagePropRenderer: React.FC<{
 
   // Tìm định nghĩa shapes & altShapes: ưu tiên inline trên prop -> customPropsMap -> BUILT_IN_PROP_CATALOG
   const catalogDef =
-    customPropsMap?.[propState.type] ?? BUILT_IN_PROP_CATALOG[propState.type];
+    customPropsMap?.[propState.type] ??
+    BUILT_IN_PROP_CATALOG[propState.type] ??
+    (PROP_TYPE_ALIASES[propState.type]
+      ? customPropsMap?.[PROP_TYPE_ALIASES[propState.type]] ??
+        BUILT_IN_PROP_CATALOG[PROP_TYPE_ALIASES[propState.type]]
+      : undefined);
   const primaryShapes = propState.spec.shapes ?? catalogDef?.shapes ?? [];
   const altShapes = propState.spec.altShapes ?? catalogDef?.altShapes;
 

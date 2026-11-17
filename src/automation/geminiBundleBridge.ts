@@ -1578,7 +1578,7 @@ Nhiệm vụ của bạn là đồng hành cùng chủ kênh lên ý tưởng c�
 Engine tự động điều phối tốc độ phác nét cọ (\`drawProgress\` dùng duy nhất 1 hàm \`Cosine S-Curve\` nối tiếp giữa các nét con \`shapes\`, phác viền \`0.00 → 0.85\` rồi loang mực \`0.52 → 1.00\`):
 - **Pha 1 — Nét cọ chân trời (\`0.00s → 2.20s\`, 132 frames)**: Đường mặt đất (\`terrain\`) từ từ trải ngang từ lề trái sang lề phải.
 - **Pha 2 — Phác nét đạo cụ 3 tầng kế tiếp**:
-  - **Tầng 1 (\`0.40s → 2.25s\`, kéo dài \`1.85s\`)**: Các đạo cụ \`layer: "far" | "sky"\` và toàn bộ ghế ngồi / khung kiến trúc (\`std_chair\`, \`stool\`, \`bench\`, \`window\`, \`gate\`, \`arch\`, \`tree\`).
+  - **Tầng 1 (\`0.40s → 2.25s\`, kéo dài \`1.85s\`)**: Các đạo cụ \`layer: "far" | "sky"\` và toàn bộ ghế ngồi / khung kiến trúc (\`std_chair\`, \`bench\`, \`window\`, \`gate\`, \`arch\`, \`tree\`).
   - **Tầng 2 (\`1.15s → 3.10s\`, kéo dài \`1.95s\`)**: Bàn làm việc & đạo cụ đặt sàn (\`std_work_desk\`, \`small_work_desk\`, \`low_tea_table\`, \`boulder\`, \`warm_house\`).
   - **Tầng 3 (\`1.95s → 3.80s\`, kéo dài \`1.85s\`)**: Đạo cụ đặt trên mặt bàn hoặc gắn theo tay (\`desk_calendar\`, \`small_cup\`, \`laptop\`, \`bowl\`, \`teapot\`, \`vase\`, \`lamp\`, \`clock\`, \`envelope\`, hoặc mọi đạo cụ có \`y <= -11\` / \`follow\`).
 - **Pha 3 — Phác nét Nhân vật (\`CloakedTraveler\` & \`actor.rig\`)**:
@@ -1592,7 +1592,7 @@ Engine tự động điều phối tốc độ phác nét cọ (\`drawProgress\`
   - Khi ngồi (\`pose: "sit_lean"\`, \`sitProgress: 1\`), hông nhân vật khóa cố định tại \`(0, -10.5)\` khớp khít với mặt ghế \`y = -10.5\`; đùi vươn ngang tới đầu gối \`(10.5, -10.5)\` và cẳng chân thả vuông góc chạm đúng mặt đất \`(10.5, 0)\`.
   - Tham số \`leanDeg\` (VD: \`leanDeg: 8\` khi cúi mệt mỏi, \`leanDeg: -5\` khi ngả lưng thư thái, \`leanDeg: 0\` khi ngồi thẳng) chỉ uốn cong cột sống Bézier 2 đoạn và cổ mà không bao giờ làm hông rời mặt ghế hay chân nhổng khỏi mặt đất.
 - **Kích thước & Khoảng cách Vàng của Bộ Đạo cụ Chuẩn hóa (\`scale = 1.0\`)**:
-  - \`stool\` / \`std_chair\`: Đặt cùng tọa độ \`x\` với nhân vật ngồi (VD: nhân vật ở \`x: 206\` thì ghế ở \`x: 204 .. 206\`, \`y: 0\`, \`layer: "mid"\`). Mặt ghế cao \`-10.5px\`, lưng tựa ở \`x = -4.2, y = -10.5..-25.0\`.
+  - \`std_chair\` (alias cũ \`stool\`): Đặt cùng tọa độ \`x\` với nhân vật ngồi (VD: nhân vật ở \`x: 206\` thì ghế ở \`x: 204 .. 206\`, \`y: 0\`, \`layer: "mid"\`). Mặt ghế cao \`-10.5px\`, lưng tựa ở \`x = -4.2, y = -10.5..-25.0\`.
   - \`small_work_desk\` / \`std_work_desk\`: Mặt bàn cao **\`y = -19.2\`**, rộng \`32px–36px\`. Đặt cách nhân vật ngồi **\`ΔX = +24px .. +28px\`** về phía trước mặt (VD: nhân vật ngồi ở \`x: 206\` hướng phải -> bàn đặt ở \`x: 232 .. 234\`, \`y: 0\`).
   - \`low_tea_table\`: Bàn trà thấp mặt bàn tại **\`y = -14.2\`**, rộng \`32px\`.
   - **Đạo cụ đặt trên mặt bàn (\`Tầng 3\`)**:
@@ -1675,7 +1675,7 @@ Chỉ sử dụng đúng **3 bảng màu** sau cho toàn kênh:
     ],
     "props": [
       { "id": "back_window", "type": "office_window_frame", "x": 156, "y": 248, "layer": "far", "scale": 0.92, "opacity": 0.35, "colorRole": "secondary", "focusRole": "ambient", "anchorType": "center" },
-      { "id": "chair", "type": "stool", "x": 204, "y": 0, "layer": "mid", "scale": 1, "colorRole": "ink", "focusRole": "support", "anchorType": "ground" },
+      { "id": "chair", "type": "std_chair", "x": 204, "y": 0, "layer": "mid", "scale": 1, "colorRole": "ink", "focusRole": "support", "anchorType": "ground" },
       { "id": "work_desk", "type": "std_work_desk", "x": 248, "y": 0, "layer": "mid", "scale": 1, "colorRole": "ink", "focusRole": "support", "anchorType": "ground" },
       { "id": "old_calendar", "type": "desk_calendar", "x": 242, "y": 0, "layer": "fore", "scale": 1.08, "colorRole": "ink", "focusRole": "hero", "anchorType": "ground" },
       { "id": "small_cup", "type": "small_cup", "x": 259, "y": -19.2, "layer": "fore", "scale": 0.72, "colorRole": "secondary", "focusRole": "support", "anchorType": "ground" }
@@ -1723,7 +1723,7 @@ export const GEMINI_SKILL_REFERENCE_MD = `# Sổ Tay Vật Lý Sân Khấu, Khai
 Toàn bộ sân khấu mở màn từ trang giấy trắng tinh và được vẽ bằng **1 đường cong Cosine S-Curve duy nhất** (\`0.5 - 0.5 * Math.cos(Math.PI * p)\`), tuyệt đối không chồng 2 hàm Cubic Ease-Out gây chớp hình:
 1. **Pha 1 — Nét cọ chân trời (\`0.00s → 2.20s\`, 132 frames @ 60fps)**: Đường mặt đất (\`terrain\`) chạm bút ở lề trái, lướt đều sang phải và nhấc cọ nhẹ ở lề phải.
 2. **Pha 2 — Phác nét cọ 3 tầng đạo cụ (Phác viền \`0.00 → 0.85\`, Loang mực đặc \`0.52 → 1.00\`)**:
-   - **Tầng 1 (\`0.40s → 2.25s\`, \`1.85s\`)**: Cảnh xa (\`layer: "far" | "sky"\`) và ghế ngồi / kiến trúc nền (\`std_chair\`, \`stool\`, \`bench\`, \`office_window_frame\`, \`gate\`, \`tree\`).
+   - **Tầng 1 (\`0.40s → 2.25s\`, \`1.85s\`)**: Cảnh xa (\`layer: "far" | "sky"\`) và ghế ngồi / kiến trúc nền (\`std_chair\`, \`bench\`, \`office_window_frame\`, \`gate\`, \`tree\`).
    - **Tầng 2 (\`1.15s → 3.10s\`, \`1.95s\`)**: Bàn làm việc & đạo cụ đặt sàn (\`std_work_desk\`, \`small_work_desk\`, \`low_tea_table\`, \`boulder\`, \`warm_house\`).
    - **Tầng 3 (\`1.95s → 3.80s\`, \`1.85s\`)**: Đạo cụ trên mặt bàn hoặc cầm tay (\`desk_calendar\`, \`small_cup\`, \`laptop\`, \`bowl\`, \`teapot\`, \`vase\`, \`lamp\`, \`clock\`, \`envelope\`, hoặc mọi prop có \`y <= -11\` / \`follow\`).
    - Ngay cả các hình mảng đặc (\`strokeScale: 0\`) cũng tự sinh nét cọ dẫn mảnh (\`0.68x\`) trong lúc đang vẽ trước khi mực đặc thấm vào.
@@ -1740,7 +1740,7 @@ Toàn bộ sân khấu mở màn từ trang giấy trắng tinh và được v�
   - Hông khóa tại \`(0, -10.5)\` khớp mặt ghế \`y = -10.5\`; đầu gối tại \`(10.5, -10.5)\`; bàn chân chạm đất tại \`(10.5, 0)\`.
   - \`leanDeg\` chỉ nghiêng phần cột sống trên và cổ, không làm trượt hông hay nhổng chân.
 - **Thông số lắp ghép Ghế — Bàn — Đạo cụ mặt bàn**:
-  - \`stool\` / \`std_chair\`: Mặt ghế \`y = -10.5\`, lưng ghế \`x = -4.2, y = -10.5..-25.0\`. Đặt cùng tọa độ \`x\` với nhân vật ngồi (hoặc lệch \`-2px\`).
+  - \`std_chair\` (alias cũ \`stool\`): Mặt ghế \`y = -10.5\`, lưng ghế \`x = -4.2, y = -10.5..-25.0\`. Đặt cùng tọa độ \`x\` với nhân vật ngồi (hoặc lệch \`-2px\`).
   - \`small_work_desk\` / \`std_work_desk\`: Mặt bàn \`y = -19.2\`, chân bàn chạm đất \`y = 0\`. Đặt cách nhân vật ngồi **\`ΔX = +24px .. +28px\`**.
   - \`low_tea_table\`: Mặt bàn trà thấp \`y = -14.2\`, rộng \`32px\`.
   - \`desk_calendar\`: Đã dựng sẵn ở cao độ mặt bàn \`-19.2\`, nên khi đặt trên \`std_work_desk\` truyền \`y: 0\` (hoặc với \`small_cup\` gốc \`y = 0\` thì truyền \`y: -19.2\`).
@@ -1860,7 +1860,7 @@ export const GEMINI_SKILL_TEMPLATE_JSON = JSON.stringify(
       },
       {
         "id": "chair",
-        "type": "stool",
+        "type": "std_chair",
         "x": 204,
         "y": 0,
         "layer": "mid",

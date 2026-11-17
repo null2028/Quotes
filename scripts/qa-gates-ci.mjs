@@ -415,7 +415,7 @@ async function runGate2() {
     durationMode: 'AUTO_SEED',
     typingSpeedMsPerChar: 55,
     holdAfterFinishSeconds: 5.5,
-    themeId: 'DARK_CONTEMPLATIVE',
+    themeId: 'WARM_NOIR',
     motion: {
       archetype: 'SCRIPT_CHIEC_O_RONG_CHO_NHAU',
       pacingMode: 'CONTEMPLATIVE',
@@ -533,7 +533,7 @@ async function runGate2() {
   const vdnaNew = resolveVisualDNA({
     id: 'quote-099',
     pivotWord: 'an nhiên',
-    themeId: 'DARK_CONTEMPLATIVE',
+    themeId: 'WARM_NOIR',
   });
   assertCheck(
     unitChecks,
@@ -683,7 +683,7 @@ async function runGate2() {
   const palettesSplitAccentOk = Object.values(THEME_PALETTES).every(
     (pal) => Boolean(pal.accentText && pal.accentProp && pal.accentText !== pal.accentProp)
   );
-  const darkPal = THEME_PALETTES.DARK_CONTEMPLATIVE;
+  const darkPal = THEME_PALETTES.WARM_NOIR;
   const warmNoirPal = THEME_PALETTES.WARM_NOIR;
   const darkWcagMetrics = {
     inkPrimary: Number(contrastRatio(darkPal.background, darkPal.inkPrimary).toFixed(2)),
@@ -698,14 +698,13 @@ async function runGate2() {
     accentProp: Number(contrastRatio(warmNoirPal.background, warmNoirPal.accentProp).toFixed(2)),
   };
   const darkClassifierOk =
-    isDarkThemePalette('DARK_CONTEMPLATIVE') &&
+    Object.keys(THEME_PALETTES).length === 3 &&
     isDarkThemePalette('WARM_NOIR') &&
     !isDarkThemePalette('MINIMAL_LIGHT') &&
-    !isDarkThemePalette('MINIMAL_DARK') &&
-    !isDarkThemePalette('SLATE_CALM');
+    !isDarkThemePalette('MINIMAL_DARK');
   assertCheck(
     unitChecks,
-    'Optical Patch: 5 bảng màu tách accentText/accentProp, phân loại 3 sáng / 2 tối (WARM_NOIR & DARK_CONTEMPLATIVE) đạt WCAG',
+    'Optical Patch V8.6.1: 3 bảng màu tách accentText/accentProp, phân loại 2 sáng / 1 tối (WARM_NOIR) đạt WCAG',
     palettesSplitAccentOk &&
       darkClassifierOk &&
       darkWcagMetrics.inkPrimary >= 12 &&
@@ -722,19 +721,19 @@ async function runGate2() {
   const glowClassic = resolveVisualDNA({
     id: 'quote-099',
     pivotWord: 'tĩnh lặng',
-    themeId: 'DARK_CONTEMPLATIVE',
+    themeId: 'WARM_NOIR',
     visualDNA: { mode: 'CUSTOM', layout: 'CLASSIC_TOP_STAGE' },
   });
   const glowBottom = resolveVisualDNA({
     id: 'quote-099',
     pivotWord: 'tĩnh lặng',
-    themeId: 'DARK_CONTEMPLATIVE',
+    themeId: 'WARM_NOIR',
     visualDNA: { mode: 'CUSTOM', layout: 'SKY_QUOTE_BOTTOM_STAGE' },
   });
   const glowAsym = resolveVisualDNA({
     id: 'quote-099',
     pivotWord: 'tĩnh lặng',
-    themeId: 'DARK_CONTEMPLATIVE',
+    themeId: 'WARM_NOIR',
     visualDNA: { mode: 'CUSTOM', layout: 'ASYMMETRIC_THIRD', shotMode: 'MACRO_PROP' },
   });
   assertCheck(
@@ -771,7 +770,7 @@ async function runGate2() {
   const sampleP2Props = {
     id: 'quote-099',
     pivotWord: 'tĩnh lặng',
-    themeId: 'DARK_CONTEMPLATIVE',
+    themeId: 'WARM_NOIR',
     visualDNA: {
       mode: 'CUSTOM',
       layout: 'WINDOW_FRAME',
@@ -930,11 +929,11 @@ async function runGate2() {
   const parsedGeminiTemplate = sanitizeAndNormalizeCupBundle(GEMINI_SKILL_TEMPLATE_JSON);
   assertCheck(
     unitChecks,
-    'Gemini Skill V8.5 Template JSON hợp lệ (v8.5, AUTO_SEED, PIVOT_ACCENT, visualDNA AUTO, không cảnh báo headroom)',
-    parsedGeminiTemplate.bundleVersion === '8.5' &&
+    'Gemini Skill V8.6 Template JSON hợp lệ (v8.6, AUTO_SEED, PIVOT_ACCENT, visualDNA CUSTOM tường minh V8.6.1, không cảnh báo headroom)',
+    parsedGeminiTemplate.bundleVersion === '8.6' &&
       parsedGeminiTemplate.durationMode === 'AUTO_SEED' &&
       parsedGeminiTemplate.audioMode === 'PIVOT_ACCENT' &&
-      parsedGeminiTemplate.visualDNA?.mode === 'AUTO' &&
+      parsedGeminiTemplate.visualDNA?.mode === 'CUSTOM' &&
       parsedGeminiTemplate.visualDNA?.forceSolidStyle === true &&
       parsedGeminiTemplate.layoutWarnings.length === 0,
     JSON.stringify({
@@ -954,11 +953,11 @@ async function runGate2() {
     }).themeId;
   assertCheck(
     unitChecks,
-    'Gemini normalizeThemeId ưu tiên chuẩn 5 bảng màu (DARK_CONTEMPLATIVE / WARM_NOIR / WARM_DARK / DARK_NIGHT / MINIMAL_DARK)',
-    probeTheme('DARK_CONTEMPLATIVE') === 'DARK_CONTEMPLATIVE' &&
+    'Gemini normalizeThemeId V8.6.1 ánh xạ mã cũ về 3 bảng màu (DARK_CONTEMPLATIVE / WARM_DARK / DARK_NIGHT -> WARM_NOIR)',
+    probeTheme('DARK_CONTEMPLATIVE') === 'WARM_NOIR' &&
       probeTheme('WARM_NOIR') === 'WARM_NOIR' &&
       probeTheme('WARM_DARK') === 'WARM_NOIR' &&
-      probeTheme('DARK_NIGHT') === 'DARK_CONTEMPLATIVE' &&
+      probeTheme('DARK_NIGHT') === 'WARM_NOIR' &&
       probeTheme('MINIMAL_DARK') === 'MINIMAL_DARK',
     JSON.stringify({
       DARK_CONTEMPLATIVE: probeTheme('DARK_CONTEMPLATIVE'),
@@ -980,7 +979,7 @@ async function runGate2() {
     Buffer.from(skillZipBytes).equals(fs.readFileSync(syncedZipPath));
   assertCheck(
     unitChecks,
-    'Gemini Skill V8.5 PKZIP & đồng bộ .agents/docs chứa đủ tham chiếu V8.5',
+    'Gemini Skill V8.6.1 PKZIP & đồng bộ .agents/docs chứa đủ tham chiếu V8.6',
     skillZipBytes[0] === 0x50 &&
       skillZipBytes[1] === 0x4b &&
       skillZipBytes[2] === 0x03 &&
@@ -988,12 +987,10 @@ async function runGate2() {
       skillZipText.includes('SKILL.md') &&
       skillZipText.includes('references/physics-and-props-v85.md') &&
       skillZipText.includes('assets/cup-bundle-v85-template.json') &&
-      GEMINI_SKILL_MD.includes('DARK_CONTEMPLATIVE') &&
       GEMINI_SKILL_MD.includes('WARM_NOIR') &&
-      GEMINI_SKILL_MD.includes('ASYMMETRIC_THIRD') &&
       GEMINI_SKILL_MD.includes('AUTO_SEED') &&
       GEMINI_SKILL_MD.includes('PIVOT_ACCENT') &&
-      GEMINI_SKILL_MD.includes('CupBundle V8.5') &&
+      GEMINI_SKILL_MD.includes('CupBundle V8.6') &&
       syncedSkillMatches,
     JSON.stringify({
       zipMagic: Array.from(skillZipBytes.slice(0, 4)),

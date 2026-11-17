@@ -38,11 +38,14 @@ function resolveCinemagraphDurationFrames(
   startFrame: number,
   pivotFrame: number,
   fps: number,
-  fallbackSec = 2.2
+  fallbackSec = 2.2,
+  exactDuration = false
 ): number {
   const isPostPivot = startFrame >= pivotFrame - 6;
   let sec = rawDurationSec ?? (isPostPivot ? 4.2 : fallbackSec);
-  if (isPostPivot && sec >= 0.6 && sec < 3.4) {
+  // Mặc định (giữ nguyên các Chén đã duyệt): cue sau Pivot dài 0.6–3.4s được giãn thành 3.8s.
+  // Đặt `exactDuration: true` trên cue để giữ đúng thời lượng khai báo.
+  if (isPostPivot && !(exactDuration && rawDurationSec !== undefined) && sec >= 0.6 && sec < 3.4) {
     sec = 3.8;
   }
   return Math.max(1, Math.round(sec * fps));
@@ -795,7 +798,8 @@ export function evaluateStageScriptAtFrame(
           startF,
           timeline.pivotFrame,
           fps,
-          2.2
+          2.2,
+          cue.exactDuration === true
         );
         const endF = startF + durF;
 
@@ -1132,7 +1136,8 @@ export function evaluateStageScriptAtFrame(
         startFrame,
         timeline.pivotFrame,
         fps,
-        2.2
+        2.2,
+        cue.exactDuration === true
       );
       const nextStart =
         i < sortedPosCues.length - 1
@@ -1260,7 +1265,8 @@ export function evaluateStageScriptAtFrame(
         startF,
         timeline.pivotFrame,
         fps,
-        2.2
+        2.2,
+        cue.exactDuration === true
       );
       const endF = startF + durF;
 

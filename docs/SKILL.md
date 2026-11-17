@@ -49,7 +49,7 @@ Nhiệm vụ của bạn là đồng hành cùng chủ kênh lên ý tưởng c�
 Engine tự động điều phối tốc độ phác nét cọ (`drawProgress` dùng duy nhất 1 hàm `Cosine S-Curve` nối tiếp giữa các nét con `shapes`, phác viền `0.00 → 0.85` rồi loang mực `0.52 → 1.00`):
 - **Pha 1 — Nét cọ chân trời (`0.00s → 2.20s`, 132 frames)**: Đường mặt đất (`terrain`) từ từ trải ngang từ lề trái sang lề phải.
 - **Pha 2 — Phác nét đạo cụ 3 tầng kế tiếp**:
-  - **Tầng 1 (`0.40s → 2.25s`, kéo dài `1.85s`)**: Các đạo cụ `layer: "far" | "sky"` và toàn bộ ghế ngồi / khung kiến trúc (`std_chair`, `stool`, `bench`, `window`, `gate`, `arch`, `tree`).
+  - **Tầng 1 (`0.40s → 2.25s`, kéo dài `1.85s`)**: Các đạo cụ `layer: "far" | "sky"` và toàn bộ ghế ngồi / khung kiến trúc (`std_chair`, `bench`, `window`, `gate`, `arch`, `tree`).
   - **Tầng 2 (`1.15s → 3.10s`, kéo dài `1.95s`)**: Bàn làm việc & đạo cụ đặt sàn (`std_work_desk`, `small_work_desk`, `low_tea_table`, `boulder`, `warm_house`).
   - **Tầng 3 (`1.95s → 3.80s`, kéo dài `1.85s`)**: Đạo cụ đặt trên mặt bàn hoặc gắn theo tay (`desk_calendar`, `small_cup`, `laptop`, `bowl`, `teapot`, `vase`, `lamp`, `clock`, `envelope`, hoặc mọi đạo cụ có `y <= -11` / `follow`).
 - **Pha 3 — Phác nét Nhân vật (`CloakedTraveler` & `actor.rig`)**:
@@ -63,7 +63,7 @@ Engine tự động điều phối tốc độ phác nét cọ (`drawProgress` d
   - Khi ngồi (`pose: "sit_lean"`, `sitProgress: 1`), hông nhân vật khóa cố định tại `(0, -10.5)` khớp khít với mặt ghế `y = -10.5`; đùi vươn ngang tới đầu gối `(10.5, -10.5)` và cẳng chân thả vuông góc chạm đúng mặt đất `(10.5, 0)`.
   - Tham số `leanDeg` (VD: `leanDeg: 8` khi cúi mệt mỏi, `leanDeg: -5` khi ngả lưng thư thái, `leanDeg: 0` khi ngồi thẳng) chỉ uốn cong cột sống Bézier 2 đoạn và cổ mà không bao giờ làm hông rời mặt ghế hay chân nhổng khỏi mặt đất.
 - **Kích thước & Khoảng cách Vàng của Bộ Đạo cụ Chuẩn hóa (`scale = 1.0`)**:
-  - `stool` / `std_chair`: Đặt cùng tọa độ `x` với nhân vật ngồi (VD: nhân vật ở `x: 206` thì ghế ở `x: 204 .. 206`, `y: 0`, `layer: "mid"`). Mặt ghế cao `-10.5px`, lưng tựa ở `x = -4.2, y = -10.5..-25.0`.
+  - `std_chair` (alias cũ `stool`): Đặt cùng tọa độ `x` với nhân vật ngồi (VD: nhân vật ở `x: 206` thì ghế ở `x: 204 .. 206`, `y: 0`, `layer: "mid"`). Mặt ghế cao `-10.5px`, lưng tựa ở `x = -4.2, y = -10.5..-25.0`.
   - `small_work_desk` / `std_work_desk`: Mặt bàn cao **`y = -19.2`**, rộng `32px–36px`. Đặt cách nhân vật ngồi **`ΔX = +24px .. +28px`** về phía trước mặt (VD: nhân vật ngồi ở `x: 206` hướng phải -> bàn đặt ở `x: 232 .. 234`, `y: 0`).
   - `low_tea_table`: Bàn trà thấp mặt bàn tại **`y = -14.2`**, rộng `32px`.
   - **Đạo cụ đặt trên mặt bàn (`Tầng 3`)**:
@@ -146,7 +146,7 @@ Chỉ sử dụng đúng **3 bảng màu** sau cho toàn kênh:
     ],
     "props": [
       { "id": "back_window", "type": "office_window_frame", "x": 156, "y": 248, "layer": "far", "scale": 0.92, "opacity": 0.35, "colorRole": "secondary", "focusRole": "ambient", "anchorType": "center" },
-      { "id": "chair", "type": "stool", "x": 204, "y": 0, "layer": "mid", "scale": 1, "colorRole": "ink", "focusRole": "support", "anchorType": "ground" },
+      { "id": "chair", "type": "std_chair", "x": 204, "y": 0, "layer": "mid", "scale": 1, "colorRole": "ink", "focusRole": "support", "anchorType": "ground" },
       { "id": "work_desk", "type": "std_work_desk", "x": 248, "y": 0, "layer": "mid", "scale": 1, "colorRole": "ink", "focusRole": "support", "anchorType": "ground" },
       { "id": "old_calendar", "type": "desk_calendar", "x": 242, "y": 0, "layer": "fore", "scale": 1.08, "colorRole": "ink", "focusRole": "hero", "anchorType": "ground" },
       { "id": "small_cup", "type": "small_cup", "x": 259, "y": -19.2, "layer": "fore", "scale": 0.72, "colorRole": "secondary", "focusRole": "support", "anchorType": "ground" }
