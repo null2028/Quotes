@@ -157,11 +157,12 @@ NGUYÊN TẮC: hình không kể lại chữ, hình làm cú lật mạnh hơn. 
 Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 dòng:
 1. Bản lề: "Người xem tưởng A → câu lật thành B." Không viết được thì hỏi lại chủ kênh.
 2. Trước cú lật: hình dựng thế giới của A (bối cảnh quen, Lữ khách sống bình thường), KHÔNG lộ B.
-3. Vật đỏ: MỘT vật đời thường chứa B, lấy từ CHỮ trong câu (hoặc hình ảnh trực tiếp của chữ lật). Cấm chọn vật chỉ vì thư viện đang có. Ghi rõ: "vật đỏ X vì chữ '...' ".
+3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd câu Chén 18 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Không chọn được vật cụ thể → dùng chính địa hình/khí quyển (vd một đoạn đường) hoặc ghi 'Cần bổ sung'. Gán nghĩa vòng vo (laptop vì 'tính nhanh') là SAI.
 4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
 5. Đồ trên sân khấu: mọi đạo cụ phải được dùng hoặc mang nghĩa; đồ chỉ để trang trí thì bỏ (tối đa 3 vật).
-6. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại.
-TỰ KIỂM trước khi đưa: bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa.
+6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (văn phòng / phố ngõ / hiên trà / phòng trong nhà / thiên nhiên / không gian ký hiệu). Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
+7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại.
+TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa.
 Nếu thư viện thiếu thứ phương án mạnh nhất cần (vd nhân vật thứ hai, động từ quay lại) → vẫn đưa phương án đó lên đầu, ghi "Cần bổ sung: ...", và đưa phương án dựng được ngay ở vị trí 2.
 
 ## Bước 3 — Xuất Gói Chén JSON
