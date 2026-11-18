@@ -1,0 +1,37 @@
+{
+  "phien_ban_goi": 1,
+  "tieu_de": "File lỗi mẫu",
+  "cau": [
+    "Dòng một của bài thơ mẫu,",
+    "Dòng hai nối tiếp đi theo,",
+    "Dòng ba sắp tới cú lật,",
+    "Và bất ngờ… trời ơi lỗi rồi!"
+  ],
+  "cu_lat": "trời ơi lỗi rồi",
+  "ma_quote": "LOI",
+  "boi_canh": {
+    "dia_hinh": "phang"
+  },
+  "nhan_vat": [
+    {
+      "id": "hero",
+      "tu_the": "dung",
+      "huong": "phai",
+      "vi_tri": "trai"
+    }
+  ],
+  "dao_cu": [
+    { "id": "ban", "type": "std_work_desk", "loai_neo": "dat", "vi_tri": "giua", "lop": "giua" },
+    { "id": "binh_hoa", "type": "binh_hoa_quy", "loai_neo": "dat", "vi_tri": "phai", "lop": "nen" },
+    { "id": "laptop", "type": "desk_laptop", "loai_neo": "tren", "dat_tren": "ban.mat_ban_trai", "lop": "giua" },
+    { "id": "hoa_don", "type": "hoa_don", "trang_thai": "tua", "loai_neo": "dat", "vi_tri": "giua", "lop": "giua", "vat_do": true },
+    { "id": "thiep", "type": "thiep", "loai_neo": "dat", "vi_tri": "phai", "lop": "giua", "vat_do": true, "x": 300 },
+    { "id": "coc", "type": "small_cup", "loai_neo": "tren", "dat_tren": "ke_sach.mat_ke", "lop": "giua" }
+  ],
+  "nhip": [
+    {
+      "moc": "bat_dau", "thoi_luong": 0.4,
+      "nhan_vat": { "hero": { "tu_the": "dung", "nghieng": "thang" } }
+    }
+  ]
+}
