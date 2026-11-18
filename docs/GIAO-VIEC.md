@@ -14,10 +14,13 @@
   - Họ đạo cụ: `Đọc tasks/T8-HO.md và làm họ <tên họ>.`
 - Agent B: mở đúng thư mục `Quotes-B` rồi mới giao việc.
 
-## Thứ tự việc của Agent A
-1. T5b — đưa nguyên tắc đạo diễn vào skill
-2. T6 — nhân vật thứ hai + động từ, dựng lại Chén 18
-3. Họ đạo cụ lần lượt: `mat_phang` → `khung` → `giay` → `cay_co` → `do_mang` (`do_chua` đang làm)
+## Thứ tự việc của Agent A (kèm model)
+1. T8-do_chua-sua — sửa ấm trà, mâm cơm, chén cầm tay → **Hydrogen**
+2. T5c — siết luật đạo diễn trong skill → **Hydrogen**
+3. T6 — nhân vật thứ hai + động từ, dựng lại Chén 18 → **Argon**
+4. Họ đạo cụ lần lượt (`Đọc tasks/T8-HO.md và làm họ <tên>`): `mat_phang` → `khung` → `giay` → `cay_co` → `do_mang` → **Hydrogen**
+Carbon chỉ dùng khi có lỗi lạ mà Hydrogen/Argon không giải được.
+Chạy quá 20 phút chưa sửa file nào → gõ: "Bạn đã đủ thông tin để sửa chưa? Nếu đủ thì sửa ngay."
 
 ## Sau mỗi task
 Nhắn Claude "xong <tên task>" → Claude duyệt, commit (A) hoặc gộp nhánh (B), rồi báo task tiếp theo.
