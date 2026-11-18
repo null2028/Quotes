@@ -143,3 +143,23 @@ export const INK_MAX_LEAN_DEG_SLUMP = 26;
 
 /** wSitSlump divisor (bản cũ 7c1fe76 = 14) */
 export const INK_SIT_SLUMP_DIVISOR = 14;
+
+
+// =====================================================================
+// === HẰNG SỐ NÉT ĐẠO CỤ (propCatalog) — chuẩn từ engine cũ 7c1fe76 ===
+// =====================================================================
+
+/** Nét cơ sở mịn cho đạo cụ (baseFineStroke = PROP_FINE_STROKE * (strokeWidth/2.6) * focusMult) */
+export const PROP_FINE_STROKE = 1.35;
+
+/** fillOpacity chuẩn cho wash đóng (fill="bg") — engine cũ dùng 0.11-0.14 */
+export const PROP_WASH_FILL_OPACITY = 0.13;
+
+/** strokeScale chuẩn cho nét thân chính đạo cụ */
+export const PROP_BODY_STROKE_SCALE = 1.0;
+
+/** strokeScale chuẩn cho nét chi tiết mảnh đạo cụ */
+export const PROP_DETAIL_STROKE_SCALE = 0.65;
+
+/** strokeScale tối đa cho nét thân (engine cũ hiếm khi vượt 1.15) */
+export const PROP_MAX_BODY_STROKE_SCALE = 1.15;
