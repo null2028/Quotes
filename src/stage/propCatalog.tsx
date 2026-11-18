@@ -12,6 +12,11 @@ import {
   INK_BASE_STROKE_WIDTH,
   INK_SCALE_POWER,
 } from './stageConstants';
+import {
+  DO_CHUA_ALL_PRESET_NAMES,
+  DO_CHUA_APPROVED_ALIASES,
+  DO_CHUA_NEW_PRESETS,
+} from './families/do_chua';
 
 export const BUILT_IN_PROP_NAMES = [
   'envelope',
@@ -47,15 +52,25 @@ export const BUILT_IN_PROP_NAMES = [
   'low_tea_table',
   'desk_calendar',
   'desk_laptop',
-  // 5 đạo cụ đang trình duyệt lại ở Tờ duyệt lần 3 (`nhap`)
+  // 5 đạo cụ đã duyệt ở Tờ duyệt lần 3 (`duyet`)
   'vi_tien',
   'thiep',
   'phong_bi',
   'hoa_don',
   'porch_window',
+  // Họ 1 — `do_chua` (2 alias `duyet` + 6 preset `nhap`)
+  ...DO_CHUA_ALL_PRESET_NAMES,
 ] as const;
 
 export type BuiltInPropName = (typeof BUILT_IN_PROP_NAMES)[number];
+
+/**
+ * Bảng ánh xạ alias chính thức của các Họ Đạo Cụ (tên mới tiếng Việt không dấu -> mã đã `duyet` sẵn trong propCatalog).
+ * Cả tên mới lẫn mã cũ đều dùng được 100% như nhau.
+ */
+export const PROP_FAMILY_ALIASES: Record<string, string> = {
+  ...DO_CHUA_APPROVED_ALIASES,
+};
 
 /**
  * Danh sách 5 đạo cụ chưa đạt đang trình duyệt lại ở Tờ duyệt lần 3 (giữ ở trạng thái `nhap`).
@@ -1981,7 +1996,17 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
       },
     ],
   },
+
+  // === HỌ 1: `do_chua` (6 preset mới trạng thái `nhap`) ===
+  ...DO_CHUA_NEW_PRESETS,
 };
+
+// Gắn các alias đã duyệt (`chen_tra` -> `small_cup`, `vo_ruou` -> `wine_jar`) trực tiếp vào propCatalog
+for (const [aliasName, targetName] of Object.entries(PROP_FAMILY_ALIASES)) {
+  if (BUILT_IN_PROP_CATALOG[targetName]) {
+    BUILT_IN_PROP_CATALOG[aliasName] = BUILT_IN_PROP_CATALOG[targetName];
+  }
+}
 
 function inferDefaultShapePivot(s: InlineShape): [number, number] {
   if (s.circle) return [s.circle[0], s.circle[1]];

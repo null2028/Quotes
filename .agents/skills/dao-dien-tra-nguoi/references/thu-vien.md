@@ -23,7 +23,7 @@
 - Động từ nhân vật (`nhip[].nhan_vat.<id>`): `tu_the`, `di_toi`, `huong`, `nghieng`, `nhin_theo`, `cam_chen_tra`, `dung_day`.
 - Động từ đạo cụ (`nhip[].dao_cu.<id>`): `trang_thai`, `cam_boi`, `dat_tren`, `di_toi`, `bay_len`, `tach_doi`, `khoi`.
 
-## 4. Đạo cụ đã duyệt trong `propCatalog` (`duyet`)
+## 4. Đạo cụ đã duyệt trong `propCatalog` (`duyet` — skill được phép dùng)
 | Mã đạo cụ (`type`) | Nghĩa / Tên gọi | Lớp mặc định | Loại neo | Vật đỏ (`vat_do`) | Trạng thái (`trang_thai`) | Điểm neo (`<id>.<diem_neo>`) |
 | :--- | :--- | :---: | :--- | :---: | :--- | :--- |
 | `envelope` | Cánh thư giấy cổ phong | `giua` | `cam`, `tren`, `dat` | Có | `mac_dinh` | *(không có)* |
@@ -44,3 +44,17 @@
 | `phong_bi` | Phong bì thư | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
 | `hoa_don` | Tờ hoá đơn răng cưa | `giua` | `cam`, `tren`, `dat` | Có | `mac_dinh`, `cam`, `tua` | *(không có)* |
 | `porch_window` | Khung cửa sổ tường | `nen` | `tuong` | Không | `mac_dinh` | `be_cua` |
+| `chen_tra` | Chén trà gốm nhỏ *(alias của `small_cup`)* | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
+| `vo_ruou` | Vò rượu gốm Mai Bình *(alias của `wine_jar`)* | `giua` | `tren`, `dat` | Có | `mac_dinh` | *(không có)* |
+
+## 5. Preset mới đang chờ duyệt (`nhap` — CHƯA DUYỆT, skill TUYỆT ĐỐI CHƯA ĐƯỢC DÙNG)
+> Các preset dưới đây mới dựng ở trạng thái `nhap`, đang chờ chủ kênh nghiệm thu tờ duyệt. Skill không được xuất các mã này trong Gói Chén cho tới khi chuyển sang `duyet`.
+
+| Mã preset (`nhap`) | Nghĩa / Tên gọi | Trạng thái duyệt | Lớp mặc định | Loại neo | Vật đỏ (`vat_do`) | Điểm neo (`<id>.<diem_neo>`) |
+| :--- | :--- | :---: | :---: | :--- | :---: | :--- |
+| `am_tra` | Ấm trà gốm nhỏ | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `dat` | Có | *(không có)* |
+| `bat_com` | Bát cơm gốm | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
+| `ly_ca_phe` | Ly cà phê có quai | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
+| `ly_ruou` | Ly rượu chân cao | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
+| `hop_com` | Hộp cơm trưa | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
+| `mam_com` | Mâm cơm tròn dẹt | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `dat`, `tren` | Không | `trai_mam`, `giua_mam`, `phai_mam` |

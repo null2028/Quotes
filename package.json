@@ -15,6 +15,7 @@
     "ui:build": "vite build --config studio-ui/vite.config.ts",
     "desktop": "node --import ./node_modules/tsx/dist/loader.mjs server/studioDesktop.ts",
     "gen:skill": "tsx scripts/gen-stage-skill.mjs",
+    "ho:duyet": "tsx scripts/render-ho-duyet.mjs",
     "app": "concurrently -n SERVER,STUDIO -c yellow,cyan \"npm run server\" \"npm run ui\""
   },
   "dependencies": {

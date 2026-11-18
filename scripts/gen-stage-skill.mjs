@@ -3,7 +3,10 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { BUILT_IN_PROP_CATALOG } from '../src/stage/propCatalog.tsx';
+import {
+  BUILT_IN_PROP_CATALOG,
+  PROP_FAMILY_ALIASES,
+} from '../src/stage/propCatalog.tsx';
 import {
   ANCHOR_KINDS,
   HE_SO_PHONG_DAI,
@@ -66,13 +69,23 @@ function buildThuVienMd() {
     `- Động từ nhân vật (\`nhip[].nhan_vat.<id>\`): ${fmtList(SEMANTIC_ACTOR_BEAT_VERBS)}.`,
     `- Động từ đạo cụ (\`nhip[].dao_cu.<id>\`): ${fmtList(SEMANTIC_PROP_BEAT_VERBS)}.`,
     '',
-    '## 4. Đạo cụ đã duyệt trong `propCatalog` (`duyet`)',
+    '## 4. Đạo cụ đã duyệt trong `propCatalog` (`duyet` — skill được phép dùng)',
     '| Mã đạo cụ (`type`) | Nghĩa / Tên gọi | Lớp mặc định | Loại neo | Vật đỏ (`vat_do`) | Trạng thái (`trang_thai`) | Điểm neo (`<id>.<diem_neo>`) |',
     '| :--- | :--- | :---: | :--- | :---: | :--- | :--- |',
   ];
 
+  const draftFamilyEntries = [];
+
   for (const [typeName, def] of Object.entries(BUILT_IN_PROP_CATALOG)) {
-    if (def.status !== 'duyet' || !def.box) continue;
+    if (!def.box) continue;
+    if (def.status !== 'duyet') {
+      draftFamilyEntries.push([typeName, def]);
+      continue;
+    }
+    const aliasTarget = PROP_FAMILY_ALIASES[typeName];
+    const labelStr = aliasTarget
+      ? `${def.labelVi || typeName} *(alias của \`${aliasTarget}\`)*`
+      : def.labelVi || typeName;
     const anchors = Object.keys(def.anchors || {});
     const ancStr =
       anchors.length > 0
@@ -84,8 +97,36 @@ function buildThuVienMd() {
       .map((k) => `\`${k}\``)
       .join(', ');
     lines.push(
-      `| \`${typeName}\` | ${def.labelVi || typeName} | \`${def.defaultLayer || 'giua'}\` | ${kinds} | ${def.canBeRed ? 'Có' : 'Không'} | ${varStr} | ${ancStr} |`
+      `| \`${typeName}\` | ${labelStr} | \`${def.defaultLayer || 'giua'}\` | ${kinds} | ${def.canBeRed ? 'Có' : 'Không'} | ${varStr} | ${ancStr} |`
     );
+  }
+
+  if (draftFamilyEntries.length > 0) {
+    lines.push('');
+    lines.push(
+      '## 5. Preset mới đang chờ duyệt (`nhap` — CHƯA DUYỆT, skill TUYỆT ĐỐI CHƯA ĐƯỢC DÙNG)'
+    );
+    lines.push(
+      '> Các preset dưới đây mới dựng ở trạng thái `nhap`, đang chờ chủ kênh nghiệm thu tờ duyệt. Skill không được xuất các mã này trong Gói Chén cho tới khi chuyển sang `duyet`.'
+    );
+    lines.push('');
+    lines.push(
+      '| Mã preset (`nhap`) | Nghĩa / Tên gọi | Trạng thái duyệt | Lớp mặc định | Loại neo | Vật đỏ (`vat_do`) | Điểm neo (`<id>.<diem_neo>`) |'
+    );
+    lines.push('| :--- | :--- | :---: | :---: | :--- | :---: | :--- |');
+    for (const [typeName, def] of draftFamilyEntries) {
+      const anchors = Object.keys(def.anchors || {});
+      const ancStr =
+        anchors.length > 0
+          ? anchors.map((a) => `\`${a}\``).join(', ')
+          : '*(không có)*';
+      const kinds = (def.allowedAnchorKinds || [def.anchorKind || 'dat'])
+        .map((k) => `\`${k}\``)
+        .join(', ');
+      lines.push(
+        `| \`${typeName}\` | ${def.labelVi || typeName} | \`nhap\` *(chưa duyệt — cấm dùng)* | \`${def.defaultLayer || 'giua'}\` | ${kinds} | ${def.canBeRed ? 'Có' : 'Không'} | ${ancStr} |`
+      );
+    }
   }
 
   lines.push('');
@@ -112,11 +153,16 @@ Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc \
 - Giữ chất **“Lắng — Kiệm lời — Đời thực — Có dư vị”**. Tránh từ sáo rỗng bi lụy, khẩu hiệu dạy đời, văn dịch cứng, hashtag rác (\`#fyp\`, \`#foryou\`, \`#xuhuong\`, \`#viral\`).
 
 ## Bước 2 — Cú lật (3 phương án ngắn, DỪNG chờ chốt)
-Sau khi chốt câu chữ, đưa **3 phương án ngắn** dựng cú lật. Mỗi phương án gồm:
-1. **Motif** & **Vật đỏ** (\`vat_do: true\`, tối đa 1 vật đỏ lấy từ nghĩa câu).
-2. **Đạo cụ & Bối cảnh**: chỉ chọn mã \`type\` có trong \`references/thu-vien.md\`.
-3. **Diễn biến Lữ khách**: tư thế, hướng đầu, nghiêng người theo từng dòng thơ và nhịp lật.
-- **Không bao giờ tự vẽ đồ vật, không toạ độ, không shapes.** Nếu thiếu đồ vật cần thiết trong \`references/thu-vien.md\`, ghi rõ **"Đề xuất bổ sung thư viện: <tên đồ vật>"** rồi chọn cách diễn khác bằng đồ đã có.
+NGUYÊN TẮC: hình không kể lại chữ, hình làm cú lật mạnh hơn. Chữ là chính.
+Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 dòng:
+1. Bản lề: "Người xem tưởng A → câu lật thành B." Không viết được thì hỏi lại chủ kênh.
+2. Trước cú lật: hình dựng thế giới của A (bối cảnh quen, Lữ khách sống bình thường), KHÔNG lộ B.
+3. Vật đỏ: MỘT vật đời thường chứa B, lấy từ CHỮ trong câu (hoặc hình ảnh trực tiếp của chữ lật). Cấm chọn vật chỉ vì thư viện đang có. Ghi rõ: "vật đỏ X vì chữ '...' ".
+4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
+5. Đồ trên sân khấu: mọi đạo cụ phải được dùng hoặc mang nghĩa; đồ chỉ để trang trí thì bỏ (tối đa 3 vật).
+6. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại.
+TỰ KIỂM trước khi đưa: bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa.
+Nếu thư viện thiếu thứ phương án mạnh nhất cần (vd nhân vật thứ hai, động từ quay lại) → vẫn đưa phương án đó lên đầu, ghi "Cần bổ sung: ...", và đưa phương án dựng được ngay ở vị trí 2.
 
 ## Bước 3 — Xuất Gói Chén JSON
 Sau khi chủ kênh chốt phương án ở Bước 2, xuất **đúng 1 khối JSON Gói Chén** theo \`references/goi-chen.md\`:

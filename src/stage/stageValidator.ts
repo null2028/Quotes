@@ -278,8 +278,8 @@ export function validatePropDefinitionRules(
       }
     }
 
-    // Kiểm tra Luật 6: Chén trà `small_cup` phải cùng kích thước với chén trên tay Lữ khách
-    if (typeName === 'small_cup') {
+    // Kiểm tra Luật 6: Chén trà `small_cup` / `chen_tra` phải cùng kích thước với chén trên tay Lữ khách
+    if (typeName === 'small_cup' || typeName === 'chen_tra') {
       const cupSpan = Math.max(
         def.box[2] - def.box[0],
         def.box[3] - def.box[1]
