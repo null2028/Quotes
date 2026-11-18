@@ -44,6 +44,10 @@
 | `phong_bi` | Phong bì thư | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
 | `hoa_don` | Tờ hoá đơn răng cưa | `giua` | `cam`, `tren`, `dat` | Có | `mac_dinh`, `cam`, `tua` | *(không có)* |
 | `porch_window` | Khung cửa sổ tường | `nen` | `tuong` | Không | `mac_dinh` | `be_cua` |
+| `bat_com` | Bát cơm gốm | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
+| `ly_ca_phe` | Ly cà phê có quai | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
+| `ly_ruou` | Ly rượu chân cao | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
+| `hop_com` | Hộp cơm trưa | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
 | `chen_tra` | Chén trà gốm nhỏ *(alias của `small_cup`)* | `giua` | `tren`, `cam`, `dat` | Có | `mac_dinh` | *(không có)* |
 | `vo_ruou` | Vò rượu gốm Mai Bình *(alias của `wine_jar`)* | `giua` | `tren`, `dat` | Có | `mac_dinh` | *(không có)* |
 
@@ -53,8 +57,4 @@
 | Mã preset (`nhap`) | Nghĩa / Tên gọi | Trạng thái duyệt | Lớp mặc định | Loại neo | Vật đỏ (`vat_do`) | Điểm neo (`<id>.<diem_neo>`) |
 | :--- | :--- | :---: | :---: | :--- | :---: | :--- |
 | `am_tra` | Ấm trà gốm nhỏ | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `dat` | Có | *(không có)* |
-| `bat_com` | Bát cơm gốm | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
-| `ly_ca_phe` | Ly cà phê có quai | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
-| `ly_ruou` | Ly rượu chân cao | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
-| `hop_com` | Hộp cơm trưa | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `cam`, `dat` | Có | *(không có)* |
-| `mam_com` | Mâm cơm tròn dẹt | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `dat`, `tren` | Không | `trai_mam`, `giua_mam`, `phai_mam` |
+| `mam_com` | Mâm cơm tròn dẹt | `nhap` *(chưa duyệt — cấm dùng)* | `giua` | `tren`, `dat` | Không | `trai_mam`, `giua_mam`, `phai_mam` |

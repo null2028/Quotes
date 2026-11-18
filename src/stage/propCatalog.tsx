@@ -295,6 +295,52 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
         strokeScale: 0.58,
       },
     ],
+    altShapes: [
+      {
+        d: 'M -3.4 -19 L 3.4 -19 L 2.7 -15.2 C 6.2 -12.8 6.4 -5.8 3.6 0 L -3.6 0 C -6.4 -5.8 -6.2 -12.8 -2.7 -15.2 Z',
+        fill: 'accent',
+        fillOpacity: 0.32,
+        role: 'accent',
+      },
+      {
+        d: 'M -2.4 -14.8 C -5.2 -12.2 -5.4 -5.5 -3.0 -0.8 C -4.0 -5.4 -3.8 -10.8 -1.6 -14.2 Z',
+        fill: 'accent',
+        fillOpacity: 0.14,
+        role: 'accent',
+        strokeScale: 0,
+      },
+      {
+        d: 'M 2.5 -13.2 C 4.4 -11.2 4.5 -6.8 3.0 -3.0',
+        fill: 'none',
+        role: 'accent',
+        strokeScale: 0.62,
+        opacity: 0.52,
+      },
+      {
+        d: 'M -3.9 -19 Q 0 -18.4 3.9 -19',
+        fill: 'none',
+        role: 'accent',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M -2.9 -15.2 Q 0 -14.6 2.9 -15.2',
+        fill: 'none',
+        role: 'accent',
+        strokeScale: 0.85,
+      },
+      {
+        d: 'M 1.3 -15.0 C 2.5 -13.2 3.5 -11.2 3.0 -9.2',
+        fill: 'none',
+        role: 'accent',
+        strokeScale: 0.62,
+      },
+      {
+        d: 'M 1.8 -15.0 C 3.5 -13.6 4.6 -12.0 4.4 -10.0',
+        fill: 'none',
+        role: 'accent',
+        strokeScale: 0.58,
+      },
+    ],
   },
 
   // 6. Chén trà gốm nhỏ (`duyet`, kich_thuoc_that: 11.5 cm -> 11.5 * 0.32 * 2.0 = 7.36; thân 7.0x5.0 bằng khít 100% chén trên tay Lữ khách!)
@@ -330,6 +376,22 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
         d: 'M -3.5 -5.0 Q 0 -5.6 3.5 -5.0',
         fill: 'none',
         role: 'secondary',
+        strokeScale: 0.5,
+        opacity: 0.6,
+      },
+    ],
+    altShapes: [
+      {
+        d: 'M -3.5 -5.0 Q -2.9 -0.8 -2.0 0 L 2.0 0 Q 2.9 -0.8 3.5 -5.0 Q 0 -4.4 -3.5 -5.0 Z',
+        fill: 'accent',
+        fillOpacity: 0.34,
+        role: 'accent',
+        strokeScale: 0.65,
+      },
+      {
+        d: 'M -3.5 -5.0 Q 0 -5.6 3.5 -5.0',
+        fill: 'none',
+        role: 'accent',
         strokeScale: 0.5,
         opacity: 0.6,
       },

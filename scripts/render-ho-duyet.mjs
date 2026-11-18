@@ -6,9 +6,9 @@
  * - 100% dựng qua luồng thật: Gói Chén JSON -> parseGoiChen (biên dịch ngữ nghĩa + validator cứng) -> DeclarativeStagePlayer trên khung 1080×1920.
  * - CẤM đặt toạ độ tay (`x`, `y`, `scale`, `shapes`) ở bất kỳ bước nào.
  * - Gồm 3 phần trên tờ duyệt:
- *   (1) Vùng hình 1× cắt trực tiếp từ khung 1080×1920: Lữ khách + toàn bộ preset của họ ở tỷ lệ thật (vật nhỏ đặt trên bàn đã duyệt).
+ *   (1) Vùng hình 1× cắt trực tiếp từ khung 1080×1920: Lữ khách + toàn bộ preset (gồm mam_com đặt trên bàn trà với 2 bat_com + 1 chen_tra).
  *   (2) Hàng phóng 2× (200%) của chính vùng hình đó (chia Nửa Trái & Nửa Phải để giữ nguyên độ phóng 2× không ép ngang).
- *   (3) Bản Đỏ Chu Sa sau cú lật (`post-pivot`) của các preset làm được vật đỏ, mỗi ô cắt từ khung 1080×1920 thật.
+ *   (3) Bản Đỏ Chu Sa sau cú lật (`post-pivot`) của toàn bộ 7 preset làm được vật đỏ + 1 ô Lữ khách đứng cầm chén ngang ngực.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -141,6 +141,7 @@ function renderFull1080x1920SvgFromGoiChen(goiChenObj, phase = 'pre_pivot') {
 }
 
 // ── 1. Gói Chén toàn cảnh họ `do_chua`: Lữ khách + toàn bộ 8 preset ở tỷ lệ thật ──
+// - mam_com đặt trên bàn trà thấp ban_mam, trên 3 điểm neo đặt đủ 2 bat_com + 1 chen_tra.
 const lineupGoiChen = {
   phien_ban_goi: 1,
   tieu_de: 'Tờ duyệt họ do_chua',
@@ -152,23 +153,20 @@ const lineupGoiChen = {
   ],
   cu_lat: 'vấn vương sắc hồng',
   boi_canh: { dia_hinh: 'phang' },
-  nhan_vat: [
-    {
-      id: 'hero',
-      vi_tri: 'xa_trai',
-      tu_the: 'dung',
-      huong: 'phai',
-    },
-  ],
+  nhan_vat: [{ id: 'hero', vi_tri: 'xa_trai', tu_the: 'dung', huong: 'phai' }],
   dao_cu: [
     { id: 'ban_1', type: 'low_tea_table', loai_neo: 'dat', vi_tri: 'trai', lop: 'giua' },
     { id: 'p_chen_tra', type: 'chen_tra', loai_neo: 'tren', dat_tren: 'ban_1.mat_ban_trai', lop: 'giua' },
-    { id: 'p_am_tra', type: 'am_tra', loai_neo: 'tren', dat_tren: 'ban_1.mat_ban_phai', lop: 'giua', vat_do: true },
-    { id: 'p_mam_com', type: 'mam_com', loai_neo: 'dat', vi_tri: 'giua_trai', lop: 'giua' },
+    { id: 'p_am_tra', type: 'am_tra', loai_neo: 'tren', dat_tren: 'ban_1.mat_ban_phai', lop: 'giua' },
+    { id: 'ban_mam', type: 'low_tea_table', loai_neo: 'dat', vi_tri: 'giua_trai', lop: 'giua' },
+    { id: 'p_mam_com', type: 'mam_com', loai_neo: 'tren', dat_tren: 'ban_mam.mat_ban_giua', lop: 'giua' },
+    { id: 'p_mam_bat1', type: 'bat_com', loai_neo: 'tren', dat_tren: 'p_mam_com.trai_mam', lop: 'giua' },
+    { id: 'p_mam_chen', type: 'chen_tra', loai_neo: 'tren', dat_tren: 'p_mam_com.giua_mam', lop: 'giua' },
+    { id: 'p_mam_bat2', type: 'bat_com', loai_neo: 'tren', dat_tren: 'p_mam_com.phai_mam', lop: 'giua' },
     { id: 'ban_2', type: 'std_work_desk', loai_neo: 'dat', vi_tri: 'giua', lop: 'giua' },
     { id: 'p_ly_ca_phe', type: 'ly_ca_phe', loai_neo: 'tren', dat_tren: 'ban_2.mat_ban_trai', lop: 'giua' },
     { id: 'p_ly_ruou', type: 'ly_ruou', loai_neo: 'tren', dat_tren: 'ban_2.mat_ban_phai', lop: 'giua' },
-    { id: 'p_vo_ruou', type: 'vo_ruou', loai_neo: 'dat', vi_tri: 'giua_phai', lop: 'giua' },
+    { id: 'p_vo_ruou', type: 'vo_ruou', loai_neo: 'dat', vi_tri: 'giua_phai', lop: 'giua', vat_do: true },
     { id: 'ban_3', type: 'std_work_desk', loai_neo: 'dat', vi_tri: 'phai', lop: 'giua' },
     { id: 'p_bat_com', type: 'bat_com', loai_neo: 'tren', dat_tren: 'ban_3.mat_ban_trai', lop: 'giua' },
     { id: 'p_hop_com', type: 'hop_com', loai_neo: 'tren', dat_tren: 'ban_3.mat_ban_phai', lop: 'giua' },
@@ -182,10 +180,11 @@ const lineupGoiChen = {
   ],
 };
 
-// ── 2. Các Gói Chén kiểm tra bản Đỏ Chu Sa sau cú lật (`post_pivot`) ──
-const RED_CASES = [
+// ── 2. 7 bản Đỏ Chu Sa (gồm am_tra, 4 preset duyet + small_cup & wine_jar) + 1 ô Lữ khách đứng cầm chén ──
+const CARD_CASES = [
   {
-    label: 'am_tra (vat_do)',
+    label: 'am_tra (nhap · vat_do)',
+    crop: [430, 545, 375, 250],
     goi: {
       phien_ban_goi: 1,
       tieu_de: 'Đỏ am_tra',
@@ -206,7 +205,8 @@ const RED_CASES = [
     },
   },
   {
-    label: 'ly_ca_phe (vat_do)',
+    label: 'ly_ca_phe (duyet · vat_do)',
+    crop: [430, 545, 375, 250],
     goi: {
       phien_ban_goi: 1,
       tieu_de: 'Đỏ ly_ca_phe',
@@ -227,7 +227,8 @@ const RED_CASES = [
     },
   },
   {
-    label: 'ly_ruou (vat_do)',
+    label: 'ly_ruou (duyet · vat_do)',
+    crop: [430, 545, 375, 250],
     goi: {
       phien_ban_goi: 1,
       tieu_de: 'Đỏ ly_ruou',
@@ -248,7 +249,8 @@ const RED_CASES = [
     },
   },
   {
-    label: 'bat_com (vat_do)',
+    label: 'bat_com (duyet · vat_do)',
+    crop: [430, 545, 375, 250],
     goi: {
       phien_ban_goi: 1,
       tieu_de: 'Đỏ bat_com',
@@ -269,7 +271,8 @@ const RED_CASES = [
     },
   },
   {
-    label: 'hop_com (vat_do)',
+    label: 'hop_com (duyet · vat_do)',
+    crop: [430, 545, 375, 250],
     goi: {
       phien_ban_goi: 1,
       tieu_de: 'Đỏ hop_com',
@@ -289,14 +292,94 @@ const RED_CASES = [
       nhip: [{ moc: 'bat_dau', thoi_luong: 0.4, nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } } }],
     },
   },
+  {
+    label: 'small_cup / chen_tra (vat_do)',
+    crop: [430, 545, 375, 250],
+    goi: {
+      phien_ban_goi: 1,
+      tieu_de: 'Đỏ small_cup',
+      cau: [
+        'Mực thanh mở nét đầu tiên,',
+        'Chén trà trên gỗ bình yên một chiều.',
+        'Chờ khi câu chữ xoay chiều,',
+        'Chu sa lắng đọng một điều chưa phai.',
+      ],
+      cu_lat: 'một điều chưa phai',
+      boi_canh: { dia_hinh: 'phang' },
+      nhan_vat: [{ id: 'hero', vi_tri: 'trai', tu_the: 'dung', huong: 'phai', nhin_theo: 'vat_do' }],
+      dao_cu: [
+        { id: 'ban', type: 'low_tea_table', loai_neo: 'dat', vi_tri: 'giua', lop: 'giua' },
+        { id: 'vat_do', type: 'small_cup', loai_neo: 'tren', dat_tren: 'ban.mat_ban_giua', lop: 'giua', vat_do: true },
+      ],
+      nhip: [{ moc: 'bat_dau', thoi_luong: 0.4, nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } } }],
+    },
+  },
+  {
+    label: 'wine_jar / vo_ruou (vat_do)',
+    crop: [430, 545, 375, 250],
+    goi: {
+      phien_ban_goi: 1,
+      tieu_de: 'Đỏ wine_jar',
+      cau: [
+        'Mực thanh mở nét đầu tiên,',
+        'Vò rượu gốm cũ bình yên hiên nhà.',
+        'Chờ khi câu chữ ngân xa,',
+        'Chu sa ủ kín đậm đà nghĩa xưa.',
+      ],
+      cu_lat: 'đậm đà nghĩa xưa',
+      boi_canh: { dia_hinh: 'phang' },
+      nhan_vat: [{ id: 'hero', vi_tri: 'trai', tu_the: 'dung', huong: 'phai', nhin_theo: 'vat_do' }],
+      dao_cu: [
+        { id: 'vat_do', type: 'wine_jar', loai_neo: 'dat', vi_tri: 'giua', lop: 'giua', vat_do: true },
+      ],
+      nhip: [{ moc: 'bat_dau', thoi_luong: 0.4, nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } } }],
+    },
+  },
+  {
+    label: 'Lữ khách đứng cầm chén (cam_chen_tra)',
+    crop: [315, 480, 420, 280],
+    goi: {
+      phien_ban_goi: 1,
+      tieu_de: 'Lữ khách cầm chén',
+      cau: [
+        'Mực thanh mở nét đầu tiên,',
+        'Đứng cầm chén nhỏ bình yên giữa đời.',
+        'Chờ khi câu chữ buông lơi,',
+        'Chu sa còn đọng một lời chưa quên.',
+      ],
+      cu_lat: 'một lời chưa quên',
+      boi_canh: { dia_hinh: 'phang' },
+      vat_do_tren_tay: 'hero.chen_tra',
+      nhan_vat: [
+        {
+          id: 'hero',
+          vi_tri: 'giua',
+          tu_the: 'dung',
+          huong: 'phai',
+          cam_chen_tra: true,
+        },
+      ],
+      dao_cu: [
+        { id: 'ban', type: 'low_wood_stool', loai_neo: 'dat', vi_tri: 'phai', lop: 'giua' },
+      ],
+      nhip: [
+        {
+          moc: 'bat_dau',
+          thoi_luong: 0.4,
+          nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang', cam_chen_tra: true } },
+        },
+      ],
+    },
+  },
 ];
 
 console.log(`Đang dựng khung 1080×1920 toàn cảnh họ "${familyArg}" qua parseGoiChen...`);
 const lineupSvg1x = renderFull1080x1920SvgFromGoiChen(lineupGoiChen, 'pre_pivot');
 
-console.log(`Đang dựng ${RED_CASES.length} khung 1080×1920 bản Đỏ Chu Sa sau cú lật...`);
-const redSvgs = RED_CASES.map((rc) => ({
+console.log(`Đang dựng ${CARD_CASES.length} khung 1080×1920 bản Đỏ & Lữ khách cầm chén...`);
+const redSvgs = CARD_CASES.map((rc) => ({
   label: rc.label,
+  crop: rc.crop,
   svg: renderFull1080x1920SvgFromGoiChen(rc.goi, 'post_pivot'),
 }));
 
@@ -313,7 +396,6 @@ cg = ctypes.CDLL("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics
 cf = ctypes.CDLL("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")
 imageio = ctypes.CDLL("/System/Library/Frameworks/ImageIO.framework/ImageIO")
 coresvg = ctypes.CDLL("/System/Library/PrivateFrameworks/CoreSVG.framework/CoreSVG")
-ct = ctypes.CDLL("/System/Library/Frameworks/CoreText.framework/CoreText")
 
 cf.CFDataCreate.restype = c_void_p; cf.CFDataCreate.argtypes = [c_void_p, c_char_p, c_size_t]
 cf.CFStringCreateWithCString.restype = c_void_p; cf.CFStringCreateWithCString.argtypes = [c_void_p, c_char_p, c_uint32]
@@ -332,11 +414,6 @@ cg.CGImageRelease.argtypes = [c_void_p]
 cg.CGImageCreateWithImageInRect.restype = c_void_p; cg.CGImageCreateWithImageInRect.argtypes = [c_void_p, CGRect]
 cg.CGContextDrawImage.argtypes = [c_void_p, CGRect, c_void_p]
 cg.CGContextScaleCTM.argtypes = [c_void_p, c_double, c_double]
-cg.CGContextSetRGBFillColor.argtypes = [c_void_p, c_double, c_double, c_double, c_double]
-cg.CGContextSetRGBStrokeColor.argtypes = [c_void_p, c_double, c_double, c_double, c_double]
-cg.CGContextSetLineWidth.argtypes = [c_void_p, c_double]
-cg.CGContextFillRect.argtypes = [c_void_p, CGRect]
-cg.CGContextStrokeRect.argtypes = [c_void_p, CGRect]
 
 imageio.CGImageDestinationCreateWithURL.restype = c_void_p; imageio.CGImageDestinationCreateWithURL.argtypes = [c_void_p, c_void_p, c_size_t, c_void_p]
 imageio.CGImageDestinationAddImage.argtypes = [c_void_p, c_void_p, c_void_p]
@@ -376,7 +453,7 @@ out_png = payload["out"]
 im_1x = render_svg_to_cgimage(payload["lineupSvg"], 1080, 1920, 1.0)
 im_2x = render_svg_to_cgimage(payload["lineupSvg"], 1080, 1920, 2.0)
 
-# Cắt vùng sân khấu trên khung 1080x1920: x=132..948 (816px), y=560..815 (255px)
+# Cắt vùng sân khấu trên khung 1080x1920: x=132..948 (816px), y=540..810 (270px)
 cx, cy, cw, ch = 132, 540, 816, 270
 crop_1x = cg.CGImageCreateWithImageInRect(im_1x, CGRect(CGPoint(cx, cy), CGSize(cw, ch)))
 
@@ -384,107 +461,78 @@ crop_1x = cg.CGImageCreateWithImageInRect(im_1x, CGRect(CGPoint(cx, cy), CGSize(
 crop_2x_left = cg.CGImageCreateWithImageInRect(im_2x, CGRect(CGPoint(cx * 2, cy * 2), CGSize(cw, ch * 2)))
 crop_2x_right = cg.CGImageCreateWithImageInRect(im_2x, CGRect(CGPoint((cx + cw // 2) * 2, cy * 2), CGSize(cw, ch * 2)))
 
-# 2. Render và cắt vùng trung tâm sân khấu của 6 cảnh vật đỏ sau cú lật
-red_crops = []
-for item in payload["redSvgs"]:
-    rim = render_svg_to_cgimage(item["svg"], 1080, 1920, 1.0)
-    # Vùng trung tâm sân khấu trên khung 1080x1920 (rộng 400, cao 260 quanh x=540, y=545..805)
-    rc = cg.CGImageCreateWithImageInRect(rim, CGRect(CGPoint(430, 550), CGSize(375, 245)))
-    red_crops.append((item["label"], rc))
-    cg.CGImageRelease(rim)
+# 2. Dựng layout tờ duyệt 1720 x 1680 (phần 3 gồm 2 hàng x 4 ô lớn rõ nét)
+SHEET_W, SHEET_H = 1720, 1680
+card_w, card_h = 394, 262
+gap_x, gap_y = 18, 48
 
-# 3. Dựng một SVG khung nhãn tiêu đề sắc nét cho tờ duyệt (1720 x 1440) rồi vẽ đè các ảnh crop thật vào đúng ô!
-SHEET_W, SHEET_H = 1720, 1420
+cards_svg_parts = []
+for idx, item in enumerate(payload["redSvgs"]):
+    col = idx % 4
+    row = idx // 4
+    lx = 44 + col * (card_w + gap_x)
+    ty = 1044 + row * (card_h + gap_y)
+    stroke_col = "#1E1B18" if idx == len(payload["redSvgs"]) - 1 else "#C8432B"
+    cards_svg_parts.append(f'<rect x="{lx}" y="{ty}" width="{card_w}" height="{card_h}" fill="none" stroke="{stroke_col}" stroke-width="1.3" />')
+    cards_svg_parts.append(f'<text x="{lx + card_w // 2}" y="{ty + card_h + 22}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E1B18">{item["label"]}</text>')
+
 labels_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{SHEET_W}" height="{SHEET_H}" viewBox="0 0 {SHEET_W} {SHEET_H}">
   <rect x="0" y="0" width="{SHEET_W}" height="{SHEET_H}" fill="#EAE1D3" />
-  <text x="44" y="48" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#1E1B18">TỜ DUYỆT HỌ ĐẠO CỤ: do_chua (Dựng 100% qua Gói Chén → Validator → Render 1080×1920)</text>
-  <text x="44" y="76" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#6B6259">Thứ tự trái sang phải: Lữ khách · [Bàn trà: chen_tra (alias), am_tra] · mam_com · [Bàn dài: ly_ca_phe, ly_ruou] · vo_ruou (alias) · [Bàn dài: bat_com, hop_com]</text>
+  <text x="44" y="48" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#1E1B18">TỜ DUYỆT HỌ ĐẠO CỤ: do_chua — Lần 2 (Dựng 100% qua Gói Chén → Validator → Render 1080×1920)</text>
+  <text x="44" y="76" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#6B6259">Trái → phải: Lữ khách · [Bàn trà: chen_tra, am_tra] · [Bàn trà: mam_com (2 bat_com + 1 chen_tra)] · [Bàn dài: ly_ca_phe, ly_ruou] · vo_ruou · [Bàn dài: bat_com, hop_com]</text>
 
-  <text x="44" y="114" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">1. Vùng hình 1× cắt trực tiếp từ khung 1080×1920 (816×270 px — đúng tỷ lệ 1:1 trên điện thoại)</text>
+  <text x="44" y="114" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">1. Vùng hình 1× cắt trực tiếp từ khung 1080×1920 (816×270 px — tỷ lệ 1:1 trên điện thoại)</text>
   <rect x="44" y="126" width="816" height="270" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
 
   <rect x="896" y="126" width="780" height="270" rx="8" fill="#F6F1E9" stroke="#C9BFAE" stroke-width="1.2" />
-  <text x="920" y="160" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">Thông số kiểm định tự động (0 lỗi Validator):</text>
-  <text x="920" y="190" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• Alias giữ nguyên bản đã duyệt: chen_tra → small_cup (11.5cm), vo_ruou → wine_jar (58cm)</text>
-  <text x="920" y="218" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• 6 preset mới (trạng thái nhap, dựng từ buildDoChuaProp, không đường SVG tự do):</text>
-  <text x="940" y="244" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#6B6259">- am_tra (21cm) · ly_ca_phe (14cm) · ly_ruou (19cm) · bat_com (15cm) · hop_com (19cm)</text>
-  <text x="940" y="270" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#6B6259">- mam_com (60cm, canBeRed=false, điểm neo: trai_mam, giua_mam, phai_mam)</text>
-  <text x="920" y="298" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• Phong cách T2: nhìn ngang không phối cảnh, tối đa 1–2 nét trong, wash nhạt 0.11</text>
-  <text x="920" y="326" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#C8432B">• Bản đỏ: tô đỏ nhạt (0.32) + viền đỏ trùng dáng 100% (IoU = 1.00, Δbox = 0.00)</text>
+  <text x="920" y="160" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">Cập nhật theo duyệt của chủ kênh (0 lỗi Validator):</text>
+  <text x="920" y="188" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• Đã chuyển duyet: ly_ca_phe (14cm), ly_ruou (19cm), bat_com (15cm), hop_com (19cm)</text>
+  <text x="920" y="214" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• am_tra (nhap): bỏ mảng bết đen, nét viền mảnh 0.56 + wash 0.09, mở thoáng nắp và vòi</text>
+  <text x="920" y="240" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• mam_com (nhap, 86cm): đặt trên bàn trà thấp, đặt đủ 2 bat_com + 1 chen_tra lên 3 điểm neo</text>
+  <text x="920" y="266" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#C8432B">• small_cup &amp; wine_jar: giữ nguyên bản thường, thêm altShapes đỏ (IoU = 1.00, ≥ 500 px²)</text>
+  <text x="920" y="292" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• cam_chen_tra: Lữ khách đứng đưa tay đỡ chén ngang ngực (không còn rơi xuống chân)</text>
+  <text x="920" y="320" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#6B6259">Alias giữ nguyên: chen_tra → small_cup (11.5cm), vo_ruou → wine_jar (58cm)</text>
 
-  <text x="44" y="434" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">2. Phóng 2× (200% pixel thật) cùng vùng hình — Nửa Trái (Lữ khách · chen_tra · am_tra · mam_com) &amp; Nửa Phải (ly_ca_phe · ly_ruou · vo_ruou · bat_com · hop_com)</text>
+  <text x="44" y="434" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">2. Phóng 2× (200% pixel thật) cùng vùng hình — Nửa Trái (am_tra &amp; mam_com trên bàn) &amp; Nửa Phải (ly_ca_phe, ly_ruou, vo_ruou, bat_com, hop_com)</text>
   <rect x="44" y="446" width="816" height="540" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
   <rect x="876" y="446" width="800" height="540" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
 
-  <text x="44" y="1024" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C8432B">3. Bản Đỏ Chu Sa sau cú lật (post-pivot, cắt từ khung 1080×1920 thật — mỗi cảnh 1 vật đỏ hợp lệ ≥ 500 px²)</text>
+  <text x="44" y="1024" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C8432B">3. Bản Đỏ Chu Sa sau cú lật (7 món làm được vật đỏ) &amp; Lữ khách đứng cầm chén (cam_chen_tra)</text>
+  {"".join(cards_svg_parts)}
 </svg>'''
 
 sheet_bg = render_svg_to_cgimage(labels_svg, SHEET_W, SHEET_H, 1.0)
 ctx = cg.CGBitmapContextCreate(None, SHEET_W, SHEET_H, 8, SHEET_W * 4, cs_rgb, 1)
 
-# Trong CoreGraphics bitmap context, gốc Y=0 ở ĐÁY ảnh: cy_cg = SHEET_H - top_y - h
-def draw_at_top_left(img, left_x, top_y, w, h):
+def draw2(img, left_x, top_y, w, h):
     cg.CGContextDrawImage(ctx, CGRect(CGPoint(left_x, SHEET_H - top_y - h), CGSize(w, h)), img)
 
-draw_at_top_left(sheet_bg, 0, 0, SHEET_W, SHEET_H)
-draw_at_top_left(crop_1x, 44, 126, 816, 270)
-draw_at_top_left(crop_2x_left, 44, 446, 816, 540)
-draw_at_top_left(crop_2x_right, 876, 446, 800, 540)
-
-# Vẽ 5 ô bản đỏ ngang hàng dưới (mỗi ô 316 x 205, vừa khít chiều ngang 1632px)
-card_w, card_h = 316, 205
-gap = 13
-for idx, (label, rc_img) in enumerate(red_crops):
-    lx = 44 + idx * (card_w + gap)
-    ty = 1042
-    draw_at_top_left(rc_img, lx, ty, card_w, card_h)
-    cg.CGImageRelease(rc_img)
-
-# Vẽ nhãn tên dưới mỗi ô bản đỏ bằng một lớp SVG trong suốt
-red_labels = ['<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1420" viewBox="0 0 1720 1420">']
-for idx, item in enumerate(payload["redSvgs"]):
-    lx = 44 + idx * (card_w + gap)
-    red_labels.append(f'<rect x="{lx}" y="1042" width="{card_w}" height="{card_h}" fill="none" stroke="#C8432B" stroke-width="1.2" />')
-    red_labels.append(f'<text x="{lx + card_w // 2}" y="1269" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E1B18">{item["label"]}</text>')
-red_labels.append(f'<text x="44" y="1308" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#6B6259">Ghi chú: mam_com khoá canBeRed=false; chen_tra (small_cup) &amp; vo_ruou (wine_jar) là alias giữ nguyên bản đã duyệt sẵn.</text>')
-red_labels.append('</svg>')
-overlay_im = render_svg_to_cgimage("".join(red_labels), SHEET_W, SHEET_H, 1.0)
-# Vì CGBitmapContext không bật alpha premultiplied ở trên, vẽ nhãn trực tiếp vào labels_svg rồi render 1 lần!
-cg.CGImageRelease(overlay_im)
-cg.CGContextRelease(ctx)
-
-# Ghép sạch 1 lần: đưa khung viền + nhãn ô đỏ vào thẳng labels_svg trước khi vẽ các crop!
-full_labels_svg = labels_svg.replace("</svg>", "".join(red_labels[1:]))
-cg.CGImageRelease(sheet_bg)
-sheet_bg2 = render_svg_to_cgimage(full_labels_svg, SHEET_W, SHEET_H, 1.0)
-
-ctx2 = cg.CGBitmapContextCreate(None, SHEET_W, SHEET_H, 8, SHEET_W * 4, cs_rgb, 1)
-def draw2(img, left_x, top_y, w, h):
-    cg.CGContextDrawImage(ctx2, CGRect(CGPoint(left_x, SHEET_H - top_y - h), CGSize(w, h)), img)
-
-draw2(sheet_bg2, 0, 0, SHEET_W, SHEET_H)
+draw2(sheet_bg, 0, 0, SHEET_W, SHEET_H)
 draw2(crop_1x, 44, 126, 816, 270)
 draw2(crop_2x_left, 44, 446, 816, 540)
 draw2(crop_2x_right, 876, 446, 800, 540)
 
-# Re-crop red images cleanly
 for idx, item in enumerate(payload["redSvgs"]):
     rim = render_svg_to_cgimage(item["svg"], 1080, 1920, 1.0)
-    rc = cg.CGImageCreateWithImageInRect(rim, CGRect(CGPoint(430, 550), CGSize(375, 245)))
-    lx = 44 + idx * (card_w + gap)
-    draw2(rc, lx, 1042, card_w, card_h)
+    rx0, ry0, rw, rh = item["crop"]
+    rc = cg.CGImageCreateWithImageInRect(rim, CGRect(CGPoint(rx0, ry0), CGSize(rw, rh)))
+    col = idx % 4
+    row = idx // 4
+    lx = 44 + col * (card_w + gap_x)
+    ty = 1044 + row * (card_h + gap_y)
+    draw2(rc, lx, ty, card_w, card_h)
     cg.CGImageRelease(rc)
     cg.CGImageRelease(rim)
 
-out_im = cg.CGBitmapContextCreateImage(ctx2)
+out_im = cg.CGBitmapContextCreateImage(ctx)
 pbytes = out_png.encode("utf-8")
 url = cf.CFURLCreateFromFileSystemRepresentation(None, pbytes, len(pbytes), False)
 dest = imageio.CGImageDestinationCreateWithURL(url, uti_png, 1, None)
 imageio.CGImageDestinationAddImage(dest, out_im, None)
 imageio.CGImageDestinationFinalize(dest)
 
-cf.CFRelease(dest); cf.CFRelease(url); cg.CGImageRelease(out_im); cg.CGContextRelease(ctx2)
-cg.CGImageRelease(sheet_bg2); cg.CGImageRelease(crop_1x); cg.CGImageRelease(crop_2x_left); cg.CGImageRelease(crop_2x_right)
+cf.CFRelease(dest); cf.CFRelease(url); cg.CGImageRelease(out_im); cg.CGContextRelease(ctx)
+cg.CGImageRelease(sheet_bg); cg.CGImageRelease(crop_1x); cg.CGImageRelease(crop_2x_left); cg.CGImageRelease(crop_2x_right)
 cg.CGImageRelease(im_1x); cg.CGImageRelease(im_2x)
 print("SAVED", out_png)
 `;

@@ -172,17 +172,19 @@ export function parametricSymmetricVesselBody(params: {
 
 /**
  * Hàm sinh nắp vòm thấp nhìn ngang (đáy phẳng `baseY`, đỉnh khum cao `archH`).
+ * `openBottom = true`: bỏ đoạn đóng nét đáy (`Z`) để không chập 2 nét đen lên cạnh miệng thân bình/ấm.
  */
 export function parametricArchLid(params: {
   width: number;
   baseY: number;
   archH: number;
+  openBottom?: boolean;
   strokeScale?: number;
   fillOpacity?: number;
 }): InlineShape {
   const r = params.width / 2;
   const peakCtrlY = params.baseY - params.archH * 1.65;
-  const d = `M ${f2(-r)} ${f2(params.baseY)} Q 0 ${f2(peakCtrlY)} ${f2(r)} ${f2(params.baseY)} Z`;
+  const d = `M ${f2(-r)} ${f2(params.baseY)} Q 0 ${f2(peakCtrlY)} ${f2(r)} ${f2(params.baseY)}${params.openBottom ? '' : ' Z'}`;
   return {
     d,
     fill: 'bg',

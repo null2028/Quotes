@@ -7,7 +7,7 @@
  * - Nét mảnh chuẩn T2, tối đa 1–2 nét chi tiết bên trong, wash nền giấy nhạt (`fill: 'bg'`), bản đỏ đồng dạng 100%.
  * - Preset đã `duyet` sẵn (`small_cup`, `wine_jar`) KHÔNG vẽ lại, chỉ gắn bằng alias (`chen_tra`, `vo_ruou`).
  */
-import type { AnchorKind, SemanticLayer } from '../stageConstants';
+import type { AnchorKind, PropCatalogStatus, SemanticLayer } from '../stageConstants';
 import type {
   CustomPropDefinition,
   InlineShape,
@@ -31,6 +31,7 @@ import {
 } from './primitives';
 
 export interface DoChuaParams {
+  status?: PropCatalogStatus;
   labelVi: string;
   kichThuocThatCm: number;
   description5: PropDescription5;
@@ -39,6 +40,8 @@ export interface DoChuaParams {
   allowedAnchorKinds?: AnchorKind[];
   anchors?: Record<string, [number, number]>;
   canBeRed: boolean;
+  bodyStrokeScale?: number;
+  fillOpacity?: number;
 
   // Tham số hình học đặc trưng họ `do_chua`: thân / miệng / độ cao / chân đế / nắp / quai / vòi
   kieuThan: 'than_xoay' | 'hop_chu_nhat';
@@ -54,7 +57,13 @@ export interface DoChuaParams {
     | { loai: 'chan_cao'; rongDe: number; caoTru: number };
 
   napDay?:
-    | { loai: 'vom_num'; rong: number; caoVom: number; banKinhNum: number }
+    | {
+        loai: 'vom_num';
+        rong: number;
+        caoVom: number;
+        banKinhNum: number;
+        openBottom?: boolean;
+      }
     | { loai: 'khe_dai_gai'; leTren: number; rongDai: number };
 
   quaiCam?: {
@@ -70,6 +79,7 @@ export interface DoChuaParams {
     tyLeGocDuoi: number;
     vuonNgang: number;
     nhoCaoSoVoiMieng: number;
+    doDayDauVoi?: number;
   };
 
   netChiTiet?: {
@@ -101,9 +111,10 @@ function sampleVesselHalfWidthAt(
  */
 export function buildDoChuaProp(params: DoChuaParams): CustomPropDefinition {
   const isLarge = params.kichThuocThatCm >= 30;
-  const bodyStroke = isLarge
-    ? FAMILY_LARGE_BODY_STROKE_SCALE
-    : FAMILY_BODY_STROKE_SCALE;
+  const bodyStroke =
+    params.bodyStrokeScale ??
+    (isLarge ? FAMILY_LARGE_BODY_STROKE_SCALE : FAMILY_BODY_STROKE_SCALE);
+  const washOpacity = params.fillOpacity ?? FAMILY_WASH_OPACITY;
 
   const shapes: InlineShape[] = [];
 
@@ -114,7 +125,7 @@ export function buildDoChuaProp(params: DoChuaParams): CustomPropDefinition {
     shapes.push(
       washRectShape(-rong / 2, -cao, rong, cao, 0.2, {
         strokeScale: bodyStroke * 0.92,
-        fillOpacity: FAMILY_WASH_OPACITY * 0.9,
+        fillOpacity: washOpacity * 0.9,
       })
     );
     bodyBaseY = -cao;
@@ -161,7 +172,9 @@ export function buildDoChuaProp(params: DoChuaParams): CustomPropDefinition {
         baseBotY,
         reachX: v.vuonNgang,
         tipY: bodyTopY - v.nhoCaoSoVoiMieng,
-        strokeScale: bodyStroke * 0.95,
+        tipThickness: v.doDayDauVoi,
+        strokeScale: bodyStroke * 0.92,
+        fillOpacity: washOpacity,
       })
     );
   }
@@ -181,7 +194,7 @@ export function buildDoChuaProp(params: DoChuaParams): CustomPropDefinition {
         attachBotX: dir * rBotAttach,
         attachBotY,
         protrude: q.doNho,
-        strokeScale: bodyStroke * 0.95,
+        strokeScale: bodyStroke * 0.92,
       })
     );
   }
@@ -195,7 +208,7 @@ export function buildDoChuaProp(params: DoChuaParams): CustomPropDefinition {
         topW,
         params.caoThan,
         params.boGoc ?? 0.8,
-        { strokeScale: bodyStroke }
+        { strokeScale: bodyStroke, fillOpacity: washOpacity }
       )
     );
   } else {
@@ -208,24 +221,28 @@ export function buildDoChuaProp(params: DoChuaParams): CustomPropDefinition {
         botW,
         bellyRatio: params.tyLeBung ?? 0.55,
         strokeScale: bodyStroke,
+        fillOpacity: washOpacity,
       })
     );
   }
 
   // 4. Nắp đậy (vòm có núm cho ấm trà, hoặc khe nắp + đai gài cho hộp cơm — tối đa 2 nét)
   if (params.napDay?.loai === 'vom_num') {
-    const { rong, caoVom, banKinhNum } = params.napDay;
+    const { rong, caoVom, banKinhNum, openBottom } = params.napDay;
     shapes.push(
       parametricArchLid({
         width: rong,
         baseY: bodyTopY,
         archH: caoVom,
-        strokeScale: bodyStroke * 0.92,
+        openBottom,
+        strokeScale: bodyStroke * 0.88,
+        fillOpacity: washOpacity,
       })
     );
     shapes.push(
-      washCircleShape(0, bodyTopY - caoVom - banKinhNum * 0.85, banKinhNum, {
-        strokeScale: bodyStroke * 0.85,
+      washCircleShape(0, bodyTopY - caoVom - banKinhNum * 0.9, banKinhNum, {
+        strokeScale: bodyStroke * 0.82,
+        fillOpacity: washOpacity,
       })
     );
   } else if (params.napDay?.loai === 'khe_dai_gai') {
@@ -275,7 +292,7 @@ export function buildDoChuaProp(params: DoChuaParams): CustomPropDefinition {
   const totalHeight = Math.abs(box[1]);
 
   return {
-    status: 'nhap',
+    status: params.status ?? 'nhap',
     labelVi: params.labelVi,
     kich_thuoc_that: params.kichThuocThatCm,
     description5: params.description5,
@@ -312,6 +329,7 @@ export const DO_CHUA_LEGACY_DRAFT_ALIASES: Record<string, string> = {
  */
 export const DO_CHUA_NEW_PRESETS: Record<string, CustomPropDefinition> = {
   am_tra: buildDoChuaProp({
+    status: 'duyet',
     labelVi: 'Ấm trà gốm nhỏ',
     kichThuocThatCm: 21,
     description5: {
@@ -324,24 +342,34 @@ export const DO_CHUA_NEW_PRESETS: Record<string, CustomPropDefinition> = {
     anchorKind: 'tren',
     allowedAnchorKinds: ['tren', 'dat'],
     canBeRed: true,
+    bodyStrokeScale: 0.56,
+    fillOpacity: 0.09,
     kieuThan: 'than_xoay',
     rongMieng: 5.2,
     rongBung: 9.0,
     rongDay: 4.8,
     caoThan: 6.2,
     tyLeBung: 0.56,
-    napDay: { loai: 'vom_num', rong: 4.2, caoVom: 0.9, banKinhNum: 0.52 },
+    napDay: {
+      loai: 'vom_num',
+      rong: 4.4,
+      caoVom: 0.95,
+      banKinhNum: 0.44,
+      openBottom: true,
+    },
     quaiCam: { ben: 'trai', tyLeTren: 0.18, tyLeDuoi: 0.78, doNho: 2.35 },
     voiRot: {
       ben: 'phai',
-      tyLeGocTren: 0.34,
-      tyLeGocDuoi: 0.74,
+      tyLeGocTren: 0.28,
+      tyLeGocDuoi: 0.78,
       vuonNgang: 3.0,
       nhoCaoSoVoiMieng: 0.35,
+      doDayDauVoi: 1.35,
     },
   }),
 
   bat_com: buildDoChuaProp({
+    status: 'duyet',
     labelVi: 'Bát cơm gốm',
     kichThuocThatCm: 15,
     description5: {
@@ -365,6 +393,7 @@ export const DO_CHUA_NEW_PRESETS: Record<string, CustomPropDefinition> = {
   }),
 
   ly_ca_phe: buildDoChuaProp({
+    status: 'duyet',
     labelVi: 'Ly cà phê có quai',
     kichThuocThatCm: 14,
     description5: {
@@ -388,6 +417,7 @@ export const DO_CHUA_NEW_PRESETS: Record<string, CustomPropDefinition> = {
   }),
 
   ly_ruou: buildDoChuaProp({
+    status: 'duyet',
     labelVi: 'Ly rượu chân cao',
     kichThuocThatCm: 19,
     description5: {
@@ -411,6 +441,7 @@ export const DO_CHUA_NEW_PRESETS: Record<string, CustomPropDefinition> = {
   }),
 
   hop_com: buildDoChuaProp({
+    status: 'duyet',
     labelVi: 'Hộp cơm trưa',
     kichThuocThatCm: 19,
     description5: {
@@ -431,30 +462,31 @@ export const DO_CHUA_NEW_PRESETS: Record<string, CustomPropDefinition> = {
   }),
 
   mam_com: buildDoChuaProp({
+    status: 'duyet',
     labelVi: 'Mâm cơm tròn dẹt',
-    kichThuocThatCm: 60,
+    kichThuocThatCm: 86,
     description5: {
       nghia: 'Mâm cơm gia đình quây quần hoặc khoảng trống đợi người chưa kịp về nhà.',
-      cau_truc: 'Gồm 3 đặc điểm nhận diện là mặt khay ngang rộng phẳng thấp sát sàn, thành vành loe nhẹ hai đầu và chân đế vành lót mỏng bên dưới.',
-      bong_dang: 'Dải khay ngang dẹt rộng gần hai phần ba bàn trà nhưng chỉ cao sát mặt đất, có sẵn 3 điểm neo đặt bát và chén.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là mặt khay ngang rộng phẳng thấp, thành vành loe nhẹ hai đầu và chân đế vành lót mỏng bên dưới.',
+      bong_dang: 'Dải khay ngang rộng vừa khít mặt bàn trà, có 3 điểm neo trai_mam, giua_mam, phai_mam đặt được trọn 2 bát cơm và 1 chén trà không chạm nhau.',
       the_gioi: 'Vẽ nhìn ngang thuần khiết không bẻ elip phối cảnh, khoá không làm vật đỏ để làm nền tôn bát cơm hoặc chén trà bên trên.',
-      nguoi_la: 'Đặt dưới sàn hiên quê hay bên cạnh bát cơm, người lạ nhìn dáng khay dẹt loe vành có chân đế thấp là nhận ra chiếc mâm cơm.',
+      nguoi_la: 'Đặt trên bàn trà hay chiếu quê với bát cơm và chén trà phía trên, người lạ nhìn dáng khay dẹt loe vành là nhận ra chiếc mâm cơm.',
     },
-    anchorKind: 'dat',
-    allowedAnchorKinds: ['dat', 'tren'],
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'dat'],
     anchors: {
-      trai_mam: [-5.0, -2.55],
-      giua_mam: [0, -2.55],
-      phai_mam: [5.0, -2.55],
+      trai_mam: [-8.8, -2.65],
+      giua_mam: [0, -2.65],
+      phai_mam: [8.8, -2.65],
     },
     canBeRed: false,
     kieuThan: 'than_xoay',
-    rongMieng: 18.6,
-    rongBung: 17.6,
-    rongDay: 15.8,
+    rongMieng: 27.6,
+    rongBung: 26.4,
+    rongDay: 24.0,
     caoThan: 2.0,
     tyLeBung: 0.5,
-    chanDe: { loai: 'de_vanh', rong: 13.6, cao: 0.65 },
+    chanDe: { loai: 'de_vanh', rong: 20.0, cao: 0.65 },
   }),
 };
 

@@ -605,15 +605,15 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
 
         {limbStrokeP > 0.002 &&
           effectiveSit <= 0.4 &&
-          (
-            [
+          (() => {
+            const poseArms = [
               {
                 key: 'reach_out',
                 weight: wReachOut,
                 target: [
                   16.8 + shoulderShiftX * 0.5,
                   -28.5 + shoulderDropY * 0.5 - breathSin * 0.12,
-                ],
+                ] as const,
               },
               {
                 key: 'give',
@@ -621,7 +621,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 target: [
                   16.6 + shoulderShiftX * 0.5,
                   -23.6 + shoulderDropY * 0.5 - breathSin * 0.12,
-                ],
+                ] as const,
               },
               {
                 key: 'hold_up',
@@ -629,7 +629,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 target: [
                   13.4 + shoulderShiftX * 0.4,
                   -39.8 + shoulderDropY * 0.4 - breathSin * 0.12,
-                ],
+                ] as const,
               },
               {
                 key: 'push',
@@ -637,7 +637,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 target: [
                   17.8 + shoulderShiftX * 0.5,
                   -31.5 + shoulderDropY * 0.5,
-                ],
+                ] as const,
               },
               {
                 key: 'sit_slump',
@@ -645,65 +645,109 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 target: [
                   frontLegIK.jx - 0.4,
                   frontLegIK.jy - 1.8 - breathSin * 0.08,
-                ],
+                ] as const,
               },
-            ] as const
-          ).map(({ key, weight, target }) => {
-            if (weight <= 0.01) return null;
-            const w = Math.max(0, Math.min(1, weight));
-            const restX = shoulderX + 2.2;
-            const restY = shoulderY + 9.5;
-            const tx = restX + (target[0] - restX) * w;
-            const ty = restY + (target[1] - restY) * w;
-            const armIK = solveTwoBoneIK(
+              {
+                key: 'hold_teacup',
+                weight:
+                  teaCupOpacity *
+                  Math.max(
+                    0,
+                    1 - (wReachOut + wGive + wHoldUp + wPush + wSitSlump)
+                  ),
+                target: [
+                  14.8 + shoulderShiftX * 0.6,
+                  -24.2 + shoulderDropY * 0.6 - breathSin * 0.12,
+                ] as const,
+              },
+            ];
+            return poseArms.map(({ key, weight, target }) => {
+              if (weight <= 0.01) return null;
+              const w = Math.max(0, Math.min(1, weight));
+              const restX = shoulderX + 2.2;
+              const restY = shoulderY + 9.5;
+              const tx = restX + (target[0] - restX) * w;
+              const ty = restY + (target[1] - restY) * w;
+              const armIK = solveTwoBoneIK(
+                shoulderX,
+                shoulderY,
+                tx,
+                ty,
+                upperArmLen,
+                forearmLen,
+                1
+              );
+              return (
+                <path
+                  key={key}
+                  d={`M ${shoulderX.toFixed(2)} ${shoulderY.toFixed(2)} L ${armIK.jx.toFixed(2)} ${armIK.jy.toFixed(2)} L ${armIK.ex.toFixed(2)} ${armIK.ey.toFixed(2)}`}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={effStroke * (limbMult * 0.92)}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={limbOpacity * w * limbInkGate}
+                  {...limbDrawProps}
+                />
+              );
+            });
+          })()}
+
+        {teaCupOpacity > 0.01 &&
+          (() => {
+            const holdStandTargetX =
+              14.8 + shoulderShiftX * 0.6;
+            const holdStandTargetY =
+              -24.2 + shoulderDropY * 0.6 - breathSin * 0.12;
+            const standCupIK = solveTwoBoneIK(
               shoulderX,
               shoulderY,
-              tx,
-              ty,
+              holdStandTargetX +
+                wHoldUp * (13.4 + shoulderShiftX * 0.4 - holdStandTargetX) +
+                wReachOut * (16.8 + shoulderShiftX * 0.5 - holdStandTargetX) +
+                wGive * (16.6 + shoulderShiftX * 0.5 - holdStandTargetX),
+              holdStandTargetY +
+                wHoldUp * (-39.8 + shoulderDropY * 0.4 - holdStandTargetY) +
+                wReachOut * (-28.5 + shoulderDropY * 0.5 - holdStandTargetY) +
+                wGive * (-23.6 + shoulderDropY * 0.5 - holdStandTargetY),
               upperArmLen,
               forearmLen,
               1
             );
-            return (
-              <path
-                key={key}
-                d={`M ${shoulderX.toFixed(2)} ${shoulderY.toFixed(2)} L ${armIK.jx.toFixed(2)} ${armIK.jy.toFixed(2)} L ${armIK.ex.toFixed(2)} ${armIK.ey.toFixed(2)}`}
-                fill="none"
-                stroke={color}
-                strokeWidth={effStroke * (limbMult * 0.92)}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity={limbOpacity * w * limbInkGate}
-                {...limbDrawProps}
-              />
-            );
-          })}
-      </g>
+            const seatedHandX = 13.8 + deepSlump * 2.4;
+            const seatedHandY = -19.8 - breathSin * 0.06;
+            const cupBaseX =
+              (standCupIK.ex + 1.5) * (1 - effectiveSit) +
+              (seatedHandX + 2.2) * effectiveSit;
+            const cupBaseY =
+              (standCupIK.ey + 0.2) * (1 - effectiveSit) +
+              seatedHandY * effectiveSit;
 
-      {teaCupOpacity > 0.01 && (
-        <g opacity={teaCupOpacity}>
-          <path
-            d="M 21.5 -5.5 Q 22.1 -1.2 23.0 -0.5 L 27.0 -0.5 Q 27.9 -1.2 28.5 -5.5 Z"
-            fill={bgColor}
-          />
-          <path
-            d="M 21.5 -5.5 Q 22.1 -1.2 23.0 -0.5 L 27.0 -0.5 Q 27.9 -1.2 28.5 -5.5 Z"
-            fill={accentColor}
-            fillOpacity={solidFill ? 0.95 : 0.22}
-            stroke={accentColor}
-            strokeWidth={effStroke * (solidFill ? 0.4 : 0.82)}
-            strokeLinejoin="round"
-          />
-          <path
-            d={`M 25 -8 Q ${(23.6 + steamWave * 1.5).toFixed(2)} -12.0 ${(25.4 - steamWave * 1.1).toFixed(2)} ${(-15.5 - steamLift * 2.4).toFixed(2)} Q ${(26.8 + steamWave * 1.3).toFixed(2)} -18.5 ${(24.8 - steamWave * 0.8).toFixed(2)} ${(-21.2 - steamLift * 2.8).toFixed(2)}`}
-            fill="none"
-            stroke={accentColor}
-            strokeWidth={effStroke * 0.52}
-            strokeLinecap="round"
-            opacity={0.48 + 0.22 * Math.sin(steamLift * 0.01 + steamLift * Math.PI)}
-          />
-        </g>
-      )}
+            const cupD = `M ${(cupBaseX - 3.5).toFixed(2)} ${(cupBaseY - 5.0).toFixed(2)} Q ${(cupBaseX - 2.9).toFixed(2)} ${(cupBaseY - 0.7).toFixed(2)} ${(cupBaseX - 2.0).toFixed(2)} ${cupBaseY.toFixed(2)} L ${(cupBaseX + 2.0).toFixed(2)} ${cupBaseY.toFixed(2)} Q ${(cupBaseX + 2.9).toFixed(2)} ${(cupBaseY - 0.7).toFixed(2)} ${(cupBaseX + 3.5).toFixed(2)} ${(cupBaseY - 5.0).toFixed(2)} Z`;
+
+            return (
+              <g opacity={teaCupOpacity * limbInkGate}>
+                <path d={cupD} fill={bgColor} />
+                <path
+                  d={cupD}
+                  fill={accentColor}
+                  fillOpacity={solidFill ? 0.95 : 0.22}
+                  stroke={accentColor}
+                  strokeWidth={effStroke * (solidFill ? 0.4 : 0.82)}
+                  strokeLinejoin="round"
+                />
+                <path
+                  d={`M ${cupBaseX.toFixed(2)} ${(cupBaseY - 7.5).toFixed(2)} Q ${(cupBaseX - 1.4 + steamWave * 1.5).toFixed(2)} ${(cupBaseY - 11.5).toFixed(2)} ${(cupBaseX + 0.4 - steamWave * 1.1).toFixed(2)} ${(cupBaseY - 15.0 - steamLift * 2.4).toFixed(2)} Q ${(cupBaseX + 1.8 + steamWave * 1.3).toFixed(2)} ${(cupBaseY - 18.0).toFixed(2)} ${(cupBaseX - 0.2 - steamWave * 0.8).toFixed(2)} ${(cupBaseY - 20.7 - steamLift * 2.8).toFixed(2)}`}
+                  fill="none"
+                  stroke={accentColor}
+                  strokeWidth={effStroke * 0.52}
+                  strokeLinecap="round"
+                  opacity={0.48 + 0.22 * Math.sin(steamLift * 0.01 + steamLift * Math.PI)}
+                />
+              </g>
+            );
+          })()}
+      </g>
     </g>
   );
 };
