@@ -1,6 +1,14 @@
 import React from 'react';
 import { useVideoConfig } from 'remotion';
 
+function useSafeDurationInFrames(): number {
+  try {
+    return useVideoConfig().durationInFrames;
+  } catch {
+    return 900;
+  }
+}
+
 function periodicCycle(
   frame: number | undefined,
   phase: number | undefined,
@@ -33,7 +41,7 @@ export const SlowRain: React.FC<{
   count?: number;
   shelterZone?: { minX: number; maxX: number; topY: number };
 }> = ({ frame = 0, phase, opacity = 1, color, count = 15, shelterZone }) => {
-  const { durationInFrames } = useVideoConfig();
+  const durationInFrames = useSafeDurationInFrames();
   if (opacity <= 0.01) return null;
   const periodFrames = resolveLoopPeriodFrames(durationInFrames, 180);
   return (
@@ -93,7 +101,7 @@ export const WindBreeze: React.FC<{
   direction = 'left',
   count = 5,
 }) => {
-  const { durationInFrames } = useVideoConfig();
+  const durationInFrames = useSafeDurationInFrames();
   if (opacity <= 0.01) return null;
   const dir = direction === 'left' ? -1 : 1;
   const periodFrames = resolveLoopPeriodFrames(durationInFrames, 300);
@@ -145,7 +153,7 @@ export const NotificationRings: React.FC<{
   opacity = 1,
   maxRadius = 26,
 }) => {
-  const { durationInFrames } = useVideoConfig();
+  const durationInFrames = useSafeDurationInFrames();
   if (opacity <= 0.01) return null;
   const periodFrames = resolveLoopPeriodFrames(durationInFrames, 180);
   const p1 = periodicCycle(frame, phase, periodFrames, 0);
@@ -184,7 +192,7 @@ export const FallingLeaves: React.FC<{
   accentColor?: string;
   count?: number;
 }> = ({ frame = 0, phase, opacity = 1, color, accentColor, count = 7 }) => {
-  const { durationInFrames } = useVideoConfig();
+  const durationInFrames = useSafeDurationInFrames();
   if (opacity <= 0.01) return null;
   const periodFrames = resolveLoopPeriodFrames(durationInFrames, 450);
   return (
@@ -227,7 +235,7 @@ export const RisingSteam: React.FC<{
   opacity?: number;
   height?: number;
 }> = ({ x, y, frame, phase, color, opacity = 1, height = 30 }) => {
-  const { durationInFrames } = useVideoConfig();
+  const durationInFrames = useSafeDurationInFrames();
   if (opacity <= 0.01) return null;
   const periodFrames = resolveLoopPeriodFrames(durationInFrames, 300);
   const c1 = periodicCycle(frame, phase, periodFrames, 0);
@@ -334,7 +342,7 @@ export const CelestialBody: React.FC<{
   opacity,
   progress,
 }) => {
-  const { durationInFrames } = useVideoConfig();
+  const durationInFrames = useSafeDurationInFrames();
   const actualX = x ?? cx ?? 420;
   const actualY = y ?? cy ?? 125;
   const baseRadius = radius ?? r ?? 25;

@@ -1,8 +1,7 @@
 import React from 'react';
 import { useVideoConfig } from 'remotion';
-import { evolvePath } from '@remotion/paths';
 import { ThemePalette, isDarkThemePalette } from '../theme/palettes';
-import { RisingSteam, NotificationRings } from '../kit/Atmosphere';
+import { NotificationRings } from '../kit/Atmosphere';
 import {
   CustomPropDefinition,
   InlineShape,
@@ -36,48 +35,79 @@ export const BUILT_IN_PROP_NAMES = [
   'hourglass',
   'chat_bubble',
   'cloud_wisp',
+  // 6 đạo cụ nhóm công sở & bàn trà đã được chủ kênh duyệt (`duyet`)
+  'std_chair',
+  'low_wood_stool',
+  'std_work_desk',
+  'low_tea_table',
+  'desk_calendar',
+  'desk_laptop',
+  // 5 đạo cụ đang trình duyệt lại ở Tờ duyệt lần 3 (`nhap`)
+  'vi_tien',
+  'thiep',
+  'phong_bi',
+  'hoa_don',
+  'porch_window',
 ] as const;
 
 export type BuiltInPropName = (typeof BUILT_IN_PROP_NAMES)[number];
 
 /**
- * Kho 25 (+1) Đạo Cụ Tối Giản Dựng Sẵn chuẩn DNA Trà Nguội.
- * - Đạo cụ mặt đất: (0, 0) là đáy tiếp đất, vẽ âm lên trên (y < 0).
- * - Đạo cụ cầm tay / gắn đầu / bay: (0, 0) là tâm gắn kết.
+ * Danh sách 5 đạo cụ chưa đạt đang trình duyệt lại ở Tờ duyệt lần 3 (giữ ở trạng thái `nhap`).
  */
+export const APPROVAL_BATCH_PROP_NAMES = [] as const;
+
 /**
- * Tên gọi tắt mà kịch bản AI hay dùng nhưng không có trong kho đạo cụ.
- * Chỉ áp dụng khi tên gốc không tồn tại (tránh ghế/bàn bị tàng hình).
+ * Chỉ giữ alias này cho các kịch bản `legacy` (khi customPropsMap được nạp).
+ * Với kịch bản mới, Validator chặn cứng tên lạ và gợi ý tên đúng (ví dụ "stool" -> "low_wood_stool").
  */
 export const PROP_TYPE_ALIASES: Record<string, string> = {
   stool: 'std_chair',
 };
 
 export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
-  // 1. Cánh thư giấy uốn cong mềm mại trong gió + nếp gấp thanh mảnh & dấu triện tròn nhỏ
+  // === NHÓM ĐẠO CỤ GỐC ĐÃ DÙNG Ở CÁC CHÉN GẦN ĐÂY (trạng thái `duyet`, đủ kich_thuoc_that, box & anchors) ===
+
+  // 1. Cánh thư giấy uốn cong mềm mại + dấu triện (kich_thuoc_that: 18 cm -> 18 * 0.32 * 2.0 = 11.52)
   envelope: {
+    status: 'duyet',
+    labelVi: 'Cánh thư giấy cổ phong',
+    kich_thuoc_that: 18,
+    description5: {
+      nghia: 'Lá thư tay mềm mại gợi nỗi nhớ hoặc lời nhắn gửi phương xa.',
+      cau_truc: 'Gồm 3 nét nhận diện là mép giấy uốn lượn nhẹ, đường nắp thư cong mềm và chấm triện tròn giữa thân.',
+      bong_dang: 'Phiến chữ nhật uốn cong nhẹ hai cạnh ngang như tờ giấy gió cầm trên tay.',
+      the_gioi: 'Vẽ bằng nét bút lông mảnh nhẹ màu giấy, đồng điệu với các cảnh cổ phong ngoài trời.',
+      nguoi_la: 'Nhìn đường nắp thư chữ V uốn mềm và chấm triện giữa tờ giấy là người lạ nhận ra bức thư.',
+    },
     anchorType: 'hand',
-    emitterOffset: [0, -0.8],
+    defaultLayer: 'giua',
+    anchorKind: 'cam',
+    allowedAnchorKinds: ['cam', 'tren', 'dat'],
+    box: [-6.1, -4.3, 6.1, 3.6],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [0, -0.5],
     shapes: [
       {
-        d: 'M -10.5 -6.2 Q 0 -7.6 10.5 -5.4 Q 9.8 0 10.8 5.8 Q 0 4.6 -10.4 6.2 Q -11.2 0 -10.5 -6.2 Z',
+        d: 'M -5.5 -3.4 Q 0 -4.1 5.5 -3.0 Q 5.1 0 5.6 3.1 Q 0 2.5 -5.4 3.4 Q -5.8 0 -5.5 -3.4 Z',
         fill: 'bg',
         fillOpacity: 0.12,
       },
       {
-        d: 'M -10.1 -5.8 Q 0 2.2 10.1 -5.1',
+        d: 'M -5.3 -3.2 Q 0 1.2 5.3 -2.8',
         fill: 'none',
         strokeScale: 0.78,
       },
       {
-        d: 'M -6.8 3.5 Q -1.5 1.2 4.2 3.0',
+        d: 'M -3.6 1.9 Q -0.8 0.7 2.2 1.6',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.55,
       },
       {
-        circle: [0, -0.8, 1.55],
+        circle: [0, -0.4, 0.9],
         fill: 'accent',
         fillOpacity: 0.28,
         role: 'accent',
@@ -86,8 +116,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 2. Khăn voan cô dâu: 3 nét cong lụa hở mảnh mai bay mềm xuôi về phía sau lưng + trâm cài nhỏ
+  // 2. Khăn voan cô dâu (`nhap`)
   bridal_veil: {
+    status: 'nhap',
+    labelVi: 'Khăn voan lụa',
     anchorType: 'hand',
     emitterOffset: [0, -2],
     shapes: [
@@ -121,8 +153,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 3. Tim nét đứt hỗ trợ splitProgress (tách đôi trái/phải, theo màu colorRole)
+  // 3. Tim nét đứt (`nhap`)
   dashed_heart: {
+    status: 'nhap',
+    labelVi: 'Tim nét đứt',
     anchorType: 'center',
     emitterOffset: [0, -2],
     shapes: [
@@ -151,8 +185,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 4. Tim nét liền / mực loang dịu
+  // 4. Tim nét liền (`nhap`)
   solid_heart: {
+    status: 'nhap',
+    labelVi: 'Tim chu sa',
     anchorType: 'center',
     emitterOffset: [0, -2],
     shapes: [
@@ -172,9 +208,25 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 5. Vò rượu gốm cổ Mai Bình / Thiên Cầu thanh tao (chuẩn hóa tỷ lệ đặt bàn/đất cao 19px, đáy tại 0,0)
+  // 5. Vò rượu gốm cổ Mai Bình (`duyet`, kich_thuoc_that: 58 cm >= 30 -> 58 * 0.32 * 1.0 = 18.56)
   wine_jar: {
+    status: 'duyet',
+    labelVi: 'Vò rượu gốm Mai Bình',
+    kich_thuoc_that: 58,
+    description5: {
+      nghia: 'Bình rượu tri kỷ gợi cuộc đối ẩm lặng lẽ và nỗi niềm cất giữ lâu năm.',
+      cau_truc: 'Gồm 3 nét nhận diện là miệng bình loe nhỏ, cổ thắt buộc dây tua và bầu gốm phình cao thuôn dần xuống đáy.',
+      bong_dang: 'Dáng bình gốm cổ cao thon có eo thắt rõ ở cổ, tách biệt hoàn toàn với chén trà thấp.',
+      the_gioi: 'Vẽ bằng nét viền mảnh và bóng mực nhạt một bên sườn gốm đúng tinh thần thuỷ mặc.',
+      nguoi_la: 'Thấy dáng bầu cao thắt cổ buộc dây là người lạ nhận ra ngay vò rượu gốm truyền thống.',
+    },
     anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'dat'],
+    box: [-6.4, -19.6, 6.4, 0],
+    anchors: {},
+    canBeRed: true,
     emitterOffset: [0, -19],
     tiltPivot: [-1.2, -0.5],
     shapes: [
@@ -225,27 +277,43 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 6. Chén trà / chén rượu gốm thanh nhã (cao 6.2px, rộng 9.6px, đáy tại 0,0)
+  // 6. Chén trà gốm nhỏ (`duyet`, kich_thuoc_that: 11.5 cm -> 11.5 * 0.32 * 2.0 = 7.36; thân 7.0x5.0 bằng khít 100% chén trên tay Lữ khách!)
   small_cup: {
+    status: 'duyet',
+    labelVi: 'Chén trà gốm nhỏ',
+    kich_thuoc_that: 11.5,
+    description5: {
+      nghia: 'Chén trà nguội đặt trên bàn hoặc bậu cửa, biểu tượng lắng đọng của kênh.',
+      cau_truc: 'Gồm 3 nét nhận diện là miệng chén tròn hơi mở rộng 7 đơn vị, thành chén khum bầu cao 5 đơn vị và chân đế thu gọn.',
+      bong_dang: 'Khối bán nguyệt ngửa nhỏ gọn không quai cầm, cùng kích thước 1:1 với chén trên tay Lữ khách.',
+      the_gioi: 'Chỉ dùng ba nét cọ mảnh và lớp nền giấy nhạt để giữ vẻ mộc mạc thanh tịnh.',
+      nguoi_la: 'Đặt trên mặt bàn trà hay bậu cửa sổ, người lạ nhìn vào biết ngay là chén uống trà.',
+    },
     anchorType: 'ground',
-    emitterOffset: [0, -6.5],
-    tiltPivot: [-1.2, -0.5],
+    defaultLayer: 'giua',
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'cam', 'dat'],
+    box: [-3.85, -5.55, 3.85, 0],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [0, -5.2],
+    tiltPivot: [-1.0, -0.4],
     shapes: [
       {
-        d: 'M -4.8 -6.2 Q -4.2 -1.3 -2.6 0 L 2.6 0 Q 4.2 -1.3 4.8 -6.2 Q 0 -5.4 -4.8 -6.2 Z',
+        d: 'M -3.5 -5.0 Q -2.9 -0.8 -2.0 0 L 2.0 0 Q 2.9 -0.8 3.5 -5.0 Q 0 -4.4 -3.5 -5.0 Z',
         fill: 'bg',
-        fillOpacity: 0.13,
+        fillOpacity: 0.14,
         role: 'ink',
       },
       {
-        d: 'M -3.5 -5.0 Q -3.0 -1.6 -1.6 -0.6',
+        d: 'M -2.5 -4.0 Q -2.1 -1.3 -1.2 -0.5',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
         opacity: 0.5,
       },
       {
-        d: 'M -4.8 -6.2 Q 0 -7.0 4.8 -6.2',
+        d: 'M -3.5 -5.0 Q 0 -5.6 3.5 -5.0',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.72,
@@ -254,8 +322,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 7. Bát cơm gốm thủ công + đôi đũa tre vuốt thon (chuẩn hóa tỷ lệ rộng 16.8px, cao 8.2px, đáy tại 0,0)
+  // 7. Bát cơm gốm (`nhap`)
   rice_bowl: {
+    status: 'nhap',
+    labelVi: 'Bát cơm gốm',
     anchorType: 'ground',
     emitterOffset: [0, -9.2],
     tiltPivot: [-1.4, -0.6],
@@ -302,8 +372,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 8. Chiếc cốc thủy tinh/cà phê/trà sữa + ống hút cong (chuẩn hóa tỷ lệ cao 13.5px, ống hút tới -18.8px, đáy tại 0,0)
+  // 8. Cốc cao (`nhap`)
   tall_cup: {
+    status: 'nhap',
+    labelVi: 'Cốc nước cao',
     anchorType: 'ground',
     emitterOffset: [0, -14.2],
     tiltPivot: [-1.2, -0.5],
@@ -365,8 +437,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 9. Tảng đá cuội / Thái Hồ thạch bất đối xứng kiểu thủy mặc (đáy tại 0,0)
+  // 9. Tảng đá cuội (`nhap`)
   boulder: {
+    status: 'nhap',
+    labelVi: 'Tảng đá cuội',
     anchorType: 'ground',
     emitterOffset: [0, -28],
     shapes: [
@@ -400,9 +474,27 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 10. Chồng sách cổ / hộp hồ sơ buộc dây lụa (chuẩn hóa tỷ lệ cao 24px, đáy tại 0,0)
+  // 10. Chồng hộp hồ sơ (`duyet`, kich_thuoc_that: 76 cm >= 30 -> 76 * 0.32 * 1.0 = 24.32)
   box_stack: {
+    status: 'duyet',
+    labelVi: 'Chồng hộp hồ sơ',
+    kich_thuoc_that: 76,
+    description5: {
+      nghia: 'Khối việc tồn đọng và trách nhiệm chồng chất theo tháng năm.',
+      cau_truc: 'Gồm 3 nét nhận diện là ba thùng hộp xếp tháp nhỏ dần lên trên, đường nắp hộp ngang và sợi dây buộc thò nhẹ.',
+      bong_dang: 'Hình tháp ba tầng bậc thang cân đối đặt vững trên mặt đất.',
+      the_gioi: 'Dùng viền mảnh và nền giấy sáng để chồng hộp không tạo mảng tối nặng nề.',
+      nguoi_la: 'Nhìn ba khối chữ nhật chồng tầng lên nhau là người lạ nhận ra chồng thùng hồ sơ.',
+    },
     anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'dat',
+    allowedAnchorKinds: ['dat', 'tren'],
+    box: [-12.4, -25.0, 12.4, 0],
+    anchors: {
+      dinh_hop: [0, -24.2],
+    },
+    canBeRed: false,
     emitterOffset: [0, -25],
     shapes: [
       {
@@ -446,26 +538,40 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 11. Chiếc ô giấy dầu phương Đông (chuẩn hóa khoảng thở đỉnh đầu: khi xòe tán ô ở y = -34..-20 so với tay -24 -> đỉnh ô ở -58 trên đầu)
+  // 11. Chiếc ô giấy dầu (`duyet`, kich_thuoc_that: 170 cm -> 170 * 0.32 * 1.0 = 54.4)
   umbrella: {
+    status: 'duyet',
+    labelVi: 'Chiếc ô che mưa',
+    kich_thuoc_that: 170,
+    description5: {
+      nghia: 'Sự chở che lặng lẽ giữa cơn mưa đời hoặc khoảng nghiêng nhường cho người bên cạnh.',
+      cau_truc: 'Gồm 3 nét nhận diện là tán ô vòm rộng lượn múi, trục cán thẳng dài và tay cầm móc cong chữ J.',
+      bong_dang: 'Tán vòm cung rộng trên trục mảnh thẳng đứng có móc cong ở cuối cán.',
+      the_gioi: 'Tách rõ trạng thái mở mặc định và trạng thái `gap`; ở mỗi trạng thái bản đỏ giữ nguyên dáng 100%.',
+      nguoi_la: 'Thấy vòm ô và cán móc chữ J là người lạ nhận ra ngay chiếc ô đi mưa.',
+    },
     anchorType: 'hand',
+    defaultLayer: 'giua',
+    anchorKind: 'cam',
+    box: [-28.6, -36.6, 28.6, 10.9],
+    anchors: {},
+    canBeRed: true,
     emitterOffset: [0, -30],
     shapes: [
-      // Trạng thái cụp
       {
-        d: 'M 0 -26 C 0.2 -14 0.2 -2 0 8 Q -3.4 12.2 -6.0 8.8',
+        d: 'M 0 -29 C 0.2 -15 0.2 -2 0 8 Q -3.4 12.2 -6.0 8.8',
         fill: 'none',
         role: 'ink',
         strokeScale: 0.9,
       },
       {
-        d: 'M 0 -26 C -2.6 -18 -4.4 -10 -4.8 -5.0 Q 0 -3.8 4.8 -5.0 C 4.4 -10 2.6 -18 0 -26 Z',
+        d: 'M -28 -18.5 C -19 -32 -7 -36 0 -36 C 7 -36 19 -32 28 -18.5 Q 18.5 -21.8 9.2 -19.0 Q 0 -22.0 -9.2 -19.0 Q -18.5 -21.8 -28 -18.5 Z',
         fill: 'bg',
-        fillOpacity: 0.13,
+        fillOpacity: 0.14,
         role: 'ink',
       },
       {
-        d: 'M -0.4 -22 C -1.4 -15 -2.0 -9 -1.8 -5.0',
+        d: 'M 0 -35.5 C -4.5 -28 -8 -23 -9.2 -19.0 M 0 -35.5 C 4.5 -28 8 -23 9.2 -19.0',
         fill: 'none',
         role: 'secondary',
         strokeScale: 0.55,
@@ -473,7 +579,6 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
       },
     ],
     altShapes: [
-      // Trạng thái xòe rộng màu Đỏ Chu Sa, cao thoáng trên đỉnh đầu nhân vật
       {
         d: 'M 0 -29 C 0.2 -15 0.2 -2 0 8 Q -3.4 12.2 -6.0 8.8',
         fill: 'none',
@@ -483,29 +588,87 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
       {
         d: 'M -28 -18.5 C -19 -32 -7 -36 0 -36 C 7 -36 19 -32 28 -18.5 Q 18.5 -21.8 9.2 -19.0 Q 0 -22.0 -9.2 -19.0 Q -18.5 -21.8 -28 -18.5 Z',
         fill: 'accent',
-        fillOpacity: 0.24,
+        fillOpacity: 0.88,
         role: 'accent',
       },
       {
-        d: 'M 0 -35.5 C -4.5 -28 -8 -23 -9.2 -19.0',
-        fill: 'none',
-        role: 'secondary',
+        d: 'M 0 -35.5 C -4.5 -28 -8 -23 -9.2 -19.0 M 0 -35.5 C 4.5 -28 8 -23 9.2 -19.0',
+        fill: 'bg',
+        fillOpacity: 0,
         strokeScale: 0.55,
-        opacity: 0.52,
-      },
-      {
-        d: 'M 0 -35.5 C 4.5 -28 8 -23 9.2 -19.0',
-        fill: 'none',
-        role: 'secondary',
-        strokeScale: 0.55,
-        opacity: 0.52,
       },
     ],
+    variants: {
+      gap: {
+        labelVi: 'Ô gập gọn',
+        box: [-6.6, -26.6, 5.4, 10.9],
+        shapes: [
+          {
+            d: 'M 0 -26 C 0.2 -14 0.2 -2 0 8 Q -3.4 12.2 -6.0 8.8',
+            fill: 'none',
+            role: 'ink',
+            strokeScale: 0.9,
+          },
+          {
+            d: 'M 0 -26 C -2.6 -18 -4.4 -10 -4.8 -5.0 Q 0 -3.8 4.8 -5.0 C 4.4 -10 2.6 -18 0 -26 Z',
+            fill: 'bg',
+            fillOpacity: 0.13,
+            role: 'ink',
+          },
+          {
+            d: 'M -0.4 -22 C -1.4 -15 -2.0 -9 -1.8 -5.0',
+            fill: 'none',
+            role: 'secondary',
+            strokeScale: 0.55,
+            opacity: 0.52,
+          },
+        ],
+        altShapes: [
+          {
+            d: 'M 0 -26 C 0.2 -14 0.2 -2 0 8 Q -3.4 12.2 -6.0 8.8',
+            fill: 'none',
+            role: 'ink',
+            strokeScale: 0.9,
+          },
+          {
+            d: 'M 0 -26 C -2.6 -18 -4.4 -10 -4.8 -5.0 Q 0 -3.8 4.8 -5.0 C 4.4 -10 2.6 -18 0 -26 Z',
+            fill: 'accent',
+            fillOpacity: 0.9,
+            role: 'accent',
+          },
+          {
+            d: 'M -0.4 -22 C -1.4 -15 -2.0 -9 -1.8 -5.0',
+            fill: 'bg',
+            fillOpacity: 0,
+            strokeScale: 0.55,
+          },
+        ],
+      },
+    },
   },
 
-  // 12. Ghế gỗ công viên chuẩn nhân trắc học (mặt ghế tại y = -10.5 khớp hông nhân vật ngồi, tựa lưng tại -22.5, đáy tại 0,0)
+  // 12. Ghế gỗ công viên (`duyet`, kich_thuoc_that: 162 cm -> 162 * 0.32 * 1.0 = 51.84)
   bench: {
+    status: 'duyet',
+    labelVi: 'Ghế băng gỗ công viên',
+    kich_thuoc_that: 162,
+    description5: {
+      nghia: 'Chỗ dừng chân ven đường hoặc góc công viên nơi hai người ngồi lặng bên nhau.',
+      cau_truc: 'Gồm 3 nét nhận diện là nan tựa lưng ngang dài, mặt ghế băng rộng cho hai người và tay vịn cong hai đầu.',
+      bong_dang: 'Khung ghế băng ngang dài có bốn chân và nan lưng thoáng giữa.',
+      the_gioi: 'Chỉ giữ viền gỗ mảnh, không làm vật đỏ để nhường điểm nhấn cho câu chuyện của nhân vật.',
+      nguoi_la: 'Nhìn dáng ghế dài có nan tựa và hai tay vịn là người lạ biết ngay ghế băng công viên.',
+    },
     anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'dat',
+    box: [-26.6, -24.0, 26.6, 0],
+    anchors: {
+      mat_ghe: [0, -10.8],
+      mat_ghe_trai: [-11.0, -10.8],
+      mat_ghe_phai: [11.0, -10.8],
+    },
+    canBeRed: false,
     emitterOffset: [0, -22.5],
     shapes: [
       {
@@ -556,8 +719,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 13. Đèn đường cổ điển ấm áp (đáy tại 0,0)
+  // 13. Đèn đường (`nhap`)
   street_lamp: {
+    status: 'nhap',
+    labelVi: 'Đèn đường cổ điển',
     anchorType: 'ground',
     emitterOffset: [20, -66],
     shapes: [
@@ -597,8 +762,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 14. Mái nhà quê hiên cong có ống khói & ô cửa sổ sáng (đáy tại 0,0)
+  // 14. Mái nhà quê (`nhap`)
   warm_house: {
+    status: 'nhap',
+    labelVi: 'Ngôi nhà mái hiên ấm',
     anchorType: 'ground',
     emitterOffset: [15, -43],
     shapes: [
@@ -645,8 +812,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 15. Bóng phố thị sương mờ phía xa (đáy tại 0,0)
+  // 15. Bóng phố thị (`nhap`)
   city_skyline: {
+    status: 'nhap',
+    labelVi: 'Bóng phố thị phía xa',
     anchorType: 'ground',
     emitterOffset: [-5, -68],
     shapes: [
@@ -681,8 +850,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 16. Thuyền gỗ nhỏ mũi cong đỗ bến sông (đáy tại 0,0)
+  // 16. Thuyền gỗ nhỏ (`nhap`)
   small_boat: {
+    status: 'nhap',
+    labelVi: 'Thuyền gỗ nhỏ',
     anchorType: 'ground',
     emitterOffset: [0, -10],
     shapes: [
@@ -716,8 +887,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 17. Cánh diều giấy no gió có đuôi lụa (tâm 0,0)
+  // 17. Cánh diều (`nhap`)
   kite: {
+    status: 'nhap',
+    labelVi: 'Cánh diều giấy',
     anchorType: 'center',
     emitterOffset: [0, -16],
     shapes: [
@@ -754,8 +927,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 18. Máy bay giấy gấp tay mềm mại (tâm 0,0)
+  // 18. Máy bay giấy (`nhap`)
   paper_plane: {
+    status: 'nhap',
+    labelVi: 'Máy bay giấy',
     anchorType: 'center',
     emitterOffset: [-8, 3],
     shapes: [
@@ -782,8 +957,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 19. Nhành cây mùa đông vươn nghiêng bất đối xứng kiểu thủy mặc (morph nhú búp hoa/lá nhỏ Đỏ Gạch)
+  // 19. Nhành cây mùa đông (`nhap`)
   bare_tree: {
+    status: 'nhap',
+    labelVi: 'Nhành cây mùa đông',
     anchorType: 'ground',
     emitterOffset: [0, -68],
     shapes: [
@@ -825,70 +1002,12 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
         strokeScale: 0.55,
       },
     ],
-    altShapes: [
-      {
-        d: 'M 0 0 C -2.5 -16 -7.5 -34 -2.0 -52 C 2.0 -64 9.5 -74 17.5 -82',
-        fill: 'none',
-        role: 'ink',
-        strokeScale: 1.15,
-      },
-      {
-        d: 'M -1.0 -6 C -3.5 -19 -5.8 -32 -3.0 -44',
-        fill: 'none',
-        role: 'secondary',
-        strokeScale: 0.58,
-        opacity: 0.52,
-      },
-      {
-        d: 'M -4.2 -36 C -13.5 -41.5 -24.5 -44.5 -34.0 -51.0',
-        fill: 'none',
-        role: 'ink',
-        strokeScale: 0.82,
-      },
-      {
-        d: 'M -17.0 -42.5 C -21.0 -49.0 -26.5 -54.5 -31.0 -59.0',
-        fill: 'none',
-        role: 'ink',
-        strokeScale: 0.58,
-      },
-      {
-        d: 'M 0.8 -58 C 11.0 -62.0 20.5 -66.0 28.0 -72.5',
-        fill: 'none',
-        role: 'ink',
-        strokeScale: 0.75,
-      },
-      {
-        d: 'M 5.5 -67 C 3.8 -74.5 7.5 -82.0 12.0 -86.5',
-        fill: 'none',
-        role: 'ink',
-        strokeScale: 0.55,
-      },
-      {
-        circle: [-34.0, -51.0, 2.0],
-        fill: 'accent',
-        fillOpacity: 0.35,
-        role: 'accent',
-        strokeScale: 0.72,
-      },
-      {
-        circle: [17.5, -82.0, 2.1],
-        fill: 'accent',
-        fillOpacity: 0.35,
-        role: 'accent',
-        strokeScale: 0.72,
-      },
-      {
-        circle: [28.0, -72.5, 1.8],
-        fill: 'accent',
-        fillOpacity: 0.32,
-        role: 'accent',
-        strokeScale: 0.68,
-      },
-    ],
   },
 
-  // 20. Mầm cây non uốn cong mềm mại (đáy tại 0,0)
+  // 20. Mầm cây non (`nhap`)
   sprout: {
+    status: 'nhap',
+    labelVi: 'Mầm cây non',
     anchorType: 'ground',
     emitterOffset: [0, -25],
     shapes: [
@@ -920,8 +1039,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 21. Đốm lửa trại củi khô & ngọn lửa 2 tầng (đáy tại 0,0)
+  // 21. Đốm lửa trại (`nhap`)
   campfire: {
+    status: 'nhap',
+    labelVi: 'Đốm lửa trại',
     anchorType: 'ground',
     emitterOffset: [0, -27],
     shapes: [
@@ -962,8 +1083,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 22. Đèn lồng lụa phương Đông có nan tre & tua rua (tâm treo 0,0)
+  // 22. Đèn lồng (`nhap`)
   lantern: {
+    status: 'nhap',
+    labelVi: 'Đèn lồng lụa',
     anchorType: 'hand',
     emitterOffset: [0, 7.5],
     shapes: [
@@ -1001,8 +1124,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 23. Thanh bập bênh gỗ trên trụ đá bo tròn (đáy tại 0,0)
+  // 23. Bập bênh (`nhap`)
   seesaw: {
+    status: 'nhap',
+    labelVi: 'Bập bênh gỗ',
     anchorType: 'ground',
     emitterOffset: [0, -15],
     shapes: [
@@ -1035,8 +1160,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 24. Đồng hồ cát thủy tinh thổi thủ công & khung gỗ (đáy tại 0,0)
+  // 24. Đồng hồ cát (`nhap`)
   hourglass: {
+    status: 'nhap',
+    labelVi: 'Đồng hồ cát',
     anchorType: 'ground',
     emitterOffset: [0, -32],
     tiltPivot: [-1.8, -0.8],
@@ -1077,8 +1204,10 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // 25. Khung suy tưởng / tin nhắn vẽ tay + 3 chấm mực loang (tâm 0,0)
+  // 25. Bong bóng suy nghĩ (`nhap`)
   chat_bubble: {
+    status: 'nhap',
+    labelVi: 'Khung tin nhắn',
     anchorType: 'center',
     emitterOffset: [0, -12],
     shapes: [
@@ -1119,9 +1248,24 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // Bonus: Làn mây thủy mặc phương Đông 2 nét lượn sóng hở đáy thanh mảnh (tâm 0,0)
+  // 26. Làn mây thủy mặc (`duyet`, kich_thuoc_that: 118 cm >= 30 -> 118 * 0.32 * 1.0 = 37.76)
   cloud_wisp: {
+    status: 'duyet',
+    labelVi: 'Làn mây thuỷ mặc',
+    kich_thuoc_that: 118,
+    description5: {
+      nghia: 'Khoảng trời thoáng đãng gợi sự trôi chảy nhẹ tênh của thời gian.',
+      cau_truc: 'Gồm 3 nét nhận diện là hai nhịp cong lượn tầng trên, nét gợn mảnh đỡ phía dưới và khoảng hở thoáng hai đầu.',
+      bong_dang: 'Dải sóng mây ngang mềm mại treo lơ lửng trên cao.',
+      the_gioi: 'Thuộc lớp `nen` loại neo `troi`, chỉ dùng nét xám nhạt để điểm xuyết bầu trời.',
+      nguoi_la: 'Thấy hai nét lượn bồng bềnh trên đỉnh khung hình là người lạ đọc ra ngay đám mây.',
+    },
     anchorType: 'center',
+    defaultLayer: 'nen',
+    anchorKind: 'troi',
+    box: [-18.6, -5.8, 19.6, 6.6],
+    anchors: {},
+    canBeRed: false,
     emitterOffset: [0, 0],
     shapes: [
       {
@@ -1138,6 +1282,827 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
         role: 'secondary',
         strokeScale: 0.72,
         opacity: 0.86,
+      },
+    ],
+  },
+
+  // === 6 ĐẠO CỤ NHÓM CÔNG SỞ & BÀN TRÀ ĐÃ ĐẠT (`status: 'duyet'`) ===
+
+  // 27. Ghế tựa công sở (`duyet`, kich_thuoc_that: 75 cm >= 30 -> 75 * 0.32 * 1.0 = 24.00)
+  std_chair: {
+    status: 'duyet',
+    labelVi: 'Ghế tựa công sở',
+    kich_thuoc_that: 75,
+    description5: {
+      nghia: 'Chỗ ngồi làm việc quen thuộc mỗi ngày nơi công sở hoặc góc bàn riêng.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là lưng tựa thẳng hơi ngả nhẹ phía sau, mặt ghế ngang vừa tầm gối và hai chân giằng thanh ngang dưới gầm.',
+      bong_dang: 'Nhìn ngang thấy rõ dáng chữ h thanh mảnh với lưng cao một bên và khoảng gầm ghế thoáng sáng.',
+      the_gioi: 'Vẽ bằng nét mực mảnh mộc mạc, lược bỏ bánh xe xoay rườm rà để giữ chất tĩnh lặng của Trà Nguội.',
+      nguoi_la: 'Người lạ lướt qua một giây nhận ra ngay chiếc ghế tựa ngồi bàn làm việc khi thấy Lữ khách ngồi tựa lưng vừa vặn.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'dat',
+    box: [-10.5, -24.0, 9.5, 0],
+    anchors: {
+      mat_ghe: [0, -10.8],
+    },
+    canBeRed: false,
+    emitterOffset: [0, -12],
+    shapes: [
+      {
+        d: 'M -9.5 -24.0 L -8.5 -10.8',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 1.25,
+      },
+      {
+        rect: [-10.0, -11.4, 19.5, 2.2, 0.9],
+        fill: 'ink',
+        role: 'ink',
+        strokeScale: 0,
+      },
+      {
+        d: 'M -8.4 -9.2 L -9.8 0 M 7.6 -9.2 L 9.0 0 M -8.8 -4.5 L 8.0 -4.5',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 1.15,
+      },
+    ],
+  },
+
+  // 28. Đôn gỗ thấp ngồi trà (`duyet`, kich_thuoc_that: 60 cm >= 30 -> 60 * 0.32 * 1.0 = 19.20)
+  low_wood_stool: {
+    status: 'duyet',
+    labelVi: 'Đôn gỗ thấp ngồi trà',
+    kich_thuoc_that: 60,
+    description5: {
+      nghia: 'Chỗ ngồi thấp bình dị bên bàn trà chiều, gợi nhịp nghỉ ngơi chậm rãi ngoài giờ làm.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là mặt đôn gỗ bo tròn hơi cong nhẹ, đôi chân choãi vững xuống đất và thanh giằng ngang thấp.',
+      bong_dang: 'Khối thang cân đối thấp ngang gối Lữ khách, hoàn toàn không có lưng tựa nên tách biệt hẳn với ghế làm việc.',
+      the_gioi: 'Nét cọ mảnh điểm lớp giấy nhạt ở mặt gỗ, đồng điệu tự nhiên với bàn trà thấp và chén gốm.',
+      nguoi_la: 'Ai nhìn thoáng qua cảnh Lữ khách ngồi đôn cầm chén cũng nhận ra ngay chiếc đôn gỗ uống nước quen thuộc.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'dat',
+    box: [-9.8, -11.4, 9.8, 0],
+    anchors: {
+      mat_ghe: [0, -10.8],
+    },
+    canBeRed: false,
+    emitterOffset: [0, -11],
+    shapes: [
+      {
+        d: 'M -9.5 -10.8 Q 0 -11.4 9.5 -10.8 Q 9.8 -9.0 9.0 -8.8 Q 0 -9.2 -9.0 -8.8 Q -9.8 -9.0 -9.5 -10.8 Z',
+        fill: 'bg',
+        fillOpacity: 0.14,
+        role: 'ink',
+        strokeScale: 1.05,
+      },
+      {
+        d: 'M -7.2 -8.8 L -8.6 0 M 7.2 -8.8 L 8.6 0 M -7.8 -4.2 L 7.8 -4.2',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 1.0,
+      },
+    ],
+  },
+
+  // 29. Bàn làm việc công sở (`duyet`, kich_thuoc_that: 112 cm >= 30 -> 112 * 0.32 * 1.0 = 35.84)
+  std_work_desk: {
+    status: 'duyet',
+    labelVi: 'Bàn làm việc công sở',
+    kich_thuoc_that: 112,
+    description5: {
+      nghia: 'Mặt phẳng gánh vác công việc, deadline và những buổi ngồi lặng trước giờ tan tầm.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là mặt bàn ngang phẳng rộng ba khe đặt đồ, hai chân thẳng đứng vững chãi và thanh giằng sát dưới mặt bàn.',
+      bong_dang: 'Khung chữ Π ngang thoáng gầm, cao ngang thắt lưng Lữ khách đứng để lộ rõ đôi chân khi ngồi ghế.',
+      the_gioi: 'Bỏ hết hộc tủ đặc nặng nề, chỉ giữ nét khung thanh thoát để không tạo mảng tối lấn chữ thơ bên dưới.',
+      nguoi_la: 'Đặt cạnh Lữ khách, người lạ thấy mặt bàn cao gấp rưỡi mặt ghế là hiểu ngay đây là bàn làm việc tiêu chuẩn.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'dat',
+    box: [-19.0, -19.2, 19.0, 0],
+    anchors: {
+      mat_ban_trai: [-5.2, -19.2],
+      mat_ban_giua: [4.8, -19.2],
+      mat_ban_phai: [12.8, -19.2],
+    },
+    canBeRed: false,
+    emitterOffset: [0, -19.2],
+    shapes: [
+      {
+        rect: [-19.0, -19.2, 38.0, 2.2, 0.8],
+        fill: 'ink',
+        role: 'ink',
+        strokeScale: 0,
+      },
+      {
+        d: 'M -15.6 -17.0 L -15.6 0 M 15.6 -17.0 L 15.6 0 M -15.6 -14.2 L 15.6 -14.2',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 1.05,
+      },
+    ],
+  },
+
+  // 30. Bàn trà gỗ thấp (`duyet`, kich_thuoc_that: 98 cm >= 30 -> 98 * 0.32 * 1.0 = 31.36)
+  low_tea_table: {
+    status: 'duyet',
+    labelVi: 'Bàn trà gỗ thấp',
+    kich_thuoc_that: 98,
+    description5: {
+      nghia: 'Khoảng dừng ấm áp để đặt ấm chén, tấm thiệp hay ngồi đối ẩm chậm rãi.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là mặt gỗ hơi uốn mềm hai đầu, đôi chân ngắn choãi nhẹ và thanh ngang giữ khung ở lưng chừng chân.',
+      bong_dang: 'Dáng bàn lùn ngang đầu gối Lữ khách đứng, rộng ngang mà thấp thoáng nên không che khuất thân người.',
+      the_gioi: 'Viền mực mảnh kết hợp lớp giấy sáng nhẹ ở mặt bàn, ăn khớp với đôn gỗ thấp và không bao giờ làm vật đỏ.',
+      nguoi_la: 'So tỷ lệ thấp ngang gối cạnh Lữ khách, người chưa xem kênh bao giờ vẫn phân biệt được ngay bàn trà với bàn làm việc.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'dat',
+    box: [-15.8, -14.8, 15.8, 0],
+    anchors: {
+      mat_ban_trai: [-8.5, -14.2],
+      mat_ban_giua: [0, -14.2],
+      mat_ban_phai: [8.5, -14.2],
+    },
+    canBeRed: false,
+    emitterOffset: [0, -14.2],
+    shapes: [
+      {
+        d: 'M -15.5 -14.2 Q 0 -14.8 15.5 -14.2 Q 15.8 -12.0 14.8 -11.8 Q 0 -12.3 -14.8 -11.8 Q -15.8 -12.0 -15.5 -14.2 Z',
+        fill: 'bg',
+        fillOpacity: 0.14,
+        role: 'ink',
+        strokeScale: 1.05,
+      },
+      {
+        d: 'M -12.2 -11.8 L -13.2 0 M 12.2 -11.8 L 13.2 0 M -12.6 -5.6 L 12.6 -5.6',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 0.98,
+      },
+    ],
+  },
+
+  // 31. Lịch để bàn (`duyet`, kich_thuoc_that: 26 cm < 30 -> 26 * 0.32 * 2.0 = 16.64)
+  desk_calendar: {
+    status: 'duyet',
+    labelVi: 'Lịch để bàn',
+    kich_thuoc_that: 26,
+    description5: {
+      nghia: 'Dấu mốc ngày tháng trôi qua, nhắc kỳ cuối tháng hoặc một chuyện cũ trong lòng chưa chịu sang trang.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là thân lịch dựng chữ A vững trên bàn, ba vòng lò xo đóng gáy trên đỉnh và ba vạch dòng ngày tháng.',
+      bong_dang: 'Hình thang cân thu nhỏ dần lên đỉnh kèm ba mấu lò xo nhô đều trên sống gáy.',
+      the_gioi: 'Tối giản các con số li ti thành ba nét gạch ngang thanh mảnh; bản đỏ giữ y hệt dáng bản thường, chỉ đổi sắc Chu Sa.',
+      nguoi_la: 'Chỉ cần thấy khối dựng tam giác có hàng lò xo trên mặt bàn làm việc là người lạ đọc ra ngay cuốn lịch để bàn.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'dat'],
+    box: [-7.45, -12.8, 7.45, 0],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [0, -7],
+    shapes: [
+      {
+        d: 'M -6.8 0 L -5.0 -11.0 L 5.0 -11.0 L 6.8 0 Z',
+        fill: 'bg',
+        fillOpacity: 0.12,
+        role: 'ink',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M -3.2 -12.2 L -3.2 -9.8 M 0 -12.2 L 0 -9.8 M 3.2 -12.2 L 3.2 -9.8',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 0.85,
+      },
+      {
+        d: 'M -3.6 -7.0 L 3.6 -7.0 M -3.8 -4.4 L 3.8 -4.4 M -4.0 -1.8 L 1.8 -1.8',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.72,
+      },
+    ],
+    altShapes: [
+      {
+        d: 'M -6.8 0 L -5.0 -11.0 L 5.0 -11.0 L 6.8 0 Z',
+        fill: 'accent',
+        fillOpacity: 0.92,
+        role: 'accent',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M -3.2 -12.2 L -3.2 -9.8 M 0 -12.2 L 0 -9.8 M 3.2 -12.2 L 3.2 -9.8',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 0.85,
+      },
+      {
+        d: 'M -3.6 -7.0 L 3.6 -7.0 M -3.8 -4.4 L 3.8 -4.4 M -4.0 -1.8 L 1.8 -1.8',
+        fill: 'bg',
+        fillOpacity: 0,
+        strokeScale: 0.72,
+      },
+    ],
+  },
+
+  // 32. Laptop công sở nhìn ngang quay về phía Lữ khách (`duyet`, kich_thuoc_that: 29 cm < 30 -> 29 * 0.32 * 2.0 = 18.56)
+  desk_laptop: {
+    status: 'duyet',
+    labelVi: 'Laptop công sở',
+    kich_thuoc_that: 29,
+    description5: {
+      nghia: 'Công việc văn phòng, tin nhắn công chuyện và ánh màn hình giữ chân người trẻ ngồi lại bên bàn.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện khi nhìn ngang là đế bàn phím nằm phẳng hướng về Lữ khách bên trái, khớp bản lề giữa và màn hình dựng nghiêng quay mặt sáng về phía người ngồi.',
+      bong_dang: 'Dáng chữ L mở góc tù nhìn ngang sắc gọn: đế ngang mỏng bên trái và tấm màn hình nghiêng bên phải quay mặt về phía Lữ khách.',
+      the_gioi: 'Giữ viền mực mảnh màu giấy cho thân vỏ và bàn phím; ở bản đỏ chỉ phần màn hình đổi đỏ Chu Sa trên đúng dáng cũ.',
+      nguoi_la: 'Nhìn hai phần đế bàn phím phẳng và màn hình mở nghiêng quay về phía Lữ khách ngồi bàn, người lạ nhận ra ngay chiếc laptop.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'dat'],
+    box: [-6.85, -16.05, 6.25, 0],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [2.0, -8],
+    shapes: [
+      {
+        d: 'M -6.2 0 L 1.6 0 L 1.6 -1.8 L -5.6 -1.8 Q -6.2 -1.8 -6.2 -1.1 Z',
+        fill: 'bg',
+        fillOpacity: 0.16,
+        role: 'ink',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M -4.6 -1.8 L -4.6 -2.35 L -0.4 -2.35 L -0.4 -1.8',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.65,
+      },
+      {
+        d: 'M 0.8 -1.8 L 4.4 -15.4 L 5.6 -15.0 L 2.1 -1.8 Z',
+        fill: 'bg',
+        fillOpacity: 0.14,
+        role: 'ink',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M 0.5 -3.0 L 3.6 -14.2',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.62,
+      },
+    ],
+    altShapes: [
+      {
+        d: 'M -6.2 0 L 1.6 0 L 1.6 -1.8 L -5.6 -1.8 Q -6.2 -1.8 -6.2 -1.1 Z',
+        fill: 'bg',
+        fillOpacity: 0.16,
+        role: 'ink',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M -4.6 -1.8 L -4.6 -2.35 L -0.4 -2.35 L -0.4 -1.8',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.65,
+      },
+      {
+        d: 'M 0.8 -1.8 L 4.4 -15.4 L 5.6 -15.0 L 2.1 -1.8 Z',
+        fill: 'accent',
+        fillOpacity: 0.94,
+        role: 'accent',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M 0.5 -3.0 L 3.6 -14.2',
+        fill: 'none',
+        role: 'accent',
+        strokeScale: 0.62,
+      },
+    ],
+  },
+
+  // === 5 ĐẠO CỤ CHƯA ĐẠT ĐANG TRÌNH DUYỆT LẠI Ở LẦN 3 (`status: 'nhap'`) ===
+
+  // 33. Ví tiền gập đôi (`nhap`, kich_thuoc_that: 15 cm < 30 -> 15 * 0.32 * 2.0 = 9.60; nằm/dựng thấp gọn trên mặt bàn, có trạng thái `khoa`)
+  vi_tien: {
+    status: 'duyet',
+    labelVi: 'Ví gập',
+    kich_thuoc_that: 15,
+    description5: {
+      nghia: 'Hầu bao cá nhân, chuyện tiền nong vơi đầy cuối tháng và quyết tâm giữ chặt chi tiêu.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là thân ví chữ nhật bo góc nằm thấp gọn trên bàn có nấc gập hai ngăn, quai cài bấm khuy bên hông và trạng thái `khoa` gắn ổ khoá móc nhỏ.',
+      bong_dang: 'Khối chữ nhật nằm ngang thấp gọn rộng khoảng một phần tư mặt bàn, có nấc gáy gấp đôi ở đỉnh và tách bạch hẳn với phong bì hay thiệp.',
+      the_gioi: 'Tuân thủ đúng hệ số phóng đại `HE_SO_PHONG_DAI = 2.0` cho vật thật 15 cm; ở cả trạng thái thường lẫn `khoa`, bản đỏ giữ nguyên dáng 100%.',
+      nguoi_la: 'Nhờ mép gập hai ngăn trên miệng ví, quai khuy bấm ngang thân và ổ khoá nhỏ khi khoá ví, người lạ nhận ra ngay chiếc ví tiền.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'cam', 'dat'],
+    box: [-5.3, -6.9, 5.3, 0],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [0, -3.5],
+    shapes: [
+      {
+        d: 'M -4.3 -5.4 L -3.6 -6.25 L 3.7 -6.25 L 4.3 -5.4 Z',
+        fill: 'bg',
+        fillOpacity: 0.12,
+        role: 'ink',
+        strokeScale: 0.82,
+      },
+      {
+        d: 'M -4.2 -5.5 L 4.2 -5.5 Q 4.7 -5.5 4.7 -5.0 L 4.7 -0.5 Q 4.7 0 4.2 0 L -4.2 0 Q -4.7 0 -4.7 -0.5 L -4.7 -5.0 Q -4.7 -5.5 -4.2 -5.5 Z',
+        fill: 'bg',
+        fillOpacity: 0.16,
+        role: 'ink',
+        strokeScale: 0.92,
+      },
+      {
+        d: 'M -3.7 -4.5 L 3.7 -4.5 M 4.7 -3.6 L 1.8 -3.6 Q 1.0 -3.6 1.0 -2.75 Q 1.0 -1.9 1.8 -1.9 L 4.7 -1.9',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 0.72,
+      },
+      {
+        circle: [2.1, -2.75, 0.45],
+        fill: 'ink',
+        fillOpacity: 0.3,
+        role: 'ink',
+        strokeScale: 0.55,
+      },
+    ],
+    altShapes: [
+      {
+        d: 'M -4.3 -5.4 L -3.6 -6.25 L 3.7 -6.25 L 4.3 -5.4 Z',
+        fill: 'accent',
+        fillOpacity: 0.82,
+        role: 'accent',
+        strokeScale: 0.82,
+      },
+      {
+        d: 'M -4.2 -5.5 L 4.2 -5.5 Q 4.7 -5.5 4.7 -5.0 L 4.7 -0.5 Q 4.7 0 4.2 0 L -4.2 0 Q -4.7 0 -4.7 -0.5 L -4.7 -5.0 Q -4.7 -5.5 -4.2 -5.5 Z',
+        fill: 'accent',
+        fillOpacity: 0.94,
+        role: 'accent',
+        strokeScale: 0.92,
+      },
+      {
+        d: 'M -3.7 -4.5 L 3.7 -4.5 M 4.7 -3.6 L 1.8 -3.6 Q 1.0 -3.6 1.0 -2.75 Q 1.0 -1.9 1.8 -1.9 L 4.7 -1.9',
+        fill: 'bg',
+        fillOpacity: 0,
+        strokeScale: 0.72,
+      },
+      {
+        circle: [2.1, -2.75, 0.45],
+        fill: 'bg',
+        fillOpacity: 0.95,
+        role: 'ink',
+        strokeScale: 0.55,
+      },
+    ],
+    variants: {
+      khoa: {
+        labelVi: 'Ví đang khoá ổ khoá nhỏ',
+        box: [-5.3, -6.9, 5.3, 0],
+        shapes: [
+          {
+            d: 'M -4.3 -5.4 L -3.6 -6.25 L 3.7 -6.25 L 4.3 -5.4 Z',
+            fill: 'bg',
+            fillOpacity: 0.12,
+            role: 'ink',
+            strokeScale: 0.82,
+          },
+          {
+            d: 'M -4.2 -5.5 L 4.2 -5.5 Q 4.7 -5.5 4.7 -5.0 L 4.7 -0.5 Q 4.7 0 4.2 0 L -4.2 0 Q -4.7 0 -4.7 -0.5 L -4.7 -5.0 Q -4.7 -5.5 -4.2 -5.5 Z',
+            fill: 'bg',
+            fillOpacity: 0.16,
+            role: 'ink',
+            strokeScale: 0.92,
+          },
+          {
+            d: 'M -3.7 -4.5 L 3.7 -4.5 M 4.7 -3.6 L 1.8 -3.6 Q 1.0 -3.6 1.0 -2.75 Q 1.0 -1.9 1.8 -1.9 L 4.7 -1.9',
+            fill: 'none',
+            role: 'ink',
+            strokeScale: 0.72,
+          },
+          {
+            d: 'M 1.6 -2.1 L 1.6 -2.9 A 0.65 0.65 0 0 1 2.9 -2.9 L 2.9 -2.1',
+            fill: 'none',
+            role: 'ink',
+            strokeScale: 0.78,
+          },
+          {
+            rect: [1.1, -2.1, 2.3, 1.9, 0.35],
+            fill: 'bg',
+            fillOpacity: 0.26,
+            role: 'ink',
+            strokeScale: 0.82,
+          },
+        ],
+        altShapes: [
+          {
+            d: 'M -4.3 -5.4 L -3.6 -6.25 L 3.7 -6.25 L 4.3 -5.4 Z',
+            fill: 'accent',
+            fillOpacity: 0.82,
+            role: 'accent',
+            strokeScale: 0.82,
+          },
+          {
+            d: 'M -4.2 -5.5 L 4.2 -5.5 Q 4.7 -5.5 4.7 -5.0 L 4.7 -0.5 Q 4.7 0 4.2 0 L -4.2 0 Q -4.7 0 -4.7 -0.5 L -4.7 -5.0 Q -4.7 -5.5 -4.2 -5.5 Z',
+            fill: 'accent',
+            fillOpacity: 0.94,
+            role: 'accent',
+            strokeScale: 0.92,
+          },
+          {
+            d: 'M -3.7 -4.5 L 3.7 -4.5 M 4.7 -3.6 L 1.8 -3.6 Q 1.0 -3.6 1.0 -2.75 Q 1.0 -1.9 1.8 -1.9 L 4.7 -1.9',
+            fill: 'bg',
+            fillOpacity: 0,
+            strokeScale: 0.72,
+          },
+          {
+            d: 'M 1.6 -2.1 L 1.6 -2.9 A 0.65 0.65 0 0 1 2.9 -2.9 L 2.9 -2.1',
+            fill: 'none',
+            role: 'ink',
+            strokeScale: 0.78,
+          },
+          {
+            rect: [1.1, -2.1, 2.3, 1.9, 0.35],
+            fill: 'accent',
+            fillOpacity: 0.96,
+            role: 'ink',
+            strokeScale: 0.82,
+          },
+        ],
+      },
+    },
+  },
+
+  // 34. Tấm thiệp gập đôi (`nhap`, kich_thuoc_that: 15 cm < 30 -> 15 * 0.32 * 2.0 = 9.60; giữ nguyên dáng, giảm theo công thức phóng đại)
+  thiep: {
+    status: 'duyet',
+    labelVi: 'Tấm thiệp gập đôi',
+    kich_thuoc_that: 15,
+    description5: {
+      nghia: 'Lời hẹn ăn tối, tấm lòng gửi trao hoặc lời mời dịu dàng làm mềm đi những toan tính thường ngày.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là hai cánh giấy cứng gập đôi tự đứng trên bàn, đường sống gập dọc bên trái và hai nét chữ tay ngắn kèm chấm triện nhỏ.',
+      bong_dang: 'Hai cánh giấy đứng lệch góc tạo khe mở chữ V rõ rệt ở chân đáy, thu gọn theo đúng tỷ lệ thật 15 cm với hệ số phóng đại 2.0.',
+      the_gioi: 'Vẽ thanh mảnh trên nền giấy sáng; khi làm vật đỏ giữ nguyên hai cánh thiệp y hệt bản thường, không thêm bớt chi tiết.',
+      nguoi_la: 'Thấy tờ giấy cứng gập đôi dựng hé hai cánh vừa vặn trên bàn trà là người lạ nhận ra ngay tấm thiệp mời.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'cam', 'dat'],
+    box: [-4.6, -10.1, 4.6, 0],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [0, -5],
+    shapes: [
+      {
+        d: 'M -4.0 -0.9 L -4.0 -9.1 L 4.0 -8.2 L 4.0 -0.4 Z',
+        fill: 'bg',
+        fillOpacity: 0.11,
+        role: 'ink',
+        strokeScale: 0.84,
+      },
+      {
+        d: 'M -4.0 -0.9 L -4.0 -9.1 L 1.7 -9.5 L 1.7 0 Z',
+        fill: 'bg',
+        fillOpacity: 0.16,
+        role: 'ink',
+        strokeScale: 0.94,
+      },
+      {
+        d: 'M -2.8 -6.4 L 0.4 -6.6 M -2.8 -4.6 L -0.3 -4.7',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.68,
+      },
+      {
+        circle: [-1.2, -2.5, 0.55],
+        fill: 'ink',
+        fillOpacity: 0.24,
+        role: 'ink',
+        strokeScale: 0.6,
+      },
+    ],
+    altShapes: [
+      {
+        d: 'M -4.0 -0.9 L -4.0 -9.1 L 4.0 -8.2 L 4.0 -0.4 Z',
+        fill: 'accent',
+        fillOpacity: 0.78,
+        role: 'accent',
+        strokeScale: 0.84,
+      },
+      {
+        d: 'M -4.0 -0.9 L -4.0 -9.1 L 1.7 -9.5 L 1.7 0 Z',
+        fill: 'accent',
+        fillOpacity: 0.94,
+        role: 'accent',
+        strokeScale: 0.94,
+      },
+      {
+        d: 'M -2.8 -6.4 L 0.4 -6.6 M -2.8 -4.6 L -0.3 -4.7',
+        fill: 'bg',
+        fillOpacity: 0,
+        strokeScale: 0.68,
+      },
+      {
+        circle: [-1.2, -2.5, 0.55],
+        fill: 'bg',
+        fillOpacity: 0.95,
+        role: 'ink',
+        strokeScale: 0.6,
+      },
+    ],
+  },
+
+  // 35. Phong bì thư (`nhap`, kich_thuoc_that: 18 cm < 30 -> 18 * 0.32 * 2.0 = 11.52; nằm/dựng thấp gọn trên mặt bàn)
+  phong_bi: {
+    status: 'duyet',
+    labelVi: 'Phong bì thư',
+    kich_thuoc_that: 18,
+    description5: {
+      nghia: 'Bức thư niêm kín, giấy báo chính thức hoặc tin tức gửi trao tận tay.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là khung giấy chữ nhật nằm thấp gọn trên bàn, nắp tam giác cân gập từ hai góc trên và dấu sáp tròn ở mũi nắp.',
+      bong_dang: 'Khối chữ nhật ngang nhỏ gọn `[-6.1, -7.8, 6.1, 0]` chỉ bằng một phần ba mặt bàn làm việc, nhận diện ngay nhờ đường chéo nắp thư.',
+      the_gioi: 'Tuân thủ đúng kích thước thật 18 cm với hệ số phóng đại 2.0; bản đỏ giữ nguyên khung và nắp phong bì, chỉ đổi màu Chu Sa.',
+      nguoi_la: 'Bất kỳ ai nhìn hình chữ nhật nhỏ gọn có nắp tam giác đóng dấu tròn ở tâm cũng đọc ra ngay chiếc phong bì thư.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'giua',
+    anchorKind: 'tren',
+    allowedAnchorKinds: ['tren', 'cam', 'dat'],
+    box: [-6.1, -7.8, 6.1, 0],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [0, -3.8],
+    shapes: [
+      {
+        d: 'M -5.5 -7.2 L 5.5 -7.2 L 5.5 0 L -5.5 0 Z',
+        fill: 'bg',
+        fillOpacity: 0.15,
+        role: 'ink',
+        strokeScale: 0.92,
+      },
+      {
+        d: 'M -5.4 -0.1 L -1.9 -3.1 M 5.4 -0.1 L 1.9 -3.1',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.58,
+      },
+      {
+        d: 'M -5.4 -7.1 L 0 -2.9 L 5.4 -7.1',
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 0.84,
+      },
+      {
+        circle: [0, -2.9, 0.88],
+        fill: 'ink',
+        fillOpacity: 0.26,
+        role: 'ink',
+        strokeScale: 0.62,
+      },
+    ],
+    altShapes: [
+      {
+        d: 'M -5.5 -7.2 L 5.5 -7.2 L 5.5 0 L -5.5 0 Z',
+        fill: 'accent',
+        fillOpacity: 0.93,
+        role: 'accent',
+        strokeScale: 0.92,
+      },
+      {
+        d: 'M -5.4 -0.1 L -1.9 -3.1 M 5.4 -0.1 L 1.9 -3.1',
+        fill: 'bg',
+        fillOpacity: 0,
+        strokeScale: 0.58,
+      },
+      {
+        d: 'M -5.4 -7.1 L 0 -2.9 L 5.4 -7.1',
+        fill: 'bg',
+        fillOpacity: 0,
+        strokeScale: 0.84,
+      },
+      {
+        circle: [0, -2.9, 0.88],
+        fill: 'bg',
+        fillOpacity: 0.95,
+        role: 'ink',
+        strokeScale: 0.62,
+      },
+    ],
+  },
+
+  // 36. Tờ hoá đơn răng cưa (`nhap`, kich_thuoc_that: 20 cm -> 12.80; mặc định `cam` tay cầm rủ xuống, thêm `tua` dựng nghiêng tựa vật khác trên bàn)
+  hoa_don: {
+    status: 'duyet',
+    labelVi: 'Tờ hoá đơn răng cưa',
+    kich_thuoc_that: 20,
+    description5: {
+      nghia: 'Các khoản phí sinh hoạt, tiền nhà điện nước và gánh nặng cơm áo đời thường dồn về.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là dải giấy dài hai đầu cắt răng cưa máy in, ba dòng kẻ ngang khoản mục và ô đóng khung tổng tiền cuối tờ.',
+      bong_dang: 'Mặc định cầm trên tay rủ cong mềm xuống dưới (`[-3.5, -1.8, 3.5, 11.4]`), hoặc ở trạng thái `tua` dựng nghiêng tựa vào vật khác trên bàn.',
+      the_gioi: 'Bỏ hoàn toàn kiểu nằm phẳng như hộp; ở cả trạng thái mặc định cầm tay lẫn trạng thái `tua`, bản đỏ giữ nguyên dáng răng cưa 100%.',
+      nguoi_la: 'Thấy dải giấy dài cắt mép răng cưa rủ từ tay Lữ khách hoặc dựng nghiêng tựa trên bàn là người lạ nhận ra ngay tờ hoá đơn.',
+    },
+    anchorType: 'hand',
+    defaultLayer: 'giua',
+    anchorKind: 'cam',
+    allowedAnchorKinds: ['cam', 'tren', 'dat'],
+    box: [-3.5, -1.8, 3.5, 11.4],
+    anchors: {},
+    canBeRed: true,
+    emitterOffset: [0, 5],
+    shapes: [
+      {
+        d: 'M -2.8 -1.2 L -1.4 -0.4 L 0 -1.2 L 1.4 -0.4 L 2.8 -1.2 Q 3.1 4.8 2.4 10.8 L 1.0 10.0 L -0.2 10.8 L -1.5 10.0 L -2.9 10.8 Q -2.2 4.8 -2.8 -1.2 Z',
+        fill: 'bg',
+        fillOpacity: 0.16,
+        role: 'ink',
+        strokeScale: 0.9,
+      },
+      {
+        d: 'M -1.7 1.6 L 1.8 1.6 M -1.8 3.8 L 1.7 3.8 M -1.9 6.0 L 0.5 6.0',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.72,
+      },
+      {
+        rect: [-0.2, 7.2, 1.9, 1.7, 0.25],
+        fill: 'none',
+        role: 'ink',
+        strokeScale: 0.72,
+      },
+    ],
+    altShapes: [
+      {
+        d: 'M -2.8 -1.2 L -1.4 -0.4 L 0 -1.2 L 1.4 -0.4 L 2.8 -1.2 Q 3.1 4.8 2.4 10.8 L 1.0 10.0 L -0.2 10.8 L -1.5 10.0 L -2.9 10.8 Q -2.2 4.8 -2.8 -1.2 Z',
+        fill: 'accent',
+        fillOpacity: 0.94,
+        role: 'accent',
+        strokeScale: 0.9,
+      },
+      {
+        d: 'M -1.7 1.6 L 1.8 1.6 M -1.8 3.8 L 1.7 3.8 M -1.9 6.0 L 0.5 6.0',
+        fill: 'bg',
+        fillOpacity: 0,
+        strokeScale: 0.72,
+      },
+      {
+        rect: [-0.2, 7.2, 1.9, 1.7, 0.25],
+        fill: 'bg',
+        fillOpacity: 0,
+        strokeScale: 0.72,
+      },
+    ],
+    variants: {
+      cam: {
+        labelVi: 'Hoá đơn cầm trên tay (rủ nhẹ xuống)',
+        box: [-3.5, -1.8, 3.5, 11.4],
+        shapes: [
+          {
+            d: 'M -2.8 -1.2 L -1.4 -0.4 L 0 -1.2 L 1.4 -0.4 L 2.8 -1.2 Q 3.1 4.8 2.4 10.8 L 1.0 10.0 L -0.2 10.8 L -1.5 10.0 L -2.9 10.8 Q -2.2 4.8 -2.8 -1.2 Z',
+            fill: 'bg',
+            fillOpacity: 0.16,
+            role: 'ink',
+            strokeScale: 0.9,
+          },
+          {
+            d: 'M -1.7 1.6 L 1.8 1.6 M -1.8 3.8 L 1.7 3.8 M -1.9 6.0 L 0.5 6.0',
+            fill: 'none',
+            role: 'secondary',
+            strokeScale: 0.72,
+          },
+          {
+            rect: [-0.2, 7.2, 1.9, 1.7, 0.25],
+            fill: 'none',
+            role: 'ink',
+            strokeScale: 0.72,
+          },
+        ],
+        altShapes: [
+          {
+            d: 'M -2.8 -1.2 L -1.4 -0.4 L 0 -1.2 L 1.4 -0.4 L 2.8 -1.2 Q 3.1 4.8 2.4 10.8 L 1.0 10.0 L -0.2 10.8 L -1.5 10.0 L -2.9 10.8 Q -2.2 4.8 -2.8 -1.2 Z',
+            fill: 'accent',
+            fillOpacity: 0.94,
+            role: 'accent',
+            strokeScale: 0.9,
+          },
+          {
+            d: 'M -1.7 1.6 L 1.8 1.6 M -1.8 3.8 L 1.7 3.8 M -1.9 6.0 L 0.5 6.0',
+            fill: 'bg',
+            fillOpacity: 0,
+            strokeScale: 0.72,
+          },
+          {
+            rect: [-0.2, 7.2, 1.9, 1.7, 0.25],
+            fill: 'bg',
+            fillOpacity: 0,
+            strokeScale: 0.72,
+          },
+        ],
+      },
+      tua: {
+        labelVi: 'Hoá đơn dựng nghiêng tựa vào vật khác trên bàn',
+        box: [-3.8, -12.4, 4.2, 0],
+        shapes: [
+          {
+            d: 'M -3.2 0 L -2.0 -0.7 L -0.8 0 L 0.4 -0.7 L 1.6 0 L 3.6 -11.4 L 2.4 -10.7 L 1.2 -11.6 L 0.0 -10.9 L -1.2 -11.8 Z',
+            fill: 'bg',
+            fillOpacity: 0.16,
+            role: 'ink',
+            strokeScale: 0.9,
+          },
+          {
+            d: 'M -0.3 -8.9 L 2.3 -8.4 M -0.8 -6.5 L 1.8 -6.0 M -1.3 -4.1 L 0.6 -3.7',
+            fill: 'none',
+            role: 'secondary',
+            strokeScale: 0.72,
+          },
+          {
+            d: 'M -0.2 -2.8 L 1.3 -2.5 L 0.9 -1.0 L -0.6 -1.3 Z',
+            fill: 'none',
+            role: 'ink',
+            strokeScale: 0.72,
+          },
+        ],
+        altShapes: [
+          {
+            d: 'M -3.2 0 L -2.0 -0.7 L -0.8 0 L 0.4 -0.7 L 1.6 0 L 3.6 -11.4 L 2.4 -10.7 L 1.2 -11.6 L 0.0 -10.9 L -1.2 -11.8 Z',
+            fill: 'accent',
+            fillOpacity: 0.94,
+            role: 'accent',
+            strokeScale: 0.9,
+          },
+          {
+            d: 'M -0.3 -8.9 L 2.3 -8.4 M -0.8 -6.5 L 1.8 -6.0 M -1.3 -4.1 L 0.6 -3.7',
+            fill: 'bg',
+            fillOpacity: 0,
+            strokeScale: 0.72,
+          },
+          {
+            d: 'M -0.2 -2.8 L 1.3 -2.5 L 0.9 -1.0 L -0.6 -1.3 Z',
+            fill: 'bg',
+            fillOpacity: 0,
+            strokeScale: 0.72,
+          },
+        ],
+      },
+    },
+  },
+
+  // 37. Khung cửa sổ tường (`nhap`, kich_thuoc_that: 132 cm >= 30 -> 132 * 0.32 * 1.0 = 42.24; chén trà đặt trên `be_cua` cùng kích thước 100% với chén trên tay Lữ khách)
+  porch_window: {
+    status: 'duyet',
+    labelVi: 'Khung cửa sổ tường',
+    kich_thuoc_that: 132,
+    description5: {
+      nghia: 'Khoảng mở trên tường nhìn ra mưa nắng bên ngoài, nối căn phòng tĩnh lặng với nhịp thở đất trời.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là khung chữ nhật chỉ vẽ nét mảnh không tô xám, thanh đố chữ thập chia bốn ô thoáng và gờ bậu cửa nhô ngang có điểm neo `be_cua`.',
+      bong_dang: 'Khung bốn ô thoáng rỗng có gờ bậu treo lửng trên tường ngang ngực và đầu Lữ khách, hoàn toàn tách khỏi mặt đất.',
+      the_gioi: 'Thuộc lớp `nen` loại neo `tuong` và khoá `canBeRed: false` để không tạo mảng đỏ lớn lấn chữ; chén trà đặt trên `be_cua` có cùng kích thước 1:1 với chén trên tay Lữ khách.',
+      nguoi_la: 'Nhìn khung bốn ô có bệ cửa đỡ chén trà treo cao phía sau vai Lữ khách, người lạ nhận ra ngay ô cửa sổ trên tường.',
+    },
+    anchorType: 'ground',
+    defaultLayer: 'nen',
+    anchorKind: 'tuong',
+    box: [-21.12, -32.62, 21.12, 0],
+    anchors: {
+      be_cua: [0, -2.2],
+    },
+    canBeRed: false,
+    emitterOffset: [0, -17],
+    shapes: [
+      {
+        rect: [-18.0, -32.0, 36.0, 29.8, 1.2],
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.95,
+      },
+      {
+        rect: [-20.5, -2.2, 41.0, 2.2, 0.5],
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.95,
+      },
+      {
+        d: 'M 0 -32.0 L 0 -2.2 M -18.0 -17.1 L 18.0 -17.1',
+        fill: 'none',
+        role: 'secondary',
+        strokeScale: 0.78,
       },
     ],
   },
@@ -1224,7 +2189,7 @@ function computeShapeAnimTransform(
   }
 }
 
-function renderShapeList(
+export function renderShapeListStatic(
   shapes: InlineShape[],
   propState: EvaluatedPropState,
   palette: ThemePalette,
@@ -1291,7 +2256,6 @@ function renderShapeList(
         ? Math.max(0.62, rawShapeOpacity)
         : rawShapeOpacity;
 
-    // Xử lý splitProgress (tách 2 nửa trái/phải bay tản và mờ dần) + khớp động anim con
     let splitTransform: string | undefined;
     let splitOpacityMult = 1;
     if (propState.splitProgress > 0.001 && s.splitSide) {
@@ -1308,11 +2272,6 @@ function renderShapeList(
       [splitTransform, animTransform].filter(Boolean).join(' ') || undefined;
 
     const isDrawing = propState.drawProgress < 0.999;
-    // Pha 2 (CHOREO-04): Two-Phase Slow Calligraphic Stroke-Then-Wash
-    // - Loại bỏ triệt để xung đột chồng 2 tầng cubic ease-out gây hiện tượng chớp nét.
-    // - Các nét con (shapes) trong cùng đạo cụ được vẽ tuần tự gối nhau (staggerSpan tới 0.48),
-    //   mỗi nét lướt theo đường cong Cosine S-Curve (0.5 - 0.5 * cos(pi * t)) êm đềm.
-    // - Kể cả các mảng đặc có strokeScale = 0 cũng được phác viền mảnh dẫn hướng trước khi màu mực loang đầy (0.52 -> 1.00).
     const totalShapes = Math.max(1, shapes.length);
     const staggerSpan =
       totalShapes > 1 ? Math.min(0.48, (totalShapes - 1) * 0.14) : 0;
@@ -1345,8 +2304,6 @@ function renderShapeList(
       ? 0.5 - 0.5 * Math.cos(Math.PI * rawInkGate)
       : 1;
 
-    // Nếu mảng hình đặc có sw === 0 (strokeScale: 0), trong lúc đang vẽ (isDrawing) ta tạo nét phác cọ mảnh
-    // rồi thu mờ dần khi mảng mực bên trong đã thấm đầy để mọi chi tiết đều được họa nét từ tốn.
     const guideStrokeWidth =
       isDrawing && sw === 0 && !isNegativeCarve
         ? baseStrokeWidth * 0.68 * (1 - drawFillMult * 0.88)
@@ -1499,6 +2456,7 @@ export const StagePropRenderer: React.FC<{
   palette: ThemePalette;
   strokeWidth: number;
   frame: number;
+  durationInFramesOverride?: number;
   isAfterPivot: boolean;
   customPropsMap?: Record<string, CustomPropDefinition>;
   flipX?: boolean;
@@ -1507,11 +2465,20 @@ export const StagePropRenderer: React.FC<{
   palette,
   strokeWidth,
   frame,
+  durationInFramesOverride,
   isAfterPivot,
   customPropsMap,
   flipX = false,
 }) => {
-  const { durationInFrames } = useVideoConfig();
+  let durationInFrames = durationInFramesOverride ?? 900;
+  if (durationInFramesOverride === undefined) {
+    try {
+      const cfg = useVideoConfig();
+      durationInFrames = cfg.durationInFrames;
+    } catch {
+      durationInFrames = 900;
+    }
+  }
   if (propState.opacity <= 0.01) return null;
 
   const isFar = propState.layer === 'far';
@@ -1526,7 +2493,6 @@ export const StagePropRenderer: React.FC<{
             ? 0.75
             : 1.0;
 
-  // Bù độ dày nét khi phóng lớn chủ thể (Hero Scale 2.2x-3.0x vẫn giữ nét mảnh 1.35px tinh xảo)
   const baseFineStroke = 1.35 * (strokeWidth / 2.6) * focusStrokeMult;
   const effectiveStrokeWidth =
     baseFineStroke / Math.pow(Math.max(0.5, propState.scale), 0.78);
@@ -1539,16 +2505,24 @@ export const StagePropRenderer: React.FC<{
         ? Math.min(isDarkPropTheme ? 0.64 : 0.52, propState.opacity)
         : Math.min(1, propState.opacity);
 
-  // Tìm định nghĩa shapes & altShapes: ưu tiên inline trên prop -> customPropsMap -> BUILT_IN_PROP_CATALOG
   const catalogDef =
     customPropsMap?.[propState.type] ??
     BUILT_IN_PROP_CATALOG[propState.type] ??
-    (PROP_TYPE_ALIASES[propState.type]
-      ? customPropsMap?.[PROP_TYPE_ALIASES[propState.type]] ??
+    (customPropsMap && PROP_TYPE_ALIASES[propState.type]
+      ? customPropsMap[PROP_TYPE_ALIASES[propState.type]] ??
         BUILT_IN_PROP_CATALOG[PROP_TYPE_ALIASES[propState.type]]
       : undefined);
-  const primaryShapes = propState.spec.shapes ?? catalogDef?.shapes ?? [];
-  const altShapes = propState.spec.altShapes ?? catalogDef?.altShapes;
+
+  const activeVariantName = propState.variant ?? propState.spec.variant;
+  const activeVariant =
+    activeVariantName && catalogDef?.variants
+      ? catalogDef.variants[activeVariantName]
+      : undefined;
+
+  const primaryShapes =
+    propState.spec.shapes ?? activeVariant?.shapes ?? catalogDef?.shapes ?? [];
+  const altShapes =
+    propState.spec.altShapes ?? activeVariant?.altShapes ?? catalogDef?.altShapes;
 
   const hasMorph = Boolean(altShapes && altShapes.length > 0);
   const morphP = hasMorph
@@ -1557,7 +2531,6 @@ export const StagePropRenderer: React.FC<{
 
   const { emitters } = propState;
 
-  // Khăn voan cô dâu hoặc nhân vật khớp động (actor.rig) tự lật hướng ngang theo chiều di chuyển
   const veilScaleX =
     flipX ||
     (propState.type === 'bridal_veil' &&
@@ -1565,7 +2538,6 @@ export const StagePropRenderer: React.FC<{
       ? -1
       : 1;
 
-  // Cơ chế ổ cắm tổng quát cho MỌI Prop: tính vị trí Thế Giới (rx, ry) của emitterOffset sau khi nhân scale và xoay góc propState.rotate quanh tiltPivot
   const [ox, oy] =
     propState.spec.emitterOffset ?? catalogDef?.emitterOffset ?? [0, -18];
   const [px, py] =
@@ -1580,14 +2552,12 @@ export const StagePropRenderer: React.FC<{
   const rx = localOx * propState.scale * veilScaleX;
   const ry = localOy * propState.scale;
 
-  // Vệt tràn (spill) luôn nằm ngang song song mặt đất ngay dưới miệng đạo cụ (rx, ry)
   const spillDir = propState.rotate < -1 ? -1 : 1;
   const spillCx = rx + spillDir * (2.0 + emitters.spill * 5.8) * propState.scale;
   const spillCy = ry + 5.4 * propState.scale;
   const spillRx = 9.8 * emitters.spill * propState.scale;
   const spillRy = 1.25 * emitters.spill * propState.scale;
 
-  // Làn khói/hương (steam) luôn bay thẳng đứng hướng lên trời từ đúng miệng đạo cụ (hoặc từ vệt rượu loang sát miệng khi nghiêng đổ)
   const steamScale = Math.min(2.2, Math.max(0.9, propState.scale * 0.78));
   const safeDur = Math.max(30, durationInFrames || 900);
   const steamCycles = Math.max(2, Math.round((safeDur / 60) * 0.25));
@@ -1609,7 +2579,6 @@ export const StagePropRenderer: React.FC<{
       transform={`translate(${propState.x.toFixed(2)}, ${propState.y.toFixed(2)})`}
       opacity={layerOpacity}
     >
-      {/* 1. Emitter: Glow (quầng sáng ấm phía sau tâm/miệng đạo cụ) */}
       {emitters.glow > 0.01 && (
         <circle
           cx={rx * 0.65}
@@ -1620,7 +2589,6 @@ export const StagePropRenderer: React.FC<{
         />
       )}
 
-      {/* 2. Emitter: Spill (vệt mực nước dẹt nằm ngang song song mặt đất ngay dưới miệng đạo cụ, tách ngoài <g rotate>) */}
       {emitters.spill > 0.01 && (
         <g opacity={emitters.spill}>
           <ellipse
@@ -1637,13 +2605,12 @@ export const StagePropRenderer: React.FC<{
         </g>
       )}
 
-      {/* 3. Hình dáng chính của Prop (xoay quanh tiltPivot và nhân scale) */}
       <g
         transform={`rotate(${propState.rotate.toFixed(2)}, ${pivotWorldX.toFixed(2)}, ${pivotWorldY.toFixed(2)}) scale(${(propState.scale * veilScaleX).toFixed(3)}, ${propState.scale.toFixed(3)})`}
       >
         {morphP < 0.999 && (
           <g opacity={1 - morphP}>
-            {renderShapeList(
+            {renderShapeListStatic(
               primaryShapes,
               propState,
               palette,
@@ -1654,7 +2621,7 @@ export const StagePropRenderer: React.FC<{
         )}
         {hasMorph && morphP > 0.001 && altShapes && (
           <g opacity={morphP}>
-            {renderShapeList(
+            {renderShapeListStatic(
               altShapes,
               propState,
               palette,
@@ -1665,7 +2632,6 @@ export const StagePropRenderer: React.FC<{
         )}
       </g>
 
-      {/* 4. Emitter: Steam (2 đường cong chữ S mảnh luôn bay thẳng đứng hướng lên trời từ đúng miệng đạo cụ, tách ngoài <g rotate>) */}
       {emitters.steam > 0.01 && (
         <g opacity={emitters.steam * 0.78}>
           <path
@@ -1686,7 +2652,6 @@ export const StagePropRenderer: React.FC<{
         </g>
       )}
 
-      {/* 5. Emitter: PulseRing (vòng sóng tròn mảnh lan tỏa từ đúng ổ cắm emitterOffset) */}
       {emitters.pulseRing > 0.01 && (
         <NotificationRings
           x={rx}

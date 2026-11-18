@@ -1,0 +1,23 @@
+{
+  "tieu_de": "Chén 17 — Cập nhật",
+  "cau": ["Có những mối quan hệ", "đã hết hạn từ lâu,", "chỉ là tâm mình", "vẫn chưa chịu cập nhật."],
+  "cu_lat": "chưa chịu cập nhật",
+  "motif": "vat_lat_nghia",
+  "boi_canh": "van_phong",
+  "nhan_vat": {"ngoi_tren": "ghe.mat_ghe"},
+  "dao_cu": [
+    {"id": "ghe", "vi_tri": "trai"},
+    {"id": "ban", "vi_tri": "giua"},
+    {"id": "laptop", "dat_tren": "ban.mat_ban_trai", "do": true},
+    {"id": "lich_ban", "dat_tren": "ban.mat_ban_giua"},
+    {"id": "chen_tra", "ten": "chen_cua_lu_khach", "dat_tren": "ban.mat_ban_phai"}
+  ],
+  "cho_phep_chong": ["ban"],
+  "nhip": [
+    {"dong": 1, "lu_khach": "lam_viec"},
+    {"dong": 2, "lu_khach": "nhin_lich", "lich_ban": {"lat": 1}},
+    {"dong": 3, "lu_khach": "binh_than"},
+    {"cu_lat": true, "lu_khach": "gian_ngo", "laptop": {"thanh": 0.86}},
+    {"cu_lat": true, "sau": 3.4, "lu_khach": "nhin_nguoi_xem"}
+  ]
+}

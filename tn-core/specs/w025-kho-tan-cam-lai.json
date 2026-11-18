@@ -1,0 +1,25 @@
+{
+  "tieu_de": "W025 — Khổ tận cam lai",
+  "cau": [
+    "Nghe người lớn bảo đi làm,",
+    "Rồi sẽ tới ngày khổ tận cam lai.",
+    "Sao hết phần khổ lâu rồi…",
+    "Tìm quanh chưa thấy quả cam nào?"
+  ],
+  "cu_lat": "chưa thấy quả cam nào",
+  "motif": "doi_chieu",
+  "boi_canh": "hien_tra",
+  "nhan_vat": {
+    "lu_khach": "trai"
+  },
+  "dao_cu": [
+    {"id": "qua_cam", "vi_tri": "xa_phai", "do": true, "xuat_hien": "cu_lat"}
+  ],
+  "nhip": [
+    {"dong": 1, "lu_khach": "dung_cam_chen"},
+    {"dong": 2, "lu_khach": "binh_than"},
+    {"dong": 3, "lu_khach": "met"},
+    {"cu_lat": true, "lu_khach": "gian_ngo", "nhin_theo": "qua_cam", "qua_cam": {"lan": 0.62}},
+    {"cu_lat": true, "sau": 1.6, "lu_khach": "doi_theo", "nhin_theo": "qua_cam"}
+  ]
+}

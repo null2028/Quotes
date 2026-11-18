@@ -41,6 +41,13 @@ import {
   BUILT_IN_PROP_CATALOG,
   StagePropRenderer,
 } from './propCatalog';
+import { isLegacyStageScript } from './legacySceneIds';
+import { validateStageScriptHard } from './stageValidator';
+import {
+  getActorWorldBBox,
+  getPropWorldBBox,
+  resolveEffectiveSemanticLayer,
+} from './stageGeometry';
 
 function lerpNum(a: number, b: number, t: number): number {
   return a + (b - a) * t;
@@ -58,17 +65,85 @@ export const DeclarativeStagePlayer: React.FC<{
   visualDNA?: ResolvedVisualDNA;
   stageBox?: { width: number; height: number };
   frameMode?: 'NONE' | 'WINDOW_ARCH' | 'ASYMMETRIC_CARD';
+  showDebugBBoxes?: boolean;
 }> = ({
   script,
   state,
   palette,
   strokeWidth,
   frame,
+  durationInFrames,
   timeline,
   visualDNA,
   stageBox,
   frameMode = 'NONE',
+  showDebugBBoxes = false,
 }) => {
+  const svgWidth = stageBox?.width ?? LAYOUT_TOKENS.swissGrid.stageWidth;
+  const svgHeight = stageBox?.height ?? LAYOUT_TOKENS.swissGrid.stageHeight;
+  const isLegacy = isLegacyStageScript(script, script.sceneId);
+
+  // Bước 2: Validator chặn cứng trước mọi lần render cho kịch bản mới (trong cả Studio lẫn CLI)
+  const validation = React.useMemo(
+    () => (isLegacy ? null : validateStageScriptHard(script, timeline)),
+    [isLegacy, script, timeline]
+  );
+
+  if (validation && !validation.valid) {
+    if (
+      typeof process !== 'undefined' &&
+      process.env &&
+      process.env.STAGE_STRICT_THROW === '1'
+    ) {
+      throw new Error(
+        `Stage Validator chặn cứng (${validation.issues.length} lỗi):\n` +
+          validation.issues.map((i) => `- ${i.message}`).join('\n')
+      );
+    }
+    return (
+      <svg
+        width={svgWidth}
+        height={svgHeight}
+        viewBox={STAGE_VIEWBOX}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ overflow: 'visible', background: 'transparent' }}
+      >
+        <rect
+          x="74"
+          y="138"
+          width="392"
+          height="224"
+          rx="6"
+          fill="#FDF2F0"
+          stroke="#CE472E"
+          strokeWidth="1.4"
+        />
+        <text
+          x="88"
+          y="160"
+          fontFamily="Georgia, serif"
+          fontSize="11"
+          fontWeight="bold"
+          fill="#CE472E"
+        >
+          {`CHẶN RENDER — ${validation.issues.length} lỗi kịch bản sân khấu:`}
+        </text>
+        {validation.issues.slice(0, 8).map((iss, idx) => (
+          <text
+            key={idx}
+            x="88"
+            y={180 + idx * 20}
+            fontFamily="Georgia, serif"
+            fontSize="8.8"
+            fill="#1E1B18"
+          >
+            {`• ${iss.message.slice(0, 72)}`}
+          </text>
+        ))}
+      </svg>
+    );
+  }
+
   const isDarkSpotTheme = isDarkThemePalette(palette.id);
   const propAccentColor = palette.accentProp || palette.accent;
   const compiledNow = evaluateStageScriptAtFrame(
@@ -79,7 +154,6 @@ export const DeclarativeStagePlayer: React.FC<{
     visualDNA
   );
 
-  // Pha thu hồi Seamless Loop: khớp khít 100% về trạng thái 0.0s
   const loopBlend = state.seamlessLoopBlend ?? 0;
   const isLoopClosing = loopBlend > 0.002;
   const compiledZero = isLoopClosing
@@ -90,8 +164,9 @@ export const DeclarativeStagePlayer: React.FC<{
   const isAfterPivot = !isPrePivot && loopBlend < 0.75;
   const phase = state.continuousPhase;
   const isSolidStyle =
-    Boolean(script.tags?.includes('solid_style')) ||
-    Boolean(visualDNA?.forceSolidStyle);
+    !script.tags?.includes('semantic_v1') &&
+    (Boolean(script.tags?.includes('solid_style')) ||
+      Boolean(visualDNA?.forceSolidStyle));
   const horizonOffsetPx =
     visualDNA && !visualDNA.isLegacyLocked ? visualDNA.horizonOffsetPx : 0;
 
@@ -365,8 +440,6 @@ export const DeclarativeStagePlayer: React.FC<{
         : rawItemOpacity * 0.95;
     if (itemOpacity <= 0.01) return null;
 
-    // Mặt trời / mặt trăng mặc định màu mực phụ (secondary) để không tự bừng Đỏ Chu Sa từ 0.00s;
-    // chỉ ring_pulse (hiệu ứng nhịp tại Pivot) giữ mặc định accent. Muốn đỏ thì khai báo colorRole: "accent".
     const baseRole =
       item.colorRole ??
       (item.type === 'ring_pulse' ? 'accent' : 'secondary');
@@ -526,6 +599,14 @@ export const DeclarativeStagePlayer: React.FC<{
       safeTotalFrames;
     const actorDirSign = actor.facing === 'left' ? -1 : 1;
 
+    const actorSpec = (script.actors ?? []).find((x) => x.id === actor.id);
+    // Quy tắc 3: ở kịch bản mới, chén trà trên tay Lữ khách mặc định màu mực (inkPrimary),
+    // chỉ đổi đỏ sau Pivot nếu `teaCupRed === true` (hoặc kịch bản legacy giữ nguyên tương thích cũ).
+    const teaCupHighlightColor =
+      isAfterPivot && (isLegacy || actorSpec?.teaCupRed === true)
+        ? propAccentColor
+        : palette.inkPrimary;
+
     const actorStageGate =
       frame > timeline.pivotFrame ? state.drawProgress : 1;
     return (
@@ -575,6 +656,7 @@ export const DeclarativeStagePlayer: React.FC<{
               palette={palette}
               strokeWidth={strokeWidth}
               frame={frame}
+              durationInFramesOverride={durationInFrames}
               isAfterPivot={isAfterPivot}
               customPropsMap={script.customPropsResolved}
               flipX={actor.facing === 'left'}
@@ -589,11 +671,14 @@ export const DeclarativeStagePlayer: React.FC<{
               poseWeights={actor.poseWeights}
               leanDeg={actor.leanDeg}
               sitProgress={actor.sitProgress}
+              gazeX={actor.gazeX}
+              gazeY={actor.gazeY}
+              hasLookTarget={actor.hasLookTarget}
               walkPhase={actor.walkPhase}
               walkActivity={actor.walkActivity}
               breathPhase={actor.breathPhase}
               color={actor.color}
-              accentColor={isAfterPivot ? propAccentColor : palette.inkPrimary}
+              accentColor={teaCupHighlightColor}
               bgColor={palette.background}
               showTeaCup={actor.showTeaCup}
               solidFill={isSolidStyle}
@@ -639,6 +724,7 @@ export const DeclarativeStagePlayer: React.FC<{
           palette={palette}
           strokeWidth={strokeWidth}
           frame={frame}
+          durationInFramesOverride={durationInFrames}
           isAfterPivot={isAfterPivot}
           customPropsMap={script.customPropsResolved}
         />
@@ -648,6 +734,110 @@ export const DeclarativeStagePlayer: React.FC<{
     blendedActors
       .filter((entry) => entry.actor.layer === layer)
       .map(({ key, actor }) => renderActorNode(key, actor));
+
+  // Bước 3: Chế độ vẽ hộp bao (bounding boxes) & điểm neo của từng vật để kiểm tra trực quan va chạm
+  const renderDebugBBoxOverlay = () => {
+    if (!showDebugBBoxes) return null;
+    const layerColor: Record<string, string> = {
+      nen: '#6B7280',
+      giua: '#2563EB',
+      truoc: '#9333EA',
+    };
+    const nodes: React.ReactNode[] = [];
+
+    for (const { key, prop } of blendedProps) {
+      if (prop.opacity <= 0.1) continue;
+      const box = getPropWorldBBox(
+        prop,
+        script.customPropsResolved,
+        isAfterPivot
+      );
+      if (!box) continue;
+      const catDef = BUILT_IN_PROP_CATALOG[prop.type];
+      const semLayer = resolveEffectiveSemanticLayer(
+        prop.spec.semanticLayer ?? catDef?.defaultLayer,
+        prop.layer,
+        `${prop.id} ${prop.type}`
+      );
+      const col = layerColor[semLayer] || '#2563EB';
+      nodes.push(
+        <g key={`dbg-p-${key}`}>
+          <rect
+            x={box.x0}
+            y={box.y0}
+            width={Math.max(0.5, box.x1 - box.x0)}
+            height={Math.max(0.5, box.y1 - box.y0)}
+            fill="none"
+            stroke={col}
+            strokeWidth="0.7"
+            strokeDasharray="2.2 1.6"
+          />
+          <circle cx={prop.x} cy={prop.y} r="1.2" fill="#16A34A" />
+          <text
+            x={box.x0}
+            y={box.y0 - 1.8}
+            fontFamily="Georgia, serif"
+            fontSize="5.2"
+            fill={col}
+          >
+            {`${prop.id}[${semLayer}]`}
+          </text>
+          {Object.entries(catDef?.anchors ?? {}).map(([aName, [ax, ay]]) => (
+            <circle
+              key={aName}
+              cx={prop.x + ax * prop.scale}
+              cy={prop.y + ay * prop.scale}
+              r="1.35"
+              fill="#EA580C"
+            />
+          ))}
+        </g>
+      );
+    }
+
+    for (const { key, actor } of blendedActors) {
+      if (actor.opacity <= 0.1) continue;
+      const box = getActorWorldBBox(
+        actor,
+        script.customPropsResolved,
+        isAfterPivot
+      );
+      if (!box) continue;
+      const aSpec = (script.actors ?? []).find((x) => x.id === actor.id);
+      const semLayer = resolveEffectiveSemanticLayer(
+        aSpec?.semanticLayer,
+        actor.layer,
+        `${actor.id} ${actor.rig || 'human'}`
+      );
+      const col = layerColor[semLayer] || '#2563EB';
+      nodes.push(
+        <g key={`dbg-a-${key}`}>
+          <rect
+            x={box.x0}
+            y={box.y0}
+            width={Math.max(0.5, box.x1 - box.x0)}
+            height={Math.max(0.5, box.y1 - box.y0)}
+            fill="none"
+            stroke={col}
+            strokeWidth="0.75"
+            strokeDasharray="2.5 1.5"
+          />
+          <circle cx={actor.x} cy={actor.y} r="1.2" fill="#16A34A" />
+          <text
+            x={box.x0}
+            y={box.y0 - 1.8}
+            fontFamily="Georgia, serif"
+            fontSize="5.2"
+            fill={col}
+          >
+            {`${actor.id}[${semLayer}]`}
+          </text>
+        </g>
+      );
+    }
+
+    return <g pointerEvents="none">{nodes}</g>;
+  };
 
   const parallax =
     compiledZero && isLoopClosing
@@ -701,8 +891,6 @@ export const DeclarativeStagePlayer: React.FC<{
     spotlight.strength > 0.005
       ? 1 - spotlight.strength * (isDarkSpotTheme ? 0.38 : 0.32)
       : 1;
-  const svgWidth = stageBox?.width ?? LAYOUT_TOKENS.swissGrid.stageWidth;
-  const svgHeight = stageBox?.height ?? LAYOUT_TOKENS.swissGrid.stageHeight;
 
   const cameraTransform = `translate(270, 315) scale(${cam.zoom.toFixed(5)}) translate(${(-270 - cam.panX).toFixed(3)}, ${(-315 - cam.panY).toFixed(3)})`;
 
@@ -802,6 +990,8 @@ export const DeclarativeStagePlayer: React.FC<{
           {renderActorsByLayer('fore')}
           {renderPropsByLayer('fore')}
         </g>
+
+        {renderDebugBBoxOverlay()}
       </g>
 
       {frameMode === 'WINDOW_ARCH' && (

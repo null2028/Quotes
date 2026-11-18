@@ -31,9 +31,24 @@ async function runBatchPipeline() {
   const llmCaller = createLLMCallerFromEnv();
 
   const mappedSpecs: VideoInputProps[] = [];
+  const { resolveStageScript } = await import('../stage/stageScriptRegistry');
+  const { validateStageScriptHard } = await import('../stage/stageValidator');
   for (const job of rawJobs) {
     console.log(`[1/3] Đang phân tích ngữ nghĩa cho Job: ${job.id}...`);
     const spec = await mapQuoteToVideoProps(job, llmCaller);
+    const activeSceneId = spec.motion.sceneId || spec.motion.archetype;
+    const resolvedScript = resolveStageScript(activeSceneId, spec.motion.stageScript);
+    if (resolvedScript) {
+      const syncCheck = computeTimelineSync(spec);
+      const valRes = validateStageScriptHard(resolvedScript, syncCheck);
+      if (!valRes.valid) {
+        console.error(`❌ CHẶN RENDER CLI [${job.id}]: ${valRes.issues.length} lỗi kịch bản sân khấu:`);
+        for (const iss of valRes.issues) {
+          console.error(`   - ${iss.message}`);
+        }
+        process.exit(1);
+      }
+    }
     mappedSpecs.push(spec);
   }
 

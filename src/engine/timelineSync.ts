@@ -231,11 +231,16 @@ export function computeTimelineSync(
       targetCharIndex !== -1;
 
     if (containsPivot) {
+      const charRatio =
+        cleanText.length > 0
+          ? Math.max(0, Math.min(1, targetCharIndex / cleanText.length))
+          : 0.5;
+      const readDelaySec = 0.36 + charRatio * 0.52;
       detectedPivotFrame = isFirstActiveLine
         ? Math.round(targetDurationSec * 0.44 * fps)
         : Math.max(
             introBufferFrames + Math.round(0.38 * fps),
-            startFrame + Math.round(0.38 * fps)
+            startFrame + Math.round(readDelaySec * fps)
           );
     }
 

@@ -1,0 +1,21 @@
+{
+  "tieu_de": "Chén 10 — Người nhà",
+  "cau": ["Mẹ anh bảo người lạ,", "Sẽ cực kỳ xấu xa.", "Nhưng em xinh đẹp quá…", "Chắc chắn là người nhà."],
+  "cu_lat": "là người nhà",
+  "motif": "khoang_cach",
+  "boi_canh": "ngo_pho",
+  "nhan_vat": {"lu_khach": "trai", "nguoi_b": "phai"},
+  "dao_cu": [
+    {"id": "cong_rao", "vi_tri": "giua"},
+    {"id": "chen_tra", "ten": "chen_moi", "dat_tren": "cong_rao.tru_phai", "do": true, "xuat_hien": "cu_lat"}
+  ],
+  "cho_phep_chong": ["cong_rao"],
+  "nhip": [
+    {"dong": 1, "lu_khach": "dung_cam_chen"},
+    {"dong": 2, "lu_khach": "canh_giac", "nguoi_b": "di_vao"},
+    {"dong": 3, "lu_khach": "khung_lai"},
+    {"dong": 3, "sau": 0.6, "lu_khach": "boi_roi"},
+    {"cu_lat": true, "lu_khach": "cuoi", "cong_rao": {"mo": 1}, "nguoi_b": "nhun"},
+    {"cu_lat": true, "sau": 3.6, "lu_khach": "nhin_nguoi_xem"}
+  ]
+}

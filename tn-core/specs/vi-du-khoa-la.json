@@ -1,0 +1,26 @@
+{
+  "tieu_de": "Ví dụ khoá lạ & trùng chén",
+  "themeId": "MINIMAL_LIGHT",
+  "cau": [
+    "Tháng năm tất tả chưa từng dừng,",
+    "Tiền chưa đầy túi đã đau lưng.",
+    "Lắm hôm mệt quá toan buông xuống,",
+    "Nhìn tờ hóa đơn… lại khỏe tưng!"
+  ],
+  "cu_lat": "lại khỏe tưng",
+  "motif": "vat_lat_nghia",
+  "boi_canh": "van_phong",
+  "nhan_vat": {
+    "lu_khach": "trai",
+    "lu_khach_ngoi": "ghe"
+  },
+  "dao_cu": [
+    {"id": "ban", "vi_tri": "giua", "toa_do_x": 240},
+    {"id": "hoa_don", "dat_tren": "ban.mat_ban_trai", "do": true},
+    {"id": "chen_tra", "dat_tren": "ban.mat_ban_phai"}
+  ],
+  "nhip": [
+    {"dong": 1, "lu_khach": "dung_cam_chen", "thoi_luong": 1.2},
+    {"cu_lat": true, "lu_khach": "khoe_tung"}
+  ]
+}

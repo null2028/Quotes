@@ -27,6 +27,15 @@ export type FocusRole = z.infer<typeof FocusRoleSchema>;
 export const LayerSchema = z.enum(['sky', 'far', 'mid', 'fore']);
 export type StageLayer = z.infer<typeof LayerSchema>;
 
+export const SemanticLayerSchema = z.enum(['nen', 'giua', 'truoc']);
+export type SemanticLayer = z.infer<typeof SemanticLayerSchema>;
+
+export const AnchorKindSchema = z.enum(['dat', 'tuong', 'troi', 'tren', 'cam']);
+export type AnchorKind = z.infer<typeof AnchorKindSchema>;
+
+export const PropCatalogStatusSchema = z.enum(['duyet', 'nhap']);
+export type PropCatalogStatus = z.infer<typeof PropCatalogStatusSchema>;
+
 export const TravelerPoseSchema = z.enum([
   'walk',
   'stand',
@@ -83,12 +92,40 @@ export const InlineShapeSchema = z.object({
 
 export type InlineShape = z.infer<typeof InlineShapeSchema>;
 
+export const PropDescription5Schema = z.object({
+  nghia: z.string().min(1),
+  cau_truc: z.string().min(1),
+  bong_dang: z.string().min(1),
+  the_gioi: z.string().min(1),
+  nguoi_la: z.string().min(1),
+});
+export type PropDescription5 = z.infer<typeof PropDescription5Schema>;
+
+export const PropVariantDefinitionSchema = z.object({
+  labelVi: z.string().optional(),
+  box: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
+  shapes: z.array(InlineShapeSchema),
+  altShapes: z.array(InlineShapeSchema).optional(),
+});
+export type PropVariantDefinition = z.infer<typeof PropVariantDefinitionSchema>;
+
 export const CustomPropDefinitionSchema = z.object({
+  status: PropCatalogStatusSchema.optional(),
+  labelVi: z.string().optional(),
+  kich_thuoc_that: z.number().positive().optional(),
+  description5: PropDescription5Schema.optional(),
   anchorType: z.enum(['ground', 'hand', 'center']).optional(),
+  defaultLayer: SemanticLayerSchema.optional(),
+  anchorKind: AnchorKindSchema.optional(),
+  allowedAnchorKinds: z.array(AnchorKindSchema).optional(),
+  box: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
+  anchors: z.record(z.string(), z.tuple([z.number(), z.number()])).optional(),
+  canBeRed: z.boolean().optional(),
   emitterOffset: z.tuple([z.number(), z.number()]).optional(),
   tiltPivot: z.tuple([z.number(), z.number()]).optional(),
   shapes: z.array(InlineShapeSchema),
   altShapes: z.array(InlineShapeSchema).optional(),
+  variants: z.record(z.string(), PropVariantDefinitionSchema).optional(),
 });
 
 export type CustomPropDefinition = z.infer<typeof CustomPropDefinitionSchema>;
@@ -188,6 +225,11 @@ export const ActorSpecSchema = z.object({
   colorRole: ColorRoleSchema.optional(),
   focusRole: FocusRoleSchema.optional(),
   showTeaCup: z.union([z.boolean(), z.number()]).optional(),
+  teaCupRed: z.boolean().optional(),
+  seatedOn: z.string().optional(),
+  seatedAtDesk: z.string().optional(),
+  lookAtTarget: z.string().optional(),
+  semanticLayer: SemanticLayerSchema.optional(),
   dissolveToCloud: z.number().min(0).max(1).optional(),
   layer: LayerSchema.optional(),
   enterAt: TimeExprSchema.optional(),
@@ -232,10 +274,14 @@ export type PropEmitters = z.infer<typeof PropEmittersSchema>;
 export const PropSpecSchema = z.object({
   id: z.string().min(1, 'Prop cần có id (VD: "card", "jar")'),
   type: z.string().optional(),
+  variant: z.string().optional(),
   x: XCoordSchema.optional(),
   y: z.number().optional(),
   follow: z.string().nullable().optional(),
   layer: LayerSchema.optional(),
+  semanticLayer: SemanticLayerSchema.optional(),
+  anchorKind: AnchorKindSchema.optional(),
+  placedOn: z.string().optional(),
   scale: z.number().min(0.1).max(4).optional(),
   rotate: z.number().optional(),
   opacity: z.number().min(0).max(1).optional(),
@@ -264,10 +310,8 @@ export const TimelineCueSchema = z.object({
   at: TimeExprSchema.optional(),
   when: TimeExprSchema.optional(),
   duration: z.number().min(0.05).max(15).optional(),
-  // Giữ nguyên `duration` khai báo cho cue sau Pivot (không bị kéo giãn thành 3.8s Cinemagraph)
   exactDuration: z.boolean().optional(),
   target: z.string().min(1, 'Cue trong timeline[] cần chỉ rõ target (id của actor/prop hoặc "camera"/"terrain")'),
-  // Vị trí & Điểm neo
   x: XCoordSchema.optional(),
   toX: XCoordSchema.optional(),
   y: z.number().optional(),
@@ -275,25 +319,23 @@ export const TimelineCueSchema = z.object({
   yOffset: z.number().optional(),
   arcY: z.number().optional(),
   follow: z.string().nullable().optional(),
-  // Thuộc tính Actor & Prop chung
   scale: z.number().optional(),
   rotate: z.number().optional(),
   opacity: z.number().min(0).max(1).optional(),
   colorRole: ColorRoleSchema.optional(),
-  // Thuộc tính riêng của Actor
+  variant: z.string().optional(),
   facing: z.enum(['left', 'right']).optional(),
   pose: TravelerPoseSchema.optional(),
   leanDeg: z.number().optional(),
   sitProgress: z.number().min(0).max(1).optional(),
+  lookAtTarget: z.string().nullable().optional(),
   showTeaCup: z.union([z.boolean(), z.number()]).optional(),
   dissolveToCloud: z.number().min(0).max(1).optional(),
-  // Thuộc tính biến hình & hiệu ứng của Prop
   drawProgress: z.number().min(0).max(1).optional(),
   morphProgress: z.number().min(0).max(1).optional(),
   splitProgress: z.number().min(0).max(1).optional(),
   floatAwayProgress: z.number().min(0).max(1).optional(),
   emitters: PropEmittersSchema.optional(),
-  // Thuộc tính của Terrain (cliff_gap) & Camera
   bridgeProgress: z.number().min(0).max(1).optional(),
   zoom: z.number().min(0.6).max(2.0).optional(),
   panX: z.number().optional(),
@@ -317,6 +359,8 @@ export const StageScriptSchema = z.object({
   act3Afterimage: z.string().optional(),
   redProp: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  legacy: z.boolean().optional(),
+  strictValidation: z.boolean().optional(),
   terrain: TerrainConfigSchema.optional(),
   atmosphere: z.array(AtmosphereItemSchema).optional(),
   actors: z.array(ActorSpecSchema).optional(),

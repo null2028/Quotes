@@ -27,6 +27,9 @@ export interface CloakedTravelerProps {
   poseWeights?: TravelerPoseWeights;
   leanDeg?: number;
   sitProgress?: number;
+  gazeX?: number;
+  gazeY?: number;
+  hasLookTarget?: boolean;
   walkPhase?: number;
   walkActivity?: number;
   breathPhase?: number;
@@ -42,10 +45,6 @@ export interface CloakedTravelerProps {
 
 /**
  * Bộ giải động học ngược 2 xương (Analytic Two-Bone IK Solver — Định lý Cosin)
- * Tham chiếu chuẩn Rive IK Constraint & Unity Two-Bone IK:
- * - Giữ nguyên độ dài xương L1, L2 không bị co giãn khi chuyển tư thế.
- * - bendDir = -1: khớp giữa (đầu gối) gập về phía trước (+X).
- * - bendDir = +1: khớp giữa (khuỷu tay) gập xuống dưới (+Y) tự nhiên.
  */
 function solveTwoBoneIK(
   rx: number,
@@ -89,6 +88,9 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   poseWeights,
   leanDeg = 0,
   sitProgress,
+  gazeX = 0.35,
+  gazeY = 0.05,
+  hasLookTarget = false,
   walkPhase = 0,
   walkActivity = 1,
   breathPhase = 0,
@@ -152,7 +154,6 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   const stepSin = Math.sin(walkPhase);
   const stepBob = act * Math.abs(stepSin) * 0.48;
   const legSwing = act * stepSin * 4.4;
-  // Khi ngồi ghế (effectiveSit = 1), hông chỉ hạ nhẹ 1.2px để đặt phẳng trên mặt ghế (y ≈ -10.5)
   const sitDrop = effectiveSit * 1.2;
 
   const wLookUp = poseWeights
@@ -173,38 +174,41 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
       : 0;
   const wPush = poseWeights ? poseWeights.push : pose === 'push' ? 1 : 0;
   const wSitSlump =
-    effectiveSit * Math.max(0, Math.min(1, (leanDeg - 3) / 14));
+    effectiveSit * Math.max(0, Math.min(1, (leanDeg - 3) / 16));
+  const deepSlump =
+    effectiveSit * Math.max(0, Math.min(1, (leanDeg - 13) / 9));
 
-  // === 1. CỘT SỐNG BÉZIER 2 TẦNG (2-Segment Bézier Spine — Chuẩn RubberHose / Duik) ===
-  // Khung chậu (Pelvis) khóa gần như thẳng đứng trên mặt ghế khi ngồi (effectiveSit = 1),
-  // chỉ xoay nhẹ khi đứng/bước. Phần leanDeg còn lại chuyển thành độ uốn cong chữ C của lưng trên & cổ.
-  const clampedLean = Math.max(-12, Math.min(24, leanDeg));
+  // === 1. CỘT SỐNG BÉZIER 2 TẦNG (nhìn ngang: khi deepSlump=1 ở dòng 3, Lữ khách gục đầu xuống mặt bàn phía trước +X, không cúi về phía người xem) ===
+  const clampedLean = Math.max(-12, Math.min(26, leanDeg));
   const pelvisTiltDeg =
     clampedLean * (1 - effectiveSit * 0.88) * 0.28 +
     (1 - act) * breathSin * 0.1;
   const spineBendDeg = clampedLean - pelvisTiltDeg;
   const spineBendRad = (spineBendDeg * Math.PI) / 180;
 
-  // Độ dịch chuyển ngang (X) và độ rũ vai (Y) dọc theo cột sống từ Hông (-10.6) -> Ngực (-23) -> Vai (-34.6) -> Đầu (-42.3)
-  const midSpineShiftX = Math.sin(spineBendRad) * 3.6;
-  const shoulderShiftX = Math.sin(spineBendRad) * 7.8;
+  const midSpineShiftX = Math.sin(spineBendRad) * 3.6 + 3.2 * deepSlump;
+  const shoulderShiftX = Math.sin(spineBendRad) * 7.8 + 4.8 * deepSlump;
   const shoulderDropY =
-    (1 - Math.cos(spineBendRad)) * 5.2 + effectiveSit * 0.6;
+    (1 - Math.cos(spineBendRad)) * 5.2 +
+    effectiveSit * 0.6 +
+    8.6 * deepSlump;
 
+  // Khi gục xuống bàn (deepSlump = 1), đầu hạ thấp xuống sát mặt bàn (headOffsetY ≈ -25.4, đáy đầu y ≈ -19.2 trùng khít mặt bàn!) và vươn về phía bàn (+X ≈ +10.6)
   const headOffsetX =
     shoulderShiftX +
     Math.sin(spineBendRad) * 2.8 +
+    2.2 * deepSlump +
     2.4 * wPush -
     1.2 * wLookUp +
     (1 - act) * breezeCos * 0.14;
   const headOffsetY =
     -42.3 +
     shoulderDropY +
-    (1 - Math.cos(spineBendRad)) * 3.4 -
+    (1 - Math.cos(spineBendRad)) * 3.4 +
+    6.4 * deepSlump -
     0.7 * wLookUp -
     breathLiftY * 0.18;
 
-  // Tà áo dưới (Hip Base) luôn nằm ngang vững chãi trên ghế/mặt đất; lưng áo trên uốn mượt theo cột sống
   const backHemX =
     (solidFill ? -9.6 : -9.0) + 0.6 * effectiveSit + hemFlutter * 0.75;
   const frontHemX =
@@ -219,15 +223,13 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   const frontCtrl1X = 8.2 + midSpineShiftX * 0.55;
   const frontCtrl2X = 7.0 + shoulderShiftX * 0.72;
 
-  const cloakD = `M ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} C ${backCtrl1X.toFixed(2)} ${(-26.2 + shoulderDropY * 0.65).toFixed(2)} ${backCtrl2X.toFixed(2)} -15.8 ${backHemX.toFixed(2)} -10.4 Q -1.2 -9.0 ${frontHemX.toFixed(2)} -10.8 C ${frontCtrl1X.toFixed(2)} -16.8 ${frontCtrl2X.toFixed(2)} ${(-26.4 + shoulderDropY * 0.65).toFixed(2)} ${topFrontX.toFixed(2)} ${topShoulderY.toFixed(2)} Q ${(shoulderShiftX).toFixed(2)} ${(topShoulderY - 1.0).toFixed(2)} ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} Z`;
+  const cloakD = `M ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} C ${backCtrl1X.toFixed(2)} ${(-26.2 + shoulderDropY * 0.65).toFixed(2)} ${backCtrl2X.toFixed(2)} -15.8 ${backHemX.toFixed(2)} -10.4 Q -1.2 -9.0 ${frontHemX.toFixed(2)} -10.8 C ${frontCtrl1X.toFixed(2)} -16.8 ${frontCtrl2X.toFixed(2)} ${(-26.4 + shoulderDropY * 0.65).toFixed(2)} ${topFrontX.toFixed(2)} ${topShoulderY.toFixed(2)} Q ${shoulderShiftX.toFixed(2)} ${(topShoulderY - 1.0).toFixed(2)} ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} Z`;
 
-  // === 2. CHÂN 2-BONE ANALYTIC IK (Hip -> Knee -> Foot) ===
-  // Chiều dài đùi (thighLen) & cẳng chân (calfLen) giải bằng định lý Cosin, đầu gối luôn gập về phía trước (bendDir = -1)
+  // === 2. CHÂN 2-BONE ANALYTIC IK ===
   const thighLen = 5.7 + 2.4 * effectiveSit;
   const calfLen = 5.7 + 3.8 * effectiveSit;
   const hipY = -11.0 - stepBob + sitDrop;
 
-  // Khi đi bộ, bàn chân đang bước về trước nhấc nhẹ lên khỏi mặt đất để đầu gối gập tự nhiên
   const backStepLift = act * Math.max(0, -stepSin) * 1.25;
   const frontStepLift = act * Math.max(0, stepSin) * 1.25;
 
@@ -257,11 +259,36 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
     -1
   );
 
-  // === 3. TAY 2-BONE ANALYTIC IK (Shoulder -> Elbow -> Hand) ===
+  // === 3. TAY 2-BONE ANALYTIC IK (khi ngồi vào bàn, tay đặt lên mặt bàn/bàn phím; khi gục, cẳng tay trải trên mặt bàn đỡ đầu) ===
   const shoulderX = 3.0 + shoulderShiftX * 0.88;
   const shoulderY = -27.8 + shoulderDropY * 0.85;
-  const upperArmLen = 7.4;
-  const forearmLen = 7.8;
+  const upperArmLen = 7.6;
+  const forearmLen = 8.4;
+
+  // === 4. NHÌN NGANG (SIDE PROFILE): MẮT Ở MÉP TRƯỚC MẶT (+X) & LÁ TRÀ TRÊN ĐỈNH ĐẦU ===
+  const clampedGazeX = Math.max(-0.8, Math.min(1.4, gazeX));
+  const clampedGazeY = Math.max(-1.0, Math.min(1.2, gazeY));
+  // Ở góc nhìn ngang (facing right -> +X là phía trước mặt), mắt nằm sát mép phải của khuôn mặt (headOffsetX + 3.8..4.8), tuyệt đối không nằm giữa đầu!
+  const eyeCenterX = headOffsetX + 3.65 + clampedGazeX * 0.85;
+  const eyeCenterY =
+    headOffsetY +
+    0.25 +
+    deepSlump * (hasLookTarget ? -0.35 : 0.95) +
+    clampedGazeY * 0.75;
+  const isTiredDroopEye = deepSlump > 0.55 && !hasLookTarget;
+
+  // Lá trà trên đỉnh đầu: ngồi thẳng dựng đứng (~4°); gục xuống bàn thì rủ về trước (~68°); khi đang gục mà liếc nhìn hoá đơn thì nhổm lên (~24°)
+  const leafBaseDeg =
+    clampedLean <= 2.5
+      ? 4
+      : deepSlump > 0.55
+        ? hasLookTarget
+          ? 24
+          : 68
+        : 16 + wSitSlump * 24;
+  const leafDeg = leafBaseDeg + breezeCos * 1.6;
+  const leafRootX = headOffsetX + 0.2;
+  const leafRootY = headOffsetY - (solidFill ? 6.45 : 6.2);
 
   const limbDrawProps = isDrawing
     ? {
@@ -404,6 +431,26 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               />
             )}
 
+            {/* Cánh tay làm việc / gối lên mặt bàn khi ngồi vào bàn (khuỷu tay và cẳng tay nằm trên mặt bàn y ≈ -19.6, không thò xuống gầm bàn) */}
+            {limbStrokeP > 0.002 && effectiveSit > 0.4 && (
+              <path
+                d={(() => {
+                  const elbowX = shoulderX + 3.2 + deepSlump * 1.4;
+                  const elbowY = -20.2 + deepSlump * 0.6;
+                  const handX = 13.8 + deepSlump * 2.4;
+                  const handY = -19.8 - breathSin * 0.06;
+                  return `M ${shoulderX.toFixed(2)} ${shoulderY.toFixed(2)} L ${elbowX.toFixed(2)} ${elbowY.toFixed(2)} L ${handX.toFixed(2)} ${handY.toFixed(2)}`;
+                })()}
+                fill="none"
+                stroke={color}
+                strokeWidth={effStroke * (limbMult * 0.92)}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={limbOpacity * effectiveSit * limbInkGate}
+                {...limbDrawProps}
+              />
+            )}
+
             {washMult > 0.005 && (
               <circle
                 cx={headOffsetX}
@@ -424,10 +471,89 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               strokeOpacity={0.88 * headInkGate}
               {...headDrawProps}
             />
+
+            {/* Nét tóc gợi hướng đầu nhìn ngang về phía trước (+X) */}
+            {headStrokeP > 0.3 && (
+              <path
+                d={`M ${(headOffsetX - 3.6).toFixed(2)} ${(headOffsetY - 4.2).toFixed(2)} Q ${(headOffsetX + 0.6).toFixed(2)} ${(headOffsetY - 5.6).toFixed(2)} ${(headOffsetX + 4.2).toFixed(2)} ${(headOffsetY - 3.4).toFixed(2)}`}
+                fill="none"
+                stroke={color}
+                strokeWidth={effStroke * 0.48}
+                strokeLinecap="round"
+                opacity={0.52 * headInkGate}
+              />
+            )}
+
+            {/* Lá trà trên đỉnh đầu Lữ khách (dựng đứng khi tỉnh táo, rủ về phía bàn khi gục mỏi) */}
+            {headStrokeP > 0.25 && (
+              <g
+                transform={`rotate(${leafDeg.toFixed(1)} ${leafRootX.toFixed(2)} ${leafRootY.toFixed(2)})`}
+                opacity={headInkGate}
+              >
+                <path
+                  d={`M ${leafRootX.toFixed(2)} ${leafRootY.toFixed(2)} C ${(leafRootX - 0.5).toFixed(2)} ${(leafRootY - 2.3).toFixed(2)} ${(leafRootX + 0.8).toFixed(2)} ${(leafRootY - 4.4).toFixed(2)} ${(leafRootX + 2.6).toFixed(2)} ${(leafRootY - 5.0).toFixed(2)} C ${(leafRootX + 2.9).toFixed(2)} ${(leafRootY - 2.7).toFixed(2)} ${(leafRootX + 1.8).toFixed(2)} ${(leafRootY - 0.9).toFixed(2)} ${leafRootX.toFixed(2)} ${leafRootY.toFixed(2)} Z`}
+                  fill={bgColor}
+                  stroke="#4E5840"
+                  strokeWidth={effStroke * 0.68}
+                  strokeLinejoin="round"
+                />
+                <path
+                  d={`M ${(leafRootX + 0.15).toFixed(2)} ${(leafRootY - 0.25).toFixed(2)} Q ${(leafRootX + 1.1).toFixed(2)} ${(leafRootY - 2.4).toFixed(2)} ${(leafRootX + 2.3).toFixed(2)} ${(leafRootY - 4.5).toFixed(2)}`}
+                  fill="none"
+                  stroke="#4E5840"
+                  strokeWidth={effStroke * 0.42}
+                  strokeLinecap="round"
+                  opacity={0.75}
+                />
+              </g>
+            )}
+
+            {/* Ánh nhìn ngang (Side-Profile Eye nằm sát mép trước mặt +X, hướng theo nhin_theo) */}
+            {headStrokeP > 0.35 && (
+              <g opacity={headInkGate}>
+                {isTiredDroopEye ? (
+                  <path
+                    d={`M ${(eyeCenterX - 1.05).toFixed(2)} ${(eyeCenterY + 0.2).toFixed(2)} Q ${eyeCenterX.toFixed(2)} ${(eyeCenterY + 0.85).toFixed(2)} ${(eyeCenterX + 0.95).toFixed(2)} ${(eyeCenterY + 0.35).toFixed(2)}`}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={effStroke * 0.72}
+                    strokeLinecap="round"
+                  />
+                ) : (
+                  <>
+                    {hasLookTarget && deepSlump > 0.35 && (
+                      <path
+                        d={`M ${(eyeCenterX - 0.95).toFixed(2)} ${(eyeCenterY - 1.55).toFixed(2)} Q ${eyeCenterX.toFixed(2)} ${(eyeCenterY - 2.05).toFixed(2)} ${(eyeCenterX + 0.95).toFixed(2)} ${(eyeCenterY - 1.45).toFixed(2)}`}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth={effStroke * 0.55}
+                        strokeLinecap="round"
+                        opacity={0.82}
+                      />
+                    )}
+                    <ellipse
+                      cx={eyeCenterX.toFixed(2)}
+                      cy={eyeCenterY.toFixed(2)}
+                      rx={hasLookTarget && deepSlump > 0.35 ? 0.96 : 0.82}
+                      ry={hasLookTarget && deepSlump > 0.35 ? 1.28 : 1.1}
+                      fill={color}
+                      opacity={0.92}
+                    />
+                    <circle
+                      cx={(eyeCenterX + 0.24).toFixed(2)}
+                      cy={(eyeCenterY - 0.34).toFixed(2)}
+                      r={0.28}
+                      fill={bgColor}
+                    />
+                  </>
+                )}
+              </g>
+            )}
           </>
         )}
 
         {limbStrokeP > 0.002 &&
+          effectiveSit <= 0.4 &&
           (
             [
               {
@@ -460,14 +586,6 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 target: [
                   17.8 + shoulderShiftX * 0.5,
                   -31.5 + shoulderDropY * 0.5,
-                ],
-              },
-              {
-                key: 'sit_slump',
-                weight: wSitSlump,
-                target: [
-                  frontLegIK.jx - 0.4,
-                  frontLegIK.jy - 1.8 - breathSin * 0.08,
                 ],
               },
             ] as const

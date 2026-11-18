@@ -1,0 +1,1300 @@
+import rawCustomProps from '../../data/custom-props.json';
+import { computeTimelineSync, TimelineSyncResult } from '../engine/timelineSync';
+import { THEME_PALETTES } from '../theme/palettes';
+import {
+  APPROVAL_BATCH_PROP_NAMES,
+  BUILT_IN_PROP_CATALOG,
+  BUILT_IN_PROP_NAMES,
+} from './propCatalog';
+import { isLegacyStageScript } from './legacySceneIds';
+import {
+  ANCHOR_KINDS,
+  computeExpectedCatalogSpanFromCm,
+  DEFAULT_SCENE_SCALE,
+  HE_SO_PHONG_DAI,
+  MAX_REAL_SIZE_DEVIATION,
+  MAX_RED_BBOX_DELTA,
+  MIN_RED_AREA_PX2,
+  MIN_RED_SILHOUETTE_IOU,
+  MIN_WALL_CLEARANCE_UNITS,
+  NGUONG_VAT_NHO_CM,
+  SEMANTIC_LAYERS,
+  SEMANTIC_SLOTS,
+  SemanticLayer,
+  TRAVELER_HAND_TEACUP_SPAN,
+  TY_LE_CANH,
+  VALIDATION_SAMPLE_STEP_SEC,
+} from './stageConstants';
+import {
+  compareNormalAndRedSilhouette,
+  computePropRedStageArea,
+  computeShapesLocalBBox,
+  getActorWorldBBox,
+  getPropWorldBBox,
+  PX2_PER_STAGE_UNIT2,
+  resolveEffectiveSemanticLayer,
+  STAGE_VB_X0,
+  STAGE_VB_X1,
+  STAGE_VB_Y0,
+  STAGE_VB_Y1,
+  suggestClosestName,
+} from './stageGeometry';
+import {
+  compileSemanticStageScript,
+  isSemanticStageScript,
+  SEMANTIC_POSES,
+  SEMANTIC_SOCKETS,
+  SEMANTIC_TERRAINS,
+  SemanticStageScript,
+} from './semanticStage';
+import { getTerrainPoint } from './terrainSystem';
+import { evaluateStageScriptAtFrame } from './trackCompiler';
+import type { CustomPropDefinition, StageScript } from './stageScriptSchema';
+
+const CUSTOM_ONLY_PROP_NAMES = new Set(
+  Object.keys(rawCustomProps as Record<string, unknown>).filter(
+    (k) => !(k in BUILT_IN_PROP_CATALOG)
+  )
+);
+
+const APPROVAL_BATCH_SET = new Set<string>(APPROVAL_BATCH_PROP_NAMES);
+
+const RECOMMENDED_RED_PROPS = [
+  'desk_calendar',
+  'desk_laptop',
+  'vi_tien',
+  'thiep',
+  'phong_bi',
+  'hoa_don',
+  'wine_jar',
+  'umbrella',
+];
+
+const ALLOWED_SEMANTIC_ROOT_KEYS = new Set([
+  'semanticVersion',
+  'sceneId',
+  'ten',
+  'mo_ta',
+  'boi_canh',
+  'vat_do_tren_tay',
+  'nhan_vat',
+  'dao_cu',
+  'nhip',
+]);
+
+const ALLOWED_BOI_CANH_KEYS = new Set(['dia_hinh', 'khi_quyen']);
+const ALLOWED_KHI_QUYEN_KEYS = new Set(['id', 'loai', 'vi_tri', 'huong', 'mat_do']);
+const ALLOWED_NHAN_VAT_KEYS = new Set([
+  'id',
+  'vi_tri',
+  'ngoi_tren',
+  'ngoi_vao',
+  'huong',
+  'tu_the',
+  'nghieng',
+  'nhin_theo',
+  'lop',
+  'cam_chen_tra',
+  'xuat_hien_tu',
+  'roi_di_luc',
+]);
+const ALLOWED_DAO_CU_KEYS = new Set([
+  'id',
+  'type',
+  'trang_thai',
+  'loai_neo',
+  'vi_tri',
+  'dat_tren',
+  'cam_boi',
+  'lop',
+  'vat_do',
+  'xuat_hien_tu',
+]);
+const ALLOWED_NHIP_KEYS = new Set([
+  'moc',
+  'sau',
+  'thoi_luong',
+  'nhan_vat',
+  'dao_cu',
+]);
+const ALLOWED_NHIP_ACTOR_KEYS = new Set([
+  'tu_the',
+  'di_toi',
+  'huong',
+  'nghieng',
+  'nhin_theo',
+  'cam_chen_tra',
+  'dung_day',
+]);
+const ALLOWED_NHIP_PROP_KEYS = new Set([
+  'trang_thai',
+  'cam_boi',
+  'dat_tren',
+  'di_toi',
+  'bay_len',
+  'tach_doi',
+  'khoi',
+]);
+const FORBIDDEN_COORD_KEYS = new Set([
+  'x',
+  'y',
+  'toX',
+  'toY',
+  'yOffset',
+  'scale',
+  'shapes',
+  'altShapes',
+]);
+
+export interface StageValidationIssue {
+  code:
+    | 'UNKNOWN_KEY'
+    | 'UNKNOWN_NAME'
+    | 'CUSTOM_PROP_FORBIDDEN'
+    | 'MISSING_CATALOG_METADATA'
+    | 'SINGLE_MEANING_VIOLATION'
+    | 'RED_SILHOUETTE_MISMATCH'
+    | 'REAL_SIZE_SCALING_VIOLATION'
+    | 'SAME_TYPE_SIZE_MISMATCH'
+    | 'INVALID_ANCHOR'
+    | 'INVALID_SEATING'
+    | 'OVERLAP_COLLISION'
+    | 'FLOATING_OBJECT'
+    | 'OUT_OF_SAFE_TERRAIN'
+    | 'RED_OBJECT_RULE';
+  message: string;
+}
+
+export interface StageValidationResult {
+  valid: boolean;
+  isLegacy: boolean;
+  issues: StageValidationIssue[];
+  compiledScript?: StageScript;
+}
+
+function checkUnknownKeys(
+  scope: string,
+  obj: Record<string, unknown>,
+  allowed: ReadonlySet<string>,
+  issues: StageValidationIssue[]
+): void {
+  const allowedList = Array.from(allowed);
+  for (const key of Object.keys(obj)) {
+    if (FORBIDDEN_COORD_KEYS.has(key)) {
+      issues.push({
+        code: 'UNKNOWN_KEY',
+        message: `${scope}: không được ghi trực tiếp "${key}" trong kịch bản ngữ nghĩa (hãy dùng khe vị trí hoặc điểm neo).`,
+      });
+      continue;
+    }
+    if (!allowed.has(key)) {
+      const hint = suggestClosestName(key, allowedList);
+      issues.push({
+        code: 'UNKNOWN_KEY',
+        message: `${scope}: khoá lạ "${key}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ` (hợp lệ: ${allowedList.join(', ')})`}`,
+      });
+    }
+  }
+}
+
+/**
+ * Kiểm tự động các luật đạo cụ trong propCatalog:
+ * 1. MỘT VẬT, MỘT NGHĨA: không gộp 2 vật bằng dấu `/`, đủ mô tả 5 câu, hộp bao `box` khớp khít với hình vẽ của chính nó.
+ * 2. Bản đỏ GIỐNG HỆT DÁNG bản thường, chỉ khác màu: hộp bao và silhouette 2D giữa bản thường và bản đỏ trùng nhau.
+ * 3. Luật phóng đại vật nhỏ: bắt buộc có `kich_thuoc_that` (cm), kích thước hiển thị = `kich_thuoc_that × TY_LE_CANH × he_so`
+ *    (`he_so = HE_SO_PHONG_DAI = 2.0` nếu `< 30 cm`, `1.0` nếu `>= 30 cm`), lệch quá 15% thì chặn cứng.
+ * 4. Đồng nhất kích thước chén trà: `small_cup` phải cùng kích thước với chén trà trên tay Lữ khách.
+ */
+export function validatePropDefinitionRules(
+  typeName: string,
+  def: CustomPropDefinition
+): StageValidationIssue[] {
+  const issues: StageValidationIssue[] = [];
+  const mustEnforceFullSpec =
+    def.status === 'duyet' || APPROVAL_BATCH_SET.has(typeName) || Boolean(def.box);
+
+  if (!mustEnforceFullSpec) {
+    return issues;
+  }
+
+  if (def.labelVi && def.labelVi.includes('/')) {
+    issues.push({
+      code: 'SINGLE_MEANING_VIOLATION',
+      message: `propCatalog["${typeName}"]: tên "${def.labelVi}" đang gộp nhiều vật bằng dấu "/". Luật bắt buộc: MỘT VẬT, MỘT NGHĨA.`,
+    });
+  }
+
+  if (!def.description5) {
+    issues.push({
+      code: 'MISSING_CATALOG_METADATA',
+      message: `propCatalog["${typeName}"]: thiếu mô tả 5 câu bắt buộc (nghĩa, cấu trúc, bóng dáng, thế giới, người lạ).`,
+    });
+  }
+
+  if (def.kich_thuoc_that === undefined || def.kich_thuoc_that <= 0) {
+    issues.push({
+      code: 'MISSING_CATALOG_METADATA',
+      message: `propCatalog["${typeName}"]: thiếu khai báo kich_thuoc_that (cm).`,
+    });
+  }
+
+  if (!def.box) {
+    issues.push({
+      code: 'MISSING_CATALOG_METADATA',
+      message: `propCatalog["${typeName}"]: thiếu khai báo hộp bao (box).`,
+    });
+  } else {
+    const geomBox = computeShapesLocalBBox(def.shapes, false);
+    if (geomBox) {
+      const boxErr = Math.max(
+        Math.abs(def.box[0] - geomBox.minX),
+        Math.abs(def.box[1] - geomBox.minY),
+        Math.abs(def.box[2] - geomBox.maxX),
+        Math.abs(def.box[3] - geomBox.maxY)
+      );
+      if (boxErr > 1.6) {
+        issues.push({
+          code: 'SINGLE_MEANING_VIOLATION',
+          message: `propCatalog["${typeName}"]: hộp bao khai báo [${def.box.join(', ')}] lệch ${boxErr.toFixed(2)} đơn vị so với hình thật [${geomBox.minX.toFixed(1)}, ${geomBox.minY.toFixed(1)}, ${geomBox.maxX.toFixed(1)}, ${geomBox.maxY.toFixed(1)}].`,
+        });
+      }
+    }
+
+    // Kiểm tra Luật 1: Kích thước hiển thị = kich_thuoc_that × TY_LE_CANH × HE_SO_PHONG_DAI (lệch tối đa 15%)
+    if (def.kich_thuoc_that && def.kich_thuoc_that > 0) {
+      const expectedSpan = computeExpectedCatalogSpanFromCm(def.kich_thuoc_that);
+      const actualSpan = Math.max(
+        def.box[2] - def.box[0],
+        def.box[3] - def.box[1]
+      );
+      const deviation = Math.abs(actualSpan - expectedSpan) / expectedSpan;
+      if (deviation > MAX_REAL_SIZE_DEVIATION) {
+        const heSo =
+          def.kich_thuoc_that < NGUONG_VAT_NHO_CM ? HE_SO_PHONG_DAI : 1.0;
+        issues.push({
+          code: 'REAL_SIZE_SCALING_VIOLATION',
+          message: `propCatalog["${typeName}"]: kích thước hiển thị ${actualSpan.toFixed(2)} lệch ${(deviation * 100).toFixed(1)}% (> 15%) so với công thức (${def.kich_thuoc_that}cm × ${TY_LE_CANH} × ${heSo} = ${expectedSpan.toFixed(2)}).`,
+        });
+      }
+    }
+
+    // Kiểm tra Luật 6: Chén trà `small_cup` phải cùng kích thước với chén trên tay Lữ khách
+    if (typeName === 'small_cup') {
+      const cupSpan = Math.max(
+        def.box[2] - def.box[0],
+        def.box[3] - def.box[1]
+      );
+      if (Math.abs(cupSpan - TRAVELER_HAND_TEACUP_SPAN) > 0.35) {
+        issues.push({
+          code: 'SAME_TYPE_SIZE_MISMATCH',
+          message: `propCatalog["small_cup"]: kích thước chén trà đặt ngoài (${cupSpan.toFixed(2)}) không bằng chén trà trên tay Lữ khách (${TRAVELER_HAND_TEACUP_SPAN.toFixed(2)}).`,
+        });
+      }
+    }
+  }
+
+  // Luật Bản đỏ GIỐNG HỆT DÁNG bản thường
+  if (def.canBeRed === false && def.altShapes && def.altShapes.length > 0) {
+    issues.push({
+      code: 'RED_SILHOUETTE_MISMATCH',
+      message: `propCatalog["${typeName}"]: canBeRed=false nhưng vẫn khai báo altShapes.`,
+    });
+  }
+
+  if (def.altShapes && def.altShapes.length > 0) {
+    const cmp = compareNormalAndRedSilhouette(def.shapes, def.altShapes);
+    if (cmp.maxBBoxDelta > MAX_RED_BBOX_DELTA) {
+      issues.push({
+        code: 'RED_SILHOUETTE_MISMATCH',
+        message: `propCatalog["${typeName}"]: hộp bao bản đỏ lệch ${cmp.maxBBoxDelta.toFixed(2)} đơn vị so với bản thường (tối đa ${MAX_RED_BBOX_DELTA}). Bản đỏ phải giống hệt dáng bản thường.`,
+      });
+    }
+    if (cmp.silhouetteIoU < MIN_RED_SILHOUETTE_IOU) {
+      issues.push({
+        code: 'RED_SILHOUETTE_MISMATCH',
+        message: `propCatalog["${typeName}"]: silhouette bản đỏ chỉ trùng ${(cmp.silhouetteIoU * 100).toFixed(1)}% so với bản thường (yêu cầu >= ${(MIN_RED_SILHOUETTE_IOU * 100).toFixed(0)}%).`,
+      });
+    }
+  }
+
+  if (def.variants) {
+    for (const [vName, vDef] of Object.entries(def.variants)) {
+      if (vDef.box && def.kich_thuoc_that) {
+        const expectedSpan = computeExpectedCatalogSpanFromCm(def.kich_thuoc_that);
+        const vSpan = Math.max(
+          vDef.box[2] - vDef.box[0],
+          vDef.box[3] - vDef.box[1]
+        );
+        // Cho phép biến thể gập gọn (`umbrella.gap`) có chiều dài cán tương đương, các biến thể khác lệch <= 15%
+        const dev = Math.abs(vSpan - expectedSpan) / expectedSpan;
+        if (vName !== 'gap' && dev > MAX_REAL_SIZE_DEVIATION) {
+          issues.push({
+            code: 'REAL_SIZE_SCALING_VIOLATION',
+            message: `propCatalog["${typeName}"].variants["${vName}"]: kích thước ${vSpan.toFixed(2)} lệch ${(dev * 100).toFixed(1)}% (> 15%) so với kết quả tính ${expectedSpan.toFixed(2)}.`,
+          });
+        }
+      }
+      if (vDef.altShapes && vDef.altShapes.length > 0) {
+        const cmpV = compareNormalAndRedSilhouette(vDef.shapes, vDef.altShapes);
+        if (cmpV.maxBBoxDelta > MAX_RED_BBOX_DELTA || cmpV.silhouetteIoU < MIN_RED_SILHOUETTE_IOU) {
+          issues.push({
+            code: 'RED_SILHOUETTE_MISMATCH',
+            message: `propCatalog["${typeName}"].variants["${vName}"]: bản đỏ không trùng dáng bản thường (lệch box ${cmpV.maxBBoxDelta.toFixed(2)}, IoU ${(cmpV.silhouetteIoU * 100).toFixed(1)}%).`,
+          });
+        }
+      }
+    }
+  }
+
+  return issues;
+}
+
+export function validateCatalogPropsHard(): StageValidationIssue[] {
+  const allIssues: StageValidationIssue[] = [];
+  for (const [name, def] of Object.entries(BUILT_IN_PROP_CATALOG)) {
+    allIssues.push(...validatePropDefinitionRules(name, def));
+  }
+  return allIssues;
+}
+
+function buildFallbackTimeline(): TimelineSyncResult {
+  return computeTimelineSync({
+    id: 'validator-timeline',
+    textFormat: 'POEM',
+    segments: [
+      'Dòng một mở cảnh nhẹ nhàng,',
+      'Dòng hai nhịp bước sang ngang,',
+      'Dòng ba lặng giữa chiều tàn,',
+      'Dòng bốn chạm điểm lật vàng chu sa.',
+    ],
+    pivotWord: 'chu sa',
+    highlightStyle: 'BOTH',
+    targetDurationSeconds: 15,
+    durationMode: 'FIXED',
+    typingSpeedMsPerChar: 55,
+    holdAfterFinishSeconds: 5.5,
+    themeId: 'MINIMAL_LIGHT',
+    motion: {
+      archetype: 'BOULDER_TO_BENCH',
+      pacingMode: 'CONTEMPLATIVE',
+      stateA: { intensity: 0.8, spread: 0.2, tiltDeg: -16 },
+      stateB: { intensity: 0.1, spread: 0.75, tiltDeg: 0 },
+    },
+    bgm: { audioMode: 'PIVOT_ACCENT', foleyPivotStyle: 'AUTO' },
+    brandText: 'TRÀ NGUỘI',
+  });
+}
+
+export function validateSemanticSpecStructure(
+  raw: unknown
+): StageValidationIssue[] {
+  const issues: StageValidationIssue[] = [];
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return [{ code: 'UNKNOWN_KEY', message: 'Kịch bản ngữ nghĩa phải là một object JSON.' }];
+  }
+
+  const sem = raw as Record<string, unknown>;
+  checkUnknownKeys('root', sem, ALLOWED_SEMANTIC_ROOT_KEYS, issues);
+
+  for (const req of ['semanticVersion', 'sceneId', 'ten', 'nhan_vat', 'dao_cu', 'nhip']) {
+    if (!(req in sem)) {
+      issues.push({
+        code: 'UNKNOWN_KEY',
+        message: `Thiếu trường bắt buộc "${req}" ở cấp gốc.`,
+      });
+    }
+  }
+
+  if (sem.boi_canh && typeof sem.boi_canh === 'object') {
+    const bc = sem.boi_canh as Record<string, unknown>;
+    checkUnknownKeys('boi_canh', bc, ALLOWED_BOI_CANH_KEYS, issues);
+    if (bc.dia_hinh !== undefined && !(String(bc.dia_hinh) in SEMANTIC_TERRAINS)) {
+      const hint = suggestClosestName(String(bc.dia_hinh), Object.keys(SEMANTIC_TERRAINS));
+      issues.push({
+        code: 'UNKNOWN_NAME',
+        message: `boi_canh.dia_hinh: "${bc.dia_hinh}" không có${hint ? `, ý bạn là "${hint}"?` : ''}`,
+      });
+    }
+    if (Array.isArray(bc.khi_quyen)) {
+      bc.khi_quyen.forEach((kq, i) => {
+        if (kq && typeof kq === 'object') {
+          checkUnknownKeys(`boi_canh.khi_quyen[${i}]`, kq as Record<string, unknown>, ALLOWED_KHI_QUYEN_KEYS, issues);
+        }
+      });
+    }
+  }
+
+  const slotNames = Object.keys(SEMANTIC_SLOTS);
+  const propIds = new Map<string, { type: string }>();
+  const actorIds = new Set<string>();
+
+  if (Array.isArray(sem.dao_cu)) {
+    sem.dao_cu.forEach((rawP, i) => {
+      if (!rawP || typeof rawP !== 'object') return;
+      const p = rawP as Record<string, unknown>;
+      const scope = `dao_cu[${i}] (${p.id || '?'})`;
+      checkUnknownKeys(scope, p, ALLOWED_DAO_CU_KEYS, issues);
+
+      const id = String(p.id || '');
+      const typeName = String(p.type || '');
+      if (id) propIds.set(id, { type: typeName });
+
+      if (CUSTOM_ONLY_PROP_NAMES.has(typeName)) {
+        const hint = suggestClosestName(typeName, BUILT_IN_PROP_NAMES);
+        issues.push({
+          code: 'CUSTOM_PROP_FORBIDDEN',
+          message: `${scope}: "${typeName}" nằm trong custom-props.json (chỉ đọc cho bản cũ), kịch bản mới chỉ được dùng propCatalog${hint ? `. Ý bạn là "${hint}"?` : '.'}`,
+        });
+        return;
+      }
+
+      const catDef = BUILT_IN_PROP_CATALOG[typeName];
+      if (!catDef) {
+        const hint = suggestClosestName(typeName, BUILT_IN_PROP_NAMES);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: "${typeName}" không có trong propCatalog${hint ? `, ý bạn là "${hint}"?` : ` (có: ${BUILT_IN_PROP_NAMES.join(', ')})`}`,
+        });
+        return;
+      }
+
+      issues.push(...validatePropDefinitionRules(typeName, catDef));
+
+      if (p.trang_thai !== undefined && p.trang_thai !== 'mac_dinh') {
+        const stName = String(p.trang_thai);
+        const validStates = ['mac_dinh', ...Object.keys(catDef.variants ?? {})];
+        if (!catDef.variants?.[stName]) {
+          const hint = suggestClosestName(stName, validStates);
+          issues.push({
+            code: 'UNKNOWN_NAME',
+            message: `${scope}: đạo cụ "${typeName}" không có trạng thái "${stName}"${hint ? `, ý bạn là "${hint}"?` : ` (trạng thái hợp lệ: ${validStates.join(', ')})`}`,
+          });
+        }
+      }
+
+      if (p.lop !== undefined && !SEMANTIC_LAYERS.includes(p.lop as SemanticLayer)) {
+        const hint = suggestClosestName(String(p.lop), SEMANTIC_LAYERS);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: lớp "${p.lop}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ' (chỉ nhận: nen, giua, truoc)'}`,
+        });
+      }
+
+      if (
+        p.loai_neo !== undefined &&
+        !ANCHOR_KINDS.includes(p.loai_neo as (typeof ANCHOR_KINDS)[number])
+      ) {
+        const hint = suggestClosestName(String(p.loai_neo), ANCHOR_KINDS);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: loại neo "${p.loai_neo}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ' (chỉ nhận: dat, tuong, troi, tren, cam)'}`,
+        });
+      }
+
+      if (p.vi_tri !== undefined && !(String(p.vi_tri) in SEMANTIC_SLOTS)) {
+        const hint = suggestClosestName(String(p.vi_tri), slotNames);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: khe vị trí "${p.vi_tri}" không có${hint ? `, ý bạn là "${hint}"?` : ` (có: ${slotNames.join(', ')})`}`,
+        });
+      }
+
+      const effectiveKind =
+        (p.loai_neo as string | undefined) ??
+        (p.dat_tren ? 'tren' : p.cam_boi ? 'cam' : catDef.anchorKind ?? 'dat');
+
+      if (effectiveKind === 'tren') {
+        const dt = String(p.dat_tren || '');
+        const [hostId, ancName] = dt.split('.');
+        const host = propIds.get(hostId);
+        if (!dt || !hostId || !ancName) {
+          issues.push({
+            code: 'INVALID_ANCHOR',
+            message: `${scope}: loại neo "tren" bắt buộc khai báo dat_tren dạng "<id_vat_chu>.<diem_neo>".`,
+          });
+        } else if (!host) {
+          const hint = suggestClosestName(hostId, Array.from(propIds.keys()));
+          issues.push({
+            code: 'INVALID_ANCHOR',
+            message: `${scope}: vật chủ "${hostId}" trong dat_tren "${dt}" chưa được khai báo trước đó${hint ? `, ý bạn là "${hint}"?` : ''}.`,
+          });
+        } else {
+          const hostDef = BUILT_IN_PROP_CATALOG[host.type];
+          const hostAnchors = Object.keys(hostDef?.anchors ?? {});
+          if (!hostDef?.anchors?.[ancName]) {
+            const hint = suggestClosestName(ancName, hostAnchors);
+            issues.push({
+              code: 'INVALID_ANCHOR',
+              message: `${scope}: đạo cụ "${hostId}" (${host.type}) không có điểm neo "${ancName}"${hint ? `, ý bạn là "${hostId}.${hint}"?` : ` (điểm neo hợp lệ: ${hostAnchors.join(', ') || 'không có'})`}`,
+            });
+          }
+        }
+      }
+
+      if (p.vat_do === true && catDef.canBeRed === false) {
+        issues.push({
+          code: 'RED_OBJECT_RULE',
+          message: `${scope}: đạo cụ "${typeName}" là đồ nội thất/kiến trúc lớp nền nên không được dùng làm vật đỏ cú lật.`,
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(sem.nhan_vat)) {
+    sem.nhan_vat.forEach((rawA, i) => {
+      if (!rawA || typeof rawA !== 'object') return;
+      const a = rawA as Record<string, unknown>;
+      const scope = `nhan_vat[${i}] (${a.id || '?'})`;
+      checkUnknownKeys(scope, a, ALLOWED_NHAN_VAT_KEYS, issues);
+
+      const id = String(a.id || '');
+      if (id) actorIds.add(id);
+
+      if (a.vi_tri !== undefined && !(String(a.vi_tri) in SEMANTIC_SLOTS)) {
+        const hint = suggestClosestName(String(a.vi_tri), slotNames);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: khe vị trí "${a.vi_tri}" không có${hint ? `, ý bạn là "${hint}"?` : ` (có: ${slotNames.join(', ')})`}`,
+        });
+      }
+
+      if (a.lop !== undefined && !SEMANTIC_LAYERS.includes(a.lop as SemanticLayer)) {
+        const hint = suggestClosestName(String(a.lop), SEMANTIC_LAYERS);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: lớp "${a.lop}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ''}`,
+        });
+      }
+
+      if (a.tu_the !== undefined && !(String(a.tu_the) in SEMANTIC_POSES)) {
+        const hint = suggestClosestName(String(a.tu_the), Object.keys(SEMANTIC_POSES));
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: tư thế "${a.tu_the}" không có${hint ? `, ý bạn là "${hint}"?` : ` (có: ${Object.keys(SEMANTIC_POSES).join(', ')})`}`,
+        });
+      }
+
+      if (a.tu_the === 'ngoi_tua' && !a.ngoi_tren) {
+        issues.push({
+          code: 'INVALID_SEATING',
+          message: `${scope}: nhân vật không được ngồi ("ngoi_tua") khi không khai báo ngoi_tren: "<ghe>.mat_ghe".`,
+        });
+      }
+
+      if (a.ngoi_vao !== undefined) {
+        const nv = String(a.ngoi_vao);
+        const desk = propIds.get(nv);
+        if (!desk) {
+          const hint = suggestClosestName(nv, Array.from(propIds.keys()));
+          issues.push({
+            code: 'INVALID_SEATING',
+            message: `${scope}: bàn "${nv}" trong ngoi_vao chưa được khai báo trong dao_cu${hint ? `, ý bạn là "${hint}"?` : ''}.`,
+          });
+        }
+      }
+
+      if (a.ngoi_tren !== undefined) {
+        const nt = String(a.ngoi_tren);
+        const [seatId, ancName] = nt.split('.');
+        const seat = propIds.get(seatId);
+        if (!seatId || ancName !== 'mat_ghe') {
+          issues.push({
+            code: 'INVALID_SEATING',
+            message: `${scope}: ngoi_tren "${nt}" phải có dạng "<id_ghe>.mat_ghe".`,
+          });
+        } else if (!seat) {
+          const hint = suggestClosestName(seatId, Array.from(propIds.keys()));
+          issues.push({
+            code: 'INVALID_SEATING',
+            message: `${scope}: ghế "${seatId}" chưa được khai báo trong dao_cu${hint ? `, ý bạn là "${hint}"?` : ''}.`,
+          });
+        } else {
+          const seatDef = BUILT_IN_PROP_CATALOG[seat.type];
+          if (!seatDef?.anchors?.mat_ghe) {
+            issues.push({
+              code: 'INVALID_SEATING',
+              message: `${scope}: đạo cụ "${seatId}" (${seat.type}) không phải ghế có điểm neo "mat_ghe".`,
+            });
+          }
+        }
+      }
+    });
+  }
+
+  if (Array.isArray(sem.dao_cu)) {
+    sem.dao_cu.forEach((rawP, i) => {
+      if (!rawP || typeof rawP !== 'object') return;
+      const p = rawP as Record<string, unknown>;
+      if (p.cam_boi) {
+        const [actorId, sock] = String(p.cam_boi).split('.');
+        if (!actorIds.has(actorId)) {
+          const hint = suggestClosestName(actorId, Array.from(actorIds));
+          issues.push({
+            code: 'INVALID_ANCHOR',
+            message: `dao_cu[${i}] (${p.id}): cam_boi "${p.cam_boi}" trỏ tới nhân vật chưa tồn tại "${actorId}"${hint ? `, ý bạn là "${hint}"?` : ''}.`,
+          });
+        } else if (sock && !(sock in SEMANTIC_SOCKETS)) {
+          issues.push({
+            code: 'INVALID_ANCHOR',
+            message: `dao_cu[${i}] (${p.id}): điểm cầm "${sock}" không hợp lệ (chỉ nhận: tay, dau, lung).`,
+          });
+        }
+      }
+    });
+  }
+
+  const allLookTargets = new Set<string>([...propIds.keys(), ...actorIds]);
+  if (Array.isArray(sem.nhan_vat)) {
+    sem.nhan_vat.forEach((rawA, i) => {
+      if (!rawA || typeof rawA !== 'object') return;
+      const a = rawA as Record<string, unknown>;
+      if (a.nhin_theo && !allLookTargets.has(String(a.nhin_theo))) {
+        const hint = suggestClosestName(String(a.nhin_theo), Array.from(allLookTargets));
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `nhan_vat[${i}] (${a.id}): nhin_theo "${a.nhin_theo}" không tồn tại${hint ? `, ý bạn là "${hint}"?` : ''}.`,
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(sem.nhip)) {
+    const validMocs = ['bat_dau', 'dong_1', 'dong_2', 'dong_3', 'dong_4', 'cu_lat'];
+    sem.nhip.forEach((rawB, i) => {
+      if (!rawB || typeof rawB !== 'object') return;
+      const b = rawB as Record<string, unknown>;
+      const scope = `nhip[${i}]`;
+      checkUnknownKeys(scope, b, ALLOWED_NHIP_KEYS, issues);
+      if (!validMocs.includes(String(b.moc || ''))) {
+        const hint = suggestClosestName(String(b.moc || ''), validMocs);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: mốc "${b.moc}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ` (có: ${validMocs.join(', ')})`}`,
+        });
+      }
+      if (b.nhan_vat && typeof b.nhan_vat === 'object') {
+        for (const [aid, actObj] of Object.entries(b.nhan_vat as Record<string, unknown>)) {
+          if (!actorIds.has(aid)) {
+            const hint = suggestClosestName(aid, Array.from(actorIds));
+            issues.push({
+              code: 'UNKNOWN_NAME',
+              message: `${scope}.nhan_vat: "${aid}" chưa khai báo${hint ? `, ý bạn là "${hint}"?` : ''}`,
+            });
+            continue;
+          }
+          if (actObj && typeof actObj === 'object') {
+            const ao = actObj as Record<string, unknown>;
+            checkUnknownKeys(`${scope}.nhan_vat.${aid}`, ao, ALLOWED_NHIP_ACTOR_KEYS, issues);
+            if (ao.tu_the !== undefined && !(String(ao.tu_the) in SEMANTIC_POSES)) {
+              const hint = suggestClosestName(String(ao.tu_the), Object.keys(SEMANTIC_POSES));
+              issues.push({
+                code: 'UNKNOWN_NAME',
+                message: `${scope}.nhan_vat.${aid}: tư thế "${ao.tu_the}" không có${hint ? `, ý bạn là "${hint}"?` : ''}`,
+              });
+            }
+            if (ao.tu_the === 'ngoi_tua') {
+              const actorSpec = (sem.nhan_vat as Array<Record<string, unknown>>).find((x) => x.id === aid);
+              if (!actorSpec?.ngoi_tren) {
+                issues.push({
+                  code: 'INVALID_SEATING',
+                  message: `${scope}.nhan_vat.${aid}: không có ghế (ngoi_tren) thì không được chuyển sang tư thế ngồi.`,
+                });
+              }
+            }
+            if (ao.nhin_theo && !allLookTargets.has(String(ao.nhin_theo))) {
+              const hint = suggestClosestName(String(ao.nhin_theo), Array.from(allLookTargets));
+              issues.push({
+                code: 'UNKNOWN_NAME',
+                message: `${scope}.nhan_vat.${aid}: nhin_theo "${ao.nhin_theo}" không tồn tại${hint ? `, ý bạn là "${hint}"?` : ''}`,
+              });
+            }
+            if (ao.di_toi !== undefined && !(String(ao.di_toi) in SEMANTIC_SLOTS)) {
+              const hint = suggestClosestName(String(ao.di_toi), slotNames);
+              issues.push({
+                code: 'UNKNOWN_NAME',
+                message: `${scope}.nhan_vat.${aid}: khe di_toi "${ao.di_toi}" không có${hint ? `, ý bạn là "${hint}"?` : ''}`,
+              });
+            }
+          }
+        }
+      }
+      if (b.dao_cu && typeof b.dao_cu === 'object') {
+        for (const [pid, pObj] of Object.entries(b.dao_cu as Record<string, unknown>)) {
+          const propInfo = propIds.get(pid);
+          if (!propInfo) {
+            const hint = suggestClosestName(pid, Array.from(propIds.keys()));
+            issues.push({
+              code: 'UNKNOWN_NAME',
+              message: `${scope}.dao_cu: "${pid}" chưa khai báo${hint ? `, ý bạn là "${hint}"?` : ''}`,
+            });
+            continue;
+          }
+          if (pObj && typeof pObj === 'object') {
+            const po = pObj as Record<string, unknown>;
+            checkUnknownKeys(`${scope}.dao_cu.${pid}`, po, ALLOWED_NHIP_PROP_KEYS, issues);
+            if (po.trang_thai !== undefined && po.trang_thai !== 'mac_dinh') {
+              const cDef = BUILT_IN_PROP_CATALOG[propInfo.type];
+              const validSt = ['mac_dinh', ...Object.keys(cDef?.variants ?? {})];
+              if (!cDef?.variants?.[String(po.trang_thai)]) {
+                const hint = suggestClosestName(String(po.trang_thai), validSt);
+                issues.push({
+                  code: 'UNKNOWN_NAME',
+                  message: `${scope}.dao_cu.${pid}: trạng thái "${po.trang_thai}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ''}`,
+                });
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  return issues;
+}
+
+/**
+ * Validator chặn cứng trên StageScript trước khi render (chạy trong cả Studio lẫn CLI).
+ */
+export function validateStageScriptHard(
+  script: StageScript,
+  timelineInput?: TimelineSyncResult
+): StageValidationResult {
+  if (isLegacyStageScript(script, script.sceneId)) {
+    return { valid: true, isLegacy: true, issues: [], compiledScript: script };
+  }
+
+  const issues: StageValidationIssue[] = [];
+  const propMap = new Map<string, NonNullable<StageScript['props']>[number]>();
+  const scaleByType = new Map<string, { firstId: string; scale: number }>();
+
+  // 1. Kiểm tra tĩnh đạo cụ, luật kích thước thật, luật cùng loại vật cùng kích thước, và luật bản đỏ trùng dáng
+  for (const p of script.props ?? []) {
+    propMap.set(p.id, p);
+    if ((p.shapes && p.shapes.length > 0) || (p.altShapes && p.altShapes.length > 0)) {
+      issues.push({
+        code: 'CUSTOM_PROP_FORBIDDEN',
+        message: `Đạo cụ "${p.id}": cấm tự vẽ "shapes" / "altShapes" trực tiếp; chỉ dùng type có trong propCatalog.`,
+      });
+    }
+    const tName = p.type || '';
+    if (CUSTOM_ONLY_PROP_NAMES.has(tName)) {
+      const hint = suggestClosestName(tName, BUILT_IN_PROP_NAMES);
+      issues.push({
+        code: 'CUSTOM_PROP_FORBIDDEN',
+        message: `Đạo cụ "${p.id}": "${tName}" thuộc custom-props.json (chỉ đọc cho bản cũ), kịch bản mới không được dùng${hint ? `. Ý bạn là "${hint}"?` : '.'}`,
+      });
+      continue;
+    }
+    const def = BUILT_IN_PROP_CATALOG[tName];
+    if (!def) {
+      const hint = suggestClosestName(tName, BUILT_IN_PROP_NAMES);
+      issues.push({
+        code: 'UNKNOWN_NAME',
+        message: `Đạo cụ "${p.id}": "${tName}" không có trong propCatalog${hint ? `, ý bạn là "${hint}"?` : ` (có: ${BUILT_IN_PROP_NAMES.join(', ')})`}`,
+      });
+      continue;
+    }
+
+    issues.push(...validatePropDefinitionRules(tName, def));
+
+    const pScale = p.scale ?? DEFAULT_SCENE_SCALE;
+    const prevSameType = scaleByType.get(tName);
+    if (prevSameType && Math.abs(prevSameType.scale - pScale) > 0.01) {
+      issues.push({
+        code: 'SAME_TYPE_SIZE_MISMATCH',
+        message: `Đạo cụ "${p.id}" và "${prevSameType.firstId}" cùng loại "${tName}" nhưng kích thước khác nhau (scale ${pScale} vs ${prevSameType.scale}). Cùng một loại vật phải cùng kích thước dù đặt ở đâu.`,
+      });
+    } else if (!prevSameType) {
+      scaleByType.set(tName, { firstId: p.id, scale: pScale });
+    }
+
+    // Kiểm tra kích thước hiển thị thực tế trong cảnh so với công thức kich_thuoc_that × TY_LE_CANH × HE_SO_PHONG_DAI × sceneScale (mọi vật dùng chung tỷ lệ tự căn khung, sai số tối đa 15%)
+    const commonSceneScale =
+      (script.props?.[0]?.scale ?? script.actors?.[0]?.scale) ||
+      DEFAULT_SCENE_SCALE;
+    if (Math.abs(pScale - commonSceneScale) > 0.02) {
+      issues.push({
+        code: 'REAL_SIZE_SCALING_VIOLATION',
+        message: `Đạo cụ "${p.id}" (${tName}): scale=${pScale} khác với tỷ lệ chung của cảnh (${commonSceneScale}). Cấm phóng to/thu nhỏ riêng từng đạo cụ.`,
+      });
+    } else if (def.kich_thuoc_that && def.box) {
+      const expectedWorldSpan =
+        computeExpectedCatalogSpanFromCm(def.kich_thuoc_that) *
+        commonSceneScale;
+      const actualWorldSpan =
+        Math.max(def.box[2] - def.box[0], def.box[3] - def.box[1]) * pScale;
+      const dev = Math.abs(actualWorldSpan - expectedWorldSpan) / expectedWorldSpan;
+      if (dev > MAX_REAL_SIZE_DEVIATION) {
+        issues.push({
+          code: 'REAL_SIZE_SCALING_VIOLATION',
+          message: `Đạo cụ "${p.id}" (${tName}): kích thước trong cảnh ${actualWorldSpan.toFixed(1)} lệch ${(dev * 100).toFixed(1)}% (> 15%) so với chuẩn tính từ kich_thuoc_that=${def.kich_thuoc_that}cm (${expectedWorldSpan.toFixed(1)}). Cấm phóng to/thu nhỏ riêng đạo cụ.`,
+        });
+      }
+    }
+
+    if (p.variant && !def.variants?.[p.variant]) {
+      const validSt = ['mac_dinh', ...Object.keys(def.variants ?? {})];
+      const hint = suggestClosestName(p.variant, validSt);
+      issues.push({
+        code: 'UNKNOWN_NAME',
+        message: `Đạo cụ "${p.id}": type "${tName}" không có trạng thái "${p.variant}"${hint ? `, ý bạn là "${hint}"?` : ''}.`,
+      });
+    }
+
+    if (p.placedOn) {
+      const [hostId, ancName] = p.placedOn.split('.');
+      const hostSpec = propMap.get(hostId);
+      const hostDef = hostSpec?.type ? BUILT_IN_PROP_CATALOG[hostSpec.type] : undefined;
+      if (!hostSpec || !ancName || !hostDef?.anchors?.[ancName]) {
+        issues.push({
+          code: 'INVALID_ANCHOR',
+          message: `Đạo cụ "${p.id}": điểm neo đặt trên "${p.placedOn}" không tồn tại.`,
+        });
+      }
+    }
+  }
+
+  // Kiểm tra chén trà đặt ngoài (`small_cup`) phải bằng kích thước chén trà trên tay Lữ khách (`actor.showTeaCup`)
+  const smallCupEntry = scaleByType.get('small_cup');
+  if (smallCupEntry) {
+    for (const a of script.actors ?? []) {
+      const aScale = a.scale ?? DEFAULT_SCENE_SCALE;
+      if (Math.abs(smallCupEntry.scale - aScale) > 0.01) {
+        issues.push({
+          code: 'SAME_TYPE_SIZE_MISMATCH',
+          message: `Chén trà "${smallCupEntry.firstId}" (scale=${smallCupEntry.scale}) không cùng kích thước với chén trà trên tay Lữ khách "${a.id}" (scale=${aScale}).`,
+        });
+      }
+    }
+  }
+
+  // Chặn cue trong timeline cố tình phóng to riêng một đạo cụ
+  for (const cue of script.timeline ?? []) {
+    if (cue.scale !== undefined && propMap.has(cue.target)) {
+      const baseP = propMap.get(cue.target)!;
+      const baseScale = baseP.scale ?? DEFAULT_SCENE_SCALE;
+      if (Math.abs(cue.scale - baseScale) > 0.01) {
+        issues.push({
+          code: 'REAL_SIZE_SCALING_VIOLATION',
+          message: `Timeline cue trên đạo cụ "${cue.target}": cấm thay đổi scale (${cue.scale}) để phóng to riêng vật; nếu vật đỏ nhỏ hãy dùng máy quay đẩy vào hoặc đưa lên tay Lữ khách.`,
+        });
+      }
+    }
+  }
+
+  const actorSeatHost = new Map<string, string>();
+  const actorDeskHost = new Map<string, string>();
+  const seatToDeskHost = new Map<string, string>();
+  for (const a of script.actors ?? []) {
+    if (a.seatedAtDesk) {
+      actorDeskHost.set(a.id, a.seatedAtDesk);
+      if (a.seatedOn) {
+        const [seatId] = a.seatedOn.split('.');
+        if (seatId) seatToDeskHost.set(seatId, a.seatedAtDesk);
+      }
+    }
+    if (a.seatedOn) {
+      const [seatId, ancName] = a.seatedOn.split('.');
+      const seatSpec = propMap.get(seatId);
+      const seatDef = seatSpec?.type ? BUILT_IN_PROP_CATALOG[seatSpec.type] : undefined;
+      if (!seatSpec || ancName !== 'mat_ghe' || !seatDef?.anchors?.mat_ghe) {
+        issues.push({
+          code: 'INVALID_SEATING',
+          message: `Nhân vật "${a.id}": ngoi_tren "${a.seatedOn}" không hợp lệ (cần trỏ tới "<ghe>.mat_ghe" đã khai báo).`,
+        });
+      } else {
+        actorSeatHost.set(a.id, seatId);
+      }
+    } else if ((a.sitProgress ?? 0) > 0.1 || a.pose === 'sit_lean') {
+      issues.push({
+        code: 'INVALID_SEATING',
+        message: `Nhân vật "${a.id}": không có ghế (seatedOn: "<ghe>.mat_ghe") thì không được ngồi.`,
+      });
+    }
+  }
+
+  const timeline = timelineInput ?? buildFallbackTimeline();
+  const palette = THEME_PALETTES.MINIMAL_LIGHT;
+  const fps = timeline.fps;
+  const stepFrames = Math.max(1, Math.round(VALIDATION_SAMPLE_STEP_SEC * fps));
+
+  const f0 = evaluateStageScriptAtFrame(script, 0, timeline, palette);
+  if (f0.terrain.startX < STAGE_VB_X0 || f0.terrain.endX > STAGE_VB_X1 || f0.terrain.endX - f0.terrain.startX < 120) {
+    issues.push({
+      code: 'OUT_OF_SAFE_TERRAIN',
+      message: `Terrain [${f0.terrain.startX}..${f0.terrain.endX}] nằm ngoài khung sân khấu hợp lệ [${STAGE_VB_X0}..${STAGE_VB_X1}].`,
+    });
+  }
+
+  const seenOverlaps = new Set<string>();
+  const seenFloating = new Set<string>();
+  const seenOob = new Set<string>();
+
+  const maxSampleFrame = Math.max(1, timeline.durationInFrames - Math.round(1.0 * fps));
+
+  // 2. Lấy mẫu nhiều khung dọc cả video (mỗi 0.25s)
+  for (let frame = 0; frame <= maxSampleFrame; frame += stepFrames) {
+    const isAfterPivot = frame >= timeline.pivotFrame - 6;
+    const compiled = evaluateStageScriptAtFrame(script, frame, timeline, palette);
+    const terrain = compiled.terrain;
+    const phase =
+      ((frame % timeline.durationInFrames) / timeline.durationInFrames) *
+      Math.PI *
+      2 *
+      8;
+    const timeSec = (frame / fps).toFixed(2);
+
+    interface SampleEntity {
+      kind: 'prop' | 'actor';
+      id: string;
+      type: string;
+      variant?: string;
+      semLayer: SemanticLayer;
+      anchorKind?: string;
+      placedOnRef?: string;
+      placedOnHost?: string;
+      activeFollowActor?: string;
+      worldX: number;
+      worldY: number;
+      scale: number;
+      box: { x0: number; y0: number; x1: number; y1: number };
+      sitProgress?: number;
+    }
+
+    const entities: SampleEntity[] = [];
+
+    for (const p of compiled.props) {
+      if (p.opacity <= 0.2 || p.drawProgress <= 0.35 || p.floatAwayProgress > 0.3) {
+        continue;
+      }
+      if (!BUILT_IN_PROP_CATALOG[p.type]) continue;
+      const box = getPropWorldBBox(p, undefined, isAfterPivot);
+      if (!box) continue;
+
+      const catDef = BUILT_IN_PROP_CATALOG[p.type];
+      const semLayer = resolveEffectiveSemanticLayer(
+        p.spec.semanticLayer ?? catDef?.defaultLayer,
+        p.layer,
+        `${p.id} ${p.type}`
+      );
+      const anchorKind =
+        p.spec.anchorKind ??
+        (p.spec.placedOn ? 'tren' : p.spec.follow ? 'cam' : catDef?.anchorKind ?? 'dat');
+
+      let activeFollowActor: string | undefined;
+      if (p.spec.follow) {
+        activeFollowActor = p.spec.follow.split(':')[0];
+      }
+      for (const cue of script.timeline ?? []) {
+        if (cue.target === p.id && cue.follow !== undefined) {
+          if (cue.follow && isAfterPivot) {
+            activeFollowActor = cue.follow.split(':')[0];
+          }
+        }
+      }
+
+      entities.push({
+        kind: 'prop',
+        id: p.id,
+        type: p.type,
+        variant: p.variant ?? p.spec.variant,
+        semLayer,
+        anchorKind: activeFollowActor ? 'cam' : anchorKind,
+        placedOnRef: p.spec.placedOn,
+        placedOnHost: p.spec.placedOn?.split('.')[0],
+        activeFollowActor,
+        worldX: p.x,
+        worldY: p.y,
+        scale: p.scale,
+        box,
+      });
+    }
+
+    for (const a of compiled.actors) {
+      if (a.opacity <= 0.2 || a.dissolveToCloud > 0.4) continue;
+      const aSpec = (script.actors ?? []).find((x) => x.id === a.id);
+      const box = getActorWorldBBox(a, undefined, isAfterPivot);
+      if (!box) continue;
+      const semLayer = resolveEffectiveSemanticLayer(
+        aSpec?.semanticLayer,
+        a.layer,
+        `${a.id} ${a.rig || 'human'}`
+      );
+
+      if (a.sitProgress >= 0.5 && !actorSeatHost.has(a.id) && !seenFloating.has(`seat:${a.id}`)) {
+        seenFloating.add(`seat:${a.id}`);
+        issues.push({
+          code: 'INVALID_SEATING',
+          message: `Nhân vật "${a.id}" ngồi lơ lửng tại t=${timeSec}s mà không gắn ngoi_tren vào ghế.`,
+        });
+      }
+
+      entities.push({
+        kind: 'actor',
+        id: a.id,
+        type: a.rig || 'human',
+        semLayer,
+        worldX: a.x,
+        worldY: a.y,
+        scale: a.scale,
+        box,
+        sitProgress: a.sitProgress,
+      });
+    }
+
+    // 2a. Kiểm tra vùng an toàn của terrain
+    const safeMinX = Math.max(STAGE_VB_X0 + 2, terrain.startX - 4);
+    const safeMaxX = Math.min(STAGE_VB_X1 - 2, terrain.endX + 4);
+    for (const ent of entities) {
+      const reasons: string[] = [];
+      if (ent.box.x0 < safeMinX) reasons.push(`mép trái ${ent.box.x0.toFixed(1)} < ${safeMinX.toFixed(0)}`);
+      if (ent.box.x1 > safeMaxX) reasons.push(`mép phải ${ent.box.x1.toFixed(1)} > ${safeMaxX.toFixed(0)}`);
+      if (ent.box.y0 < STAGE_VB_Y0 + 2) reasons.push(`đỉnh ${ent.box.y0.toFixed(1)} < ${STAGE_VB_Y0 + 2}`);
+      if (ent.box.y1 > STAGE_VB_Y1 - 2) reasons.push(`đáy ${ent.box.y1.toFixed(1)} > ${STAGE_VB_Y1 - 2}`);
+      if (reasons.length > 0 && !seenOob.has(ent.id)) {
+        seenOob.add(ent.id);
+        issues.push({
+          code: 'OUT_OF_SAFE_TERRAIN',
+          message: `"${ent.id}" ra ngoài vùng an toàn của terrain tại t=${timeSec}s (${reasons.join(', ')}).`,
+        });
+      }
+    }
+
+    // 2b. Kiểm tra vật lơ lửng & luật treo tường (`tuong` không chạm đất)
+    for (const ent of entities) {
+      if (seenFloating.has(ent.id)) continue;
+      if (ent.kind === 'prop') {
+        if (ent.anchorKind === 'troi' || ent.anchorKind === 'cam') {
+          continue;
+        }
+        if (ent.anchorKind === 'tuong') {
+          const cx = (ent.box.x0 + ent.box.x1) * 0.5;
+          const groundY = getTerrainPoint(terrain, cx, phase).y;
+          const clearance = groundY - ent.box.y1;
+          if (clearance < MIN_WALL_CLEARANCE_UNITS) {
+            seenFloating.add(ent.id);
+            issues.push({
+              code: 'FLOATING_OBJECT',
+              message: `Đạo cụ treo tường "${ent.id}" đặt quá thấp / chạm đất tại t=${timeSec}s (cách đất ${clearance.toFixed(1)}px < tối thiểu ${MIN_WALL_CLEARANCE_UNITS}px).`,
+            });
+          }
+          continue;
+        }
+        if (ent.anchorKind === 'tren' && ent.placedOnRef) {
+          const [hostId, ancName] = ent.placedOnRef.split('.');
+          const hostEnt = entities.find((e) => e.id === hostId);
+          const hostDef = hostEnt ? BUILT_IN_PROP_CATALOG[hostEnt.type] : undefined;
+          const anc = ancName ? hostDef?.anchors?.[ancName] : undefined;
+          if (hostEnt && anc) {
+            const entDef = BUILT_IN_PROP_CATALOG[ent.type];
+            const entVar =
+              ent.variant && entDef?.variants
+                ? entDef.variants[ent.variant]
+                : undefined;
+            const localBox = entVar?.box ?? entDef?.box ?? [0, 0, 0, 0];
+            const localCenterX = (localBox[0] + localBox[2]) * 0.5;
+            const expectedY = hostEnt.worldY + anc[1] * hostEnt.scale;
+            const expectedX =
+              hostEnt.worldX + anc[0] * hostEnt.scale + localCenterX * ent.scale;
+            const dy = Math.abs(ent.box.y1 - expectedY);
+            const dx = Math.abs((ent.box.x0 + ent.box.x1) * 0.5 - expectedX);
+            const tolY = Math.max(3.5, 1.5 * ent.scale);
+            const tolX = Math.max(8.0, 3.0 * ent.scale);
+            if (dy > tolY || dx > tolX) {
+              seenFloating.add(ent.id);
+              issues.push({
+                code: 'FLOATING_OBJECT',
+                message: `Đạo cụ "${ent.id}" đặt trên điểm neo "${ent.placedOnRef}" nhưng bị lệch (${dx.toFixed(1)}px ngang, ${dy.toFixed(1)}px dọc) tại t=${timeSec}s.`,
+              });
+            }
+          }
+          continue;
+        }
+        const cx = (ent.box.x0 + ent.box.x1) * 0.5;
+        const groundY = getTerrainPoint(terrain, cx, phase).y;
+        const gap = groundY - ent.box.y1;
+        if (Math.abs(gap) > 3.0) {
+          seenFloating.add(ent.id);
+          issues.push({
+            code: 'FLOATING_OBJECT',
+            message: `Đạo cụ "${ent.id}" lơ lửng / lệch mặt đất ${gap.toFixed(1)}px tại t=${timeSec}s (đáy y=${ent.box.y1.toFixed(1)}, terrain y=${groundY.toFixed(1)}).`,
+          });
+        }
+      } else if (ent.kind === 'actor') {
+        const groundY = getTerrainPoint(terrain, (ent.box.x0 + ent.box.x1) * 0.5, phase).y;
+        const gap = groundY - ent.box.y1;
+        if (Math.abs(gap) > 3.0) {
+          seenFloating.add(ent.id);
+          issues.push({
+            code: 'FLOATING_OBJECT',
+            message: `Nhân vật "${ent.id}" lơ lửng cách mặt đất ${gap.toFixed(1)}px tại t=${timeSec}s.`,
+          });
+        }
+      }
+    }
+
+    // 2c. Kiểm tra đè nhau: CHỈ xét các vật CÙNG lớp (`nen` / `giua` / `truoc`)
+    for (let i = 0; i < entities.length; i++) {
+      for (let j = i + 1; j < entities.length; j++) {
+        const A = entities[i];
+        const B = entities[j];
+        if (A.semLayer !== B.semLayer) continue;
+
+        const pairKey = [A.id, B.id].sort().join('::');
+        if (seenOverlaps.has(pairKey)) continue;
+
+        if (A.placedOnHost === B.id || B.placedOnHost === A.id) continue;
+        if (
+          A.placedOnHost &&
+          A.placedOnHost === B.placedOnHost &&
+          (A.variant === 'tua' || B.variant === 'tua')
+        ) {
+          continue;
+        }
+        if (A.activeFollowActor === B.id || B.activeFollowActor === A.id) continue;
+        if (
+          (A.kind === 'actor' && actorSeatHost.get(A.id) === B.id) ||
+          (B.kind === 'actor' && actorSeatHost.get(B.id) === A.id)
+        ) {
+          continue;
+        }
+        if (
+          (A.kind === 'actor' && actorDeskHost.get(A.id) === B.id) ||
+          (B.kind === 'actor' && actorDeskHost.get(B.id) === A.id) ||
+          seatToDeskHost.get(A.id) === B.id ||
+          seatToDeskHost.get(B.id) === A.id ||
+          (A.kind === 'actor' && B.placedOnHost && actorDeskHost.get(A.id) === B.placedOnHost) ||
+          (B.kind === 'actor' && A.placedOnHost && actorDeskHost.get(B.id) === A.placedOnHost)
+        ) {
+          continue;
+        }
+
+        const ix = Math.min(A.box.x1, B.box.x1) - Math.max(A.box.x0, B.box.x0);
+        const iy = Math.min(A.box.y1, B.box.y1) - Math.max(A.box.y0, B.box.y0);
+        if (ix > 2.5 && iy > 2.5 && ix * iy > 10) {
+          seenOverlaps.add(pairKey);
+          issues.push({
+            code: 'OVERLAP_COLLISION',
+            message: `Va chạm cùng lớp "${A.semLayer}" tại t=${timeSec}s: "${A.id}" đè lên "${B.id}" (${ix.toFixed(1)}×${iy.toFixed(1)}px).`,
+          });
+        }
+      }
+    }
+  }
+
+  // 3. Kiểm tra luật đúng 1 vật đỏ & diện tích tối thiểu thống nhất MIN_RED_AREA_PX2 (500 px²)
+  //    Đo tại khung cú lật SAU khi máy quay đã đẩy vào hoàn tất (pivot + 1.4s).
+  const fPost1 = Math.min(
+    timeline.durationInFrames - Math.round(1.6 * fps),
+    timeline.pivotFrame + Math.round(1.4 * fps)
+  );
+  const fPost2 = Math.max(fPost1, timeline.durationInFrames - Math.round(2.0 * fps));
+
+  let maxRedSnapshot: Array<{ id: string; typeName: string; screenPx2: number; zoom: number }> = [];
+  for (const pf of [fPost1, fPost2]) {
+    const compiled = evaluateStageScriptAtFrame(script, pf, timeline, palette);
+    const zoom2 = compiled.camera.zoom * compiled.camera.zoom;
+    const reds: Array<{ id: string; typeName: string; screenPx2: number; zoom: number }> = [];
+
+    for (const p of compiled.props) {
+      if (p.opacity <= 0.15 || p.floatAwayProgress >= 0.75) continue;
+      const areaUnits2 = computePropRedStageArea(p);
+      if (areaUnits2 > 0.2) {
+        reds.push({
+          id: p.id,
+          typeName: p.type,
+          screenPx2: areaUnits2 * PX2_PER_STAGE_UNIT2 * zoom2,
+          zoom: compiled.camera.zoom,
+        });
+      }
+    }
+
+    for (const a of compiled.actors) {
+      const aSpec = (script.actors ?? []).find((x) => x.id === a.id);
+      if (a.opacity <= 0.15 || a.dissolveToCloud >= 0.7) continue;
+      if (a.color === (palette.accentProp || palette.accent)) {
+        reds.push({
+          id: a.id,
+          typeName: 'human',
+          screenPx2: 320 * a.scale * a.scale * PX2_PER_STAGE_UNIT2 * zoom2,
+          zoom: compiled.camera.zoom,
+        });
+      } else if (a.showTeaCup > 0.2 && aSpec?.teaCupRed === true) {
+        reds.push({
+          id: `${a.id}.chen_tra`,
+          typeName: 'small_cup',
+          screenPx2: 7 * 5 * 0.88 * a.scale * a.scale * PX2_PER_STAGE_UNIT2 * zoom2,
+          zoom: compiled.camera.zoom,
+        });
+      }
+    }
+
+    if (reds.length > maxRedSnapshot.length) {
+      maxRedSnapshot = reds;
+    } else if (
+      reds.length === 1 &&
+      maxRedSnapshot.length === 1 &&
+      reds[0].screenPx2 > maxRedSnapshot[0].screenPx2
+    ) {
+      maxRedSnapshot = reds;
+    }
+  }
+
+  if (maxRedSnapshot.length === 0) {
+    issues.push({
+      code: 'RED_OBJECT_RULE',
+      message: 'Phải có đúng 1 vật đỏ tại cú lật, hiện đang có 0 vật đỏ.',
+    });
+  } else if (maxRedSnapshot.length > 1) {
+    issues.push({
+      code: 'RED_OBJECT_RULE',
+      message: `Mỗi Chén chỉ được có đúng 1 vật đỏ, hiện đang có ${maxRedSnapshot.length} vật đỏ (${maxRedSnapshot.map((r) => r.id).join(', ')}).`,
+    });
+  } else {
+    const onlyRed = maxRedSnapshot[0];
+    if (onlyRed.screenPx2 < MIN_RED_AREA_PX2) {
+      const suggestions = RECOMMENDED_RED_PROPS.filter(
+        (x) => x !== onlyRed.typeName
+      ).join(', ');
+      issues.push({
+        code: 'RED_OBJECT_RULE',
+        message: `Vật đỏ "${onlyRed.id}" (${onlyRed.typeName}) quá nhỏ trên màn hình (${Math.round(onlyRed.screenPx2)} px² < ngưỡng tối thiểu ${MIN_RED_AREA_PX2} px² ngay cả sau khi đẩy máy quay zoom=${onlyRed.zoom.toFixed(2)}). Tuyệt đối không phóng to riêng vật nhỏ; hãy đổi sang vật đỏ khác đủ diện tích như: ${suggestions}.`,
+      });
+    }
+  }
+
+  return {
+    valid: issues.length === 0,
+    isLegacy: false,
+    issues,
+    compiledScript: script,
+  };
+}
+
+export function validateAndCompileStageInput(
+  input: unknown,
+  timelineInput?: TimelineSyncResult
+): StageValidationResult {
+  if (isSemanticStageScript(input)) {
+    const structIssues = validateSemanticSpecStructure(input);
+    const compiled = compileSemanticStageScript(input as SemanticStageScript);
+    const runtimeRes = validateStageScriptHard(compiled, timelineInput);
+    const merged: StageValidationIssue[] = [...structIssues];
+    const seenMsg = new Set(merged.map((i) => i.message));
+    for (const ri of runtimeRes.issues) {
+      if (!seenMsg.has(ri.message)) {
+        seenMsg.add(ri.message);
+        merged.push(ri);
+      }
+    }
+    return {
+      valid: merged.length === 0,
+      isLegacy: false,
+      issues: merged,
+      compiledScript: compiled,
+    };
+  }
+
+  const script = input as StageScript;
+  return validateStageScriptHard(script, timelineInput);
+}

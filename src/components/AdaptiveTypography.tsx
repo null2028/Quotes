@@ -456,17 +456,15 @@ export const AdaptiveTypography: React.FC<{
               props.highlightStyle === 'ACCENT_COLOR' ||
               props.highlightStyle === 'BOTH';
 
-            const pivotRevealP = seg.isFirstActiveLine
-              ? interpolate(
-                  frame,
-                  [
-                    Math.max(0, sync.pivotFrame - 8),
-                    sync.pivotFrame + Math.round(0.45 * sync.fps),
-                  ],
-                  [0, 1],
-                  { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-                )
-              : revealP;
+            const pivotRevealP = interpolate(
+              frame,
+              [
+                Math.max(0, sync.pivotFrame - 6),
+                sync.pivotFrame + Math.round(0.28 * sync.fps),
+              ],
+              [0, 1],
+              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+            );
 
             const pivotColor = useAccentColor
               ? interpolateColors(

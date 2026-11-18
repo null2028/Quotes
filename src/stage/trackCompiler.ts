@@ -1,3 +1,4 @@
+import { BUILT_IN_PROP_CATALOG } from './propCatalog';
 import { interpolate, interpolateColors, Easing } from 'remotion';
 import { TimelineSyncResult } from '../engine/timelineSync';
 import { ResolvedVisualDNA } from '../engine/visualDnaResolver';
@@ -394,6 +395,10 @@ export interface EvaluatedActorState {
   poseWeights: TravelerPoseWeights;
   leanDeg: number;
   sitProgress: number;
+  lookAtTarget?: string | null;
+  gazeX: number;
+  gazeY: number;
+  hasLookTarget: boolean;
   walkPhase: number;
   walkActivity: number;
   breathPhase: number;
@@ -408,6 +413,7 @@ export interface EvaluatedActorState {
 export interface EvaluatedPropState {
   id: string;
   type: string;
+  variant?: string;
   layer: StageLayer;
   focusRole?: FocusRole;
   x: number;
@@ -764,6 +770,7 @@ export function evaluateStageScriptAtFrame(
       const dissolveSegs: NumericSegment[] = [];
       const facingEvents: Array<{ frame: number; value: 'left' | 'right' }> = [];
       const poseEvents: Array<{ frame: number; value: StageTravelerPose }> = [];
+      const lookAtEvents: Array<{ frame: number; value: string | null }> = [];
       const poseRampFrames = Math.max(8, Math.round(0.45 * fps));
       const poseWeightChannels: Array<{
         poseName: StageTravelerPose;
@@ -873,6 +880,9 @@ export function evaluateStageScriptAtFrame(
         if (cue.facing !== undefined) {
           facingEvents.push({ frame: startF, value: cue.facing });
         }
+        if (cue.lookAtTarget !== undefined) {
+          lookAtEvents.push({ frame: startF, value: cue.lookAtTarget || null });
+        }
         if (cue.pose !== undefined) {
           poseEvents.push({ frame: startF, value: cue.pose });
           for (const { poseName, key } of poseWeightChannels) {
@@ -969,6 +979,11 @@ export function evaluateStageScriptAtFrame(
         actor.facing ?? 'right',
         facingEvents
       );
+      const lookAtTarget = evaluateDiscreteChannel<string | null>(
+        frame,
+        actor.lookAtTarget ?? null,
+        lookAtEvents
+      );
       const initialPose = actor.pose ?? 'stand';
       let pose = evaluateDiscreteChannel(frame, initialPose, poseEvents);
       if (walkActivity > 0.22 && pose === 'stand') {
@@ -1033,6 +1048,10 @@ export function evaluateStageScriptAtFrame(
         poseWeights,
         leanDeg: leanDeg + terrainPt.angleDeg * 0.35,
         sitProgress,
+        lookAtTarget,
+        gazeX: 0.35,
+        gazeY: 0.05,
+        hasLookTarget: Boolean(lookAtTarget),
         walkPhase,
         walkActivity,
         breathPhase,
@@ -1252,6 +1271,7 @@ export function evaluateStageScriptAtFrame(
     const pulseRingSegs: NumericSegment[] = [];
     const spillSegs: NumericSegment[] = [];
     const glowSegs: NumericSegment[] = [];
+    const variantEvents: Array<{ frame: number; value: string | undefined }> = [];
     const colorEvents: Array<{
       startFrame: number;
       endFrame: number;
@@ -1318,6 +1338,9 @@ export function evaluateStageScriptAtFrame(
           endFrame: endF,
           toValue: cue.floatAwayProgress,
         });
+      }
+      if (cue.variant !== undefined) {
+        variantEvents.push({ frame: startF, value: cue.variant });
       }
       if (cue.colorRole !== undefined) {
         colorEvents.push({
@@ -1459,9 +1482,16 @@ export function evaluateStageScriptAtFrame(
         )
       : palette.inkSecondary;
 
+    const activeVariant = evaluateDiscreteChannel(
+      frame,
+      prop.variant,
+      variantEvents
+    );
+
     return {
       id: prop.id,
       type: prop.type ?? 'custom',
+      variant: activeVariant,
       layer: prop.layer ?? 'mid',
       focusRole: prop.focusRole,
       x: finalX,
@@ -1481,15 +1511,56 @@ export function evaluateStageScriptAtFrame(
       floatAwayProgress,
       emitters: {
         steam,
-        pulseRing: isPrePivot ? 0 : pulseRing,
+        pulseRing: isPrePivot || script.tags?.includes('semantic_v1') ? 0 : pulseRing,
         spill,
-        glow,
+        glow: script.tags?.includes('semantic_v1') ? 0 : glow,
         color: emitterColor,
         steamColor,
       },
       spec: prop,
     };
   });
+
+  // Tự động tính hướng mắt (gazeX, gazeY) từ đầu nhân vật tới vật thể trong nhin_theo (lookAtTarget)
+  for (const actor of actors) {
+    if (!actor.lookAtTarget) {
+      actor.gazeX = 0.35;
+      actor.gazeY = actor.leanDeg >= 16 ? 0.55 : 0.05;
+      actor.hasLookTarget = false;
+      continue;
+    }
+    const targetProp = props.find((p) => p.id === actor.lookAtTarget);
+    const targetActor = actorMap[actor.lookAtTarget];
+    let tx: number | undefined;
+    let ty: number | undefined;
+    if (targetProp) {
+      const catDef = BUILT_IN_PROP_CATALOG[targetProp.type];
+      const vDef =
+        targetProp.variant && catDef?.variants
+          ? catDef.variants[targetProp.variant]
+          : undefined;
+      const box = vDef?.box ?? catDef?.box ?? [-5, -10, 5, 0];
+      tx = targetProp.x + ((box[0] + box[2]) * 0.5) * targetProp.scale;
+      ty = targetProp.y + ((box[1] + box[3]) * 0.5) * targetProp.scale;
+    } else if (targetActor) {
+      tx = targetActor.x;
+      ty = targetActor.y - 38 * targetActor.scale;
+    }
+    if (tx !== undefined && ty !== undefined) {
+      const dir = actor.facing === 'right' ? 1 : -1;
+      const hx = actor.x + dir * (4.0 + (actor.leanDeg > 12 ? 5.5 : 0)) * actor.scale;
+      const hy = actor.y - (41.5 - (actor.leanDeg > 12 ? 5.5 : 0)) * actor.scale;
+      const dxLocal = (tx - hx) * dir;
+      const dyLocal = ty - hy;
+      const dist = Math.max(1, Math.hypot(dxLocal, dyLocal));
+      // Phân biệt rõ góc nhìn gần (laptop ngay trước mặt) và góc liếc xa hơn (hoa_don ở giữa bàn)
+      const horizReach = Math.min(1.5, Math.max(-1.1, (dxLocal / dist) * 1.15 + (dxLocal - 24) * 0.018));
+      const vertReach = Math.min(1.25, Math.max(-1.0, (dyLocal / dist) * 1.1));
+      actor.gazeX = Number(horizReach.toFixed(3));
+      actor.gazeY = Number(vertReach.toFixed(3));
+      actor.hasLookTarget = true;
+    }
+  }
 
   // Kiến trúc Khai bút Mở màn 4 Pha V8.6.1 (Hướng C — Slow Calligraphic Layered Choreography):
   // - CHOREO-03 (Trọng lực Nhân quả chậm rãi): Lớp nền/Cửa sổ/Ghế ngồi vẽ trước (Tier 1: 0.40s..2.25s)
@@ -1498,7 +1569,7 @@ export function evaluateStageScriptAtFrame(
   //   -> Nhân vật ngồi tự họa nét sau khi ghế đã thành hình (1.20s..3.05s); nhân vật đi bộ họa nét ở 0.35s..2.00s.
   // - CHOREO-06 (Bảo toàn Cue Câu Thơ): Đạo cụ và nhân vật có enterAt (như walking_bill ở câu 3) giữ nguyên mốc cue
   //   và tự họa nét thư pháp chậm rãi trong 1.50s..1.55s.
-  if (!visualDNA || !visualDNA.isLegacyLocked) {
+  if ((!visualDNA || !visualDNA.isLegacyLocked) && !script.tags?.includes('semantic_v1')) {
     const timeScale = visualDNA?.shotMode === 'BRUSH_DRAW' ? 1.12 : 1.0;
 
     props.forEach((p, propIdx) => {

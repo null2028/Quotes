@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-11-17T03:30:20.870Z",
+  "syncedAt": "2026-11-18T04:31:28.740Z",
   "selectedBaseId": "app9rk1rYkbXuIi3e",
   "selectedBaseName": "Trà Nguội",
   "selectedTableId": "tblUvm81GfyOYZ4jH",
@@ -2864,6 +2864,34 @@
           }
         },
         {
+          "id": "recRPLJkfj5f4GUFq",
+          "createdTime": "2026-11-17T05:05:45.000Z",
+          "fields": {
+            "TikTok Caption": "Có khi nào bạn biến một điều mình thích thành một việc phải làm cho thật tốt, rồi chẳng còn thấy vui nữa?\n\n#tranguoi #songcham #tudo",
+            "Chủ đề": "Cuộc sống",
+            "Nguồn": "Người dùng cung cấp",
+            "Tone": "Suy ngẫm",
+            "Cảm xúc": "Tự do · thư thái · nhẹ lòng",
+            "Quote tinh chỉnh": "Có những điều ban đầu ta làm chỉ vì thích. Đến một lúc nào đó, ta lại mải mê làm cho thật tốt mà quên mất niềm vui ban đầu.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Đời thường",
+            "Visual direction": "Một khu vườn nhỏ sau nhà vào buổi chiều. Nhân vật chăm sóc một chậu cây: ban đầu đo chiều cao, đếm lá và liên tục kiểm tra cây đã lớn chưa. Sau đó nhân vật cất thước đo, ngồi xuống ngắm cây, tưới nước và tận hưởng buổi chiều. Bố cục thoáng, nhân vật và chậu cây là trọng tâm. Ánh nắng chiều dịu chiếu từ phía trên trái; bảng màu xanh lá trầm, nâu đất và vàng nắng nhẹ. Phong cách painterly animation, chuyển động chậm, đời thường. Điểm nhấn: khi nhân vật thôi đo đếm, một bông hoa nhỏ bất ngờ nở.",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Nhẹ lòng",
+            "Caption Status": "Draft",
+            "Nội dung nguyên văn": "Hãy để những gì bạn thích trở thành niềm vui, chứ không phải, một sự áp lực , hãy cho phép mình được tự do trong thể giới của chính mình , sự màu nhiệm sẽ từ đó mà xuất hiện.",
+            "Thời điểm phù hợp": "Anytime",
+            "ID": "Q156",
+            "Tags": [
+              "cuộc sống",
+              "tự do",
+              "sống chậm",
+              "bớt lo nghĩ"
+            ],
+            "Loại": "Quote"
+          }
+        },
+        {
           "id": "recRXRtjNfmWouV4k",
           "createdTime": "2026-11-12T09:04:06.000Z",
           "fields": {
@@ -2913,6 +2941,35 @@
             "Tags": [
               "mưu sinh",
               "tự trào"
+            ],
+            "Loại": "Thơ"
+          }
+        },
+        {
+          "id": "recSQgb1KyZFU158Q",
+          "createdTime": "2026-11-18T01:27:49.000Z",
+          "fields": {
+            "TikTok Caption": "Hoa có gai thì phải biết cách nâng niu. 🌹\n\nBạn thích một người dịu dàng hay có chút khó chiều?\n\n#tranguoi #tinhyeu #tantu",
+            "Chủ đề": "Tình yêu",
+            "Nguồn": "Người dùng cung cấp",
+            "Tone": "Hài hước",
+            "Cảm xúc": "Tự tin · tán tỉnh · vui nhẹ",
+            "Quote tinh chỉnh": "Em đẹp tựa đóa hông gai\n\nHương thơm quyến rũ đưa ai vào đời\n\nHồng này đâu phải để chơi\n\nĐể thương, để nhớ, để lời nói yêu.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Hóm hỉnh",
+            "Visual direction": "Một khu vườn nhỏ có nắng nhẹ. Đóa hồng đỏ với gai rõ nét là chủ thể trung tâm; một nhân vật tò mò tiến lại gần, định đưa tay hái hoa rồi khựng lại khi thấy gai. Thay vì hái, nhân vật nhẹ nhàng tưới nước cho hoa. Bố cục đặt đóa hồng ở tiền cảnh, nhân vật ở hậu cảnh. Ánh sáng ấm, mềm, có chiều sâu; màu đỏ hồng, xanh lá trầm và kem ấm. Phong cách painterly animation, dí dỏm, không quá lãng mạn hóa. Điểm nhấn: hoa đẹp không có nghĩa là phải hái về làm của riêng.",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Vui nhẹ · mỉm cười",
+            "Caption Status": "Draft",
+            "Nội dung nguyên văn": "Em đẹp tựa đóa hông gai\n\nHương thơm quyến rũ đưa ai vào đời\n\nHồng này đâu phải để chơi\n\nĐể thương, để nhớ, để lời nói yêu.",
+            "Thời điểm phù hợp": "Anytime",
+            "ID": "Q157",
+            "Tags": [
+              "tình yêu",
+              "tán tỉnh",
+              "đáng yêu",
+              "thơ",
+              "cá tính"
             ],
             "Loại": "Thơ"
           }
@@ -3870,6 +3927,34 @@
           }
         },
         {
+          "id": "recd6i6gnLq53UbWF",
+          "createdTime": "2026-11-18T01:45:32.000Z",
+          "fields": {
+            "TikTok Caption": "Đừng nhầm nụ cười của tôi với tình yêu. Có khi chỉ là lương vừa về thôi. 😂\n\nNiềm vui của bạn tháng này là gì?\n\n#tranguoi #tutrao #haihuoc",
+            "Chủ đề": "Cuộc sống",
+            "Nguồn": "Người dùng cung cấp",
+            "Tone": "Hài hước",
+            "Cảm xúc": "Vui nhẹ · tự trào · hài lòng",
+            "Quote tinh chỉnh": "Nếu thấy tôi ngồi cười tủm tỉm với chiếc điện thoại thì xin đừng vội nghĩ tôi đang yêu.\n\nTài khoản vừa ting ting thôi, chứ tình yêu vẫn đang trong thời gian bảo trì.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Hóm hỉnh",
+            "Visual direction": "Bối cảnh quán cà phê nhỏ, buổi chiều. Nhân vật ngồi một mình, chăm chú nhìn điện thoại. Điện thoại sáng lên với thông báo tiền vừa chuyển đến; nhân vật lập tức cười tủm tỉm, ánh mắt long lanh như vừa nhận tin nhắn tình yêu. Thoáng xuất hiện tưởng tượng lãng mạn, rồi màn hình hé lộ thông báo biến động số dư. Bố cục tập trung vào biểu cảm nhân vật và chiếc điện thoại ở cú chốt. Ánh sáng ấm áp, tươi sáng; màu kem, nâu cà phê, xanh olive và một chút vàng. Phong cách painterly animation, biểu cảm phóng đại vừa đủ, hài hước duyên dáng. Điểm nhấn: nụ cười không phải vì tình yêu mà vì tài khoản vừa ting ting.",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Bật cười",
+            "Caption Status": "Draft",
+            "Nội dung nguyên văn": "ạiNếu thấy tôi ngồi cười tủm tỉm với chiếc điện thoại thì xin đừng vội nghĩ tôi đang yêu.\n\nChỉ có tài khoản vừa ting ting mới làm tôi vui, chứ tình yêu thì vẫn đang trong thời gian bảo trì.",
+            "Thời điểm phù hợp": "Anytime",
+            "ID": "Q160",
+            "Tags": [
+              "hài hước",
+              "tự trào",
+              "tình yêu",
+              "cuộc sống"
+            ],
+            "Loại": "Thơ hài"
+          }
+        },
+        {
           "id": "recdLswOwmDQKekbq",
           "createdTime": "2026-11-14T06:41:51.000Z",
           "fields": {
@@ -4533,6 +4618,35 @@
           }
         },
         {
+          "id": "recnRWGaSEMJTOz6C",
+          "createdTime": "2026-11-17T05:02:38.000Z",
+          "fields": {
+            "TikTok Caption": "Có những người chẳng cần làm gì nhiều, chỉ cần xuất hiện cũng khiến ta muốn mở lòng thêm một lần.\n\nBạn đã từng gặp một người như thế chưa?\n\n#tranguoi #tinhyeu #camxuc",
+            "Chủ đề": "Tình yêu",
+            "Nguồn": "Người dùng cung cấp",
+            "Tone": "Ấm áp",
+            "Cảm xúc": "Rung động · tin tưởng · mở lòng",
+            "Quote tinh chỉnh": "Tim tôi đã quen đóng cửa\nChẳng còn mong đợi một người ghé qua\nVậy mà em đến thật thà\nKhiến tôi muốn mở cửa nhà đón em.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Thi vị",
+            "Visual direction": "Một căn nhà nhỏ trong ngày đông, nhân vật ngồi cạnh cánh cửa đóng kín. Một vệt nắng ấm xuất hiện dưới khe cửa khi người kia đến. Nhân vật từ từ mở cửa, ánh sáng tràn vào căn phòng. Không dùng cảnh ôm ấp hay biểu hiện tình cảm trực diện. Phong cách painterly animation, ánh sáng mềm từ phía trên trái, tương phản giữa xanh xám mùa đông và vàng ấm trong nhà.",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Ấm áp",
+            "Caption Status": "Draft",
+            "Nội dung nguyên văn": "em đốt trong tôi ngọn lửa hồng dịu dàng như nắng hạ giữa đông tim từ lâu khóa, then cửa đóng vì em nên nguyện ý mở lòng.",
+            "Thời điểm phù hợp": "Anytime",
+            "ID": "Q155",
+            "Tags": [
+              "tình yêu",
+              "cảm xúc",
+              "niềm tin",
+              "gặp gỡ",
+              "yêu"
+            ],
+            "Loại": "Thơ"
+          }
+        },
+        {
           "id": "recni6qk1JyPEfQ2n",
           "createdTime": "2026-11-12T03:10:30.000Z",
           "fields": {
@@ -4917,6 +5031,35 @@
           }
         },
         {
+          "id": "recribhCNoQJKKmHt",
+          "createdTime": "2026-11-18T01:35:39.000Z",
+          "fields": {
+            "TikTok Caption": "Có những người ta có thể tìm gặp lại, nhưng có những năm tháng thì không.\n\nBạn có nhớ mình của ngày ấy không?\n\n#tranguoi #hoainiem #tuoitho",
+            "Chủ đề": "Tuổi thơ",
+            "Nguồn": "Người dùng cung cấp",
+            "Tone": "Hoài niệm",
+            "Cảm xúc": "Bâng khuâng · tiếc nuối · hoài niệm",
+            "Quote tinh chỉnh": "Người cần gặp, ta cũng đã gặp rồi. Chỉ có đứa trẻ năm ấy là chẳng bao giờ gặp lại được nữa.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Tinh tế",
+            "Visual direction": "Một con đường nhỏ trong khu phố cũ vào chiều muộn. Nhân vật trưởng thành đi qua những địa điểm quen thuộc, thoáng thấy bóng dáng chính mình lúc còn nhỏ đang chơi đùa ở đó. Mỗi lần quay lại nhìn, đứa trẻ đã biến mất. Hai phiên bản cùng xuất hiện trong một không gian nhưng không bao giờ chạm được vào nhau. Nắng chiều vàng nhạt, bóng đổ dài; bảng màu vàng cũ, xanh rêu, nâu đất, hơi phai như ký ức. Phong cách cinematic painterly animation, chuyển động chậm và tiết chế. Điểm nhấn: người trưởng thành quay lại, phía sau chỉ còn khoảng sân trống.",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Hoài niệm · dịu lại",
+            "Caption Status": "Draft",
+            "Nội dung nguyên văn": "Người cần gặp cũng đã tìm gặp rồi. Chỉ duy nhất chẳng bao giờ gặp lại đảm trẻ năm ấy.",
+            "Thời điểm phù hợp": "Anytime",
+            "ID": "Q158",
+            "Tags": [
+              "tuổi thơ",
+              "hoài niệm",
+              "ký ức",
+              "thời gian",
+              "trưởng thành"
+            ],
+            "Loại": "Quote"
+          }
+        },
+        {
           "id": "recrxyS6hIOR0IiEZ",
           "createdTime": "2026-11-14T06:21:08.000Z",
           "fields": {
@@ -5143,6 +5286,34 @@
             "Tags": [
               "cuộc sống",
               "chiêm nghiệm"
+            ],
+            "Loại": "Quote"
+          }
+        },
+        {
+          "id": "recuTFRU3IW541kqQ",
+          "createdTime": "2026-11-18T01:39:27.000Z",
+          "fields": {
+            "TikTok Caption": "Có những người chỉ còn có thể gặp trong mơ, mà tỉnh dậy rồi vẫn thấy nhớ.\n\nBạn đã từng mơ về một người lâu không gặp chưa?\n\n#tranguoi #vuongvan #giacmo",
+            "Chủ đề": "Tình yêu",
+            "Nguồn": "Người dùng cung cấp",
+            "Tone": "Hoài niệm",
+            "Cảm xúc": "Nhớ nhung · vương vấn · bâng khuâng",
+            "Quote tinh chỉnh": "Nỗi nhớ chẳng biết đường tìm đến người, nên đành đưa người ấy vào giấc mơ.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Thi vị",
+            "Visual direction": "Một căn phòng nhỏ vào đêm khuya, cửa sổ mở hé. Nhân vật nằm ngủ, bên cạnh là chiếc ghế trống. Trong giấc mơ, người mình nhớ xuất hiện và ngồi xuống chiếc ghế ấy; hai người chỉ lặng lẽ ngồi cạnh nhau. Khi nhân vật tỉnh dậy, chiếc ghế vẫn trống. Bố cục dùng chiếc giường và ghế trống để tạo hai lớp không gian, chuyển cảnh mềm giữa mơ và thực. Ánh trăng xanh dịu trong thực tại, ánh vàng ấm trong giấc mơ; bảng màu xanh đêm, kem giấy và vàng nhạt. Phong cách cinematic painterly animation, chuyển động chậm, tinh tế. Điểm nhấn: người ấy biến mất ngay khi nhân vật mở mắt.",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Vương vấn · dư âm",
+            "Caption Status": "Draft",
+            "Nội dung nguyên văn": "Nỗi nhớ ấy lớn đến mức mang cả người mình nhớ vào giấc mơ",
+            "Thời điểm phù hợp": "Night",
+            "ID": "Q159",
+            "Tags": [
+              "tình yêu",
+              "hoài niệm",
+              "vương vấn",
+              "cảm xúc"
             ],
             "Loại": "Quote"
           }
@@ -5454,7 +5625,7 @@
           }
         }
       ],
-      "recordCount": 153
+      "recordCount": 159
     },
     {
       "id": "tblG0SqIZOVn5D2NJ",
@@ -7052,14 +7223,14 @@
           "id": "rec1SZgtpDSZ1iduN",
           "createdTime": "2026-11-17T01:46:39.000Z",
           "fields": {
-            "Khung giờ hợp": "🌅 Sáng (06:30–08:30)",
-            "Bình luận mồi": "Ngoài hóa đơn tiền nhà với tiền điện, thứ gì làm bạn đang định nghỉ ngang bỗng 'khỏe tưng' đi làm tiếp?",
-            "Tên file MP4": "chen-16-khoe-tung-doi-song-tra-nguoi.mp4 (Chén 16 - Khỏe tưng.mp4) · 🔇 Silent AAC",
-            "Mood": "Tự trào",
-            "Lời dẫn trong video": "Tháng năm tất tả chưa từng dừng\nTiền chưa đầy túi đã đau lưng\nLắm hôm mệt quá toan buông xuống\nNhìn tờ hóa đơn… lại khỏe tưng!\n\n[Nhấn đỏ: lại khỏe tưng]",
+            "Khung giờ hợp": "🌙 Tối muộn (21:30–23:00)",
+            "Bình luận mồi": "Team quyết tâm giữ ví tới cùng hay team người ấy gọi là đi liền điểm danh nào :))",
+            "Tên file MP4": "(Đang nháp) Chén 16 - Để sang mai.mp4 · 🎯 Pivot Accent",
+            "Mood": "Hài hước",
+            "Lời dẫn trong video": "Cuối tháng tiền vơi, khẽ thở dài,\nKhóa ví nằm im, chẳng ra ngoài.\nVừa hay người ấy hẹn ăn tối,\nChuyện giữ hầu bao… để sang mai!\n\n[Nhấn đỏ: … để sang mai!]",
             "Trạng thái": "🎬 Đã xuất MP4",
-            "Caption & Hashtag": "Cả tuần cày cuốc rã rời chỉ mong được buông xuôi, ai ngờ vừa liếc thấy tờ giấy báo tiền cuối tháng là cột sống tự động thẳng tắp ngay lập tức.\nNgoài hóa đơn tiền nhà, thứ gì khiến bạn đang mệt bỗng bật dậy làm tiếp ngay?\n\n#tranguoi #hoadon #tutrao #congso #thohay",
-            "Mã Chén": "Chén 16 — Khỏe tưng"
+            "Caption & Hashtag": "Cuối tháng quyết tâm giữ ví, mà người ấy vừa rủ ăn tối là dời sang mai liền :)) #tranguoi #thathinh #tinhyeu #haiuoc #cuoithang",
+            "Mã Chén": "Chén 16 — Để sang mai"
           }
         },
         {
@@ -7068,7 +7239,7 @@
           "fields": {
             "Khung giờ hợp": "🌙 Tối muộn (21:30–23:00)",
             "Bình luận mồi": "Khuya rồi quán vẫn để đèn nhỏ cùng nhịp «trốn chạy» — ai đi ngang còn thức cứ ghé gửi lại một dòng nhẹ lòng ở đây, quán giữ hộ cho bạn dễ ngủ hơn nhé 🍵",
-            "Tên file MP4": "chen-05-tron-tram-buon-tra-nguoi.mp4 (Chén 05 - Trốn.mp4) · 🍵 Foley -14 LUFS",
+            "Tên file MP4": "Chén 05 - Trốn.mp4 · 🍵 Foley -14 LUFS",
             "Mood": "Trầm buồn",
             "Lời dẫn trong video": "Lớn lên rồi mới hiểu\nquái vật đáng sợ nhất\nChính là thực tế cuộc sống\nVà bóng tối lại là...\nnơi an toàn nhất để trốn chạy\n\n[Nhấn đỏ: trốn chạy]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7082,7 +7253,7 @@
           "fields": {
             "Khung giờ hợp": "🌤️ Trưa–Chiều",
             "Bình luận mồi": "Pha xong chữ «đứng đợi sẵn ở đó» đặt ở góc bàn — sáng giờ của bạn đang thong thả hay tất bật, ghé ngồi thở chậm với quán một nhịp nhé 🍵",
-            "Tên file MP4": "chen-09-ky-uc-van-ngoi-doi-tra-nguoi.mp4 (Chén 09 - Ký ức.mp4) · 🎯 Pivot Accent",
+            "Tên file MP4": "Chén 09 - Ký ức.mp4 · 🎯 Pivot Accent",
             "Mood": "Hoài niệm",
             "Lời dẫn trong video": "Tưởng rằng năm tháng đã xa,\nChợt nghe câu hát chiều qua phố người.\nChuyện xưa chẳng nói một lời,\nMà bên ghế trống… vẫn ngồi đợi ta.\n\n[Nhấn đỏ: vẫn ngồi đợi ta]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7096,7 +7267,7 @@
           "fields": {
             "Khung giờ hợp": "🌅 Sáng (06:30–08:30)",
             "Bình luận mồi": "Góc đối chữ Quán Trà: đố cả nhà tìm được cặp nói lái hoặc đảo vế đối lại chữ «là người nhà» vừa sạch vừa duyên — câu đắt nhất tuần này quán xin phép vẽ tặng thành Chén mới nhé 🍵",
-            "Tên file MP4": "chen-10-nguoi-nha-tinh-yeu-tra-nguoi.mp4 (Chén 10 - Người nhà.mp4) · 🎯 Pivot Accent",
+            "Tên file MP4": "Chén 10 - Người nhà.mp4 · 🎯 Pivot Accent",
             "Mood": "Hài hước",
             "Lời dẫn trong video": "Mẹ anh bảo người lạ,\nSẽ cực kỳ xấu xa.\nNhưng em xinh đẹp quá…\nChắc chắn là người nhà.\n\n[Nhấn đỏ: là người nhà]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7110,7 +7281,7 @@
           "fields": {
             "Khung giờ hợp": "🌙 Tối muộn (21:30–23:00)",
             "Bình luận mồi": "Góc đối chữ Quán Trà: đố cả nhà tìm được cặp nói lái hoặc đảo vế đối lại chữ «thì dài» vừa sạch vừa duyên — câu đắt nhất tuần này quán xin phép vẽ tặng thành Chén mới nhé 🍵",
-            "Tên file MP4": "chen-03-cau-don-tram-buon-tra-nguoi.mp4 (Chén 03 - Câu đơn.mp4) · 🍵 Foley -14 LUFS",
+            "Tên file MP4": "Chén 03 - Câu đơn.mp4 · 🍵 Foley -14 LUFS",
             "Mood": "Trầm buồn",
             "Lời dẫn trong video": "Em thương anh là câu đơn.\nAnh không thương em là cơn đau.\nCâu đơn thì ngắn,\nCơn đau thì dài.\n\n[Nhấn đỏ: thì dài]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7124,7 +7295,7 @@
           "fields": {
             "Khung giờ hợp": "🌅 Sáng (06:30–08:30)",
             "Bình luận mồi": "A, C, D gặp người thương là bay sạch khỏi đầu, đố cả nhà biết nguyên tố «Em» thuộc nhóm mấy trong bảng tuần hoàn? 👀",
-            "Tên file MP4": "chen-12-vitamin-em-tinh-yeu-tra-nguoi.mp4 (Chén 12 - Vitamin Em.mp4) · 🎯 Pivot Accent",
+            "Tên file MP4": "Chén 12 - Vitamin Em.mp4 · 🎯 Pivot Accent",
             "Mood": "Thả thính hài duyên",
             "Lời dẫn trong video": "Vitamin A cho đôi mắt sáng,\nVitamin C giúp tăng đề kháng.\nVitamin D tôn dáng, chắc xương,\nVitamin Em… gây nhớ, gây thương.\n\n[Nhấn đỏ: Vitamin Em]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7138,7 +7309,7 @@
           "fields": {
             "Khung giờ hợp": "🌙 Tối muộn (21:30–23:00)",
             "Bình luận mồi": "Góc đối chữ Quán Trà: đố cả nhà tìm được cặp nói lái hoặc đảo vế đối lại chữ «thì dài» vừa sạch vừa duyên — câu đắt nhất tuần này quán xin phép vẽ tặng thành Chén mới nhé 🍵",
-            "Tên file MP4": "chen-01-cau-don-tram-buon-tra-nguoi.mp4 (Chén 01 - Câu đơn.mp4) · 🍵 Foley -14 LUFS",
+            "Tên file MP4": "Chén 01 - Câu đơn.mp4 · 🍵 Foley -14 LUFS",
             "Mood": "Trầm buồn",
             "Lời dẫn trong video": "Em thương anh là câu đơn.\nAnh không thương em là cơn đau.\nCâu đơn thì ngắn,\nCơn đau thì dài.\n\n[Nhấn đỏ: thì dài]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7152,7 +7323,7 @@
           "fields": {
             "Khung giờ hợp": "🌤️ Trưa–Chiều",
             "Bình luận mồi": "Tag nhẹ người thương vào đây để thông báo lịch «tán lại gấp đôi» từ hôm nay luôn nhé 👇",
-            "Tên file MP4": "chen-11-gap-doi-tinh-yeu-tra-nguoi.mp4 (Chén 11 - Gấp đôi.mp4) · 🎯 Pivot Accent",
+            "Tên file MP4": "Chén 11 - Gấp đôi.mp4 · 🎯 Pivot Accent",
             "Mood": "Hài hước",
             "Lời dẫn trong video": "Dù có em rồi, tôi vẫn tán,\nĐến khi em phát ngán thì thôi.\nMà bao giờ em bảo chán tôi,\nThì tôi tán lại gấp đôi lúc đầu.\n\n[Nhấn đỏ: gấp đôi lúc đầu]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7164,13 +7335,13 @@
           "id": "recOjhlLlt4AVjqMt",
           "createdTime": "2026-11-15T04:29:04.000Z",
           "fields": {
-            "Khung giờ hợp": "🌅 Sáng (06:30–08:30)",
-            "Bình luận mồi": "Ngoài hóa đơn tiền nhà với tiền điện, thứ gì làm bạn đang định nghỉ ngang bỗng 'khỏe tưng' đi làm tiếp?",
-            "Tên file MP4": "(Đang nháp) chen-15-khoe-tung-doi-song-tra-nguoi.mp4 · 🎯 Pivot Accent",
-            "Mood": "Tự trào",
-            "Lời dẫn trong video": "Tháng năm tất tả chưa từng dừng,\nTiền chưa đầy túi đã đau lưng.\nLắm hôm mệt quá toan buông xuống,\nNhìn tờ hóa đơn… lại khỏe tưng!\n\n[Nhấn đỏ: lại khỏe tưng]",
-            "Trạng thái": "📝 Bản nháp",
-            "Caption & Hashtag": "Cả tuần cày cuốc rã rời chỉ mong được buông xuôi, ai ngờ vừa liếc thấy tờ giấy báo tiền cuối tháng là cột sống tự động thẳng tắp ngay lập tức.\nNgoài hóa đơn tiền nhà, thứ gì khiến bạn đang mệt bỗng bật dậy làm tiếp ngay?\n\n#tranguoi #hoadon #tutrao #congso #thohay",
+            "Khung giờ hợp": "🌤️ Trưa–Chiều",
+            "Bình luận mồi": "Khai thật đi, khoản thanh toán nào mỗi tháng vừa hiện thông báo là giúp bạn hết đau lưng ngay lập tức? 🍵",
+            "Tên file MP4": "Chén 15 - Khỏe tưng.mp4 · 🎯 Pivot Accent",
+            "Mood": "Hài hước",
+            "Lời dẫn trong video": "Tháng năm tất tả chưa từng dừng\nTiền chưa đầy túi đã đau lưng\nLắm hôm mệt quá toan buông xuống\nNhìn tờ hóa đơn… lại khỏe tưng!\n\n[Nhấn đỏ: lại khỏe tưng!]",
+            "Trạng thái": "🎬 Đã xuất MP4",
+            "Caption & Hashtag": "Thứ giữ lưng bạn thẳng tưng mỗi dịp cuối tháng?\n\n#tranguoi #tho4cau #tholucbat #congso #haihuoc",
             "Mã Chén": "Chén 15 — Khỏe tưng"
           }
         },
@@ -7180,7 +7351,7 @@
           "fields": {
             "Khung giờ hợp": "🌤️ Trưa–Chiều",
             "Bình luận mồi": "Quán tò mò nhỏ: nếu mượn chữ «chiếc ô rộng» để nhắn cho một người mà không cần nói thẳng tên, bạn sẽ viết tiếp vế sau thế nào cho thật duyên? 🍵",
-            "Tên file MP4": "chen-08-chiec-o-chiec-o-rong-tra-nguoi.mp4 (Chén 08 - Chiếc ô.mp4) · 🎯 Pivot Accent",
+            "Tên file MP4": "Chén 08 - Chiếc ô.mp4 · 🎯 Pivot Accent",
             "Mood": "Nhẹ nhàng",
             "Lời dẫn trong video": "Người ta xem dự báo để tránh ngày mưa.\nCòn tôi xem… chỉ để biết\nhôm nào cần mang chiếc ô rộng hơn ngày thường.\n\n[Nhấn đỏ: chiếc ô rộng]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7194,7 +7365,7 @@
           "fields": {
             "Khung giờ hợp": "🌤️ Trưa–Chiều",
             "Bình luận mồi": "Pha xong chữ «rẽ ngang» đặt ở góc bàn — sáng giờ của bạn đang thong thả hay tất bật, ghé ngồi thở chậm với quán một nhịp nhé 🍵",
-            "Tên file MP4": "chen-02-nguoc-loi-nhe-nhang-tra-nguoi.mp4 (Chén 02 - Ngược lối.mp4) · 🍵 Foley -14 LUFS",
+            "Tên file MP4": "Chén 02 - Ngược lối.mp4 · 🍵 Foley -14 LUFS",
             "Mood": "Nhẹ nhàng",
             "Lời dẫn trong video": "Có những người đi cùng ta\nqua cả mùa giông bão,\nnhưng lại lặng lẽ rẽ ngang\nvào một ngày nắng đẹp.\n\n[Nhấn đỏ: rẽ ngang]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7208,7 +7379,7 @@
           "fields": {
             "Khung giờ hợp": "🌅 Sáng (06:30–08:30)",
             "Bình luận mồi": "Sáng thứ Hai rồi, biên bản họp của mọi người đang chốt món gì cho trưa nay đấy, khai thật đi nào 👇",
-            "Tên file MP4": "chen-14-thu-2-cong-so-tra-nguoi.mp4 (Chén 14 - Thứ 2.mp4) · 🎯 Pivot Accent",
+            "Tên file MP4": "Chén 14 - Thứ 2.mp4 · 🎯 Pivot Accent",
             "Mood": "Hài hước",
             "Lời dẫn trong video": "Thứ Hai ngồi họp đầu giờ\nCúi đầu ghi chép chẳng lơ phút nào\nSếp khen tâm huyết biết bao\nThật ra gạch món…\nquán nào gần đây.\n\n[Nhấn đỏ: quán nào gần đây]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7222,7 +7393,7 @@
           "fields": {
             "Khung giờ hợp": "🌤️ Trưa–Chiều",
             "Bình luận mồi": "Quán tò mò nhỏ: nếu mượn chữ «chẳng còn nhau» để nhắn cho một người mà không cần nói thẳng tên, bạn sẽ viết tiếp vế sau thế nào cho thật duyên? 🍵",
-            "Tên file MP4": "chen-06-say-tha-thinh-tra-nguoi.mp4 (Chén 06 - Say.mp4) · 🍵 Foley -14 LUFS",
+            "Tên file MP4": "Chén 06 - Say.mp4 · 🍵 Foley -14 LUFS",
             "Mood": "Thả thính",
             "Lời dẫn trong video": "Ta gom mây làm rượu\nĐể ủ mối duyên đầu\nAi ngờ men quá gắt\nSay tỉnh… chẳng còn nhau.\n\n[Nhấn đỏ: chẳng còn nhau]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7250,7 +7421,7 @@
           "fields": {
             "Khung giờ hợp": "🌙 Tối muộn (21:30–23:00)",
             "Bình luận mồi": "Khuya rồi quán vẫn để đèn nhỏ cùng nhịp «chưa chịu cập nhật» — ai đi ngang còn thức cứ ghé gửi lại một dòng nhẹ lòng ở đây, quán giữ hộ cho bạn dễ ngủ hơn nhé 🍵",
-            "Tên file MP4": "chen-17-cap-nhat-tinh-cam-tra-nguoi.mp4 (Chén 17 - Cập nhật.mp4) · 🎯 Pivot Accent",
+            "Tên file MP4": "Chén 17 - Cập nhật.mp4 · 🎯 Pivot Accent",
             "Mood": "Suy ngẫm",
             "Lời dẫn trong video": "Có những mối quan hệ\nđã hết hạn từ lâu,\nchỉ là tâm mình\nvẫn chưa chịu cập nhật.\n\n[Nhấn đỏ: chưa chịu cập nhật]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7264,7 +7435,7 @@
           "fields": {
             "Khung giờ hợp": "🌤️ Trưa–Chiều",
             "Bình luận mồi": "Góc đối chữ Quán Trà: đố cả nhà tìm được cặp nói lái hoặc đảo vế đối lại chữ «trưa về» vừa sạch vừa duyên — câu đắt nhất tuần này quán xin phép vẽ tặng thành Chén mới nhé 🍵",
-            "Tên file MP4": "chen-07-cham-cong-tha-thinh-tra-nguoi.mp4 (Chén 07 - Chấm công.mp4) · 🍵 Foley -14 LUFS",
+            "Tên file MP4": "Chén 07 - Chấm công.mp4 · 🍵 Foley -14 LUFS",
             "Mood": "Thả thính",
             "Lời dẫn trong video": "Sáng nay rét ngọt đầu đông,\nVừa quẹt chiếc thẻ vào phòng chấm công.\nMiệng cười khí thế một lòng,\nTay vừa mở máy... ngóng trông trưa về!\n\n[Nhấn đỏ: trưa về]",
             "Trạng thái": "🎬 Đã xuất MP4",
@@ -7278,7 +7449,7 @@
           "fields": {
             "Khung giờ hợp": "🌙 Tối muộn (21:30–23:00)",
             "Bình luận mồi": "Khuya rồi quán vẫn để đèn nhỏ cùng nhịp «ném vào cốp xe» — ai đi ngang còn thức cứ ghé gửi lại một dòng nhẹ lòng ở đây, quán giữ hộ cho bạn dễ ngủ hơn nhé 🍵",
-            "Tên file MP4": "chen-04-lop-chua-chat-tra-nguoi.mp4 (Chén 04 - Lốp.mp4) · 🍵 Foley -14 LUFS",
+            "Tên file MP4": "Chén 04 - Lốp.mp4 · 🍵 Foley -14 LUFS",
             "Mood": "Chua chát",
             "Lời dẫn trong video": "Đừng biến mình thành chiếc lốp dự phòng cho một chiếc xe.\nKhi chiếc lốp chính bị hỏng, họ mới nhớ đến bạn.\nVà khi đã sửa xong, bạn lại bị ném vào cốp xe.\n\n[Nhấn đỏ: ném vào cốp xe]",
             "Trạng thái": "🎬 Đã xuất MP4",

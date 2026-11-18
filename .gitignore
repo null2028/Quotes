@@ -6,7 +6,9 @@ dist-studio/
 output/
 videos/
 qa-artifacts-*/
+Trà Nguội.app
 Trà Nguội.app/
+audit-package-tra-nguoi.zip
 public/audio/*.wav
 *.mp4
 *.log
@@ -14,3 +16,9 @@ public/audio/*.wav
 .env.*
 .gemini/
 .DS_Store
+
+# app đóng gói (tên có dấu, dạng NFD trên macOS)
+Tr*Ngu*i.app/
+*.zip
+tn-core/out/
+qa-artifacts-ci/

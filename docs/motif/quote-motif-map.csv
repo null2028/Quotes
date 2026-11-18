@@ -1,0 +1,226 @@
+id,chu_de,nhom,motif,boi_canh,dao_cu,nhan_vat
+Q022,Tình yêu,Tình yêu,M1,Quán,kẹo; chén trà,1
+Q066,Tuổi thơ,"Ký ức, gia đình, tình bạn",M4,"Nhà quê, mâm cơm",mâm cơm; cửa nhà,F
+Q120,Tình yêu,Tình yêu,M2,"Phố, ngõ",băng dán,2
+Q071,Chiêm nghiệm,Chiêm nghiệm,M5,Thiên nhiên mở,con đường,1
+Q091,Bản thân,Bản thân & trưởng thành,M7,Phòng trong nhà,ghế trống; đèn,1
+Q065,Cuộc sống,Cuộc sống,M7,Phòng trong nhà,cửa sổ,1
+Q068,Cuộc sống,Cuộc sống,M3,"Nhà quê, mâm cơm",mâm cơm; ghế trống,F
+Q147,Hành trình,Bản thân & trưởng thành,M5,Thiên nhiên mở,con đường; đèn lồng,1
+Q069,Ký ức,"Ký ức, gia đình, tình bạn",M3,"Phố, ngõ",nốt nhạc; hoa,1
+Q044,Chiêm nghiệm,Chiêm nghiệm,M6,Thiên nhiên mở,cửa; con đường,1
+Q081,Trưởng thành,Bản thân & trưởng thành,M5,Thiên nhiên mở,con đường; bậc thang,1
+Q095,Tình yêu,Tình yêu,M2,Quán,chén trà; bàn,2
+Q028,Tình yêu,Tình yêu,M3,Phòng trong nhà,ghế trống,2
+Q124,Tình yêu,Tình yêu,M1,Không gian ký hiệu,cọ vẽ; khung tranh,2
+Q050,Cuộc sống,Cuộc sống,M7,Không gian ký hiệu,chén trà,2
+Q145,Gia đình,,M7,Phòng trong nhà,,X
+Q056,Cuộc sống,Cuộc sống,M7,Phòng trong nhà,gối; cửa sổ; đèn,1
+Q092,Trưởng thành,Bản thân & trưởng thành,M5,Thiên nhiên mở,con đường,1
+Q020,Tình bạn,"Ký ức, gia đình, tình bạn",M4,Hiên trà,ghế dài; chén trà,2
+Q125,Tình yêu,Tình yêu,M8,"Phố, ngõ",hoa,2
+Q048,Cuộc sống,Cuộc sống,M3,"Nhà quê, mâm cơm",ghế trống; ấm trà; cửa nhà,1
+Q018,Chiêm nghiệm,Chiêm nghiệm,M6,Thiên nhiên mở,sóng biển,1
+Q061,Bản thân,Bản thân & trưởng thành,M5,Thiên nhiên mở,bậc thang; đèn lồng,1
+Q053,Cuộc sống,Cuộc sống,M8,Thiên nhiên mở,hoa,1
+Q010,Cuộc sống,Cuộc sống,M5,"Phố, ngõ",đèn lồng; con đường,2
+Q021,Tình yêu,Tình yêu,M4,"Phố, ngõ",nốt nhạc; mặt trời,1
+Q051,Cuộc sống,Cuộc sống,M7,Thiên nhiên mở,cây; hoa,1
+Q017,Chiêm nghiệm,Chiêm nghiệm,M4,Phòng trong nhà,khung tranh,1
+Q119,Tình yêu,Tình yêu,M1,"Phố, ngõ",khăn len; phong thư,2
+Q047,Tình yêu,Tình yêu,M3,Phòng trong nhà,phong thư; bàn,1
+Q141,Tình yêu,Tình yêu,M3,"Phố, ngõ",ngõ; ghế dài,1
+Q123,Tình yêu,Tình yêu,M2,Không gian ký hiệu,bảng đen,2
+Q142,Chiêm nghiệm,Chiêm nghiệm,M6,Thiên nhiên mở,núi,1
+Q029,Chiêm nghiệm,Chiêm nghiệm,M4,"Phố, ngõ",hoa; nhà phố,1
+Q096,Cuộc sống,Cuộc sống,M8,Thiên nhiên mở,sao,1
+Q105,Cuộc sống,Cuộc sống,M5,"Phố, ngõ",ngã rẽ,2
+Q034,Chiêm nghiệm,Chiêm nghiệm,M7,Không gian ký hiệu,cân,1
+Q049,Chiêm nghiệm,Chiêm nghiệm,M1,Quán,lá bài; bàn,1
+Q004,Chiêm nghiệm,Chiêm nghiệm,M4,Hiên trà,ấm trà; mặt trời,1
+Q109,Tình yêu,Tình yêu,M7,Hiên trà,trái tim,2
+Q064,Bản thân,Bản thân & trưởng thành,M7,Thiên nhiên mở,đèn lồng,1
+Q112,Tình yêu,Tình yêu,M8,"Phố, ngõ",,2
+Q086,Tình yêu,Tình yêu,M8,Hiên trà,mặt trăng,2
+Q128,Tình yêu,Tình yêu,M1,Văn phòng,máy tính; trái tim,2
+Q111,Tình yêu,Tình yêu,M2,"Phố, ngõ",,2
+Q113,Tình yêu,Tình yêu,M1,Không gian ký hiệu,cân,1
+Q016,Chiêm nghiệm,Chiêm nghiệm,M4,Hiên trà,chén trà,2
+Q078,Bản thân,Bản thân & trưởng thành,M8,Quán,bàn,1
+Q104,Cuộc sống,Cuộc sống,M1,Thiên nhiên mở,cỏ; hoa,1
+Q008,Tình yêu,Tình yêu,M1,"Phố, ngõ",cổng rào; mái hiên,2
+Q039,Tình yêu,Tình yêu,M4,Hiên trà,ấm trà,2
+Q058,Con người,Chiêm nghiệm,M7,Không gian ký hiệu,cây,1
+Q024,Chiêm nghiệm,Chiêm nghiệm,M4,"Phố, ngõ",nhà phố; mặt trời,1
+Q093,Bản thân,Bản thân & trưởng thành,M6,Thiên nhiên mở,cửa sổ,1
+Q131,Tình yêu,Tình yêu,M5,Không gian ký hiệu,bản đồ,2
+Q015,Tình yêu,Tình yêu,M4,Hiên trà,ghế dài,2
+Q132,Tình yêu,Tình yêu,M4,Thiên nhiên mở,mây,2
+Q063,Tình cảm,Tình yêu,M3,Văn phòng,lịch bàn; bàn làm việc,1
+Q043,Chiêm nghiệm,Chiêm nghiệm,M7,Phòng trong nhà,gối; giường,1
+Q041,Tình yêu,Tình yêu,M4,"Phố, ngõ",ly cà phê; mặt trời,2
+Q072,Chiêm nghiệm,Chiêm nghiệm,M5,Thiên nhiên mở,nhà nhỏ; đèn lồng,1
+Q001,Mưu sinh,Công sở,M1,Văn phòng,lịch bàn; hóa đơn,1
+Q115,Cuộc sống,Cuộc sống,M4,"Nhà quê, mâm cơm",chuồn chuồn,1
+Q073,Chiêm nghiệm,Chiêm nghiệm,M3,"Phố, ngõ",ghế trống,2
+Q149,Bản thân,Bản thân & trưởng thành,M7,Thiên nhiên mở,hoa,1
+Q122,Tình yêu,Tình yêu,M1,Không gian ký hiệu,cuốn sách,2
+Q035,Tình yêu,Tình yêu,M3,Hiên trà,chén trà; ghế trống,1
+Q133,Tình yêu,Tình yêu,M1,Không gian ký hiệu,ô chữ,2
+Q151,Bản thân,Bản thân & trưởng thành,M8,"Phố, ngõ",cửa sổ; nhà phố,1
+Q084,Trưởng thành,Bản thân & trưởng thành,M5,Thiên nhiên mở,ngã rẽ,1
+Q045,Tình yêu,Tình yêu,M4,Thiên nhiên mở,cỏ,1
+Q070,Bản thân,Bản thân & trưởng thành,M7,Phòng trong nhà,cửa,1
+Q150,Mối quan hệ,Tình yêu,M8,Phòng trong nhà,giường,1
+Q126,Tình yêu,Tình yêu,M7,Không gian ký hiệu,trái tim; băng dán,1
+Q046,Tình yêu,Tình yêu,M3,"Phố, ngõ",ghế dài; đèn đường,1
+Q146,Ký ức,"Ký ức, gia đình, tình bạn",M4,"Phố, ngõ",đồng hồ,1
+Q076,Cuộc sống,Cuộc sống,M4,Không gian ký hiệu,đồng hồ cát,1
+Q011,Cuộc sống,Cuộc sống,M4,"Phố, ngõ",cửa sổ; nhà phố,1
+Q027,Cuộc sống,Cuộc sống,M4,"Nhà quê, mâm cơm",mâm cơm,1
+Q099,Cuộc sống,Cuộc sống,M7,Không gian ký hiệu,,2
+Q098,Tình yêu,Tình yêu,M8,Không gian ký hiệu,sợi chỉ,2
+Q002,Tình bạn,"Ký ức, gia đình, tình bạn",M4,Hiên trà,ấm trà; mái hiên,2
+Q129,Tình yêu,Tình yêu,M2,Không gian ký hiệu,ống nghiệm,2
+Q136,Tình yêu,Tình yêu,M1,Không gian ký hiệu,cuốn sách,2
+Q083,Nội tâm,Chiêm nghiệm,M7,Phòng trong nhà,bóng đổ,1
+Q031,Tình yêu,Tình yêu,M2,Quán,chén trà; bàn,2
+Q116,Tình yêu,Tình yêu,M2,"Phố, ngõ",,2
+Q135,Tình yêu,Tình yêu,M2,Không gian ký hiệu,ống nghiệm,2
+Q080,Tình cảm,Tình yêu,M5,"Phố, ngõ",ngã rẽ,2
+Q019,Chiêm nghiệm,Chiêm nghiệm,M7,Không gian ký hiệu,,1
+Q033,Tình yêu,Tình yêu,M2,Thiên nhiên mở,hành tinh,2
+Q005,Tình yêu,Tình yêu,M4,"Phố, ngõ",nhà phố; mặt trời,2
+Q087,Tình yêu,Tình yêu,M1,Quán,ly rượu,2
+Q077,Cuộc sống,Cuộc sống,M7,Phòng trong nhà,bát cơm; gối,1
+Q037,Tình yêu,Tình yêu,M2,"Phố, ngõ",ô,2
+Q042,Tình yêu,Tình yêu,M1,Văn phòng,ví; lịch bàn,2
+Q094,Trưởng thành,Bản thân & trưởng thành,M6,Không gian ký hiệu,cân,1
+Q023,Chiêm nghiệm,Chiêm nghiệm,M4,Hiên trà,hoa,1
+Q006,Chiêm nghiệm,Chiêm nghiệm,M7,Thiên nhiên mở,mầm cây,1
+Q127,Tình yêu,Tình yêu,M3,Không gian ký hiệu,điện tâm đồ,1
+Q101,Tình yêu,Tình yêu,M7,Không gian ký hiệu,gương,1
+Q130,Tình yêu,Tình yêu,M2,"Phố, ngõ",ngã rẽ,2
+Q114,Tình yêu,Tình yêu,M8,Không gian ký hiệu,,2
+Q067,Hành trình,Bản thân & trưởng thành,M5,Thiên nhiên mở,con đường,1
+Q003,Cuộc sống,Cuộc sống,M5,"Phố, ngõ",đèn đường; nhà phố,1
+Q025,Tình yêu,Tình yêu,M8,Không gian ký hiệu,,2
+Q057,Gia đình,"Ký ức, gia đình, tình bạn",M3,"Nhà quê, mâm cơm",cửa nhà; mâm cơm,F
+Q014,Tình yêu,Tình yêu,M4,Thiên nhiên mở,cây,2
+Q121,Tình yêu,Tình yêu,M8,Quán,bàn,2
+Q085,Tình yêu,Tình yêu,M7,Hiên trà,ghế trống,1
+Q148,Cuộc sống,Cuộc sống,M4,Không gian ký hiệu,đồng hồ cát,1
+Q032,Tình yêu,Tình yêu,M2,"Phố, ngõ",ngã rẽ,2
+Q137,Ký ức,"Ký ức, gia đình, tình bạn",M8,Ga tàu,tàu,1
+Q012,Chiêm nghiệm,Chiêm nghiệm,M5,Ga tàu,vali; tàu,1
+Q079,Mối quan hệ,Tình yêu,M3,Phòng trong nhà,cửa,2
+Q089,Tình yêu,Tình yêu,M2,Phòng trong nhà,khăn tay,2
+Q152,Bản thân,Bản thân & trưởng thành,M7,Không gian ký hiệu,,1
+Q075,Chiêm nghiệm,Chiêm nghiệm,M6,Hiên trà,ấm trà,1
+Q108,Tình yêu,Tình yêu,M2,Không gian ký hiệu,đường kẻ,2
+Q060,Cuộc sống,Cuộc sống,M6,Không gian ký hiệu,mê cung,1
+Q009,Chiêm nghiệm,Chiêm nghiệm,M7,"Phố, ngõ",ô,2
+Q103,Tình yêu,Tình yêu,M3,"Phố, ngõ",,2
+Q097,Tình yêu,Tình yêu,M7,Hiên trà,chén trà,1
+Q030,Chiêm nghiệm,Chiêm nghiệm,M7,Thiên nhiên mở,dòng sông; cây,1
+Q074,Chiêm nghiệm,Chiêm nghiệm,M7,Phòng trong nhà,đàn,1
+Q110,Tình yêu,Tình yêu,M8,Thiên nhiên mở,hoa,2
+Q138,Tình yêu,Tình yêu,M3,Không gian ký hiệu,nốt nhạc; đàn,1
+Q143,Cuộc sống,Cuộc sống,M6,Không gian ký hiệu,quả địa cầu,1
+Q107,Tình yêu,Tình yêu,M2,Không gian ký hiệu,hành tinh,2
+Q040,Tình yêu,Tình yêu,M1,Văn phòng,cục pin,2
+Q106,Tình yêu,Tình yêu,M3,Phòng trong nhà,khung tranh,2
+Q140,Tình yêu,Tình yêu,M2,"Phố, ngõ",hoa,2
+Q036,Tình yêu,Tình yêu,M5,"Phố, ngõ",ngõ; xe đạp,1
+Q144,Chiêm nghiệm,Chiêm nghiệm,M8,"Phố, ngõ",tủ kính,1
+Q090,Tình yêu,Tình yêu,M4,"Phố, ngõ",đồng hồ,2
+Q117,Tình yêu,Tình yêu,M4,"Phố, ngõ",ngõ; mưa,1
+Q082,Sống thật,Bản thân & trưởng thành,M6,Không gian ký hiệu,ghế khán giả,1
+Q059,Tình bạn,"Ký ức, gia đình, tình bạn",M5,"Phố, ngõ",xe đạp,2
+Q102,Tình yêu,Tình yêu,M1,Không gian ký hiệu,,1
+Q062,Tình cảm,Tình yêu,M4,"Phố, ngõ",đồng hồ,2
+Q038,Tình yêu,Tình yêu,M7,Phòng trong nhà,điện thoại; đèn,1
+Q054,Cuộc sống,Cuộc sống,M7,Phòng trong nhà,,1
+Q026,Bản thân,Bản thân & trưởng thành,M7,Phòng trong nhà,gương,1
+Q154,Tình yêu,Tình yêu,M7,Không gian ký hiệu,bong bóng nghĩ,1
+Q007,Chiêm nghiệm,Chiêm nghiệm,M7,Thiên nhiên mở,hòn đá,1
+Q052,Tình yêu,Tình yêu,M3,Phòng trong nhà,cửa,1
+Q088,Trưởng thành,Bản thân & trưởng thành,M7,Thiên nhiên mở,đèn lồng; cỏ,1
+Q055,Tình yêu,Tình yêu,M2,"Phố, ngõ",mưa,2
+Q013,Chiêm nghiệm,Chiêm nghiệm,M4,Phòng trong nhà,cửa,1
+Q118,Cuộc sống,Cuộc sống,M5,Thiên nhiên mở,gánh,1
+Q134,Tình yêu,Tình yêu,M1,Không gian ký hiệu,trang giấy,2
+Q139,Tình yêu,Tình yêu,M2,Không gian ký hiệu,đường kẻ,2
+Q100,Cuộc sống,Cuộc sống,M7,Thiên nhiên mở,,1
+W070,Tình yêu,Tình yêu,M4,Phòng trong nhà,cửa sổ; chén trà,1
+W065,Tình yêu,Tình yêu,M2,Quán,ly cà phê,2
+W004,Tình yêu,Tình yêu,M1,"Phố, ngõ",điện thoại,2
+W014,Tình yêu,Tình yêu,M5,"Phố, ngõ",xe máy; đèn đường,2
+W029,Chiêm nghiệm,Chiêm nghiệm,M1,Hiên trà,bếp than; quạt,1
+W003,Tình yêu,Tình yêu,M7,Phòng trong nhà,gương; đèn,1
+W049,Công sở,Công sở,M1,Phòng trong nhà,đồng hồ báo thức; giường,1
+W058,Tình yêu,Tình yêu,M1,Hiên trà,ong; chén trà; cửa,1
+W015,Tình yêu,Tình yêu,M7,Phòng trong nhà,giường; bong bóng nghĩ,1
+W069,Tình yêu,Tình yêu,M4,Hiên trà,ghế dài,2
+W047,Công sở,Công sở,M8,Văn phòng,hộp cơm; điện thoại,1
+W028,Tình yêu,Tình yêu,M1,Phòng trong nhà,chiếc đầm; gương,2
+W054,Công sở,Công sở,M1,Văn phòng,máy tính,1
+W027,Công sở,Công sở,M1,Phòng trong nhà,bàn ủi; áo sơ mi; ấm trà,1
+W048,Công sở,Công sở,M1,Văn phòng,bàn làm việc; chồng hồ sơ,O
+W024,Công sở,Công sở,M1,Văn phòng,đồng hồ; điện thoại,1
+W066,Tình yêu,Tình yêu,M2,Quán,bàn; chén trà; cửa sổ,2
+W064,Tình yêu,Tình yêu,M3,Hiên trà,ấm trà; ghế trống,1
+W023,Công sở,Công sở,M1,Văn phòng,cục pin; ví,O
+W038,Công sở,Công sở,M1,Văn phòng,lịch bàn; ví,1
+W044,Công sở,Công sở,M4,Văn phòng,máy tính; đồng hồ,1
+W025,Công sở,Công sở,M1,Văn phòng,quả cam,1
+W012,Công sở,Công sở,M1,Văn phòng,điện thoại; cửa,1
+W057,Chiêm nghiệm,Chiêm nghiệm,M8,Phòng trong nhà,điện thoại; ấm trà,1
+W002,Tình yêu,Tình yêu,M3,Hiên trà,chén trà; ghế trống,1
+W019,Tình yêu,Tình yêu,M4,Thiên nhiên mở,lá rơi,2
+W050,Công sở,Công sở,M1,Văn phòng,đồng hồ; bàn làm việc,1
+W067,Tình yêu,Tình yêu,M1,Phòng trong nhà,lưới,2
+W071,Tình yêu,Tình yêu,M1,Thiên nhiên mở,ong; hoa,2
+W011,Công sở,Công sở,M1,Văn phòng,điện thoại,1
+W005,Tình yêu,Tình yêu,M2,"Phố, ngõ",,2
+W052,Công sở,Công sở,M1,Văn phòng,máy tính,1
+W016,Tình yêu,Tình yêu,M4,Quán,nốt nhạc,2
+W009,Công sở,Công sở,M1,Văn phòng,ghế văn phòng,1
+W033,Công sở,Công sở,M1,Văn phòng,ghế văn phòng,1
+W008,Tình yêu,Tình yêu,M3,Không gian ký hiệu,đàn,2
+W061,Tình yêu,Tình yêu,M1,Hiên trà,mây,2
+W034,Tình yêu,Tình yêu,M5,"Phố, ngõ",xe máy; mặt trời,2
+W053,Công sở,Công sở,M4,Văn phòng,đèn; cửa sổ,1
+W020,Công sở,Công sở,M8,Văn phòng,ví,1
+W037,Công sở,Công sở,M8,Văn phòng,bàn họp,O
+W060,Tình yêu,Tình yêu,M3,Hiên trà,chén trà; ghế trống,1
+W042,Tình yêu,Tình yêu,M4,Hiên trà,ấm trà; ghế dài,2
+W063,Tình yêu,Tình yêu,M6,Quán,kính,2
+W007,Chiêm nghiệm,Chiêm nghiệm,M8,Không gian ký hiệu,,2
+W046,Công sở,Công sở,M1,Văn phòng,chồng hồ sơ,1
+W013,Tình yêu,Tình yêu,M1,"Phố, ngõ",,2
+W045,Công sở,Công sở,M1,Văn phòng,ví; lịch bàn,1
+W043,Công sở,Công sở,M1,"Phố, ngõ",bóng bay; ví,1
+W051,Công sở,Công sở,M1,Văn phòng,lịch bàn,1
+W072,Tình yêu,Tình yêu,M2,Quán,cuốn sách,2
+W022,Chiêm nghiệm,Chiêm nghiệm,M7,Phòng trong nhà,giường; bong bóng nghĩ,1
+W031,Chiêm nghiệm,Chiêm nghiệm,M1,Quán,sầu riêng,1
+W041,Tình yêu,Tình yêu,M6,Thiên nhiên mở,núi,2
+W035,Tình yêu,Tình yêu,M3,Hiên trà,quạt,1
+W039,Công sở,Công sở,M7,Văn phòng,chồng hồ sơ; chén trà,1
+W056,Cuộc sống,Cuộc sống,M8,"Nhà quê, mâm cơm",nhà nhỏ; ví,1
+W026,Công sở,Công sở,M8,Văn phòng,lịch bàn,1
+W040,Chiêm nghiệm,Chiêm nghiệm,M8,"Phố, ngõ",ly cà phê; ô; mưa,1
+W021,Chiêm nghiệm,Chiêm nghiệm,M8,Văn phòng,hóa đơn,1
+W010,Công sở,Công sở,M1,Văn phòng,máy tính; lịch bàn,1
+W030,Tình yêu,Tình yêu,M1,"Phố, ngõ",,2
+W017,Tình yêu,Tình yêu,M3,Thiên nhiên mở,cần câu; dòng sông,1
+W068,Tình yêu,Tình yêu,M1,Hiên trà,cuốn sách,1
+W055,Cuộc sống,Cuộc sống,M8,Văn phòng,ví,1
+W059,Tình yêu,Tình yêu,M4,Hiên trà,mái hiên; chén trà,2
+W062,Tình yêu,Tình yêu,M7,Văn phòng,điện thoại,1
+W001,Tình yêu,Tình yêu,M1,Hiên trà,chén trà,2
+W006,Tình yêu,Tình yêu,M8,"Phố, ngõ",,2
+W032,Cuộc sống,Cuộc sống,M1,Thiên nhiên mở,,2
+W036,Cuộc sống,Cuộc sống,M1,Hiên trà,ấm trà; bảng tính,1
+W018,Tình yêu,Tình yêu,M4,Thiên nhiên mở,mưa,2
