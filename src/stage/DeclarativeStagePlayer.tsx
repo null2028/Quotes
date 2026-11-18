@@ -164,9 +164,9 @@ export const DeclarativeStagePlayer: React.FC<{
   const isAfterPivot = !isPrePivot && loopBlend < 0.75;
   const phase = state.continuousPhase;
   const isSolidStyle =
-    !script.tags?.includes('semantic_v1') &&
-    (Boolean(script.tags?.includes('solid_style')) ||
-      Boolean(visualDNA?.forceSolidStyle));
+    Boolean(script.tags?.includes('solid_style')) ||
+    Boolean(script.tags?.includes('semantic_v1')) ||
+    Boolean(visualDNA?.forceSolidStyle);
   const horizonOffsetPx =
     visualDNA && !visualDNA.isLegacyLocked ? visualDNA.horizonOffsetPx : 0;
 
@@ -564,7 +564,8 @@ export const DeclarativeStagePlayer: React.FC<{
             : isFar
               ? 0.72
               : 1.0;
-    const effStroke = strokeWidth * focusStrokeMult;
+    // Nhân focusStrokeMult trên zoomStroke (đã bù zoom) → nét cố định trên màn hình (non-scaling-stroke)
+    const effStroke = zoomStroke * focusStrokeMult;
     const dissolveMult = Math.max(0, 1 - actor.dissolveToCloud * 1.25);
     const rawActorOpacity = actor.opacity * dissolveMult;
     const effOpacity =
@@ -654,7 +655,7 @@ export const DeclarativeStagePlayer: React.FC<{
                 },
               }}
               palette={palette}
-              strokeWidth={strokeWidth}
+              strokeWidth={zoomStroke}
               frame={frame}
               durationInFramesOverride={durationInFrames}
               isAfterPivot={isAfterPivot}
@@ -697,14 +698,14 @@ export const DeclarativeStagePlayer: React.FC<{
               d="M -18 2 C -13 -5 -5 -5 0 -1 C 5 -6 14 -5 19 1"
               fill="none"
               stroke={palette.inkSecondary}
-              strokeWidth={strokeWidth * 0.65}
+              strokeWidth={zoomStroke * 0.65}
               strokeLinecap="round"
             />
             <path
               d="M -11 6 C -5 2 4 2 12 5"
               fill="none"
               stroke={palette.inkSecondary}
-              strokeWidth={strokeWidth * 0.55}
+              strokeWidth={zoomStroke * 0.55}
               strokeLinecap="round"
               opacity={0.75}
             />
@@ -722,7 +723,7 @@ export const DeclarativeStagePlayer: React.FC<{
           key={`prop-${key}`}
           propState={prop}
           palette={palette}
-          strokeWidth={strokeWidth}
+          strokeWidth={zoomStroke}
           frame={frame}
           durationInFramesOverride={durationInFrames}
           isAfterPivot={isAfterPivot}
@@ -893,6 +894,8 @@ export const DeclarativeStagePlayer: React.FC<{
       : 1;
 
   const cameraTransform = `translate(270, 315) scale(${cam.zoom.toFixed(5)}) translate(${(-270 - cam.panX).toFixed(3)}, ${(-315 - cam.panY).toFixed(3)})`;
+  // strokeWidth đã bù zoom cho mọi phần tử nằm trong cameraTransform group
+  const zoomStroke = strokeWidth / cam.zoom;
 
   return (
     <svg
@@ -973,7 +976,7 @@ export const DeclarativeStagePlayer: React.FC<{
             stroke={palette.inkPrimary}
             secondaryStroke={palette.inkSecondary}
             accentStroke={isAfterPivot ? propAccentColor : palette.inkPrimary}
-            strokeWidth={strokeWidth}
+            strokeWidth={zoomStroke}
             solidHorizon={isSolidStyle}
           />
 

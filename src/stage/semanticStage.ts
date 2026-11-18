@@ -305,7 +305,7 @@ export function compileSemanticStageScript(
           : catDef?.anchorKind ?? 'dat');
     const lop: SemanticLayer = p.lop ?? catDef?.defaultLayer ?? 'giua';
 
-    let rawX = p.vi_tri ? SEMANTIC_SLOTS[p.vi_tri] : 270;
+    let rawX: number = p.vi_tri ? SEMANTIC_SLOTS[p.vi_tri] : 270;
     let rawY = 0;
     let follow: string | undefined;
 

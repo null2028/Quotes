@@ -1,4 +1,30 @@
 import React from 'react';
+import {
+  INK_EFF_STROKE_FACTOR,
+  INK_SCALE_POWER,
+  INK_BASE_STROKE_WIDTH,
+  INK_LIMB_MULT_SOLID,
+  INK_LIMB_MULT_OUTLINE,
+  INK_LIMB_OPACITY_SOLID,
+  INK_LIMB_OPACITY_OUTLINE,
+  INK_BACK_LEG_OPACITY_SOLID,
+  INK_BACK_LEG_OPACITY_OUTLINE,
+  INK_CLOAK_STROKE_MULT_SOLID,
+  INK_STROKE_OPACITY,
+  INK_CLOAK_FILL_OPACITY_OUTLINE,
+  INK_HEAD_FILL_OPACITY_OUTLINE,
+  INK_FOLD_STROKE_MULT_SOLID,
+  INK_FOLD_OPACITY_SOLID,
+  INK_FOLD_STROKE_MULT_OUTLINE,
+  INK_FOLD_OPACITY_OUTLINE,
+  INK_UPPER_ARM_LEN,
+  INK_FOREARM_LEN,
+  INK_HEAD_RADIUS_SOLID,
+  INK_HEAD_RADIUS_OUTLINE,
+  INK_MAX_LEAN_DEG_STAND,
+  INK_MAX_LEAN_DEG_SLUMP,
+  INK_SIT_SLUMP_DIVISOR,
+} from '../stage/stageConstants';
 
 export type TravelerPose =
   | 'walk'
@@ -30,6 +56,8 @@ export interface CloakedTravelerProps {
   gazeX?: number;
   gazeY?: number;
   hasLookTarget?: boolean;
+  /** Hiện mắt, lá trà, nét tóc — mặc định TẮT (Lữ khách bóng mực đen đặc gốc) */
+  showFace?: boolean;
   walkPhase?: number;
   walkActivity?: number;
   breathPhase?: number;
@@ -45,6 +73,10 @@ export interface CloakedTravelerProps {
 
 /**
  * Bộ giải động học ngược 2 xương (Analytic Two-Bone IK Solver — Định lý Cosin)
+ * Tham chiếu chuẩn Rive IK Constraint & Unity Two-Bone IK:
+ * - Giữ nguyên độ dài xương L1, L2 không bị co giãn khi chuyển tư thế.
+ * - bendDir = -1: khớp giữa (đầu gối) gập về phía trước (+X).
+ * - bendDir = +1: khớp giữa (khuỷu tay) gập xuống dưới (+Y) tự nhiên.
  */
 function solveTwoBoneIK(
   rx: number,
@@ -91,6 +123,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   gazeX = 0.35,
   gazeY = 0.05,
   hasLookTarget = false,
+  showFace = false,
   walkPhase = 0,
   walkActivity = 1,
   breathPhase = 0,
@@ -99,7 +132,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   bgColor = '#F1EAE0',
   showTeaCup = false,
   solidFill = false,
-  strokeWidth = 2.6,
+  strokeWidth = INK_BASE_STROKE_WIDTH,
   opacity = 1,
   drawProgress = 1,
 }) => {
@@ -143,17 +176,18 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   const steamWave = Math.sin(breathPhase * 1.0);
   const steamLift = ((breathPhase / (Math.PI * 2)) % 1 + 1) % 1;
 
-  const strokeScaleFactor = strokeWidth / 2.6;
+  const strokeScaleFactor = strokeWidth / INK_BASE_STROKE_WIDTH;
   const effStroke =
-    (1.35 * strokeScaleFactor) / Math.pow(Math.max(0.5, scale), 0.78);
-  const limbMult = solidFill ? 0.84 : 0.92;
-  const limbOpacity = solidFill ? 0.92 : 0.86;
+    (INK_EFF_STROKE_FACTOR * strokeScaleFactor) / Math.pow(Math.max(0.5, scale), INK_SCALE_POWER);
+  const limbMult = solidFill ? INK_LIMB_MULT_SOLID : INK_LIMB_MULT_OUTLINE;
+  const limbOpacity = solidFill ? INK_LIMB_OPACITY_SOLID : INK_LIMB_OPACITY_OUTLINE;
 
   const isWalking = (pose === 'walk' || pose === 'push') && effectiveSit < 0.3;
   const act = isWalking ? walkActivity * (1 - effectiveSit) : 0;
   const stepSin = Math.sin(walkPhase);
   const stepBob = act * Math.abs(stepSin) * 0.48;
   const legSwing = act * stepSin * 4.4;
+  // Khi ngồi ghế (effectiveSit = 1), hông chỉ hạ nhẹ 1.2px để đặt phẳng trên mặt ghế (y ≈ -10.5)
   const sitDrop = effectiveSit * 1.2;
 
   const wLookUp = poseWeights
@@ -174,18 +208,25 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
       : 0;
   const wPush = poseWeights ? poseWeights.push : pose === 'push' ? 1 : 0;
   const wSitSlump =
-    effectiveSit * Math.max(0, Math.min(1, (leanDeg - 3) / 16));
+    effectiveSit * Math.max(0, Math.min(1, (leanDeg - 3) / INK_SIT_SLUMP_DIVISOR));
+  // deepSlump: khả năng mới — gục đầu xuống bàn khi leanDeg > 13 và đang ngồi
   const deepSlump =
     effectiveSit * Math.max(0, Math.min(1, (leanDeg - 13) / 9));
 
-  // === 1. CỘT SỐNG BÉZIER 2 TẦNG (nhìn ngang: khi deepSlump=1 ở dòng 3, Lữ khách gục đầu xuống mặt bàn phía trước +X, không cúi về phía người xem) ===
-  const clampedLean = Math.max(-12, Math.min(26, leanDeg));
+  // === 1. CỘT SỐNG BÉZIER 2 TẦNG (2-Segment Bézier Spine — Chuẩn RubberHose / Duik) ===
+  // Khung chậu (Pelvis) khóa gần như thẳng đứng trên mặt ghế khi ngồi (effectiveSit = 1),
+  // chỉ xoay nhẹ khi đứng/bước. Phần leanDeg còn lại chuyển thành độ uốn cong chữ C của lưng trên & cổ.
+  // clampedLean: mở rộng tới INK_MAX_LEAN_DEG_SLUMP (26) khi deepSlump > 0, giữ nguyên 24 khi đứng
+  const maxLean = deepSlump > 0 ? INK_MAX_LEAN_DEG_SLUMP : INK_MAX_LEAN_DEG_STAND;
+  const clampedLean = Math.max(-12, Math.min(maxLean, leanDeg));
   const pelvisTiltDeg =
     clampedLean * (1 - effectiveSit * 0.88) * 0.28 +
     (1 - act) * breathSin * 0.1;
   const spineBendDeg = clampedLean - pelvisTiltDeg;
   const spineBendRad = (spineBendDeg * Math.PI) / 180;
 
+  // Độ dịch chuyển ngang (X) và độ rũ vai (Y) dọc theo cột sống từ Hông (-10.6) -> Ngực (-23) -> Vai (-34.6) -> Đầu (-42.3)
+  // deepSlump chỉ bổ sung dịch chuyển khi thực sự gục (đứng mặc định không có deepSlump → giống hệt bản cũ)
   const midSpineShiftX = Math.sin(spineBendRad) * 3.6 + 3.2 * deepSlump;
   const shoulderShiftX = Math.sin(spineBendRad) * 7.8 + 4.8 * deepSlump;
   const shoulderDropY =
@@ -193,22 +234,28 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
     effectiveSit * 0.6 +
     8.6 * deepSlump;
 
-  // Khi gục xuống bàn (deepSlump = 1), đầu hạ thấp xuống sát mặt bàn (headOffsetY ≈ -25.4, đáy đầu y ≈ -19.2 trùng khít mặt bàn!) và vươn về phía bàn (+X ≈ +10.6)
+  // Khi gục xuống bàn (deepSlump = 1), đầu hạ thấp xuống sát mặt bàn và vươn về phía bàn (+X)
+  // Khi hasLookTarget && !showFace: đầu dịch nhẹ (+X) và nhấc nhẹ (-Y) về phía vật thay cho ánh mắt
+  const gazeHeadShiftX = hasLookTarget && !showFace ? 1.6 * deepSlump : 0;
+  const gazeHeadLiftY = hasLookTarget && !showFace ? -1.4 * deepSlump : 0;
   const headOffsetX =
     shoulderShiftX +
     Math.sin(spineBendRad) * 2.8 +
     2.2 * deepSlump +
     2.4 * wPush -
     1.2 * wLookUp +
-    (1 - act) * breezeCos * 0.14;
+    (1 - act) * breezeCos * 0.14 +
+    gazeHeadShiftX;
   const headOffsetY =
     -42.3 +
     shoulderDropY +
     (1 - Math.cos(spineBendRad)) * 3.4 +
     6.4 * deepSlump -
     0.7 * wLookUp -
-    breathLiftY * 0.18;
+    breathLiftY * 0.18 +
+    gazeHeadLiftY;
 
+  // Tà áo dưới (Hip Base) luôn nằm ngang vững chãi trên ghế/mặt đất; lưng áo trên uốn mượt theo cột sống
   const backHemX =
     (solidFill ? -9.6 : -9.0) + 0.6 * effectiveSit + hemFlutter * 0.75;
   const frontHemX =
@@ -223,13 +270,15 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   const frontCtrl1X = 8.2 + midSpineShiftX * 0.55;
   const frontCtrl2X = 7.0 + shoulderShiftX * 0.72;
 
-  const cloakD = `M ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} C ${backCtrl1X.toFixed(2)} ${(-26.2 + shoulderDropY * 0.65).toFixed(2)} ${backCtrl2X.toFixed(2)} -15.8 ${backHemX.toFixed(2)} -10.4 Q -1.2 -9.0 ${frontHemX.toFixed(2)} -10.8 C ${frontCtrl1X.toFixed(2)} -16.8 ${frontCtrl2X.toFixed(2)} ${(-26.4 + shoulderDropY * 0.65).toFixed(2)} ${topFrontX.toFixed(2)} ${topShoulderY.toFixed(2)} Q ${shoulderShiftX.toFixed(2)} ${(topShoulderY - 1.0).toFixed(2)} ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} Z`;
+  const cloakD = `M ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} C ${backCtrl1X.toFixed(2)} ${(-26.2 + shoulderDropY * 0.65).toFixed(2)} ${backCtrl2X.toFixed(2)} -15.8 ${backHemX.toFixed(2)} -10.4 Q -1.2 -9.0 ${frontHemX.toFixed(2)} -10.8 C ${frontCtrl1X.toFixed(2)} -16.8 ${frontCtrl2X.toFixed(2)} ${(-26.4 + shoulderDropY * 0.65).toFixed(2)} ${topFrontX.toFixed(2)} ${topShoulderY.toFixed(2)} Q ${(shoulderShiftX).toFixed(2)} ${(topShoulderY - 1.0).toFixed(2)} ${topBackX.toFixed(2)} ${topShoulderY.toFixed(2)} Z`;
 
-  // === 2. CHÂN 2-BONE ANALYTIC IK ===
+  // === 2. CHÂN 2-BONE ANALYTIC IK (Hip -> Knee -> Foot) ===
+  // Chiều dài đùi (thighLen) & cẳng chân (calfLen) giải bằng định lý Cosin, đầu gối luôn gập về phía trước (bendDir = -1)
   const thighLen = 5.7 + 2.4 * effectiveSit;
   const calfLen = 5.7 + 3.8 * effectiveSit;
   const hipY = -11.0 - stepBob + sitDrop;
 
+  // Khi đi bộ, bàn chân đang bước về trước nhấc nhẹ lên khỏi mặt đất để đầu gối gập tự nhiên
   const backStepLift = act * Math.max(0, -stepSin) * 1.25;
   const frontStepLift = act * Math.max(0, stepSin) * 1.25;
 
@@ -259,16 +308,15 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
     -1
   );
 
-  // === 3. TAY 2-BONE ANALYTIC IK (khi ngồi vào bàn, tay đặt lên mặt bàn/bàn phím; khi gục, cẳng tay trải trên mặt bàn đỡ đầu) ===
+  // === 3. TAY 2-BONE ANALYTIC IK (Shoulder -> Elbow -> Hand) ===
   const shoulderX = 3.0 + shoulderShiftX * 0.88;
   const shoulderY = -27.8 + shoulderDropY * 0.85;
-  const upperArmLen = 7.6;
-  const forearmLen = 8.4;
+  const upperArmLen = INK_UPPER_ARM_LEN;
+  const forearmLen = INK_FOREARM_LEN;
 
   // === 4. NHÌN NGANG (SIDE PROFILE): MẮT Ở MÉP TRƯỚC MẶT (+X) & LÁ TRÀ TRÊN ĐỈNH ĐẦU ===
   const clampedGazeX = Math.max(-0.8, Math.min(1.4, gazeX));
   const clampedGazeY = Math.max(-1.0, Math.min(1.2, gazeY));
-  // Ở góc nhìn ngang (facing right -> +X là phía trước mặt), mắt nằm sát mép phải của khuôn mặt (headOffsetX + 3.8..4.8), tuyệt đối không nằm giữa đầu!
   const eyeCenterX = headOffsetX + 3.65 + clampedGazeX * 0.85;
   const eyeCenterY =
     headOffsetY +
@@ -277,7 +325,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
     clampedGazeY * 0.75;
   const isTiredDroopEye = deepSlump > 0.55 && !hasLookTarget;
 
-  // Lá trà trên đỉnh đầu: ngồi thẳng dựng đứng (~4°); gục xuống bàn thì rủ về trước (~68°); khi đang gục mà liếc nhìn hoá đơn thì nhổm lên (~24°)
+  // Lá trà trên đỉnh đầu: đứng thẳng dựng đứng (~4°); gục xuống bàn thì rủ về trước (~68°); liếc nhìn thì nhổm (~24°)
   const leafBaseDeg =
     clampedLean <= 2.5
       ? 4
@@ -289,6 +337,9 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   const leafDeg = leafBaseDeg + breezeCos * 1.6;
   const leafRootX = headOffsetX + 0.2;
   const leafRootY = headOffsetY - (solidFill ? 6.45 : 6.2);
+
+  const headR = solidFill ? INK_HEAD_RADIUS_SOLID : INK_HEAD_RADIUS_OUTLINE;
+  const headCenterY = headOffsetY - (solidFill ? 0.5 : 0);
 
   const limbDrawProps = isDrawing
     ? {
@@ -327,7 +378,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
             strokeWidth={effStroke * (limbMult * 0.92)}
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity={(solidFill ? 0.8 : 0.76) * limbInkGate}
+            opacity={(solidFill ? INK_BACK_LEG_OPACITY_SOLID : INK_BACK_LEG_OPACITY_OUTLINE) * limbInkGate}
             {...limbDrawProps}
           />
           <path
@@ -361,8 +412,8 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               fill={color}
               fillOpacity={washMult}
               stroke={isDrawing ? color : 'none'}
-              strokeWidth={isDrawing ? effStroke * 0.92 : 0}
-              strokeOpacity={isDrawing ? 0.88 * cloakInkGate : 0}
+              strokeWidth={isDrawing ? effStroke * INK_CLOAK_STROKE_MULT_SOLID : 0}
+              strokeOpacity={isDrawing ? INK_STROKE_OPACITY * cloakInkGate : 0}
               strokeLinecap="round"
               strokeLinejoin="round"
               {...cloakDrawProps}
@@ -372,16 +423,16 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 d={`M ${(-1.2 + shoulderShiftX * 0.75).toFixed(2)} ${(-30.5 + shoulderDropY * 0.8).toFixed(2)} C ${(-2.8 + midSpineShiftX * 0.45).toFixed(2)} -22.8 ${(-3.5 + hemFlutter * 0.35).toFixed(2)} -16.2 ${(-2.6 + hemFlutter * 0.45).toFixed(2)} -10.8`}
                 fill="none"
                 stroke={bgColor}
-                strokeWidth={effStroke * 0.44}
+                strokeWidth={effStroke * INK_FOLD_STROKE_MULT_SOLID}
                 strokeLinecap="round"
-                opacity={0.45 * washMult}
+                opacity={INK_FOLD_OPACITY_SOLID * washMult}
               />
             )}
             {washMult > 0.005 && (
               <circle
                 cx={headOffsetX}
-                cy={headOffsetY - 0.5}
-                r={5.95}
+                cy={headCenterY}
+                r={headR}
                 fill={bgColor}
                 stroke="none"
                 opacity={washMult}
@@ -389,13 +440,13 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
             )}
             <circle
               cx={headOffsetX}
-              cy={headOffsetY - 0.5}
-              r={5.95}
+              cy={headCenterY}
+              r={headR}
               fill={color}
               fillOpacity={washMult}
               stroke={isDrawing ? color : 'none'}
-              strokeWidth={isDrawing ? effStroke * 0.92 : 0}
-              strokeOpacity={isDrawing ? 0.88 * headInkGate : 0}
+              strokeWidth={isDrawing ? effStroke * INK_CLOAK_STROKE_MULT_SOLID : 0}
+              strokeOpacity={isDrawing ? INK_STROKE_OPACITY * headInkGate : 0}
               {...headDrawProps}
             />
           </>
@@ -412,10 +463,10 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
             <path
               d={cloakD}
               fill={color}
-              fillOpacity={0.12 * washMult}
+              fillOpacity={INK_CLOAK_FILL_OPACITY_OUTLINE * washMult}
               stroke={color}
               strokeWidth={effStroke}
-              strokeOpacity={0.88 * cloakInkGate}
+              strokeOpacity={INK_STROKE_OPACITY * cloakInkGate}
               strokeLinecap="round"
               strokeLinejoin="round"
               {...cloakDrawProps}
@@ -425,13 +476,13 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 d={`M ${(-1.4 + shoulderShiftX * 0.75).toFixed(2)} ${(-31.2 + shoulderDropY * 0.8).toFixed(2)} C ${(-3.0 + midSpineShiftX * 0.45).toFixed(2)} -23.0 ${(-3.8 + hemFlutter * 0.35).toFixed(2)} -16.0 ${(-2.8 + hemFlutter * 0.45).toFixed(2)} -10.8`}
                 fill="none"
                 stroke={color}
-                strokeWidth={effStroke * 0.58}
+                strokeWidth={effStroke * INK_FOLD_STROKE_MULT_OUTLINE}
                 strokeLinecap="round"
-                opacity={0.42 * washMult}
+                opacity={INK_FOLD_OPACITY_OUTLINE * washMult}
               />
             )}
 
-            {/* Cánh tay làm việc / gối lên mặt bàn khi ngồi vào bàn (khuỷu tay và cẳng tay nằm trên mặt bàn y ≈ -19.6, không thò xuống gầm bàn) */}
+            {/* Cánh tay làm việc / gối lên mặt bàn khi ngồi vào bàn (khả năng mới: khuỷu tay và cẳng tay nằm trên mặt bàn, không thò xuống gầm bàn) */}
             {limbStrokeP > 0.002 && effectiveSit > 0.4 && (
               <path
                 d={(() => {
@@ -454,26 +505,26 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
             {washMult > 0.005 && (
               <circle
                 cx={headOffsetX}
-                cy={headOffsetY}
-                r={6.2}
+                cy={headCenterY}
+                r={headR}
                 fill={bgColor}
                 opacity={washMult}
               />
             )}
             <circle
               cx={headOffsetX}
-              cy={headOffsetY}
-              r={6.2}
+              cy={headCenterY}
+              r={headR}
               fill={color}
-              fillOpacity={0.13 * washMult}
+              fillOpacity={INK_HEAD_FILL_OPACITY_OUTLINE * washMult}
               stroke={color}
               strokeWidth={effStroke}
-              strokeOpacity={0.88 * headInkGate}
+              strokeOpacity={INK_STROKE_OPACITY * headInkGate}
               {...headDrawProps}
             />
 
-            {/* Nét tóc gợi hướng đầu nhìn ngang về phía trước (+X) */}
-            {headStrokeP > 0.3 && (
+            {/* Nét tóc gợi hướng đầu nhìn ngang về phía trước (+X) — chỉ khi showFace */}
+            {showFace && headStrokeP > 0.3 && (
               <path
                 d={`M ${(headOffsetX - 3.6).toFixed(2)} ${(headOffsetY - 4.2).toFixed(2)} Q ${(headOffsetX + 0.6).toFixed(2)} ${(headOffsetY - 5.6).toFixed(2)} ${(headOffsetX + 4.2).toFixed(2)} ${(headOffsetY - 3.4).toFixed(2)}`}
                 fill="none"
@@ -484,8 +535,8 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               />
             )}
 
-            {/* Lá trà trên đỉnh đầu Lữ khách (dựng đứng khi tỉnh táo, rủ về phía bàn khi gục mỏi) */}
-            {headStrokeP > 0.25 && (
+            {/* Lá trà trên đỉnh đầu Lữ khách (dựng đứng khi tỉnh táo, rủ về phía bàn khi gục mỏi) — chỉ khi showFace */}
+            {showFace && headStrokeP > 0.25 && (
               <g
                 transform={`rotate(${leafDeg.toFixed(1)} ${leafRootX.toFixed(2)} ${leafRootY.toFixed(2)})`}
                 opacity={headInkGate}
@@ -508,8 +559,8 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               </g>
             )}
 
-            {/* Ánh nhìn ngang (Side-Profile Eye nằm sát mép trước mặt +X, hướng theo nhin_theo) */}
-            {headStrokeP > 0.35 && (
+            {/* Ánh nhìn ngang (Side-Profile Eye) — chỉ khi showFace */}
+            {showFace && headStrokeP > 0.35 && (
               <g opacity={headInkGate}>
                 {isTiredDroopEye ? (
                   <path
@@ -586,6 +637,14 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 target: [
                   17.8 + shoulderShiftX * 0.5,
                   -31.5 + shoulderDropY * 0.5,
+                ],
+              },
+              {
+                key: 'sit_slump',
+                weight: wSitSlump,
+                target: [
+                  frontLegIK.jx - 0.4,
+                  frontLegIK.jy - 1.8 - breathSin * 0.08,
                 ],
               },
             ] as const

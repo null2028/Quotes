@@ -79,3 +79,67 @@ export function computeExpectedCatalogSpanFromCm(kichThuocThatCm: number): numbe
  */
 export const AUTO_FRAME_TARGET_WIDTH_RATIO = 0.58;
 export const AUTO_FRAME_MIN_TOP_MARGIN_RATIO = 0.12;
+
+// =====================================================================
+// === HẰNG SỐ NÉT MỰC LỮ KHÁCH & ĐẠO CỤ (trích từ engine cũ 7c1fe76) ===
+// =====================================================================
+
+/** Độ dày nét cơ sở mặc định (strokeWidth truyền từ DSP, trước khi chia cho scale) */
+export const INK_BASE_STROKE_WIDTH = 2.6;
+
+/** Hệ số quy đổi effStroke = (INK_EFF_STROKE_FACTOR * strokeScaleFactor) / scale^0.78 */
+export const INK_EFF_STROKE_FACTOR = 1.35;
+
+/** Luỹ thừa scale khi tính effStroke: effStroke ∝ 1 / scale^INK_SCALE_POWER */
+export const INK_SCALE_POWER = 0.78;
+
+/** Hệ số nhân nét tay chân khi solidFill (tô đặc) */
+export const INK_LIMB_MULT_SOLID = 0.84;
+
+/** Hệ số nhân nét tay chân khi không solidFill (nét viền) */
+export const INK_LIMB_MULT_OUTLINE = 0.92;
+
+/** Độ trong suốt nét tay chân khi solidFill */
+export const INK_LIMB_OPACITY_SOLID = 0.92;
+
+/** Độ trong suốt nét tay chân khi không solidFill */
+export const INK_LIMB_OPACITY_OUTLINE = 0.86;
+
+/** Độ trong suốt chân sau (backLeg opacity khi solidFill / outline) */
+export const INK_BACK_LEG_OPACITY_SOLID = 0.8;
+export const INK_BACK_LEG_OPACITY_OUTLINE = 0.76;
+
+/** Nét viền áo choàng khi tô đặc (solidFill) — dùng lúc drawing */
+export const INK_CLOAK_STROKE_MULT_SOLID = 0.92;
+
+/** Nét viền áo / đầu: strokeOpacity cố định */
+export const INK_STROKE_OPACITY = 0.88;
+
+/** fillOpacity áo choàng khi không solidFill (outline wash) */
+export const INK_CLOAK_FILL_OPACITY_OUTLINE = 0.12;
+
+/** fillOpacity đầu khi không solidFill */
+export const INK_HEAD_FILL_OPACITY_OUTLINE = 0.13;
+
+/** Nét sọc lưng áo choàng (fold line) — khi solidFill */
+export const INK_FOLD_STROKE_MULT_SOLID = 0.44;
+export const INK_FOLD_OPACITY_SOLID = 0.45;
+
+/** Nét sọc lưng áo choàng — khi outline */
+export const INK_FOLD_STROKE_MULT_OUTLINE = 0.58;
+export const INK_FOLD_OPACITY_OUTLINE = 0.42;
+
+/** Độ dài xương cánh tay trên & cẳng tay (bản cũ 7c1fe76) */
+export const INK_UPPER_ARM_LEN = 7.4;
+export const INK_FOREARM_LEN = 7.8;
+
+/** Bán kính đầu solidFill / outline (bản cũ 7c1fe76) */
+export const INK_HEAD_RADIUS_SOLID = 5.95;
+export const INK_HEAD_RADIUS_OUTLINE = 6.2;
+
+/** clampedLean tối đa (bản cũ 7c1fe76 = 24; bản mới mở rộng lên 26 cho dáng gục) */
+export const INK_MAX_LEAN_DEG_STAND = 24;
+export const INK_MAX_LEAN_DEG_SLUMP = 26;
+
+/** wSitSlump divisor (bản cũ 7c1fe76 = 14) */
+export const INK_SIT_SLUMP_DIVISOR = 14;
