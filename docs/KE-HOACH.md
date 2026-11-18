@@ -15,7 +15,7 @@ TASK:
 - [x] T2. Đạo cụ về phong cách cũ: 13 đạo cụ đã duyệt chỉnh nét và kiểu tô theo hằng số T1, giữ nguyên dáng, tỷ lệ, hộp bao, điểm neo.
 - [x] T3. Định dạng Gói Chén: câu chữ (tieu_de, cau[], cu_lat) + cảnh ngữ nghĩa, không toạ độ/shapes. Viết docs/GOI-CHEN.md kèm ví dụ Q001.
 - [x] T4. Ô nhập trên tool web nhận Gói Chén → biên dịch → validator → xem trước. Lỗi hiện từng dòng + nút "Copy lỗi cho Gemini". JSON cũ vẫn mở được kèm cảnh báo.
-- [ ] T5. Skill khớp tool: xuất đúng Gói Chén, thư viện sinh từ code, một lệnh tạo zip. Skill không bao giờ vẽ đồ vật.
+- [x] T5. Skill khớp tool: xuất đúng Gói Chén, thư viện sinh từ code, một lệnh tạo zip. Skill không bao giờ vẽ đồ vật.
 - [ ] T6. Bộ động từ: T6a liệt kê có/thiếu → chủ kênh chọn; T6b làm tối đa 5 động từ mỗi lượt.
 - [ ] T7. Chạy thật 3 Chén mới, sửa lỗi lọt.
 

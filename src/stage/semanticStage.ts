@@ -59,6 +59,37 @@ export const SEMANTIC_SOCKETS = {
   lung: 'back',
 } as const;
 
+export const SEMANTIC_LEANS = ['thang', 'nhe_truoc', 'guc', 'nga_lung'] as const;
+
+export const SEMANTIC_BEAT_ANCHORS = [
+  'bat_dau',
+  'dong_1',
+  'dong_2',
+  'dong_3',
+  'dong_4',
+  'cu_lat',
+] as const;
+
+export const SEMANTIC_ACTOR_BEAT_VERBS = [
+  'tu_the',
+  'di_toi',
+  'huong',
+  'nghieng',
+  'nhin_theo',
+  'cam_chen_tra',
+  'dung_day',
+] as const;
+
+export const SEMANTIC_PROP_BEAT_VERBS = [
+  'trang_thai',
+  'cam_boi',
+  'dat_tren',
+  'di_toi',
+  'bay_len',
+  'tach_doi',
+  'khoi',
+] as const;
+
 export interface SemanticAtmosphereSpec {
   id?: string;
   loai: AtmosphereType;

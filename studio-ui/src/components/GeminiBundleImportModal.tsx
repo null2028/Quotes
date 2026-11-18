@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   Bot,
@@ -17,10 +17,8 @@ import {
   X,
 } from 'lucide-react';
 import {
-  GEMINI_SKILL_DESCRIPTION,
-  GEMINI_SKILL_MD,
   GEMINI_SKILL_NAME,
-  buildGeminiSkillZipBytes,
+  GEMINI_SKILL_DESCRIPTION,
   sanitizeAndNormalizeCupBundle,
   GoiChenValidationError,
 } from '../../../src/automation/geminiBundleBridge';
@@ -58,6 +56,16 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
   const [copiedSkillMd, setCopiedSkillMd] = useState(false);
   const [copiedGoiChenErrors, setCopiedGoiChenErrors] = useState(false);
   const [downloadedType, setDownloadedType] = useState<'zip' | 'md' | null>(null);
+  const [skillMdContent, setSkillMdContent] = useState<string>('Đang tải...');
+
+  useEffect(() => {
+    if (isOpen && activeTab === 'skill_setup') {
+      fetch(`/api/skills/${GEMINI_SKILL_NAME}/SKILL.md`)
+        .then((r) => r.ok ? r.text() : Promise.reject('Chạy npm run gen:skill trước'))
+        .then(setSkillMdContent)
+        .catch((e) => setSkillMdContent(`Lỗi: ${e}`));
+    }
+  }, [isOpen, activeTab]);
 
   const livePreviewCheck = useMemo(() => {
     if (!rawPaste.trim()) return null;
@@ -155,7 +163,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
   };
 
   const handleCopySkillMd = async () => {
-    await navigator.clipboard.writeText(GEMINI_SKILL_MD);
+    await navigator.clipboard.writeText(skillMdContent);
     setCopiedSkillMd(true);
     setTimeout(() => setCopiedSkillMd(false), 2400);
   };
@@ -181,19 +189,20 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
   };
 
   const handleDownloadSkillZip = () => {
-    const zipBytes = buildGeminiSkillZipBytes();
-    triggerBlobDownload(
-      zipBytes,
-      `${GEMINI_SKILL_NAME}.zip`,
-      'application/zip'
-    );
+    // Download zip directly from server
+    const link = document.createElement('a');
+    link.href = `/api/skills/${GEMINI_SKILL_NAME}.zip`;
+    link.download = `${GEMINI_SKILL_NAME}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     setDownloadedType('zip');
     setTimeout(() => setDownloadedType(null), 2800);
   };
 
   const handleDownloadSkillMd = () => {
     triggerBlobDownload(
-      GEMINI_SKILL_MD,
+      skillMdContent,
       'SKILL.md',
       'text/markdown;charset=utf-8'
     );
@@ -548,8 +557,8 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                     <strong className="text-tea-ink">
                       Tải Gói Skill Chuẩn (.zip)
                     </strong>{' '}
-                    bên dưới (đã đóng gói sẵn <code>SKILL.md</code> + sổ tay vật lý{' '}
-                    <code>references/</code> + mẫu <code>assets/</code> sạch 100%).
+                    bên dưới (đã đóng gói sẵn <code>SKILL.md</code> + thư viện đạo cụ{' '}
+                    <code>references/</code> + định dạng Gói Chén + ví dụ sạch 100%).
                   </li>
                   <li>
                     Mở <strong>gemini.google.com</strong> &rarr; bấm{' '}
@@ -577,7 +586,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                   type="button"
                   onClick={handleDownloadSkillZip}
                   className="py-2.5 px-3 rounded-xl bg-tea-accent text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-tea-accentHover shadow-xs transition"
-                  title="Tải gói ZIP đầy đủ gồm SKILL.md + references/ + assets/ để upload thẳng lên Gemini Skills"
+                  title="Tải gói ZIP đầy đủ gồm SKILL.md + references/ (thu-vien.md, goi-chen.md, q001.json) để upload thẳng lên Gemini Skills"
                 >
                   {downloadedType === 'zip' ? (
                     <>
@@ -650,7 +659,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-tea-ink flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-tea-accent" />
-                    Xem trước nội dung tệp <code>SKILL.md</code> (Chuẩn YAML Frontmatter + V8.5):
+                    Xem trước nội dung tệp <code>SKILL.md</code> (Chuẩn Gói Chén):
                   </span>
                   <a
                     href={`/api/skills/${GEMINI_SKILL_NAME}.zip`}
@@ -664,7 +673,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                 <textarea
                   readOnly
                   rows={10}
-                  value={GEMINI_SKILL_MD}
+                  value={skillMdContent}
                   className="w-full font-mono text-[11px] leading-relaxed p-3 rounded-xl border border-tea-border bg-white/85 text-tea-ink focus:outline-none"
                 />
               </div>

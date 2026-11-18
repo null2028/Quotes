@@ -76,13 +76,13 @@ Mọi vị trí dùng khe ngữ nghĩa (`trai`, `giua`, `phai`…); kích thư�
 
 ---
 
-## Danh sách đạo cụ có sẵn
+## Danh sách đạo cụ đã duyệt (`propCatalog`)
 
-**Nội thất**: `std_chair`, `low_wood_stool`, `std_work_desk`, `low_tea_table`, `bench`, `seesaw`  
-**Trên bàn**: `desk_calendar`, `desk_laptop`, `vi_tien`, `thiep`, `phong_bi`, `hoa_don`, `small_cup`, `tall_cup`, `rice_bowl`, `hourglass`  
-**Kiến trúc**: `porch_window`, `warm_house`, `city_skyline`, `street_lamp`  
-**Thiên nhiên**: `bare_tree`, `sprout`, `campfire`, `boulder`, `cloud_wisp`  
-**Đồ vật khác**: `umbrella`, `lantern`, `kite`, `paper_plane`, `envelope`, `bridal_veil`, `dashed_heart`, `solid_heart`, `wine_jar`, `small_boat`, `box_stack`, `chat_bubble`
+> Chi tiết điểm neo, trạng thái và khả năng làm vật đỏ xem trong `references/thu-vien.md`.
+
+**Nội thất**: `std_chair`, `low_wood_stool`, `std_work_desk`, `low_tea_table`, `bench`  
+**Trên bàn / cầm tay**: `desk_calendar`, `desk_laptop`, `vi_tien`, `thiep`, `phong_bi`, `envelope`, `hoa_don`, `small_cup`, `wine_jar`  
+**Kiến trúc / thiên nhiên / khác**: `porch_window`, `cloud_wisp`, `box_stack`, `umbrella`
 
 ---
 

@@ -1,0 +1,54 @@
+{
+  "phien_ban_goi": 1,
+  "tieu_de": "Làm CHỦ",
+  "cau": [
+    "Xưa đi xem bói, thầy bói bảo",
+    "có tướng làm CHỦ.",
+    "Bây giờ làm cả",
+    "CHỦ NHẬT luôn!"
+  ],
+  "cu_lat": "CHỦ NHẬT luôn",
+  "ma_quote": "W051",
+  "boi_canh": {
+    "dia_hinh": "phang"
+  },
+  "nhan_vat": [
+    {
+      "id": "hero",
+      "ngoi_tren": "ghe.mat_ghe",
+      "ngoi_vao": "ban",
+      "huong": "phai",
+      "tu_the": "ngoi_tua",
+      "nghieng": "thang",
+      "nhin_theo": "laptop"
+    }
+  ],
+  "dao_cu": [
+    { "id": "ban", "type": "std_work_desk", "loai_neo": "dat", "vi_tri": "giua", "lop": "giua" },
+    { "id": "ghe", "type": "std_chair", "loai_neo": "dat", "vi_tri": "trai", "lop": "giua" },
+    { "id": "laptop", "type": "desk_laptop", "loai_neo": "tren", "dat_tren": "ban.mat_ban_trai", "lop": "giua" },
+    { "id": "lich", "type": "desk_calendar", "loai_neo": "tren", "dat_tren": "ban.mat_ban_phai", "lop": "giua", "vat_do": true }
+  ],
+  "nhip": [
+    {
+      "moc": "bat_dau", "thoi_luong": 0.5,
+      "nhan_vat": { "hero": { "tu_the": "ngoi_tua", "nghieng": "thang", "nhin_theo": "laptop" } }
+    },
+    {
+      "moc": "dong_2", "thoi_luong": 0.6,
+      "nhan_vat": { "hero": { "nghieng": "nhe_truoc", "nhin_theo": "laptop" } }
+    },
+    {
+      "moc": "dong_3", "thoi_luong": 0.5,
+      "nhan_vat": { "hero": { "nghieng": "guc", "nhin_theo": null } }
+    },
+    {
+      "moc": "cu_lat", "sau": 0.3, "thoi_luong": 0.4,
+      "nhan_vat": { "hero": { "nghieng": "thang", "nhin_theo": "lich" } }
+    },
+    {
+      "moc": "cu_lat", "sau": 1.0, "thoi_luong": 0.5,
+      "nhan_vat": { "hero": { "nghieng": "nga_lung", "nhin_theo": "lich" } }
+    }
+  ]
+}

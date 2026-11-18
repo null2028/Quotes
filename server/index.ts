@@ -24,12 +24,11 @@ import { VideoInputSchema } from '../src/schemas/videoSchema';
 import { heuristicFallbackMapper } from '../src/automation/semanticMapper';
 import { ensureValidPivotSubstring } from '../src/automation/validator';
 import {
-  GEMINI_SKILL_MD,
   GEMINI_SKILL_NAME,
-  buildGeminiSkillZipBytes,
 } from '../src/automation/geminiBundleBridge';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
+const SKILL_DIR = path.resolve(PROJECT_ROOT, '.agents/skills/dao-dien-tra-nguoi');
 const AUDIO_DIR = path.resolve(PROJECT_ROOT, 'public/audio');
 const OUTPUT_DIR = path.resolve(PROJECT_ROOT, 'output');
 const AUTO_TRIGGER_PATH = path.resolve(
@@ -184,19 +183,28 @@ export function createStudioApiApp() {
   });
 
   app.get(`/api/skills/${GEMINI_SKILL_NAME}.zip`, (_req, res) => {
-    const zipBytes = buildGeminiSkillZipBytes();
+    const zipPath = path.join(SKILL_DIR, `${GEMINI_SKILL_NAME}.zip`);
+    if (!fs.existsSync(zipPath)) {
+      res.status(404).json({ error: 'Chạy npm run gen:skill trước.' });
+      return;
+    }
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader(
       'Content-Disposition',
       `attachment; filename="${GEMINI_SKILL_NAME}.zip"`
     );
-    res.send(Buffer.from(zipBytes));
+    res.send(fs.readFileSync(zipPath));
   });
 
   app.get(`/api/skills/${GEMINI_SKILL_NAME}/SKILL.md`, (_req, res) => {
+    const mdPath = path.join(SKILL_DIR, 'SKILL.md');
+    if (!fs.existsSync(mdPath)) {
+      res.status(404).json({ error: 'Chạy npm run gen:skill trước.' });
+      return;
+    }
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="SKILL.md"');
-    res.send(GEMINI_SKILL_MD);
+    res.send(fs.readFileSync(mdPath, 'utf8'));
   });
 
   // 5. Quản lý Danh sách Chén (Cups CRUD)
