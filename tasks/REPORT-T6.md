@@ -1,0 +1,6 @@
+- **Mục 0 (Chén cầm tay)**: Sửa `CloakedTraveler.tsx`, `trackCompiler.ts` & `DeclarativeStagePlayer.tsx`: chén trà + khói trên tay mặc định nét mực wash T2, chỉ đổi đỏ khi `teaCupRed === true` (`vat_do_tren_tay`).
+- **Mục 1 (`vai: "nguoi_b"`)**: Thêm nhân vật thứ 2 bóng mực nhạt hơn (`colorRole: "secondary"`, `role: "nguoi_b"`) kèm tuỳ chọn tóc đuôi ngựa (`toc_duoi_ngua`), đủ `vi_tri`/`huong`/`tu_the`/va chạm như Lữ khách.
+- **Mục 2 (Động từ & địa hình đỏ)**: Bổ sung `di_vao`, `di_ra`, `khung_lai`, `lui_buoc`, `quay_dau`, `nhin_nhau`, `tha_roi`, cộng `boi_canh.doan_duong[]` (`duong_lui` đổi đỏ đậm ở cú lật) & `duong_mo`, validator tính diện tích đường đỏ và chặn đi xuyên vật / dịch chuyển lớn.
+- **Tài liệu & Skill**: Cập nhật `docs/GOI-CHEN.md` & `scripts/gen-stage-skill.mjs`; chạy `npm run gen:skill` đồng bộ `thu-vien.md` + `SKILL.md` (42 dòng) + `.zip` (9.7 KB).
+- **Kiểm chứng**: `typecheck` 0 lỗi; `check-goi` pass `q001.json`, `w051.json`, `docs/goi-mau/chen18-v2.json`; render 6 khung qua luồng thật tại `qa-artifacts-ci/T6-chen18.png`.
+- **Ghi chú ngoài phạm vi**: Trong `tasks/T6.md` dòng 22–24 có đoạn chữ lạc bản nháp khác (`uong_mo... Bỏ ghế băng, bỏ mây/gió.`) mâu thuẫn Phương án 1 nên chỉ báo cáo, không tự sửa file đề.

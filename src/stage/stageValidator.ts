@@ -42,12 +42,13 @@ import {
 import {
   compileSemanticStageScript,
   isSemanticStageScript,
+  SEMANTIC_ACTOR_ROLES,
   SEMANTIC_POSES,
   SEMANTIC_SOCKETS,
   SEMANTIC_TERRAINS,
   SemanticStageScript,
 } from './semanticStage';
-import { getTerrainPoint } from './terrainSystem';
+import { computeTerrainSegmentArcLength, getTerrainPoint } from './terrainSystem';
 import { evaluateStageScriptAtFrame } from './trackCompiler';
 import type { CustomPropDefinition, StageScript } from './stageScriptSchema';
 
@@ -82,10 +83,13 @@ const ALLOWED_SEMANTIC_ROOT_KEYS = new Set([
   'nhip',
 ]);
 
-const ALLOWED_BOI_CANH_KEYS = new Set(['dia_hinh', 'khi_quyen']);
+const ALLOWED_BOI_CANH_KEYS = new Set(['dia_hinh', 'khi_quyen', 'doan_duong']);
 const ALLOWED_KHI_QUYEN_KEYS = new Set(['id', 'loai', 'vi_tri', 'huong', 'mat_do']);
+const ALLOWED_DOAN_DUONG_KEYS = new Set(['id', 'vi_tri', 'nhan_vat', 'tu', 'den', 'vat_do']);
 const ALLOWED_NHAN_VAT_KEYS = new Set([
   'id',
+  'vai',
+  'toc_duoi_ngua',
   'vi_tri',
   'ngoi_tren',
   'ngoi_vao',
@@ -116,13 +120,21 @@ const ALLOWED_NHIP_KEYS = new Set([
   'thoi_luong',
   'nhan_vat',
   'dao_cu',
+  'doan_duong',
 ]);
 const ALLOWED_NHIP_ACTOR_KEYS = new Set([
   'tu_the',
   'di_toi',
+  'di_vao',
+  'di_ra',
   'huong',
   'nghieng',
   'nhin_theo',
+  'nhin_nhau',
+  'khung_lai',
+  'lui_buoc',
+  'quay_dau',
+  'tha_roi',
   'cam_chen_tra',
   'dung_day',
 ]);
@@ -134,7 +146,9 @@ const ALLOWED_NHIP_PROP_KEYS = new Set([
   'bay_len',
   'tach_doi',
   'khoi',
+  'tha_roi',
 ]);
+const ALLOWED_NHIP_DOAN_DUONG_KEYS = new Set(['duong_mo', 'doi_do']);
 const FORBIDDEN_COORD_KEYS = new Set([
   'x',
   'y',
@@ -159,6 +173,7 @@ export interface StageValidationIssue {
     | 'INVALID_ANCHOR'
     | 'INVALID_SEATING'
     | 'OVERLAP_COLLISION'
+    | 'EXCESSIVE_MOTION'
     | 'FLOATING_OBJECT'
     | 'OUT_OF_SAFE_TERRAIN'
     | 'RED_OBJECT_RULE';
@@ -425,6 +440,48 @@ export function validateSemanticSpecStructure(
   }
 
   const slotNames = Object.keys(SEMANTIC_SLOTS);
+  const terrainSegIds = new Set<string>();
+  const terrainSegRefs: Array<{ idx: number; id: string; actor?: string }> = [];
+  if (sem.boi_canh && typeof sem.boi_canh === 'object') {
+    const bc = sem.boi_canh as Record<string, unknown>;
+    if (Array.isArray(bc.doan_duong)) {
+      bc.doan_duong.forEach((rawSeg, i) => {
+        if (!rawSeg || typeof rawSeg !== 'object') return;
+        const sg = rawSeg as Record<string, unknown>;
+        const scope = `boi_canh.doan_duong[${i}] (${sg.id || '?'})`;
+        checkUnknownKeys(scope, sg, ALLOWED_DOAN_DUONG_KEYS, issues);
+        const sid = String(sg.id || '').trim();
+        if (!sid) {
+          issues.push({
+            code: 'UNKNOWN_KEY',
+            message: `${scope}: đoạn đường cần có trường "id" (vd: "duong_lui").`,
+          });
+        } else {
+          terrainSegIds.add(sid);
+        }
+        const validSegPositions = ['sau_lung', 'truoc_mat', 'tu_trai', 'giua', 'tu_phai'];
+        if (sg.vi_tri !== undefined && !validSegPositions.includes(String(sg.vi_tri))) {
+          const hint = suggestClosestName(String(sg.vi_tri), validSegPositions);
+          issues.push({
+            code: 'UNKNOWN_NAME',
+            message: `${scope}: vị trí đoạn đường "${sg.vi_tri}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ` (có: ${validSegPositions.join(', ')})`}`,
+          });
+        }
+        for (const k of ['tu', 'den'] as const) {
+          if (sg[k] !== undefined && !(String(sg[k]) in SEMANTIC_SLOTS)) {
+            const hint = suggestClosestName(String(sg[k]), slotNames);
+            issues.push({
+              code: 'UNKNOWN_NAME',
+              message: `${scope}: ${k} "${sg[k]}" không có${hint ? `, ý bạn là "${hint}"?` : ''}`,
+            });
+          }
+        }
+        if (sg.nhan_vat !== undefined) {
+          terrainSegRefs.push({ idx: i, id: sid || '?', actor: String(sg.nhan_vat) });
+        }
+      });
+    }
+  }
   const propIds = new Map<string, { type: string }>();
   const actorIds = new Set<string>();
 
@@ -550,6 +607,17 @@ export function validateSemanticSpecStructure(
       const id = String(a.id || '');
       if (id) actorIds.add(id);
 
+      if (
+        a.vai !== undefined &&
+        !SEMANTIC_ACTOR_ROLES.includes(String(a.vai) as (typeof SEMANTIC_ACTOR_ROLES)[number])
+      ) {
+        const hint = suggestClosestName(String(a.vai), [...SEMANTIC_ACTOR_ROLES]);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: vai "${a.vai}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ` (chỉ nhận: ${SEMANTIC_ACTOR_ROLES.join(', ')})`}`,
+        });
+      }
+
       if (a.vi_tri !== undefined && !(String(a.vi_tri) in SEMANTIC_SLOTS)) {
         const hint = suggestClosestName(String(a.vi_tri), slotNames);
         issues.push({
@@ -658,6 +726,16 @@ export function validateSemanticSpecStructure(
     });
   }
 
+  for (const tref of terrainSegRefs) {
+    if (tref.actor && !actorIds.has(tref.actor)) {
+      const hint = suggestClosestName(tref.actor, Array.from(actorIds));
+      issues.push({
+        code: 'UNKNOWN_NAME',
+        message: `boi_canh.doan_duong[${tref.idx}] (${tref.id}): nhan_vat "${tref.actor}" chưa khai báo trong nhan_vat${hint ? `, ý bạn là "${hint}"?` : ''}.`,
+      });
+    }
+  }
+
   if (Array.isArray(sem.nhip)) {
     const validMocs = ['bat_dau', 'dong_1', 'dong_2', 'dong_3', 'dong_4', 'cu_lat'];
     sem.nhip.forEach((rawB, i) => {
@@ -715,6 +793,53 @@ export function validateSemanticSpecStructure(
                 message: `${scope}.nhan_vat.${aid}: khe di_toi "${ao.di_toi}" không có${hint ? `, ý bạn là "${hint}"?` : ''}`,
               });
             }
+            for (const dirKey of ['di_vao', 'di_ra'] as const) {
+              if (
+                ao[dirKey] !== undefined &&
+                typeof ao[dirKey] !== 'boolean' &&
+                ao[dirKey] !== 'trai' &&
+                ao[dirKey] !== 'phai'
+              ) {
+                issues.push({
+                  code: 'UNKNOWN_NAME',
+                  message: `${scope}.nhan_vat.${aid}: ${dirKey} "${ao[dirKey]}" chỉ nhận "trai", "phai" hoặc true.`,
+                });
+              }
+            }
+            if (typeof ao.nhin_nhau === 'string' && !actorIds.has(ao.nhin_nhau)) {
+              const hint = suggestClosestName(ao.nhin_nhau, Array.from(actorIds));
+              issues.push({
+                code: 'UNKNOWN_NAME',
+                message: `${scope}.nhan_vat.${aid}: nhin_nhau "${ao.nhin_nhau}" chưa khai báo trong nhan_vat${hint ? `, ý bạn là "${hint}"?` : ''}`,
+              });
+            }
+            if (typeof ao.tha_roi === 'string' && !propIds.has(ao.tha_roi)) {
+              const hint = suggestClosestName(ao.tha_roi, Array.from(propIds.keys()));
+              issues.push({
+                code: 'UNKNOWN_NAME',
+                message: `${scope}.nhan_vat.${aid}: tha_roi "${ao.tha_roi}" chưa khai báo trong dao_cu${hint ? `, ý bạn là "${hint}"?` : ''}`,
+              });
+            }
+          }
+        }
+      }
+      if (b.doan_duong && typeof b.doan_duong === 'object') {
+        for (const [sid, sObj] of Object.entries(b.doan_duong as Record<string, unknown>)) {
+          if (!terrainSegIds.has(sid)) {
+            const hint = suggestClosestName(sid, Array.from(terrainSegIds));
+            issues.push({
+              code: 'UNKNOWN_NAME',
+              message: `${scope}.doan_duong: "${sid}" chưa khai báo trong boi_canh.doan_duong${hint ? `, ý bạn là "${hint}"?` : ''}`,
+            });
+            continue;
+          }
+          if (sObj && typeof sObj === 'object') {
+            checkUnknownKeys(
+              `${scope}.doan_duong.${sid}`,
+              sObj as Record<string, unknown>,
+              ALLOWED_NHIP_DOAN_DUONG_KEYS,
+              issues
+            );
           }
         }
       }
@@ -929,38 +1054,30 @@ export function validateStageScriptHard(
   const seenOverlaps = new Set<string>();
   const seenFloating = new Set<string>();
   const seenOob = new Set<string>();
+  const seenExcessiveMotion = new Set<string>();
 
-  const maxSampleFrame = Math.max(1, timeline.durationInFrames - Math.round(1.0 * fps));
+  interface SampleEntity {
+    kind: 'prop' | 'actor';
+    id: string;
+    type: string;
+    variant?: string;
+    semLayer: SemanticLayer;
+    anchorKind?: string;
+    placedOnRef?: string;
+    placedOnHost?: string;
+    activeFollowActor?: string;
+    isDropping?: boolean;
+    worldX: number;
+    worldY: number;
+    scale: number;
+    box: { x0: number; y0: number; x1: number; y1: number };
+    sitProgress?: number;
+  }
 
-  // 2. Lấy mẫu nhiều khung dọc cả video (mỗi 0.25s)
-  for (let frame = 0; frame <= maxSampleFrame; frame += stepFrames) {
-    const isAfterPivot = frame >= timeline.pivotFrame - 6;
-    const compiled = evaluateStageScriptAtFrame(script, frame, timeline, palette);
-    const terrain = compiled.terrain;
-    const phase =
-      ((frame % timeline.durationInFrames) / timeline.durationInFrames) *
-      Math.PI *
-      2 *
-      8;
-    const timeSec = (frame / fps).toFixed(2);
-
-    interface SampleEntity {
-      kind: 'prop' | 'actor';
-      id: string;
-      type: string;
-      variant?: string;
-      semLayer: SemanticLayer;
-      anchorKind?: string;
-      placedOnRef?: string;
-      placedOnHost?: string;
-      activeFollowActor?: string;
-      worldX: number;
-      worldY: number;
-      scale: number;
-      box: { x0: number; y0: number; x1: number; y1: number };
-      sitProgress?: number;
-    }
-
+  const collectEntitiesFromCompiled = (
+    compiled: ReturnType<typeof evaluateStageScriptAtFrame>,
+    isAfterPivot: boolean
+  ): SampleEntity[] => {
     const entities: SampleEntity[] = [];
 
     for (const p of compiled.props) {
@@ -977,21 +1094,13 @@ export function validateStageScriptHard(
         p.layer,
         `${p.id} ${p.type}`
       );
-      const anchorKind =
-        p.spec.anchorKind ??
-        (p.spec.placedOn ? 'tren' : p.spec.follow ? 'cam' : catDef?.anchorKind ?? 'dat');
-
-      let activeFollowActor: string | undefined;
-      if (p.spec.follow) {
-        activeFollowActor = p.spec.follow.split(':')[0];
-      }
-      for (const cue of script.timeline ?? []) {
-        if (cue.target === p.id && cue.follow !== undefined) {
-          if (cue.follow && isAfterPivot) {
-            activeFollowActor = cue.follow.split(':')[0];
-          }
-        }
-      }
+      const activeFollowActor = p.activeFollow ? p.activeFollow.split(':')[0] : undefined;
+      const anchorKind = activeFollowActor
+        ? 'cam'
+        : p.isDropping
+          ? 'dat'
+          : p.spec.anchorKind ??
+            (p.spec.placedOn ? 'tren' : p.spec.follow ? 'cam' : catDef?.anchorKind ?? 'dat');
 
       entities.push({
         kind: 'prop',
@@ -999,10 +1108,11 @@ export function validateStageScriptHard(
         type: p.type,
         variant: p.variant ?? p.spec.variant,
         semLayer,
-        anchorKind: activeFollowActor ? 'cam' : anchorKind,
+        anchorKind,
         placedOnRef: p.spec.placedOn,
         placedOnHost: p.spec.placedOn?.split('.')[0],
         activeFollowActor,
+        isDropping: Boolean(p.isDropping),
         worldX: p.x,
         worldY: p.y,
         scale: p.scale,
@@ -1021,14 +1131,6 @@ export function validateStageScriptHard(
         `${a.id} ${a.rig || 'human'}`
       );
 
-      if (a.sitProgress >= 0.5 && !actorSeatHost.has(a.id) && !seenFloating.has(`seat:${a.id}`)) {
-        seenFloating.add(`seat:${a.id}`);
-        issues.push({
-          code: 'INVALID_SEATING',
-          message: `Nhân vật "${a.id}" ngồi lơ lửng tại t=${timeSec}s mà không gắn ngoi_tren vào ghế.`,
-        });
-      }
-
       entities.push({
         kind: 'actor',
         id: a.id,
@@ -1040,6 +1142,138 @@ export function validateStageScriptHard(
         box,
         sitProgress: a.sitProgress,
       });
+    }
+
+    return entities;
+  };
+
+  const checkPairCollisions = (
+    entities: SampleEntity[],
+    timeSec: string,
+    viaSweep = false
+  ): void => {
+    for (let i = 0; i < entities.length; i++) {
+      for (let j = i + 1; j < entities.length; j++) {
+        const A = entities[i];
+        const B = entities[j];
+        if (A.semLayer !== B.semLayer) continue;
+
+        const pairKey = [A.id, B.id].sort().join('::');
+        if (seenOverlaps.has(pairKey)) continue;
+
+        if (A.placedOnHost === B.id || B.placedOnHost === A.id) continue;
+        if (A.isDropping || B.isDropping) continue;
+        if (
+          A.placedOnHost &&
+          A.placedOnHost === B.placedOnHost &&
+          (A.variant === 'tua' || B.variant === 'tua')
+        ) {
+          continue;
+        }
+        if (A.activeFollowActor === B.id || B.activeFollowActor === A.id) continue;
+        if (
+          (A.kind === 'actor' && actorSeatHost.get(A.id) === B.id) ||
+          (B.kind === 'actor' && actorSeatHost.get(B.id) === A.id)
+        ) {
+          continue;
+        }
+        if (
+          (A.kind === 'actor' && actorDeskHost.get(A.id) === B.id) ||
+          (B.kind === 'actor' && actorDeskHost.get(B.id) === A.id) ||
+          seatToDeskHost.get(A.id) === B.id ||
+          seatToDeskHost.get(B.id) === A.id ||
+          (A.kind === 'actor' && B.placedOnHost && actorDeskHost.get(A.id) === B.placedOnHost) ||
+          (B.kind === 'actor' && A.placedOnHost && actorDeskHost.get(B.id) === A.placedOnHost)
+        ) {
+          continue;
+        }
+
+        const ix = Math.min(A.box.x1, B.box.x1) - Math.max(A.box.x0, B.box.x0);
+        const iy = Math.min(A.box.y1, B.box.y1) - Math.max(A.box.y0, B.box.y0);
+        if (ix > 2.5 && iy > 2.5 && ix * iy > 10) {
+          seenOverlaps.add(pairKey);
+          const first = B.kind === 'actor' && A.kind === 'prop' ? B : A;
+          const second = first === A ? B : A;
+          issues.push({
+            code: 'OVERLAP_COLLISION',
+            message: viaSweep
+              ? `Va chạm khi di chuyển (đi xuyên vật) cùng lớp "${A.semLayer}" tại t=${timeSec}s: "${first.id}" đi xuyên "${second.id}" (${ix.toFixed(1)}×${iy.toFixed(1)}px).`
+              : `Va chạm cùng lớp "${A.semLayer}" tại t=${timeSec}s: "${first.id}" đè lên "${second.id}" (${ix.toFixed(1)}×${iy.toFixed(1)}px).`,
+          });
+        }
+      }
+    }
+  };
+
+  const maxSampleFrame = Math.max(1, timeline.durationInFrames - Math.round(1.0 * fps));
+  let prevFrame: number | undefined;
+  let prevEntitiesById = new Map<string, SampleEntity>();
+
+  // 2. Lấy mẫu nhiều khung dọc cả video (mỗi 0.25s) + quét đường đi (chặn đi xuyên vật / chuyển động lớn)
+  for (let frame = 0; frame <= maxSampleFrame; frame += stepFrames) {
+    const isAfterPivot = frame >= timeline.pivotFrame - 6;
+    const compiled = evaluateStageScriptAtFrame(script, frame, timeline, palette);
+    const terrain = compiled.terrain;
+    const phase =
+      ((frame % timeline.durationInFrames) / timeline.durationInFrames) *
+      Math.PI *
+      2 *
+      8;
+    const timeSec = (frame / fps).toFixed(2);
+
+    const entities = collectEntitiesFromCompiled(compiled, isAfterPivot);
+    for (const ent of entities) {
+      if (
+        ent.kind === 'actor' &&
+        (ent.sitProgress ?? 0) >= 0.5 &&
+        !actorSeatHost.has(ent.id) &&
+        !seenFloating.has(`seat:${ent.id}`)
+      ) {
+        seenFloating.add(`seat:${ent.id}`);
+        issues.push({
+          code: 'INVALID_SEATING',
+          message: `Nhân vật "${ent.id}" ngồi lơ lửng tại t=${timeSec}s mà không gắn ngoi_tren vào ghế.`,
+        });
+      }
+    }
+
+    // 2.0 Kiểm tra chuyển động đột ngột & quét quỹ đạo giữa 2 nhịp mẫu để chặn đi xuyên vật
+    if (prevFrame !== undefined) {
+      const dtSec = (frame - prevFrame) / fps;
+      let maxMovedDist = 0;
+      for (const ent of entities) {
+        const prevEnt = prevEntitiesById.get(`${ent.kind}:${ent.id}`);
+        if (!prevEnt) continue;
+        const dx = ent.worldX - prevEnt.worldX;
+        const dy = ent.worldY - prevEnt.worldY;
+        const dist = Math.hypot(dx, dy);
+        if (dist > maxMovedDist) maxMovedDist = dist;
+        if (
+          dtSec > 0.01 &&
+          !ent.activeFollowActor &&
+          !seenExcessiveMotion.has(ent.id) &&
+          dist > 95 &&
+          dist / dtSec > 380
+        ) {
+          seenExcessiveMotion.add(ent.id);
+          issues.push({
+            code: 'EXCESSIVE_MOTION',
+            message: `"${ent.id}" chuyển động quá nhanh / dịch chuyển lớn (${dist.toFixed(0)} đơn vị trong ${dtSec.toFixed(2)}s) tại t=${timeSec}s; hãy tăng thoi_luong hoặc rút ngắn quãng di chuyển.`,
+          });
+        }
+      }
+      if (maxMovedDist > 4 && frame - prevFrame > 2) {
+        const subSteps = Math.min(20, Math.max(4, Math.ceil(maxMovedDist / 8)));
+        for (let s = 1; s < subSteps; s++) {
+          const sf = Math.round(prevFrame + ((frame - prevFrame) * s) / subSteps);
+          const subCompiled = evaluateStageScriptAtFrame(script, sf, timeline, palette);
+          const subEntities = collectEntitiesFromCompiled(
+            subCompiled,
+            sf >= timeline.pivotFrame - 6
+          );
+          checkPairCollisions(subEntities, (sf / fps).toFixed(2), true);
+        }
+      }
     }
 
     // 2a. Kiểm tra vùng an toàn của terrain
@@ -1064,7 +1298,7 @@ export function validateStageScriptHard(
     for (const ent of entities) {
       if (seenFloating.has(ent.id)) continue;
       if (ent.kind === 'prop') {
-        if (ent.anchorKind === 'troi' || ent.anchorKind === 'cam') {
+        if (ent.anchorKind === 'troi' || ent.anchorKind === 'cam' || ent.isDropping) {
           continue;
         }
         if (ent.anchorKind === 'tuong') {
@@ -1134,52 +1368,10 @@ export function validateStageScriptHard(
     }
 
     // 2c. Kiểm tra đè nhau: CHỈ xét các vật CÙNG lớp (`nen` / `giua` / `truoc`)
-    for (let i = 0; i < entities.length; i++) {
-      for (let j = i + 1; j < entities.length; j++) {
-        const A = entities[i];
-        const B = entities[j];
-        if (A.semLayer !== B.semLayer) continue;
+    checkPairCollisions(entities, timeSec, false);
 
-        const pairKey = [A.id, B.id].sort().join('::');
-        if (seenOverlaps.has(pairKey)) continue;
-
-        if (A.placedOnHost === B.id || B.placedOnHost === A.id) continue;
-        if (
-          A.placedOnHost &&
-          A.placedOnHost === B.placedOnHost &&
-          (A.variant === 'tua' || B.variant === 'tua')
-        ) {
-          continue;
-        }
-        if (A.activeFollowActor === B.id || B.activeFollowActor === A.id) continue;
-        if (
-          (A.kind === 'actor' && actorSeatHost.get(A.id) === B.id) ||
-          (B.kind === 'actor' && actorSeatHost.get(B.id) === A.id)
-        ) {
-          continue;
-        }
-        if (
-          (A.kind === 'actor' && actorDeskHost.get(A.id) === B.id) ||
-          (B.kind === 'actor' && actorDeskHost.get(B.id) === A.id) ||
-          seatToDeskHost.get(A.id) === B.id ||
-          seatToDeskHost.get(B.id) === A.id ||
-          (A.kind === 'actor' && B.placedOnHost && actorDeskHost.get(A.id) === B.placedOnHost) ||
-          (B.kind === 'actor' && A.placedOnHost && actorDeskHost.get(B.id) === A.placedOnHost)
-        ) {
-          continue;
-        }
-
-        const ix = Math.min(A.box.x1, B.box.x1) - Math.max(A.box.x0, B.box.x0);
-        const iy = Math.min(A.box.y1, B.box.y1) - Math.max(A.box.y0, B.box.y0);
-        if (ix > 2.5 && iy > 2.5 && ix * iy > 10) {
-          seenOverlaps.add(pairKey);
-          issues.push({
-            code: 'OVERLAP_COLLISION',
-            message: `Va chạm cùng lớp "${A.semLayer}" tại t=${timeSec}s: "${A.id}" đè lên "${B.id}" (${ix.toFixed(1)}×${iy.toFixed(1)}px).`,
-          });
-        }
-      }
-    }
+    prevFrame = frame;
+    prevEntitiesById = new Map(entities.map((e) => [`${e.kind}:${e.id}`, e]));
   }
 
   // 3. Kiểm tra luật đúng 1 vật đỏ & diện tích tối thiểu thống nhất MIN_RED_AREA_PX2 (500 px²)
@@ -1227,6 +1419,19 @@ export function validateStageScriptHard(
           zoom: compiled.camera.zoom,
         });
       }
+    }
+
+    for (const ts of compiled.terrainSegments ?? []) {
+      if (ts.opacity <= 0.15 || !ts.isAccentActive) continue;
+      const segLenUnits = computeTerrainSegmentArcLength(compiled.terrain, ts.startX, ts.endX);
+      if (segLenUnits <= 0.5) continue;
+      const areaUnits2 = segLenUnits * ts.strokeWidth;
+      reds.push({
+        id: ts.id,
+        typeName: 'doan_duong',
+        screenPx2: areaUnits2 * PX2_PER_STAGE_UNIT2 * zoom2,
+        zoom: compiled.camera.zoom,
+      });
     }
 
     if (reds.length > maxRedSnapshot.length) {

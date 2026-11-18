@@ -129,16 +129,32 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
 
   // ── 5. Đếm vật đỏ ──
   const daoCu = obj.dao_cu;
+  const doanDuong =
+    obj.boi_canh && typeof obj.boi_canh === 'object'
+      ? (obj.boi_canh as Record<string, unknown>).doan_duong
+      : undefined;
+  const redIds: string[] = [];
   if (Array.isArray(daoCu)) {
-    const redItems = daoCu.filter(
-      (p) => p && typeof p === 'object' && (p as Record<string, unknown>).vat_do === true
-    );
-    if (redItems.length > 1) {
-      const ids = redItems.map((p) => `"${(p as Record<string, unknown>).id}"`).join(', ');
-      ruleErrors.push(
-        `Có ${redItems.length} vật đỏ (${ids}) nhưng chỉ được tối đa 1. Giữ 1 vật "vat_do": true, xoá ở các vật còn lại.`
-      );
+    for (const p of daoCu) {
+      if (p && typeof p === 'object' && (p as Record<string, unknown>).vat_do === true) {
+        redIds.push(`"${String((p as Record<string, unknown>).id || '?')}"`);
+      }
     }
+  }
+  if (Array.isArray(doanDuong)) {
+    for (const seg of doanDuong) {
+      if (seg && typeof seg === 'object' && (seg as Record<string, unknown>).vat_do === true) {
+        redIds.push(`"${String((seg as Record<string, unknown>).id || '?')}"`);
+      }
+    }
+  }
+  if (typeof obj.vat_do_tren_tay === 'string' && obj.vat_do_tren_tay.trim().length > 0) {
+    redIds.push(`"${obj.vat_do_tren_tay.trim()}"`);
+  }
+  if (redIds.length > 1) {
+    ruleErrors.push(
+      `Có ${redIds.length} vật đỏ (${redIds.join(', ')}) nhưng chỉ được tối đa 1. Giữ 1 vật "vat_do": true, xoá ở các vật còn lại.`
+    );
   }
 
   // Nếu lỗi câu chữ / cấu trúc nghiêm trọng → dừng sớm

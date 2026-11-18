@@ -143,6 +143,17 @@ export const TerrainTypeEnum = z.enum([
 
 export type TerrainType = z.infer<typeof TerrainTypeEnum>;
 
+export const TerrainSegmentSpecSchema = z.object({
+  id: z.string().min(1),
+  startX: z.number(),
+  endX: z.number(),
+  colorRole: ColorRoleSchema.optional(),
+  strokeWidth: z.number().min(0.5).max(12).optional(),
+  opacity: z.number().min(0).max(1).optional(),
+});
+
+export type TerrainSegmentSpec = z.infer<typeof TerrainSegmentSpecSchema>;
+
 export const TerrainConfigSchema = z.union([
   TerrainTypeEnum,
   z.object({
@@ -167,13 +178,14 @@ export const TerrainConfigSchema = z.union([
     stepCount: z.number().int().min(1).max(16).optional(),
     stepRise: z.number().optional(),
     stairsStartX: XCoordSchema.optional(),
-    stairsEndX: XCoordSchema.optional(),
+    stairsEndX: z.number().optional(),
     points: z
       .array(z.tuple([z.number(), z.number()]))
       .min(2)
       .optional(),
     smooth: z.boolean().optional(),
     customSvgD: z.string().optional(),
+    segments: z.array(TerrainSegmentSpecSchema).optional(),
   }),
 ]);
 
@@ -230,6 +242,8 @@ export const ActorSpecSchema = z.object({
   seatedAtDesk: z.string().optional(),
   lookAtTarget: z.string().optional(),
   semanticLayer: SemanticLayerSchema.optional(),
+  role: z.enum(['lu_khach', 'nguoi_b']).optional(),
+  ponytail: z.boolean().optional(),
   dissolveToCloud: z.number().min(0).max(1).optional(),
   layer: LayerSchema.optional(),
   enterAt: TimeExprSchema.optional(),
@@ -337,6 +351,8 @@ export const TimelineCueSchema = z.object({
   floatAwayProgress: z.number().min(0).max(1).optional(),
   emitters: PropEmittersSchema.optional(),
   bridgeProgress: z.number().min(0).max(1).optional(),
+  strokeWidth: z.number().min(0.4).max(12).optional(),
+  dropGravity: z.boolean().optional(),
   zoom: z.number().min(0.6).max(2.0).optional(),
   panX: z.number().optional(),
   panY: z.number().optional(),

@@ -15,6 +15,7 @@ import {
   StageTravelerPose,
 } from './stageScriptSchema';
 import {
+  EvaluatedTerrainSegment,
   getTerrainPoint,
   NormalizedTerrainConfig,
   normalizeTerrainConfig,
@@ -408,6 +409,8 @@ export interface EvaluatedActorState {
   dissolveCloudProgress: number;
   drawProgress: number;
   opacity: number;
+  role?: 'lu_khach' | 'nguoi_b';
+  ponytail?: boolean;
 }
 
 export interface EvaluatedPropState {
@@ -423,6 +426,8 @@ export interface EvaluatedPropState {
   opacity: number;
   color: string;
   isAccentActive: boolean;
+  isDropping?: boolean;
+  activeFollow?: string | null;
   attachedActorFacing?: 'left' | 'right';
   loopProgress: number;
   motionActivity: number;
@@ -444,6 +449,7 @@ export interface EvaluatedPropState {
 
 export interface CompiledStageFrame {
   terrain: NormalizedTerrainConfig;
+  terrainSegments: EvaluatedTerrainSegment[];
   camera: {
     zoom: number;
     panX: number;
@@ -590,6 +596,81 @@ export function evaluateStageScriptAtFrame(
   const activeHorizonOffsetPx =
     visualDNA && !visualDNA.isLegacyLocked ? visualDNA.horizonOffsetPx : 0;
   const terrain = applyHorizonOffsetToTerrain(rawTerrain, activeHorizonOffsetPx);
+
+  const terrainSegments: EvaluatedTerrainSegment[] = (terrain.segments ?? []).map(
+    (seg) => {
+      const segCues = cues.filter((c) => c.target === seg.id);
+      const colorEvents: Array<{
+        startFrame: number;
+        endFrame: number;
+        role: ColorRole;
+      }> = [];
+      const strokeWidthSegs: NumericSegment[] = [];
+      const opacitySegs: NumericSegment[] = [];
+
+      for (const cue of segCues) {
+        const startF = resolveCueFrame(cue.at ?? cue.when, timeline);
+        const durF = resolveCinemagraphDurationFrames(
+          cue.duration,
+          startF,
+          timeline.pivotFrame,
+          fps,
+          1.2,
+          cue.exactDuration === true
+        );
+        const endF = startF + durF;
+        if (cue.colorRole !== undefined) {
+          colorEvents.push({
+            startFrame: startF,
+            endFrame: endF,
+            role: cue.colorRole,
+          });
+        }
+        if (cue.strokeWidth !== undefined) {
+          strokeWidthSegs.push({
+            startFrame: startF,
+            endFrame: endF,
+            toValue: cue.strokeWidth,
+          });
+        }
+        if (cue.opacity !== undefined) {
+          opacitySegs.push({
+            startFrame: startF,
+            endFrame: endF,
+            toValue: cue.opacity,
+          });
+        }
+      }
+
+      const colorEval = evaluateColorChannel(
+        frame,
+        seg.colorRole ?? 'ink',
+        colorEvents,
+        palette,
+        isPrePivot
+      );
+      const strokeWidth = evaluateNumericChannel(
+        frame,
+        seg.strokeWidth ?? 1.4,
+        strokeWidthSegs
+      ).value;
+      const opacity = evaluateNumericChannel(
+        frame,
+        seg.opacity ?? 1,
+        opacitySegs
+      ).value;
+
+      return {
+        id: seg.id,
+        startX: seg.startX,
+        endX: seg.endX,
+        color: colorEval.color,
+        isAccentActive: !isPrePivot && colorEval.activeRole === 'accent',
+        strokeWidth: Math.max(0.4, strokeWidth),
+        opacity: Math.max(0, Math.min(1, opacity)),
+      };
+    }
+  );
 
   const camZoomSegs: NumericSegment[] = [];
   const camPanXSegs: NumericSegment[] = [];
@@ -1056,7 +1137,7 @@ export function evaluateStageScriptAtFrame(
         walkActivity,
         breathPhase,
         color: colorEval.color,
-        showTeaCup: isPrePivot ? 0 : showTeaCup,
+        showTeaCup: !script.tags?.includes('semantic_v1') && isPrePivot ? 0 : showTeaCup,
         dissolveToCloud,
         dissolveCloudProgress,
         drawProgress: 1,
@@ -1064,6 +1145,8 @@ export function evaluateStageScriptAtFrame(
           0,
           Math.min(1, baseOpacity * enterLeaveMult * dissolveOpacityMult)
         ),
+        role: actor.role,
+        ponytail: actor.ponytail,
       };
 
       actorMap[actor.id] = state;
@@ -1122,6 +1205,7 @@ export function evaluateStageScriptAtFrame(
       fromPose: PropPoseNode;
       toPose: PropPoseNode;
       arcY: number;
+      dropGravity?: boolean;
     }
 
     const posSegments: PosSegment[] = [];
@@ -1198,6 +1282,7 @@ export function evaluateStageScriptAtFrame(
         fromPose: { ...runningPose },
         toPose,
         arcY: cue.arcY ?? 0,
+        dropGravity: cue.dropGravity === true,
       });
 
       runningPose = toPose;
@@ -1210,6 +1295,7 @@ export function evaluateStageScriptAtFrame(
     );
     let travelDist = 0;
     let motionActivity = 0;
+    let isDropping = false;
 
     for (const seg of posSegments) {
       if (frame < seg.startFrame) break;
@@ -1224,6 +1310,18 @@ export function evaluateStageScriptAtFrame(
       activeFollow = seg.toPose.follow ?? seg.fromPose.follow;
       const span = Math.max(1, seg.endFrame - seg.startFrame);
       const rawP = Math.max(0, Math.min(1, (frame - seg.startFrame) / span));
+      if (seg.dropGravity) {
+        isDropping = true;
+        const px = Math.min(1, rawP * 1.35);
+        const py = Math.min(1, rawP * rawP * 1.05);
+        worldPos = {
+          x: fromW.x + (toW.x - fromW.x) * px,
+          y: fromW.y + (toW.y - fromW.y) * py,
+        };
+        travelDist += (toW.x - fromW.x) * px;
+        motionActivity = rawP < 0.92 ? 0.9 : 0.2;
+        break;
+      }
       const p = CINEMAGRAPH_EASING(rawP);
       const pPrev = CINEMAGRAPH_EASING(
         Math.max(0, Math.min(1, (frame - 1 - seg.startFrame) / span))
@@ -1501,6 +1599,8 @@ export function evaluateStageScriptAtFrame(
       opacity: Math.max(0, Math.min(1, finalOpacity)),
       color: colorEval.color,
       isAccentActive,
+      isDropping,
+      activeFollow,
       attachedActorFacing,
       loopProgress,
       motionActivity,
@@ -1769,6 +1869,7 @@ export function evaluateStageScriptAtFrame(
 
   return {
     terrain,
+    terrainSegments,
     camera,
     layerParallaxX,
     spotlight: {

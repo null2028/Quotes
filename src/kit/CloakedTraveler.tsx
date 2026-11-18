@@ -65,6 +65,9 @@ export interface CloakedTravelerProps {
   accentColor?: string;
   bgColor?: string;
   showTeaCup?: boolean | number;
+  teaCupRed?: boolean;
+  role?: 'lu_khach' | 'nguoi_b';
+  ponytail?: boolean;
   solidFill?: boolean;
   strokeWidth?: number;
   opacity?: number;
@@ -131,6 +134,9 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
   accentColor = '#CE472E',
   bgColor = '#F1EAE0',
   showTeaCup = false,
+  teaCupRed = false,
+  role = 'lu_khach',
+  ponytail = false,
   solidFill = false,
   strokeWidth = INK_BASE_STROKE_WIDTH,
   opacity = 1,
@@ -340,6 +346,29 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
 
   const headR = solidFill ? INK_HEAD_RADIUS_SOLID : INK_HEAD_RADIUS_OUTLINE;
   const headCenterY = headOffsetY - (solidFill ? 0.5 : 0);
+  const inkFillMult = role === 'nguoi_b' ? 0.85 : 1;
+
+  const ponytailNode = (() => {
+    if (!ponytail || washMult <= 0.005) return null;
+    const tieX = headOffsetX - headR * 0.82;
+    const tieY = headCenterY + 0.85;
+    const swayTail = stepSin * act * 0.85 + breezeCos * 0.65 - act * 1.4;
+    const tailD = `M ${(tieX - 0.25).toFixed(2)} ${(tieY - 0.95).toFixed(2)} C ${(tieX - 3.6 + swayTail * 0.45).toFixed(2)} ${(tieY - 1.25).toFixed(2)} ${(tieX - 5.9 + swayTail).toFixed(2)} ${(tieY + 2.7).toFixed(2)} ${(tieX - 5.0 + swayTail * 1.15).toFixed(2)} ${(tieY + 8.6).toFixed(2)} C ${(tieX - 3.7 + swayTail * 0.8).toFixed(2)} ${(tieY + 5.7).toFixed(2)} ${(tieX - 2.3 + swayTail * 0.4).toFixed(2)} ${(tieY + 2.6).toFixed(2)} ${(tieX - 0.25).toFixed(2)} ${(tieY + 1.05).toFixed(2)} Z`;
+    return (
+      <g>
+        <path d={tailD} fill={bgColor} stroke="none" opacity={washMult} />
+        <circle cx={tieX - 0.5} cy={tieY + 0.1} r={1.05} fill={color} opacity={washMult * inkFillMult} />
+        <path
+          d={tailD}
+          fill={color}
+          fillOpacity={solidFill ? washMult * inkFillMult : INK_HEAD_FILL_OPACITY_OUTLINE * washMult * inkFillMult}
+          stroke={solidFill ? 'none' : color}
+          strokeWidth={solidFill ? 0 : effStroke * 0.72}
+          strokeLinejoin="round"
+        />
+      </g>
+    );
+  })();
 
   const limbDrawProps = isDrawing
     ? {
@@ -410,7 +439,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
             <path
               d={cloakD}
               fill={color}
-              fillOpacity={washMult}
+              fillOpacity={washMult * inkFillMult}
               stroke={isDrawing ? color : 'none'}
               strokeWidth={isDrawing ? effStroke * INK_CLOAK_STROKE_MULT_SOLID : 0}
               strokeOpacity={isDrawing ? INK_STROKE_OPACITY * cloakInkGate : 0}
@@ -428,6 +457,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
                 opacity={INK_FOLD_OPACITY_SOLID * washMult}
               />
             )}
+            {ponytailNode}
             {washMult > 0.005 && (
               <circle
                 cx={headOffsetX}
@@ -443,7 +473,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               cy={headCenterY}
               r={headR}
               fill={color}
-              fillOpacity={washMult}
+              fillOpacity={washMult * inkFillMult}
               stroke={isDrawing ? color : 'none'}
               strokeWidth={isDrawing ? effStroke * INK_CLOAK_STROKE_MULT_SOLID : 0}
               strokeOpacity={isDrawing ? INK_STROKE_OPACITY * headInkGate : 0}
@@ -502,6 +532,7 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               />
             )}
 
+            {ponytailNode}
             {washMult > 0.005 && (
               <circle
                 cx={headOffsetX}
@@ -724,22 +755,26 @@ export const CloakedTraveler: React.FC<CloakedTravelerProps> = ({
               seatedHandY * effectiveSit;
 
             const cupD = `M ${(cupBaseX - 3.5).toFixed(2)} ${(cupBaseY - 5.0).toFixed(2)} Q ${(cupBaseX - 2.9).toFixed(2)} ${(cupBaseY - 0.7).toFixed(2)} ${(cupBaseX - 2.0).toFixed(2)} ${cupBaseY.toFixed(2)} L ${(cupBaseX + 2.0).toFixed(2)} ${cupBaseY.toFixed(2)} Q ${(cupBaseX + 2.9).toFixed(2)} ${(cupBaseY - 0.7).toFixed(2)} ${(cupBaseX + 3.5).toFixed(2)} ${(cupBaseY - 5.0).toFixed(2)} Z`;
+            const cupInkColor = teaCupRed ? accentColor : color;
+            const cupWashOpacity = teaCupRed
+              ? (solidFill ? 0.38 : 0.24)
+              : (solidFill ? 0.12 : 0.1);
 
             return (
               <g opacity={teaCupOpacity * limbInkGate}>
                 <path d={cupD} fill={bgColor} />
                 <path
                   d={cupD}
-                  fill={accentColor}
-                  fillOpacity={solidFill ? 0.95 : 0.22}
-                  stroke={accentColor}
-                  strokeWidth={effStroke * (solidFill ? 0.4 : 0.82)}
+                  fill={cupInkColor}
+                  fillOpacity={cupWashOpacity}
+                  stroke={cupInkColor}
+                  strokeWidth={effStroke * (teaCupRed ? 0.78 : 0.68)}
                   strokeLinejoin="round"
                 />
                 <path
                   d={`M ${cupBaseX.toFixed(2)} ${(cupBaseY - 7.5).toFixed(2)} Q ${(cupBaseX - 1.4 + steamWave * 1.5).toFixed(2)} ${(cupBaseY - 11.5).toFixed(2)} ${(cupBaseX + 0.4 - steamWave * 1.1).toFixed(2)} ${(cupBaseY - 15.0 - steamLift * 2.4).toFixed(2)} Q ${(cupBaseX + 1.8 + steamWave * 1.3).toFixed(2)} ${(cupBaseY - 18.0).toFixed(2)} ${(cupBaseX - 0.2 - steamWave * 0.8).toFixed(2)} ${(cupBaseY - 20.7 - steamLift * 2.8).toFixed(2)}`}
                   fill="none"
-                  stroke={accentColor}
+                  stroke={cupInkColor}
                   strokeWidth={effStroke * 0.52}
                   strokeLinecap="round"
                   opacity={0.48 + 0.22 * Math.sin(steamLift * 0.01 + steamLift * Math.PI)}

@@ -7,9 +7,9 @@ description: Đạo diễn câu chữ 3 bước và xuất Gói Chén JSON cho k
 
 Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc `references/thu-vien.md` (đạo cụ đã duyệt, tư thế, động từ/nhịp, khe vị trí, bối cảnh) và `references/goi-chen.md` (chuẩn Gói Chén, kèm mẫu `references/q001.json`). Làm tuần tự **3 bước**, kết thúc Bước 1 và Bước 2 đều **DỪNG chờ chủ kênh chốt**.
 
-## Nhân vật duy nhất: Lữ Khách Bóng Mực
-- Giữ nguyên nhân vật Lữ khách bóng mực thuỷ mặc (**không mắt, không lá trà**).
-- Nhân vật chỉ phản ứng bằng tư thế (`tu_the`), hướng đầu (`nhin_theo`), nghiêng người (`nghieng`), và hướng đứng/ngồi (`huong`).
+## Nhân vật: Lữ Khách Bóng Mực & Người Thứ Hai (`nguoi_b`)
+- Giữ nguyên phong cách bóng mực thuỷ mặc (**không mắt, không lá trà**). Có thể dùng thêm nhân vật thứ 2 (`vai: "nguoi_b"`, nhạt hơn Lữ khách, tuỳ chọn `toc_duoi_ngua: true`) khi câu có người đối diện.
+- Nhân vật chỉ phản ứng bằng tư thế (`tu_the`), hướng đầu (`nhin_theo`/`nhin_nhau`), nghiêng người (`nghieng`), bước chân (`di_toi`/`di_vao`/`di_ra`/`lui_buoc`), `khung_lai`, `quay_dau`, `tha_roi`, và hướng đứng/ngồi (`huong`).
 
 ## Bước 1 — Câu chữ (DỪNG chờ chốt)
 - Nếu chủ kênh **đưa sẵn câu**: giữ nguyên văn 100%, chia dòng hợp lý (2–4 dòng) và đề xuất `cu_lat` ở dòng cuối.

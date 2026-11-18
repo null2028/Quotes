@@ -2,10 +2,21 @@ import React from 'react';
 import { evolvePath } from '@remotion/paths';
 import {
   TerrainConfigInput,
+  TerrainSegmentSpec,
   TerrainType,
   XCoord,
   XKeyword,
 } from './stageScriptSchema';
+
+export interface EvaluatedTerrainSegment {
+  id: string;
+  startX: number;
+  endX: number;
+  color: string;
+  isAccentActive: boolean;
+  strokeWidth: number;
+  opacity: number;
+}
 
 export const STAGE_VIEWBOX = '62 126 416 250';
 export const DEFAULT_GROUND_Y = 352;
@@ -50,6 +61,7 @@ export interface NormalizedTerrainConfig {
   points: Array<[number, number]>;
   smooth: boolean;
   customSvgD?: string;
+  segments: TerrainSegmentSpec[];
 }
 
 export function normalizeTerrainConfig(
@@ -81,6 +93,7 @@ export function normalizeTerrainConfig(
       stairsEndX: 350,
       points: [],
       smooth: true,
+      segments: [],
     };
   }
 
@@ -130,6 +143,7 @@ export function normalizeTerrainConfig(
     points: rawPoints,
     smooth: input.smooth ?? true,
     customSvgD: input.customSvgD,
+    segments: Array.isArray(input.segments) ? input.segments : [],
   };
 }
 
@@ -294,8 +308,68 @@ export function getTerrainPoint(
   }
 }
 
+export function computeTerrainSegmentArcLength(
+  terrain: NormalizedTerrainConfig,
+  startX: number,
+  endX: number,
+  phase: number = 0
+): number {
+  const x0 = Math.max(terrain.startX, Math.min(startX, endX));
+  const x1 = Math.min(terrain.endX, Math.max(startX, endX));
+  if (x1 <= x0 + 0.5) return 0;
+  const steps = 24;
+  let len = 0;
+  let prev = getTerrainPoint(terrain, x0, phase);
+  let prevX = x0;
+  for (let i = 1; i <= steps; i++) {
+    const cx = x0 + ((x1 - x0) * i) / steps;
+    const pt = getTerrainPoint(terrain, cx, phase);
+    len += Math.hypot(cx - prevX, pt.y - prev.y);
+    prevX = cx;
+    prev = pt;
+  }
+  return len;
+}
+
+function renderTerrainSegmentsNode(
+  terrain: NormalizedTerrainConfig,
+  terrainSegments: EvaluatedTerrainSegment[] | undefined,
+  phase: number,
+  inkAlpha: number
+): React.ReactNode {
+  if (!terrainSegments || terrainSegments.length === 0) return null;
+  const nodes: React.ReactNode[] = [];
+  for (const seg of terrainSegments) {
+    if (seg.opacity <= 0.01) continue;
+    const x0 = Math.max(terrain.startX, Math.min(seg.startX, seg.endX));
+    const x1 = Math.min(terrain.endX, Math.max(seg.startX, seg.endX));
+    if (x1 <= x0 + 0.5) continue;
+    const steps = 28;
+    const cmds: string[] = [];
+    for (let i = 0; i <= steps; i++) {
+      const cx = x0 + ((x1 - x0) * i) / steps;
+      const pt = getTerrainPoint(terrain, cx, phase);
+      cmds.push(`${i === 0 ? 'M' : 'L'} ${cx.toFixed(1)} ${pt.y.toFixed(1)}`);
+    }
+    nodes.push(
+      React.createElement('path', {
+        key: `tseg-${seg.id}`,
+        d: cmds.join(' '),
+        fill: 'none',
+        stroke: seg.color,
+        strokeWidth: seg.strokeWidth,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+        opacity: seg.opacity * inkAlpha,
+      })
+    );
+  }
+  return nodes.length > 0 ? React.createElement(React.Fragment, null, ...nodes) : null;
+}
+
 export const TerrainRenderer: React.FC<{
   terrain: NormalizedTerrainConfig;
+  terrainSegments?: EvaluatedTerrainSegment[];
   drawProgress: number;
   phase: number;
   stroke: string;
@@ -305,6 +379,7 @@ export const TerrainRenderer: React.FC<{
   solidHorizon?: boolean;
 }> = ({
   terrain,
+  terrainSegments,
   drawProgress,
   phase,
   stroke,
@@ -326,6 +401,7 @@ export const TerrainRenderer: React.FC<{
   const span = Math.max(40, terrain.endX - terrain.startX);
   const shadowStartX = terrain.startX + span * (solidHorizon ? 0.2 : 0.12);
   const shadowEndX = terrain.endX - span * (solidHorizon ? 0.2 : 0.12);
+  const segmentsNode = renderTerrainSegmentsNode(terrain, terrainSegments, phase, inkAlpha);
 
   const gradientDefs = React.createElement(
     'defs',
@@ -414,7 +490,8 @@ export const TerrainRenderer: React.FC<{
         strokeWidth: solidHorizon ? 0.52 : 0.85,
         strokeLinecap: 'round',
         opacity: (solidHorizon ? 0.14 : 0.1) * shadowAlphaMult,
-      })
+      }),
+      segmentsNode
     );
   }
 
@@ -456,7 +533,8 @@ export const TerrainRenderer: React.FC<{
         strokeWidth: 0.85,
         strokeLinecap: 'round',
         opacity: 0.1 * shadowAlphaMult,
-      })
+      }),
+      segmentsNode
     );
   }
 
@@ -504,7 +582,8 @@ export const TerrainRenderer: React.FC<{
         strokeLinecap: 'round',
         strokeDasharray: waveEvo.strokeDasharray,
         strokeDashoffset: waveEvo.strokeDashoffset,
-      })
+      }),
+      segmentsNode
     );
   }
 
@@ -553,7 +632,8 @@ export const TerrainRenderer: React.FC<{
         strokeLinejoin: 'round',
         strokeDasharray: evo.strokeDasharray,
         strokeDashoffset: evo.strokeDashoffset,
-      })
+      }),
+      segmentsNode
     );
   }
 
@@ -632,7 +712,8 @@ export const TerrainRenderer: React.FC<{
             strokeLinecap: 'round',
             opacity: 0.1 * shadowAlphaMult,
           })
-        : null
+        : null,
+      segmentsNode
     );
   }
 
@@ -685,7 +766,8 @@ export const TerrainRenderer: React.FC<{
           strokeDashoffset: bridgeEvo.strokeDashoffset,
           opacity: 0.85,
         })
-      : null
+      : null,
+    segmentsNode
   );
 };
 

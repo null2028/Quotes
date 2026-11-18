@@ -11,6 +11,7 @@ import {
   renderShapeListStatic,
 } from '../src/stage/propCatalog.tsx';
 import { DeclarativeStagePlayer } from '../src/stage/DeclarativeStagePlayer.tsx';
+import { isGoiChen, parseGoiChen } from '../src/stage/goiChenParser.ts';
 import { resolveStageScript } from '../src/stage/stageScriptRegistry.ts';
 import {
   isSemanticStageScript,
@@ -85,9 +86,11 @@ cs_rgb = cg.CGColorSpaceCreateDeviceRGB()
 uti_png = cf.CFStringCreateWithCString(None, b"public.png", 0x08000100)
 
 RE_RGB = re.compile(r"rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)")
+RE_RGBA_CSS = re.compile(r"rgba\\((\\d+),\\s*(\\d+),\\s*(\\d+),\\s*([0-9.]+)\\)")
 RE_RGBA_HEX = re.compile(r"#([0-9a-fA-F]{6})([0-9a-fA-F]{2})\\b")
 
 def clean_svg(svg):
+    svg = RE_RGBA_CSS.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
     svg = RE_RGB.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
     svg = RE_RGBA_HEX.sub(lambda m: f"#{m.group(1)}", svg)
     svg = svg.replace('style="overflow:visible;background:transparent"', '')
@@ -908,7 +911,26 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
   let scriptInput = null;
   let baseName = path.basename(targetArg, '.json');
 
-  if (rawJson.props && rawJson.cupNumber) {
+  if (isGoiChen(rawJson)) {
+    const parsed = parseGoiChen(rawJson);
+    if (!parsed.ok && !allowInvalid) {
+      console.error(`❌ CHẶN RENDER GÓI CHÉN [${baseName}] — ${parsed.errors.length} lỗi:`);
+      for (const err of parsed.errors) {
+        console.error(`   - ${err}`);
+      }
+      process.exit(1);
+    }
+    scriptInput = parsed.compiled;
+    cupProps = {
+      id: baseName,
+      title: parsed.tieuDe || baseName,
+      segments: parsed.cau || [],
+      pivotWord: parsed.cuLat || '',
+      themeId: 'MINIMAL_LIGHT',
+      targetDurationSeconds: 15,
+      textFormat: 'POEM',
+    };
+  } else if (rawJson.props && rawJson.cupNumber) {
     cupProps = rawJson.props;
     const sid = cupProps.motion?.sceneId || cupProps.motion?.archetype;
     scriptInput = resolveStageScript(sid, cupProps.motion?.stageScript);

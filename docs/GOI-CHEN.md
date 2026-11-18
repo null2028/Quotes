@@ -24,7 +24,8 @@ Mọi vị trí dùng khe ngữ nghĩa (`trai`, `giua`, `phai`…); kích thư�
 | `tac_gia` | string | | Tên tác giả (tuỳ chọn, bỏ qua nếu tự sáng tác). |
 | `ma_quote` | string | | Mã định danh, VD: `"Q001"`. Dùng để quản lý nội bộ. |
 | `boi_canh` | object | | Bối cảnh sân khấu. Nếu bỏ trống → mặc định địa hình phẳng. |
-| `nhan_vat` | object[] | ✅ | Mảng nhân vật (thường chỉ 1 Lữ khách). |
+| `vat_do_tren_tay` | string | | Dạng `"<id>.chen_tra"` nếu chính chén trà trên tay nhân vật là vật đỏ duy nhất ở cú lật (mặc định chén cầm tay vẽ nét mực). |
+| `nhan_vat` | object[] | ✅ | Mảng nhân vật (Lữ khách chính và tuỳ chọn nhân vật thứ hai `vai: "nguoi_b"`). |
 | `dao_cu` | object[] | ✅ | Mảng đạo cụ trên sân khấu. |
 | `nhip` | object[] | ✅ | Mảng nhịp diễn biến theo dòng thơ. |
 
@@ -34,12 +35,15 @@ Mọi vị trí dùng khe ngữ nghĩa (`trai`, `giua`, `phai`…); kích thư�
 |---|---|---|
 | `dia_hinh` | string | Địa hình: `phang`, `doc`, `doi`, `nga_re`, `bo_nuoc`, `bac_thang`. Mặc định `phang`. |
 | `khi_quyen` | object[] | Khí quyển (lá bay, mưa…): `{ loai, vi_tri?, huong?, mat_do? }`. |
+| `doan_duong` | object[] | Đoạn đường làm đối tượng sân khấu (thường làm vật đỏ): `{ id, vi_tri?: "sau_lung" \| "truoc_mat" \| "tu_trai" \| "giua" \| "tu_phai", nhan_vat?, tu?, den?, vat_do? }`. |
 
 ### `nhan_vat[]` — mỗi nhân vật
 
 | Trường | Kiểu | Bắt buộc | Mô tả |
 |---|---|---|---|
-| `id` | string | ✅ | Định danh, thường `"hero"`. |
+| `id` | string | ✅ | Định danh (VD `"hero"`, hoặc tên nhân vật thứ hai như `"em"`). |
+| `vai` | string | | `"lu_khach"` (mực đậm, mặc định) hoặc `"nguoi_b"` (bóng mực nhạt hơn, hơi gọn hơn). |
+| `toc_duoi_ngua` | boolean | | `true` để thêm tóc buộc đuôi ngựa phía sau đầu (thường dùng với `vai: "nguoi_b"`). |
 | `vi_tri` | string | | Khe vị trí: `xa_trai`, `trai`, `giua_trai`, `giua`, `giua_phai`, `phai`, `xa_phai`. |
 | `ngoi_tren` | string | | Ghế mà nhân vật ngồi, dạng `"<id_ghế>.mat_ghe"`. VD: `"ghe.mat_ghe"`. |
 | `ngoi_vao` | string | | Bàn mà nhân vật hướng vào. Engine tự kê ghế sát bàn. VD: `"ban"`. |
@@ -48,7 +52,7 @@ Mọi vị trí dùng khe ngữ nghĩa (`trai`, `giua`, `phai`…); kích thư�
 | `nghieng` | string | | Độ nghiêng: `thang`, `nhe_truoc`, `guc`, `nga_lung`. |
 | `nhin_theo` | string | | id đạo cụ hoặc nhân vật mà mắt nhìn theo. VD: `"laptop"`. |
 | `lop` | string | | Lớp sâu: `nen`, `giua`, `truoc`. Mặc định `giua`. |
-| `cam_chen_tra` | boolean | | `true` nếu Lữ khách cầm chén trà. |
+| `cam_chen_tra` | boolean | | `true` nếu nhân vật cầm chén trà (mặc định nét mực + wash; chỉ đổi đỏ nếu có `vat_do_tren_tay`). |
 
 ### `dao_cu[]` — mỗi đạo cụ
 
@@ -71,8 +75,9 @@ Mọi vị trí dùng khe ngữ nghĩa (`trai`, `giua`, `phai`…); kích thư�
 | `moc` | string | ✅ | Mốc thời gian: `bat_dau`, `dong_1`, `dong_2`, `dong_3`, `dong_4`, `cu_lat`. |
 | `sau` | number | | Trễ so với mốc (giây). VD: `0.4` = sau mốc 0.4s. |
 | `thoi_luong` | number | | Thời lượng chuyển động (giây). |
-| `nhan_vat` | object | | `{ "<id>": { tu_the?, di_toi?, huong?, nghieng?, nhin_theo?, cam_chen_tra?, dung_day? } }` |
-| `dao_cu` | object | | `{ "<id>": { trang_thai?, cam_boi?, dat_tren?, di_toi?, bay_len?, tach_doi?, khoi? } }` |
+| `nhan_vat` | object | | `{ "<id>": { tu_the?, di_toi?, di_vao?, di_ra?, huong?, nghieng?, nhin_theo?, nhin_nhau?, khung_lai?, lui_buoc?, quay_dau?, tha_roi?, cam_chen_tra?, dung_day? } }` |
+| `dao_cu` | object | | `{ "<id>": { trang_thai?, cam_boi?, dat_tren?, di_toi?, bay_len?, tach_doi?, khoi?, tha_roi? } }` |
+| `doan_duong` | object | | `{ "<id_doan_duong>": { duong_mo?, doi_do? } }` |
 
 ---
 

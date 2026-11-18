@@ -23,6 +23,7 @@ import {
   StageScript,
 } from './stageScriptSchema';
 import {
+  EvaluatedTerrainSegment,
   normalizeTerrainConfig,
   resolveXCoord,
   STAGE_VIEWBOX,
@@ -383,6 +384,29 @@ export const DeclarativeStagePlayer: React.FC<{
     }
   }
 
+  const blendedTerrainSegments: EvaluatedTerrainSegment[] =
+    compiledZero && isLoopClosing
+      ? compiledNow.terrainSegments.map((curS) => {
+          const zeroS = compiledZero.terrainSegments.find(
+            (zs) => zs.id === curS.id
+          );
+          if (!zeroS) {
+            return { ...curS, opacity: curS.opacity * (1 - loopBlend) };
+          }
+          return {
+            ...curS,
+            strokeWidth: lerpNum(curS.strokeWidth, zeroS.strokeWidth, loopBlend),
+            opacity: lerpNum(curS.opacity, zeroS.opacity, loopBlend),
+            color:
+              curS.color === zeroS.color
+                ? curS.color
+                : interpolateColors(loopBlend, [0, 1], [curS.color, zeroS.color]),
+            isAccentActive:
+              loopBlend < 0.65 ? curS.isAccentActive : zeroS.isAccentActive,
+          };
+        })
+      : compiledNow.terrainSegments;
+
   const activeOpenUmbrella = blendedProps.find(
     ({ prop: p }) =>
       p.opacity > 0.3 &&
@@ -601,12 +625,13 @@ export const DeclarativeStagePlayer: React.FC<{
     const actorDirSign = actor.facing === 'left' ? -1 : 1;
 
     const actorSpec = (script.actors ?? []).find((x) => x.id === actor.id);
-    // Quy tắc 3: ở kịch bản mới, chén trà trên tay Lữ khách mặc định màu mực (inkPrimary),
+    // Quy tắc 3: ở kịch bản mới, chén trà trên tay Lữ khách mặc định màu mực (inkPrimary) kiểu nét+wash T2,
     // chỉ đổi đỏ sau Pivot nếu `teaCupRed === true` (hoặc kịch bản legacy giữ nguyên tương thích cũ).
-    const teaCupHighlightColor =
-      isAfterPivot && (isLegacy || actorSpec?.teaCupRed === true)
-        ? propAccentColor
-        : palette.inkPrimary;
+    const isTeaCupRedNow =
+      isAfterPivot && (isLegacy || actorSpec?.teaCupRed === true);
+    const teaCupHighlightColor = isTeaCupRedNow
+      ? propAccentColor
+      : palette.inkPrimary;
 
     const actorStageGate =
       frame > timeline.pivotFrame ? state.drawProgress : 1;
@@ -682,6 +707,9 @@ export const DeclarativeStagePlayer: React.FC<{
               accentColor={teaCupHighlightColor}
               bgColor={palette.background}
               showTeaCup={actor.showTeaCup}
+              teaCupRed={isTeaCupRedNow}
+              role={actor.role}
+              ponytail={actor.ponytail}
               solidFill={isSolidStyle}
               strokeWidth={effStroke}
               opacity={effOpacity}
@@ -971,6 +999,7 @@ export const DeclarativeStagePlayer: React.FC<{
         <g transform={`translate(${parallax.mid.toFixed(2)}, 0)`}>
           <TerrainRenderer
             terrain={effectiveTerrain}
+            terrainSegments={blendedTerrainSegments}
             drawProgress={state.drawProgress}
             phase={phase}
             stroke={palette.inkPrimary}

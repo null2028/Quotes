@@ -27,6 +27,7 @@ import type {
   StageLayer,
   StageScript,
   StageTravelerPose,
+  TerrainSegmentSpec,
   TerrainType,
   TimelineCue,
 } from './stageScriptSchema';
@@ -70,12 +71,22 @@ export const SEMANTIC_BEAT_ANCHORS = [
   'cu_lat',
 ] as const;
 
+export const SEMANTIC_ACTOR_ROLES = ['lu_khach', 'nguoi_b'] as const;
+export type SemanticActorRole = (typeof SEMANTIC_ACTOR_ROLES)[number];
+
 export const SEMANTIC_ACTOR_BEAT_VERBS = [
   'tu_the',
   'di_toi',
+  'di_vao',
+  'di_ra',
   'huong',
   'nghieng',
   'nhin_theo',
+  'nhin_nhau',
+  'khung_lai',
+  'lui_buoc',
+  'quay_dau',
+  'tha_roi',
   'cam_chen_tra',
   'dung_day',
 ] as const;
@@ -88,7 +99,10 @@ export const SEMANTIC_PROP_BEAT_VERBS = [
   'bay_len',
   'tach_doi',
   'khoi',
+  'tha_roi',
 ] as const;
+
+export const SEMANTIC_TERRAIN_SEGMENT_VERBS = ['duong_mo', 'doi_do'] as const;
 
 export interface SemanticAtmosphereSpec {
   id?: string;
@@ -98,8 +112,24 @@ export interface SemanticAtmosphereSpec {
   mat_do?: number;
 }
 
+export interface SemanticTerrainSegmentSpec {
+  id: string;
+  vi_tri?: 'sau_lung' | 'truoc_mat' | 'tu_trai' | 'giua' | 'tu_phai';
+  nhan_vat?: string;
+  tu?: SemanticSlot;
+  den?: SemanticSlot;
+  vat_do?: boolean;
+}
+
+export interface SemanticTerrainSegmentBeatAction {
+  duong_mo?: boolean;
+  doi_do?: boolean;
+}
+
 export interface SemanticActorSpec {
   id: string;
+  vai?: SemanticActorRole;
+  toc_duoi_ngua?: boolean;
   vi_tri?: SemanticSlot;
   ngoi_tren?: string; // "<id_ghe>.mat_ghe"
   ngoi_vao?: string; // "<id_ban>" — tự động kê ghế sát bàn và quay mặt nhìn ngang vào bàn
@@ -129,9 +159,16 @@ export interface SemanticPropSpec {
 export interface SemanticActorBeatAction {
   tu_the?: SemanticPoseName;
   di_toi?: SemanticSlot;
+  di_vao?: 'trai' | 'phai' | boolean;
+  di_ra?: 'trai' | 'phai' | boolean;
   huong?: 'trai' | 'phai';
   nghieng?: 'nhe_truoc' | 'guc' | 'thang' | 'nga_lung';
   nhin_theo?: string | null;
+  nhin_nhau?: boolean | string;
+  khung_lai?: boolean;
+  lui_buoc?: boolean | 'nua_buoc' | 'mot_buoc';
+  quay_dau?: boolean | 'trai' | 'phai';
+  tha_roi?: boolean | string;
   cam_chen_tra?: boolean;
   dung_day?: boolean;
 }
@@ -144,6 +181,7 @@ export interface SemanticPropBeatAction {
   bay_len?: boolean;
   tach_doi?: boolean;
   khoi?: boolean;
+  tha_roi?: boolean;
 }
 
 export interface SemanticBeatSpec {
@@ -152,6 +190,7 @@ export interface SemanticBeatSpec {
   thoi_luong?: number;
   nhan_vat?: Record<string, SemanticActorBeatAction>;
   dao_cu?: Record<string, SemanticPropBeatAction>;
+  doan_duong?: Record<string, SemanticTerrainSegmentBeatAction>;
 }
 
 export interface SemanticStageScript {
@@ -162,6 +201,7 @@ export interface SemanticStageScript {
   boi_canh?: {
     dia_hinh?: SemanticTerrainName;
     khi_quyen?: SemanticAtmosphereSpec[];
+    doan_duong?: SemanticTerrainSegmentSpec[];
   };
   vat_do_tren_tay?: string; // "<actorId>.chen_tra" nếu chén trên tay Lữ khách chính là vật đỏ của cú lật
   nhan_vat: SemanticActorSpec[];
@@ -185,6 +225,28 @@ function mapSemanticLayerToStageLayer(
   if (lop === 'nen') return 'far';
   if (lop === 'truoc') return 'fore';
   return 'mid';
+}
+
+function addSecToTimeExpr(baseExpr: string, deltaSec: number): string {
+  const m = baseExpr.match(/^([a-z0-9_]+)([+-]\d+(?:\.\d+)?)?s?$/i);
+  if (!m) return baseExpr;
+  const anchor = m[1];
+  const baseOffset = m[2] ? Number(m[2]) : 0;
+  const total = Number((baseOffset + deltaSec).toFixed(2));
+  if (Math.abs(total) < 0.005) return anchor;
+  return total > 0 ? `${anchor}+${total}s` : `${anchor}${total}s`;
+}
+
+function getMocSortKey(moc: SemanticBeatSpec['moc'], sau = 0): number {
+  const rank: Record<SemanticBeatSpec['moc'], number> = {
+    bat_dau: 0,
+    dong_1: 1,
+    dong_2: 2,
+    dong_3: 3,
+    dong_4: 4,
+    cu_lat: 5,
+  };
+  return (rank[moc] ?? 5) * 100 + (sau ?? 0);
 }
 
 function resolveMocToTimeExpr(moc: SemanticBeatSpec['moc'], sau = 0): string {
@@ -560,10 +622,16 @@ export function compileSemanticStageScript(
     };
   });
 
+  const sortedBeats = [...sem.nhip].sort(
+    (a, b) => getMocSortKey(a.moc, a.sau) - getMocSortKey(b.moc, b.sau)
+  );
+
+  const actorHomeX = new Map<string, number>();
   const compiledActors: ActorSpec[] = sem.nhan_vat.map((a) => {
     const lop: SemanticLayer = a.lop ?? 'giua';
+    const role: SemanticActorRole = a.vai === 'nguoi_b' ? 'nguoi_b' : 'lu_khach';
     const aInfo = rawActorPos.get(a.id)!;
-    let x = transformX(aInfo.rawX);
+    let homeX = transformX(aInfo.rawX);
 
     if (a.ngoi_tren) {
       const [seatId, ancName] = a.ngoi_tren.split('.');
@@ -571,8 +639,50 @@ export function compileSemanticStageScript(
       const seatDef = seat ? BUILT_IN_PROP_CATALOG[seat.type] : undefined;
       const anc = ancName ? seatDef?.anchors?.[ancName] : undefined;
       if (seat && anc) {
-        x = Number((seat.x + anc[0] * seat.scale).toFixed(2));
+        homeX = Number((seat.x + anc[0] * seat.scale).toFixed(2));
       }
+    }
+    actorHomeX.set(a.id, homeX);
+
+    const actorScale =
+      role === 'nguoi_b' ? Number((autoScale * 0.94).toFixed(3)) : autoScale;
+    const edgePad = Math.ceil(13 * actorScale) + 2;
+    const leftEdgeX = Number(Math.max(82, 74 + edgePad).toFixed(2));
+    const rightEdgeX = Number(Math.min(458, 466 - edgePad).toFixed(2));
+
+    let initX = homeX;
+    let initFacing = aInfo.facing;
+    let initEnterAt = a.xuat_hien_tu;
+    let initLeaveAt = a.roi_di_luc;
+    let needsEdgeFade = false;
+
+    const firstDiVaoBeat = sortedBeats.find(
+      (b) => b.nhan_vat?.[a.id]?.di_vao !== undefined
+    );
+    if (firstDiVaoBeat) {
+      const act = firstDiVaoBeat.nhan_vat![a.id]!;
+      const side =
+        act.di_vao === 'trai' || act.di_vao === 'phai'
+          ? act.di_vao
+          : homeX >= STAGE_CENTER_X
+            ? 'phai'
+            : 'trai';
+      initX = side === 'phai' ? rightEdgeX : leftEdgeX;
+      initFacing = side === 'phai' ? 'left' : 'right';
+      if (!initEnterAt) {
+        initEnterAt = resolveMocToTimeExpr(firstDiVaoBeat.moc, firstDiVaoBeat.sau ?? 0);
+      }
+      needsEdgeFade = true;
+    }
+
+    const firstDiRaBeat = sortedBeats.find(
+      (b) => b.nhan_vat?.[a.id]?.di_ra !== undefined
+    );
+    if (firstDiRaBeat && !initLeaveAt) {
+      const dur = firstDiRaBeat.thoi_luong ?? 1.2;
+      const atExpr = resolveMocToTimeExpr(firstDiRaBeat.moc, firstDiRaBeat.sau ?? 0);
+      initLeaveAt = addSecToTimeExpr(atExpr, Math.max(0.25, dur - 0.35));
+      needsEdgeFade = true;
     }
 
     const poseName: SemanticPoseName =
@@ -595,15 +705,17 @@ export function compileSemanticStageScript(
     return {
       id: a.id,
       rig: 'human',
-      x,
+      x: initX,
       yOffset: 0,
-      scale: autoScale,
-      facing: aInfo.facing,
+      scale: actorScale,
+      facing: initFacing,
       pose,
       leanDeg: initLeanDeg,
       sitProgress: aInfo.isSeated ? 1 : 0,
-      colorRole: 'ink',
+      colorRole: role === 'nguoi_b' ? 'secondary' : 'ink',
       focusRole: 'hero',
+      role,
+      ponytail: Boolean(a.toc_duoi_ngua),
       showTeaCup: a.cam_chen_tra ? 1 : 0,
       teaCupRed: isHandCupTwist,
       seatedOn: a.ngoi_tren,
@@ -611,12 +723,35 @@ export function compileSemanticStageScript(
       lookAtTarget: a.nhin_theo,
       semanticLayer: lop,
       layer: mapSemanticLayerToStageLayer(lop),
-      enterAt: a.xuat_hien_tu,
-      leaveAt: a.roi_di_luc,
+      enterAt: initEnterAt,
+      leaveAt: initLeaveAt,
+      fadeDuration: needsEdgeFade ? 0.42 : undefined,
     };
   });
 
   const timeline: TimelineCue[] = [];
+
+  if (sem.vat_do_tren_tay) {
+    const [cupActorId] = sem.vat_do_tren_tay.split('.');
+    const cupActor = compiledActors.find((a) => a.id === cupActorId);
+    const cupScale = cupActor?.scale ?? autoScale;
+    const cupPx2 = 7 * 5 * 0.88 * cupScale * cupScale * PX2_PER_STAGE_UNIT2;
+    if (cupPx2 < MIN_RED_AREA_PX2) {
+      const focusX = actorHomeX.get(cupActorId) ?? STAGE_CENTER_X;
+      const panX = Number(
+        Math.max(-42, Math.min(42, (focusX - STAGE_CENTER_X) * 0.28)).toFixed(2)
+      );
+      timeline.push({
+        at: 'pivot',
+        duration: 1.1,
+        exactDuration: true,
+        target: 'camera',
+        zoom: PIVOT_CAMERA_PUSH_IN_ZOOM,
+        panX,
+        panY: 0,
+      });
+    }
+  }
 
   // Tự động kích hoạt vật đỏ tại cú lật & đo diện tích đỏ SAU khi đã tự căn khung (autoScale)
   for (const p of sem.dao_cu) {
@@ -697,11 +832,76 @@ export function compileSemanticStageScript(
     }
   }
 
-  for (const beat of sem.nhip) {
+  interface LiveActorTracker {
+    id: string;
+    initHomeX: number;
+    x: number;
+    minBackX: number;
+    maxForwardX: number;
+    pivotX: number;
+    postLuiX?: number;
+    pivotFacing: 'left' | 'right';
+    facing: 'left' | 'right';
+    scale: number;
+    leanDeg: number;
+    lookAtTarget: string | null;
+    leftEdgeX: number;
+    rightEdgeX: number;
+    heldProps: Set<string>;
+  }
+
+  const liveActors = new Map<string, LiveActorTracker>();
+  for (const ca of compiledActors) {
+    const scale = ca.scale ?? autoScale;
+    const edgePad = Math.ceil(13 * scale) + 2;
+    const initHomeX = actorHomeX.get(ca.id) ?? Number(ca.x ?? 270);
+    const heldProps = new Set<string>();
+    for (const p of sem.dao_cu) {
+      if (p.cam_boi && p.cam_boi.startsWith(`${ca.id}.`)) {
+        heldProps.add(p.id);
+      }
+    }
+    liveActors.set(ca.id, {
+      id: ca.id,
+      initHomeX,
+      x: Number(ca.x ?? 270),
+      minBackX: initHomeX,
+      maxForwardX: initHomeX,
+      pivotX: initHomeX,
+      pivotFacing: ca.facing ?? 'right',
+      facing: ca.facing ?? 'right',
+      scale,
+      leanDeg: ca.leanDeg ?? 0,
+      lookAtTarget: ca.lookAtTarget ?? null,
+      leftEdgeX: Number(Math.max(82, 74 + edgePad).toFixed(2)),
+      rightEdgeX: Number(Math.min(458, 466 - edgePad).toFixed(2)),
+      heldProps,
+    });
+  }
+
+  for (const beat of sortedBeats) {
     const atExpr = resolveMocToTimeExpr(beat.moc, beat.sau ?? 0);
     const dur = beat.thoi_luong ?? 1.1;
+    const isPivotOrBefore =
+      beat.moc !== 'cu_lat' || (beat.sau ?? 0) <= 0.15;
 
-    for (const [actorId, act] of Object.entries(beat.nhan_vat ?? {})) {
+    // 1. Cập nhật quyền cầm đạo cụ trong nhịp
+    for (const [propId, pact] of Object.entries(beat.dao_cu ?? {})) {
+      if (pact.cam_boi === null || pact.tha_roi) {
+        liveActors.forEach((st) => st.heldProps.delete(propId));
+      } else if (pact.cam_boi) {
+        const [holderId] = pact.cam_boi.split('.');
+        liveActors.forEach((st) => st.heldProps.delete(propId));
+        liveActors.get(holderId)?.heldProps.add(propId);
+      }
+    }
+
+    // 2. Tính chuyển động vị trí trước (để nhin_nhau / quay_dau biết toạ độ mới trong cùng nhịp)
+    const pendingActorCues = new Map<string, TimelineCue>();
+    const actorBeatActions = Object.entries(beat.nhan_vat ?? {});
+
+    for (const [actorId, act] of actorBeatActions) {
+      const st = liveActors.get(actorId);
       const cue: TimelineCue = {
         at: atExpr,
         duration: dur,
@@ -717,22 +917,241 @@ export function compileSemanticStageScript(
       if (act.dung_day || (act.tu_the && act.tu_the !== 'ngoi_tua' && act.di_toi)) {
         cue.sitProgress = 0;
       }
-      if (act.di_toi) {
+
+      if (st) {
+        if (act.di_vao !== undefined) {
+          const destX = act.di_toi
+            ? transformX(SEMANTIC_SLOTS[act.di_toi])
+            : st.initHomeX;
+          cue.toX = destX;
+          if (!act.huong) {
+            const moveDir = destX >= st.x ? 'right' : 'left';
+            cue.facing = moveDir;
+            st.facing = moveDir;
+          }
+          st.x = destX;
+        } else if (act.di_toi) {
+          const destX = transformX(SEMANTIC_SLOTS[act.di_toi]);
+          cue.toX = destX;
+          if (!act.huong && Math.abs(destX - st.x) > 2) {
+            const moveDir = destX >= st.x ? 'right' : 'left';
+            cue.facing = moveDir;
+            st.facing = moveDir;
+          }
+          st.x = destX;
+        } else if (act.di_ra !== undefined) {
+          const side =
+            act.di_ra === 'trai' || act.di_ra === 'phai'
+              ? act.di_ra
+              : st.x >= STAGE_CENTER_X
+                ? 'phai'
+                : 'trai';
+          const destX = side === 'trai' ? st.leftEdgeX : st.rightEdgeX;
+          cue.toX = destX;
+          const moveDir = side === 'trai' ? 'left' : 'right';
+          cue.facing = moveDir;
+          st.facing = moveDir;
+          st.x = destX;
+        }
+
+        if (act.lui_buoc) {
+          const stepUnits = act.lui_buoc === 'mot_buoc' ? 20 : 12;
+          const dirSign = st.facing === 'right' ? 1 : -1;
+          const backX = Number(
+            Math.max(
+              st.leftEdgeX,
+              Math.min(st.rightEdgeX, st.x - dirSign * stepUnits * st.scale)
+            ).toFixed(2)
+          );
+          cue.toX = backX;
+          st.x = backX;
+          st.postLuiX = backX;
+        }
+
+        st.minBackX = Math.min(st.minBackX, st.x);
+        st.maxForwardX = Math.max(st.maxForwardX, st.x);
+        if (isPivotOrBefore) {
+          st.pivotX = st.x;
+          st.pivotFacing = st.facing;
+        }
+      } else if (act.di_toi) {
         cue.toX = transformX(SEMANTIC_SLOTS[act.di_toi]);
       }
+
       if (act.huong) {
         cue.facing = act.huong === 'trai' ? 'left' : 'right';
+        if (st) st.facing = cue.facing;
       }
-      if (act.nghieng === 'guc') cue.leanDeg = 22;
-      else if (act.nghieng === 'nhe_truoc') cue.leanDeg = 11;
-      else if (act.nghieng === 'thang') cue.leanDeg = 0;
-      else if (act.nghieng === 'nga_lung') cue.leanDeg = -3;
+
+      const targetLean =
+        act.nghieng === 'guc'
+          ? 22
+          : act.nghieng === 'nhe_truoc'
+            ? 11
+            : act.nghieng === 'thang'
+              ? 0
+              : act.nghieng === 'nga_lung'
+                ? -3
+                : undefined;
+
+      if (act.khung_lai) {
+        const settleLean = targetLean ?? st?.leanDeg ?? 0;
+        cue.leanDeg = -6;
+        cue.duration = 0.16;
+        if (!cue.pose) cue.pose = 'stand';
+        timeline.push({
+          at: addSecToTimeExpr(atExpr, 0.16),
+          duration: Math.max(0.24, Math.min(0.42, dur - 0.16)),
+          exactDuration: true,
+          target: actorId,
+          leanDeg: settleLean,
+          pose: 'stand',
+        });
+        if (st) st.leanDeg = settleLean;
+      } else if (targetLean !== undefined) {
+        cue.leanDeg = targetLean;
+        if (st) st.leanDeg = targetLean;
+      }
+
       if (act.nhin_theo !== undefined) {
         cue.lookAtTarget = act.nhin_theo;
+        if (st) st.lookAtTarget = act.nhin_theo;
       }
       if (act.cam_chen_tra !== undefined) {
         cue.showTeaCup = act.cam_chen_tra ? 1 : 0;
       }
+
+      pendingActorCues.set(actorId, cue);
+    }
+
+    // 3. Xử lý nhin_nhau, quay_dau, tha_roi sau khi đã cập nhật vị trí mọi nhân vật
+    for (const [actorId, act] of actorBeatActions) {
+      const st = liveActors.get(actorId);
+      const cue = pendingActorCues.get(actorId)!;
+      if (!st) {
+        timeline.push(cue);
+        continue;
+      }
+
+      if (act.nhin_nhau !== undefined && act.nhin_nhau !== false) {
+        const partnerId =
+          typeof act.nhin_nhau === 'string'
+            ? act.nhin_nhau
+            : compiledActors.find((x) => x.id !== actorId)?.id;
+        const partnerSt = partnerId ? liveActors.get(partnerId) : undefined;
+        if (partnerId && partnerSt) {
+          const myFacing: 'left' | 'right' =
+            partnerSt.x >= st.x ? 'right' : 'left';
+          const partnerFacing: 'left' | 'right' =
+            st.x >= partnerSt.x ? 'right' : 'left';
+          if (!act.huong) {
+            cue.facing = myFacing;
+            st.facing = myFacing;
+          }
+          if (act.nhin_theo === undefined) {
+            cue.lookAtTarget = partnerId;
+            st.lookAtTarget = partnerId;
+          }
+          if (isPivotOrBefore) {
+            st.pivotFacing = st.facing;
+          }
+
+          const partnerAct = beat.nhan_vat?.[partnerId];
+          const partnerCue = pendingActorCues.get(partnerId);
+          if (partnerCue) {
+            if (!partnerAct?.huong && !partnerAct?.quay_dau) {
+              partnerCue.facing = partnerFacing;
+              partnerSt.facing = partnerFacing;
+            }
+            if (partnerAct?.nhin_theo === undefined) {
+              partnerCue.lookAtTarget = actorId;
+              partnerSt.lookAtTarget = actorId;
+            }
+          } else {
+            partnerSt.facing = partnerFacing;
+            partnerSt.lookAtTarget = actorId;
+            timeline.push({
+              at: atExpr,
+              duration: dur,
+              exactDuration: true,
+              target: partnerId,
+              facing: partnerFacing,
+              lookAtTarget: actorId,
+            });
+          }
+          if (isPivotOrBefore) {
+            partnerSt.pivotFacing = partnerSt.facing;
+          }
+        }
+      }
+
+      if (act.quay_dau) {
+        const returnFacing = st.facing;
+        const backFacing: 'left' | 'right' =
+          act.quay_dau === 'trai'
+            ? 'left'
+            : act.quay_dau === 'phai'
+              ? 'right'
+              : returnFacing === 'right'
+                ? 'left'
+                : 'right';
+        const turnDelay = act.lui_buoc ? Math.min(0.26, dur * 0.28) : 0;
+        const turnAt = turnDelay > 0 ? addSecToTimeExpr(atExpr, turnDelay) : atExpr;
+        const glanceHold = Math.max(0.75, Math.min(1.45, dur * 0.66));
+        const returnAt = addSecToTimeExpr(turnAt, glanceHold);
+
+        if (turnDelay === 0) {
+          cue.facing = backFacing;
+          cue.lookAtTarget = null;
+          cue.leanDeg = 7;
+          cue.duration = 0.28;
+        } else {
+          timeline.push({
+            at: turnAt,
+            duration: 0.25,
+            exactDuration: true,
+            target: actorId,
+            facing: backFacing,
+            lookAtTarget: null,
+            leanDeg: 7,
+          });
+        }
+        timeline.push({
+          at: returnAt,
+          duration: 0.28,
+          exactDuration: true,
+          target: actorId,
+          facing: returnFacing,
+          lookAtTarget: st.lookAtTarget,
+          leanDeg: st.leanDeg,
+        });
+      }
+
+      if (act.tha_roi) {
+        const dropPropId =
+          typeof act.tha_roi === 'string'
+            ? act.tha_roi
+            : Array.from(st.heldProps)[0];
+        if (dropPropId) {
+          st.heldProps.delete(dropPropId);
+          const dirSign = st.facing === 'right' ? 1 : -1;
+          const dropX = Number(
+            Math.max(84, Math.min(456, st.x + dirSign * Math.max(20 * st.scale, 26))).toFixed(2)
+          );
+          timeline.push({
+            at: atExpr,
+            duration: Math.min(dur, 0.52),
+            exactDuration: true,
+            target: dropPropId,
+            follow: null,
+            toX: dropX,
+            toY: 0,
+            dropGravity: true,
+            variant: '',
+          });
+        }
+      }
+
       timeline.push(cue);
     }
 
@@ -763,6 +1182,22 @@ export function compileSemanticStageScript(
           }
         }
       }
+      if (pact.tha_roi) {
+        const holderEntry = Array.from(liveActors.values()).find((st) =>
+          st.heldProps.has(propId)
+        );
+        const dirSign = holderEntry?.facing === 'left' ? -1 : 1;
+        const baseX = holderEntry?.x ?? propWorldPos.get(propId)?.x ?? 270;
+        const sc = holderEntry?.scale ?? autoScale;
+        cue.follow = null;
+        cue.toX = Number(Math.max(84, Math.min(456, baseX + dirSign * Math.max(20 * sc, 26))).toFixed(2));
+        cue.toY = 0;
+        cue.dropGravity = true;
+        cue.duration = Math.min(dur, 0.52);
+        if (catDef?.variants?.cam && pact.trang_thai === undefined) {
+          cue.variant = '';
+        }
+      }
       if (pact.dat_tren) {
         const [hostId, anchorName] = pact.dat_tren.split('.');
         const host = propWorldPos.get(hostId);
@@ -791,7 +1226,97 @@ export function compileSemanticStageScript(
       }
       timeline.push(cue);
     }
+
+    for (const [segId, sact] of Object.entries(beat.doan_duong ?? {})) {
+      if (sact.doi_do) {
+        timeline.push({
+          at: atExpr,
+          duration: Math.min(dur, 0.28),
+          exactDuration: true,
+          target: segId,
+          colorRole: 'accent',
+          strokeWidth: 3.2,
+          opacity: 1,
+        });
+      }
+      if (sact.duong_mo) {
+        timeline.push({
+          at: atExpr,
+          duration: Math.max(0.8, dur),
+          exactDuration: true,
+          target: segId,
+          opacity: 0,
+        });
+      }
+    }
   }
+
+  const compiledTerrainSegments: TerrainSegmentSpec[] = (
+    sem.boi_canh?.doan_duong ?? []
+  ).map((seg) => {
+    let segStartX = 96;
+    let segEndX = 240;
+
+    if (seg.tu && seg.den) {
+      segStartX = transformX(SEMANTIC_SLOTS[seg.tu]);
+      segEndX = transformX(SEMANTIC_SLOTS[seg.den]);
+    } else if (seg.nhan_vat) {
+      const st = liveActors.get(seg.nhan_vat);
+      if (st) {
+        const anchorX =
+          st.pivotFacing === 'right'
+            ? Math.min(st.pivotX, st.postLuiX ?? st.pivotX)
+            : Math.max(st.pivotX, st.postLuiX ?? st.pivotX);
+        const dirSign = st.pivotFacing === 'right' ? 1 : -1;
+        if (seg.vi_tri === 'truoc_mat') {
+          segStartX = anchorX + dirSign * 10;
+          segEndX = anchorX + dirSign * 130;
+        } else {
+          // Đoạn đường phía sau lưng nhân vật dọc quãng đường đã bước
+          if (dirSign >= 0) {
+            segEndX = Math.max(106, anchorX - 7);
+            segStartX = Math.max(84, Math.min(st.initHomeX - 24, segEndX - 118));
+          } else {
+            segEndX = Math.min(434, anchorX + 7);
+            segStartX = Math.min(456, Math.max(st.initHomeX + 24, segEndX + 118));
+          }
+        }
+      }
+    } else if (seg.vi_tri === 'giua') {
+      segStartX = 200;
+      segEndX = 340;
+    } else if (seg.vi_tri === 'tu_phai') {
+      segStartX = 285;
+      segEndX = 435;
+    } else {
+      segStartX = 105;
+      segEndX = 245;
+    }
+
+    const s0 = Number(Math.max(76, Math.min(segStartX, segEndX)).toFixed(2));
+    const s1 = Number(Math.min(464, Math.max(segStartX, segEndX)).toFixed(2));
+
+    if (seg.vat_do) {
+      timeline.push({
+        at: 'pivot+0.25s',
+        duration: 0.22,
+        exactDuration: true,
+        target: seg.id,
+        colorRole: 'accent',
+        strokeWidth: 3.2,
+        opacity: 1,
+      });
+    }
+
+    return {
+      id: seg.id,
+      startX: s0,
+      endX: s1,
+      colorRole: 'ink',
+      strokeWidth: 1.35,
+      opacity: 0.9,
+    };
+  });
 
   return {
     sceneId: sem.sceneId,
@@ -810,6 +1335,7 @@ export function compileSemanticStageScript(
       y: 352,
       startX: 74,
       endX: 466,
+      segments: compiledTerrainSegments.length > 0 ? compiledTerrainSegments : undefined,
     },
     atmosphere,
     actors: compiledActors,
