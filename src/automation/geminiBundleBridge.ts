@@ -27,6 +27,7 @@ import {
 } from './captionBuilder';
 import { ensureValidPivotSubstring } from './validator';
 import { auditVietnameseSyllables } from '../engine/timelineSync';
+import { isGoiChen, parseGoiChen, GoiChenResult } from '../stage/goiChenParser';
 
 export interface StageLayoutWarning {
   code: 'HEADROOM_OVERLAP' | 'EDGE_SAFETY' | 'POST_COLLISION';
@@ -1143,6 +1144,92 @@ export function sanitizeGeneratedTsxSceneCode(
 }
 
 /**
+ * Lỗi validation Gói Chén — mang theo danh sách lỗi để UI hiện từng dòng.
+ */
+export class GoiChenValidationError extends Error {
+  public readonly errors: string[];
+  constructor(errors: string[]) {
+    super(errors.join('\n'));
+    this.name = 'GoiChenValidationError';
+    this.errors = errors;
+  }
+}
+
+/**
+ * Chuyển đổi Gói Chén đã validate → SanitizedCupBundle.
+ */
+function convertGoiChenToBundle(
+  obj: Record<string, unknown>,
+  options?: {
+    defaultMode?: 'create_new' | 'overwrite_cup';
+    targetCupId?: string;
+    fallbackCupProps?: {
+      title?: string;
+      segments?: string[];
+      pivotWord?: string;
+      textFormat?: 'POEM' | 'PROSE';
+    };
+  }
+): SanitizedCupBundle {
+  const result = parseGoiChen(obj);
+  if (!result.ok || !result.compiled) {
+    throw new GoiChenValidationError(result.errors);
+  }
+
+  const segments = result.cau ?? [];
+  const pivotWord = result.cuLat ?? '';
+  const title = result.tieuDe ?? 'Gói Chén';
+  const author = result.tacGia ?? '';
+
+  const nonEmptyLines = segments.filter((s) => s.trim().length > 0);
+  const inferredPoem =
+    nonEmptyLines.length >= 2 &&
+    nonEmptyLines.every((s) => s.split(/\s+/).length <= 10 && s.length <= 54);
+  const textFormat: 'POEM' | 'PROSE' = inferredPoem ? 'POEM' : 'PROSE';
+
+  const syl = auditVietnameseSyllables(segments);
+  const fontSizeScale =
+    textFormat === 'POEM' && syl.count > 20 ? 0.84 : 1.0;
+
+  const requestedMode =
+    options?.defaultMode ?? 'create_new';
+
+  return {
+    bundleVersion: 'goichen_1',
+    mode: requestedMode,
+    targetCupId: options?.targetCupId,
+    title,
+    author,
+    textFormat,
+    segments,
+    pivotWord,
+    fontSizeScale,
+    themeId: 'MINIMAL_LIGHT',
+    pacingMode: 'WRY_BATHOS',
+    durationMode: 'AUTO_SEED',
+    targetDurationSeconds: 15,
+    stageTuning: { offsetX: 0, offsetY: 0, scale: 1, strokeScale: 1 },
+    audioMode: 'FOLEY_MASTER',
+    foleyPivotStyle: 'AUTO',
+    publishSlot: 'Anytime',
+    publishMood: '',
+    publishTopic: '',
+    customProps: {},
+    stageScript: result.compiled,
+    syllableCount: syl.count,
+    syllableLabel: syl.label,
+    layoutWarnings: [],
+    autoFixesApplied: ['Gói Chén v1 → biên dịch ngữ nghĩa tự động'],
+    engineCapabilities: {
+      hasArticulatedProps: false,
+      hasCustomTerrain: false,
+      hasCustomActorRig: false,
+      hasCustomTsxCode: false,
+    },
+  };
+}
+
+/**
  * Chuẩn hóa toàn diện gói JSON dán từ Gemini Web thành SanitizedCupBundle sạch 100%.
  */
 export function sanitizeAndNormalizeCupBundle(
@@ -1163,6 +1250,11 @@ export function sanitizeAndNormalizeCupBundle(
 
   if (!isRecord(parsedRoot)) {
     throw new Error('Gói dữ liệu phải là một đối tượng JSON ({ ... }).');
+  }
+
+  // ── Nhận dạng Gói Chén (phien_ban_goi + cau + cu_lat) ──
+  if (isGoiChen(parsedRoot)) {
+    return convertGoiChenToBundle(parsedRoot, options);
   }
 
   const autoFixes: string[] = [];

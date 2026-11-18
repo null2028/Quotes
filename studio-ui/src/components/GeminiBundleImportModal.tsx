@@ -22,7 +22,9 @@ import {
   GEMINI_SKILL_NAME,
   buildGeminiSkillZipBytes,
   sanitizeAndNormalizeCupBundle,
+  GoiChenValidationError,
 } from '../../../src/automation/geminiBundleBridge';
+import { isGoiChen, parseGoiChen } from '../../../src/stage/goiChenParser';
 import {
   THEME_PALETTES,
   isDarkThemePalette,
@@ -54,6 +56,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copiedSkillMd, setCopiedSkillMd] = useState(false);
+  const [copiedGoiChenErrors, setCopiedGoiChenErrors] = useState(false);
   const [downloadedType, setDownloadedType] = useState<'zip' | 'md' | null>(null);
 
   const livePreviewCheck = useMemo(() => {
@@ -71,10 +74,28 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
             }
           : undefined,
       });
-      return { ok: true as const, data: parsed };
+      // Detect if this was legacy JSON (not Gói Chén)
+      let isLegacy = false;
+      try {
+        const rawObj = JSON.parse(rawPaste.trim().replace(/^```json\s*/, '').replace(/```\s*$/, ''));
+        if (rawObj && typeof rawObj === 'object' && !isGoiChen(rawObj)) {
+          isLegacy = true;
+        }
+      } catch { /* ignore */ }
+      return { ok: true as const, data: parsed, isLegacy };
     } catch (err: unknown) {
+      if (err instanceof GoiChenValidationError) {
+        return {
+          ok: false as const,
+          isGoiChenError: true as const,
+          goiChenErrors: err.errors,
+          error: err.message,
+        };
+      }
       return {
         ok: false as const,
+        isGoiChenError: false as const,
+        goiChenErrors: [] as string[],
         error: err instanceof Error ? err.message : String(err),
       };
     }
@@ -339,11 +360,22 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                   className={`p-3.5 rounded-xl border text-xs space-y-2 ${
                     livePreviewCheck.ok
                       ? 'bg-emerald-500/[0.08] border-emerald-600/30 text-tea-ink'
-                      : 'bg-red-500/[0.08] border-red-500/30 text-red-900'
+                      : livePreviewCheck.isGoiChenError
+                        ? 'bg-red-500/[0.08] border-red-500/30 text-red-900'
+                        : 'bg-red-500/[0.08] border-red-500/30 text-red-900'
                   }`}
                 >
                   {livePreviewCheck.ok ? (
                     <>
+                      {/* Legacy warning banner */}
+                      {livePreviewCheck.isLegacy && (
+                        <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-[11px] text-amber-950 flex items-start gap-1.5">
+                          <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                          <span className="font-semibold">
+                            ⚠️ Định dạng cũ — vẫn mở được, nên làm lại bằng skill mới
+                          </span>
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="font-bold text-emerald-900 flex items-center gap-1.5">
                           <CheckCircle2 className="w-4 h-4 text-emerald-700" />
@@ -446,6 +478,43 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                           ))}
                         </div>
                       )}
+                    </>
+                  ) : livePreviewCheck.isGoiChenError ? (
+                    <>
+                      <div className="font-bold text-red-900 flex items-center gap-1.5">
+                        <X className="w-4 h-4 text-red-700" />
+                        ❌ Gói Chén có {livePreviewCheck.goiChenErrors.length} lỗi
+                      </div>
+                      <ul className="list-none space-y-1 text-[11px] font-mono">
+                        {livePreviewCheck.goiChenErrors.map((e, i) => (
+                          <li key={i} className="flex items-start gap-1.5">
+                            <span className="text-red-600 shrink-0">•</span>
+                            <span>{e}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const text = `Gói Chén của bạn bị tool báo các lỗi sau, hãy sửa và xuất lại toàn bộ gói:\n${livePreviewCheck.goiChenErrors.map(e => `• ${e}`).join('\n')}`;
+                          await navigator.clipboard.writeText(text);
+                          setCopiedGoiChenErrors(true);
+                          setTimeout(() => setCopiedGoiChenErrors(false), 2400);
+                        }}
+                        className="mt-1 px-3 py-1.5 rounded-lg bg-red-700/10 border border-red-500/30 text-red-900 text-[11px] font-semibold flex items-center gap-1.5 hover:bg-red-700/20 transition"
+                      >
+                        {copiedGoiChenErrors ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            Đã copy!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            Copy lỗi cho Gemini
+                          </>
+                        )}
+                      </button>
                     </>
                   ) : (
                     <div className="whitespace-pre-wrap font-mono text-[11px]">
