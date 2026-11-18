@@ -152,6 +152,13 @@ Q118,Cuộc sống,Cuộc sống,M5,Thiên nhiên mở,gánh,1
 Q134,Tình yêu,Tình yêu,M1,Không gian ký hiệu,trang giấy,2
 Q139,Tình yêu,Tình yêu,M2,Không gian ký hiệu,đường kẻ,2
 Q100,Cuộc sống,Cuộc sống,M7,Thiên nhiên mở,,1
+Q155,Tình yêu,Tình yêu,M1,Phòng trong nhà,cửa nhà,2
+Q156,Cuộc sống,Cuộc sống,M7,Thiên nhiên mở,cây; hoa,1
+Q157,Tình yêu,Tình yêu,M1,Thiên nhiên mở,hoa,1
+Q158,Tuổi thơ,"Ký ức, gia đình, tình bạn",M3,"Phố, ngõ",con đường; nhà phố,1
+Q159,Tình yêu,Tình yêu,M3,Phòng trong nhà,giường; ghế trống; cửa sổ,2
+Q160,Cuộc sống,Cuộc sống,M1,Quán,điện thoại; ly cà phê,1
+Q161,Tình yêu,Tình yêu,M8,Quán,ly rượu; bàn; đèn,2
 W070,Tình yêu,Tình yêu,M4,Phòng trong nhà,cửa sổ; chén trà,1
 W065,Tình yêu,Tình yêu,M2,Quán,ly cà phê,2
 W004,Tình yêu,Tình yêu,M1,"Phố, ngõ",điện thoại,2
@@ -224,3 +231,33 @@ W006,Tình yêu,Tình yêu,M8,"Phố, ngõ",,2
 W032,Cuộc sống,Cuộc sống,M1,Thiên nhiên mở,,2
 W036,Cuộc sống,Cuộc sống,M1,Hiên trà,ấm trà; bảng tính,1
 W018,Tình yêu,Tình yêu,M4,Thiên nhiên mở,mưa,2
+W073,Tình yêu,Tình yêu,M1,Phòng trong nhà,cuốn sách; phong thư; bàn,1
+W074,Tình yêu,Tình yêu,M1,Hiên trà,chén trà; bàn,1
+W075,Công sở,Công sở,M8,Văn phòng,bàn làm việc; chồng hồ sơ; đèn,1
+W076,Tình yêu,Tình yêu,M1,Quán,ly cà phê; bàn,1
+W077,Tình yêu,Tình yêu,M4,Phòng trong nhà,cửa sổ; mặt trăng,1
+W078,Tình yêu,Tình yêu,M1,Thiên nhiên mở,cây,2
+W079,Tình yêu,Tình yêu,M1,Phòng trong nhà,trang giấy; bàn,1
+W080,Tình yêu,Tình yêu,M1,Quán,bát cơm; bàn,2
+W081,Tình yêu,Tình yêu,M1,Hiên trà,chén trà; lá rơi,1
+W082,Công sở,Công sở,M1,Văn phòng,lịch bàn; điện thoại; bàn làm việc,1
+W083,Công sở,Công sở,M8,Văn phòng,bàn làm việc; nhà nhỏ; đèn,2
+W084,Tình yêu,Tình yêu,M8,"Phố, ngõ",ví,2
+W085,Tình yêu,Tình yêu,M2,Hiên trà,chén trà; bàn,2
+W086,Tình yêu,Tình yêu,M1,Không gian ký hiệu,trái tim; phong thư,2
+W087,Tình yêu,Tình yêu,M1,Hiên trà,chén trà,1
+W088,Tình yêu,Tình yêu,M1,Hiên trà,ấm trà; chén trà,1
+W089,Tình yêu,Tình yêu,M4,Phòng trong nhà,lịch bàn; bàn,1
+W090,Tình yêu,Tình yêu,M1,Hiên trà,phong thư; bàn,1
+W091,Tình yêu,Tình yêu,M1,Hiên trà,chén trà; hoa; bàn,2
+W092,Tình yêu,Tình yêu,M7,Phòng trong nhà,đèn; bàn,1
+W093,Công sở,Công sở,M1,Văn phòng,cuốn sách; hoa; bàn làm việc,1
+W094,Công sở,Công sở,M8,Văn phòng,bàn làm việc; bảng tính; cửa sổ,1
+W095,Công sở,Công sở,M8,Hiên trà,ghế trống; ấm trà; bàn,2
+W096,Tình yêu,Tình yêu,M7,Phòng trong nhà,chén trà; cửa sổ; mặt trăng,1
+W097,Tình yêu,Tình yêu,M4,Hiên trà,ấm trà; chén trà,2
+W098,Tình yêu,Tình yêu,M1,Không gian ký hiệu,hoa; bàn,1
+W099,Tình yêu,Tình yêu,M1,"Phố, ngõ",đèn lồng; mái hiên,1
+W100,Tình yêu,Tình yêu,M2,"Phố, ngõ",mái hiên; lá rơi,2
+W101,Tình yêu,Tình yêu,M1,Quán,cuốn sách; chén trà,1
+W102,Tình yêu,Tình yêu,M4,Hiên trà,chén trà; khăn len,1

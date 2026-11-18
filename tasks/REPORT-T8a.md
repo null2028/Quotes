@@ -1,0 +1,5 @@
+1. **Tổng quote đã phân tích**: **262/262 quote** (`Q`: 160, `W`: 102 — bổ sung đủ 37 quote thiếu vào `docs/motif/quote-motif-map.csv`; `37/262 = 14.1%` chỉ cần nhân vật/địa hình/khí quyển).
+2. **Số họ đạo cụ**: **12 họ tham số** (`do_chua`, `mat_phang`, `khung`, `giay`, `cay_co`, `do_mang`, `ghe`, `vat_tron`, `man_hinh`, `anh_sang`, `ky_hieu`, `nha_xe`) kèm tham số, preset không dấu và alias `propCatalog` tại `docs/motif/HO-DAO-CU.md`.
+3. **Độ phủ cộng dồn (Đủ 100% đạo cụ / Chạm ≥1 đạo cụ chính + 0-prop)**: **3 họ đầu**: **31.3%** (`82/262`) / **53.4%** (`140/262`) · **6 họ đầu**: **53.8%** (`141/262`) / **73.3%** (`192/262`) · **Toàn bộ 12 họ**: **92.4%** (`242/262`) / **94.7%** (`248/262`).
+4. **Đạo cụ ngoài họ**: **13 đạo cụ lẻ** (`cân`, `đàn`, `đồng hồ cát`, `ống nghiệm`, `ong`, `chuồn chuồn`, `hòn đá`, `kẹo`, `cọ vẽ`, `bàn ủi`, `lưới`, `sầu riêng`, `cần câu` — chỉ rải ở `20/262` quote = `7.6%`, 8 món chỉ gặp 1 lần).
+5. **Bộ bối cảnh (`docs/motif/BO-BOI-CANH.md`)**: **6 bộ chính** phủ **89.7%** (`235/262`) + **3 bộ phụ** (`Quán`, `Nhà quê, mâm cơm`, `Ga tàu`) phủ **10.3%** (`27/262`) = **100%** kho quote; không sửa code engine.
