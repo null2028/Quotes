@@ -1,6 +1,7 @@
 import { BUILT_IN_PROP_CATALOG } from './propCatalog';
 import {
   AnchorKind,
+  AUTO_FRAME_MAX_HEIGHT_RATIO,
   AUTO_FRAME_MIN_TOP_MARGIN_RATIO,
   AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO,
   AUTO_FRAME_TARGET_WIDTH_RATIO,
@@ -323,6 +324,10 @@ export { AUTO_FRAME_TARGET_WIDTH_RATIO, AUTO_FRAME_MIN_TOP_MARGIN_RATIO };
 // Đường đất y = 352, đỉnh vùng hình STAGE_VB_Y0 = 126, cao STAGE_VB_H = 250 -> lề trên tối thiểu 12% = 30 đơn vị -> đỉnh cao nhất y = 156 -> chiều cao tối đa từ mặt đất = 352 - 156 = 196 đơn vị
 export const AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS =
   352 - (STAGE_VB_Y0 + STAGE_VB_H * AUTO_FRAME_MIN_TOP_MARGIN_RATIO);
+export const AUTO_FRAME_MAX_HEIGHT_UNITS = Math.min(
+  AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS,
+  STAGE_VB_H * AUTO_FRAME_MAX_HEIGHT_RATIO
+);
 export const STAGE_CENTER_X = 270;
 export const SEATED_AT_DESK_OFFSET_UNITS = 24.5;
 
@@ -557,7 +562,7 @@ export function compileSemanticStageScript(
   // đồng thời giữ nguyên lề trên tối thiểu 12% chiều cao vùng hình (AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS).
   const targetWidthUnits = STAGE_VB_W * AUTO_FRAME_TARGET_WIDTH_RATIO;
   const scaleByWidth = targetWidthUnits / rawSpanW;
-  const scaleByHeight = AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS / rawSpanH;
+  const scaleByHeight = AUTO_FRAME_MAX_HEIGHT_UNITS / rawSpanH;
   const heroBaseHeight = sem.nhan_vat.some((a) => !a.ngoi_tren) ? 50 : 47.5;
   const minHeroScale =
     sem.nhan_vat.length > 0

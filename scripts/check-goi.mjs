@@ -32,6 +32,11 @@ const result = parseGoiChen(raw);
 
 if (result.ok) {
   console.log('✅ OK');
+  if (result.warnings && result.warnings.length > 0) {
+    for (const w of result.warnings) {
+      console.log(`  ⚠️ ${w}`);
+    }
+  }
 } else {
   console.log(`❌ ${result.errors.length} lỗi:`);
   for (const err of result.errors) {

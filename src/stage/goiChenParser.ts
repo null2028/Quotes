@@ -28,6 +28,8 @@ export interface GoiChenResult {
   tacGia?: string;
   /** Từng dòng tiếng Việt; chủ kênh copy nguyên gửi lại Gemini web để sửa. */
   errors: string[];
+  /** Cảnh báo vàng (không chặn nhập, vd đạo cụ tầng B `nhap` chưa chuẩn hoá nét). */
+  warnings?: string[];
 }
 
 const GOI_CHEN_VERSION = 1;
@@ -180,13 +182,18 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
   // ── 7. Validate cấu trúc ngữ nghĩa ──
   // Thu thập id các vật bị lỗi tên/neo → không kiểm hình học cho chúng
   const badPropIds = new Set<string>();
+  const draftPropTypes = new Set<string>();
   if (Array.isArray(daoCu)) {
     for (const p of daoCu) {
       if (!p || typeof p !== 'object') continue;
       const po = p as Record<string, unknown>;
       const typeName = String(po.type || '');
       const catDef = BUILT_IN_PROP_CATALOG[typeName];
-      if (!catDef) badPropIds.add(String(po.id || ''));
+      if (!catDef) {
+        badPropIds.add(String(po.id || ''));
+      } else if (catDef.status !== 'duyet') {
+        draftPropTypes.add(typeName);
+      }
       // Vật đặt trên vật chủ không tồn tại
       if (po.dat_tren) {
         const [hostId] = String(po.dat_tren).split('.');
@@ -197,6 +204,9 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
       }
     }
   }
+  const warnings = Array.from(draftPropTypes).map(
+    (t) => `Dùng đạo cụ chưa chuẩn hoá nét: ${t}`
+  );
 
   const structIssues = validateSemanticSpecStructure(semInput);
   for (const issue of structIssues) {
@@ -258,6 +268,7 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
     cuLat: typeof obj.cu_lat === 'string' ? obj.cu_lat : undefined,
     tacGia: typeof obj.tac_gia === 'string' ? obj.tac_gia : undefined,
     errors: allErrors,
+    warnings,
   };
 }
 

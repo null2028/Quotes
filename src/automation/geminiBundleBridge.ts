@@ -30,7 +30,7 @@ import { auditVietnameseSyllables } from '../engine/timelineSync';
 import { isGoiChen, parseGoiChen, GoiChenResult } from '../stage/goiChenParser';
 
 export interface StageLayoutWarning {
-  code: 'HEADROOM_OVERLAP' | 'EDGE_SAFETY' | 'POST_COLLISION';
+  code: 'HEADROOM_OVERLAP' | 'EDGE_SAFETY' | 'POST_COLLISION' | 'DRAFT_PROP';
   severity: 'warn' | 'info';
   targetId: string;
   message: string;
@@ -1194,6 +1194,15 @@ function convertGoiChenToBundle(
   const requestedMode =
     options?.defaultMode ?? 'create_new';
 
+  const draftPropWarnings: StageLayoutWarning[] = (result.warnings ?? []).map(
+    (msg, idx) => ({
+      code: 'DRAFT_PROP',
+      severity: 'warn',
+      targetId: `draft_prop_${idx + 1}`,
+      message: msg,
+    })
+  );
+
   return {
     bundleVersion: 'goichen_1',
     mode: requestedMode,
@@ -1218,7 +1227,7 @@ function convertGoiChenToBundle(
     stageScript: result.compiled,
     syllableCount: syl.count,
     syllableLabel: syl.label,
-    layoutWarnings: [],
+    layoutWarnings: draftPropWarnings,
     autoFixesApplied: ['Gói Chén v1 → biên dịch ngữ nghĩa tự động'],
     engineCapabilities: {
       hasArticulatedProps: false,

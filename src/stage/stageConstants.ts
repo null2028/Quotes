@@ -75,11 +75,12 @@ export function computeExpectedCatalogSpanFromCm(kichThuocThatCm: number): numbe
 /**
  * Hằng số Tự căn khung chung cho mọi Chén:
  * - Khung bao chung của nhân vật + đạo cụ + vật đỏ chiếm 58% chiều ngang vùng hình (đã duyệt).
- * - Lữ khách cao tối thiểu 30% chiều cao vùng hình làm mức sàn, vẫn chừa lề trên tối thiểu 12% chiều cao vùng hình.
+ * - Khung bao cảnh không cao quá 60% chiều cao vùng hình; Lữ khách cao tối thiểu 30% làm mức sàn, vẫn chừa lề trên tối thiểu 12%.
  */
 export const AUTO_FRAME_TARGET_WIDTH_RATIO = 0.58;
 export const AUTO_FRAME_MIN_TOP_MARGIN_RATIO = 0.12;
 export const AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO = 0.3;
+export const AUTO_FRAME_MAX_HEIGHT_RATIO = 0.6;
 
 // =====================================================================
 // === HẰNG SỐ NÉT MỰC LỮ KHÁCH & ĐẠO CỤ (trích từ engine cũ 7c1fe76) ===

@@ -15,11 +15,11 @@
 - Agent B: mở đúng thư mục `Quotes-B` rồi mới giao việc.
 
 ## Thứ tự việc của Agent A (kèm model)
-1. T8-do_chua-sua — sửa ấm trà, mâm cơm, chén cầm tay → **Hydrogen**
-2. T5c — siết luật đạo diễn trong skill → **Hydrogen**
-3. T6 — nhân vật thứ hai + động từ, dựng lại Chén 18 → **Argon**
-4. Họ đạo cụ lần lượt (`Đọc tasks/T8-HO.md và làm họ <tên>`): `mat_phang` → `khung` → `giay` → `cay_co` → `do_mang` → **Hydrogen**
-Carbon chỉ dùng khi có lỗi lạ mà Hydrogen/Argon không giải được.
+1. T8-do_chua-sua — sửa ấm trà, mâm cơm, chén cầm tay → **Neon**
+2. T5c — siết luật đạo diễn trong skill → **Neon**
+3. T6 — nhân vật thứ hai + động từ, dựng lại Chén 18 → **Neon**
+4. Họ đạo cụ lần lượt (`Đọc tasks/T8-HO.md và làm họ <tên>`): `mat_phang` → `khung` → `giay` → `cay_co` → `do_mang` → **Neon**
+Carbon chỉ dùng khi có lỗi lạ mà Neon không giải được. Hydrogen (nếu còn) cho sửa vặt 1–2 dòng.
 Chạy quá 20 phút chưa sửa file nào → gõ: "Bạn đã đủ thông tin để sửa chưa? Nếu đủ thì sửa ngay."
 
 ## Sau mỗi task

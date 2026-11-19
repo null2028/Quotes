@@ -17,11 +17,13 @@ import {
 } from '../src/stage/stageConstants.ts';
 import {
   SEMANTIC_ACTOR_BEAT_VERBS,
+  SEMANTIC_ACTOR_ROLES,
   SEMANTIC_BEAT_ANCHORS,
   SEMANTIC_LEANS,
   SEMANTIC_POSES,
   SEMANTIC_PROP_BEAT_VERBS,
   SEMANTIC_SOCKETS,
+  SEMANTIC_TERRAIN_SEGMENT_VERBS,
   SEMANTIC_TERRAINS,
 } from '../src/stage/semanticStage.ts';
 import { AtmosphereTypeEnum } from '../src/stage/stageScriptSchema.ts';
@@ -38,109 +40,287 @@ const REF_GOI_CHEN_PATH = path.join(REF_DIR, 'goi-chen.md');
 const EXAMPLE_Q001_PATH = path.join(REF_DIR, 'q001.json');
 const ZIP_PATH = path.join(SKILL_DIR, 'dao-dien-tra-nguoi.zip');
 
-// ── Build thu-vien.md từ code ─────────────────────────────────────
+const HO_DAO_CU_PATH = path.join(ROOT, 'docs/motif/HO-DAO-CU.md');
+const BO_BOI_CANH_PATH = path.join(ROOT, 'docs/motif/BO-BOI-CANH.md');
+
+// Bối cảnh hợp theo từng mã đạo cụ Tầng A & Tầng B (khớp BO-BOI-CANH.md)
+const PROP_CONTEXTS = {
+  // Tầng A
+  envelope: 'phong_trong_nha, van_phong, hien_tra',
+  wine_jar: 'hien_tra, quan_nho, nha_que',
+  vo_ruou: 'hien_tra, quan_nho, nha_que',
+  small_cup: 'hien_tra, quan_nho, phong_trong_nha',
+  chen_tra: 'hien_tra, quan_nho, phong_trong_nha',
+  box_stack: 'van_phong, phong_trong_nha',
+  umbrella: 'pho_ngo, thien_nhien_mo',
+  bench: 'pho_ngo, hien_tra, ga_tau',
+  cloud_wisp: 'thien_nhien_mo, hien_tra, pho_ngo',
+  std_chair: 'van_phong, phong_trong_nha, quan_nho, nha_que',
+  low_wood_stool: 'hien_tra, nha_que',
+  std_work_desk: 'van_phong, phong_trong_nha',
+  low_tea_table: 'hien_tra, nha_que',
+  desk_calendar: 'van_phong, phong_trong_nha',
+  desk_laptop: 'van_phong, quan_nho',
+  vi_tien: 'van_phong, pho_ngo, quan_nho',
+  thiep: 'phong_trong_nha, hien_tra, khong_gian_ky_hieu',
+  phong_bi: 'van_phong, phong_trong_nha, hien_tra',
+  hoa_don: 'van_phong, quan_nho, phong_trong_nha',
+  porch_window: 'phong_trong_nha, hien_tra, van_phong, quan_nho',
+  am_tra: 'hien_tra, nha_que, quan_nho',
+  bat_com: 'nha_que, phong_trong_nha',
+  ly_ca_phe: 'quan_nho, van_phong',
+  ly_ruou: 'quan_nho, hien_tra',
+  hop_com: 'van_phong, nha_que',
+  mam_com: 'nha_que',
+  // Tầng B (nhap)
+  bridal_veil: 'phong_trong_nha, khong_gian_ky_hieu',
+  dashed_heart: 'khong_gian_ky_hieu',
+  solid_heart: 'khong_gian_ky_hieu',
+  rice_bowl: 'nha_que, phong_trong_nha',
+  tall_cup: 'quan_nho, van_phong',
+  boulder: 'thien_nhien_mo, khong_gian_ky_hieu',
+  street_lamp: 'pho_ngo, ga_tau',
+  warm_house: 'nha_que, pho_ngo, thien_nhien_mo',
+  city_skyline: 'pho_ngo, van_phong',
+  small_boat: 'thien_nhien_mo',
+  kite: 'thien_nhien_mo, khong_gian_ky_hieu',
+  paper_plane: 'thien_nhien_mo, khong_gian_ky_hieu, pho_ngo',
+  bare_tree: 'thien_nhien_mo, pho_ngo',
+  sprout: 'thien_nhien_mo, khong_gian_ky_hieu',
+  campfire: 'hien_tra, thien_nhien_mo',
+  lantern: 'thien_nhien_mo, pho_ngo, hien_tra',
+  seesaw: 'khong_gian_ky_hieu, thien_nhien_mo',
+  hourglass: 'khong_gian_ky_hieu, van_phong, phong_trong_nha',
+  chat_bubble: 'khong_gian_ky_hieu, phong_trong_nha',
+};
+
+const FAMILY_META = {
+  do_chua: { ctx: 'hien_tra, quan_nho, nha_que', anchor: 'tren/cam', red: 'Có' },
+  mat_phang: { ctx: 'van_phong, phong_trong_nha, quan_nho', anchor: 'dat (mat_trai/giua/phai)', red: 'Không (trừ chiec_goi)' },
+  khung: { ctx: 'phong_trong_nha, hien_tra, pho_ngo, nha_que', anchor: 'tuong/dat', red: 'Tuỳ vật (khung_tranh/guong_soi/cua)' },
+  giay: { ctx: 'van_phong, phong_trong_nha, khong_gian_ky_hieu', anchor: 'tren/cam/dat', red: 'Có' },
+  cay_co: { ctx: 'thien_nhien_mo, pho_ngo, hien_tra', anchor: 'dat/tren/cam', red: 'Có (hoa/lá/mầm)' },
+  do_mang: { ctx: 'pho_ngo, phong_trong_nha, ga_tau, hien_tra', anchor: 'cam/tren/dat/tuong', red: 'Có' },
+  ghe: { ctx: 'van_phong, pho_ngo, phong_trong_nha', anchor: 'dat (mat_ghe)', red: 'Không' },
+  vat_tron: { ctx: 'van_phong, phong_trong_nha, thien_nhien_mo, khong_gian_ky_hieu', anchor: 'tuong/tren/troi/cam', red: 'Có' },
+  man_hinh: { ctx: 'van_phong, quan_nho, phong_trong_nha', anchor: 'cam/tren/tuong', red: 'Có' },
+  anh_sang: { ctx: 'phong_trong_nha, quan_nho, pho_ngo', anchor: 'tren/tuong/dat', red: 'Có' },
+  ky_hieu: { ctx: 'khong_gian_ky_hieu', anchor: 'troi/tuong/cam/dat', red: 'Có' },
+  nha_xe: { ctx: 'pho_ngo, ga_tau, nha_que', anchor: 'dat (nen/giua)', red: 'Tuỳ vật (ô cửa/giỏ xe)' },
+};
+
+const TIER_B_NON_RED = new Set(['city_skyline', 'bare_tree', 'boulder']);
+const TIER_B_ANCHORS = {
+  bridal_veil: 'cam/dat',
+  dashed_heart: 'troi/cam/dat',
+  solid_heart: 'troi/cam/dat',
+  rice_bowl: 'tren/cam/dat',
+  tall_cup: 'tren/cam/dat',
+  boulder: 'dat',
+  street_lamp: 'dat',
+  warm_house: 'dat (nen)',
+  city_skyline: 'dat (nen)',
+  small_boat: 'dat',
+  kite: 'troi/cam',
+  paper_plane: 'troi/cam/dat',
+  bare_tree: 'dat',
+  sprout: 'dat/tren',
+  campfire: 'dat',
+  lantern: 'cam/tuong/troi/dat',
+  seesaw: 'dat',
+  hourglass: 'tren/dat',
+  chat_bubble: 'troi',
+};
+
+function parseBoiCanhFromDoc() {
+  const md = fs.readFileSync(BO_BOI_CANH_PATH, 'utf8');
+  const results = [];
+  const sections = md.split(/\n### \d+\.\s+/).slice(1);
+  for (const sec of sections) {
+    const headerLine = sec.split('\n')[0] || '';
+    const m = headerLine.match(/^([^(]+)\(`([^`]+)`\)/);
+    if (!m) continue;
+    const name = m[1].trim();
+    const code = m[2].trim();
+
+    const terrainMatch = sec.match(/Địa hình[^:\n]*:\s*([^\n]+)/);
+    const terrainRaw = terrainMatch ? terrainMatch[1] : 'dia_hinh: "phang"';
+    const terrains = Array.from(
+      new Set(
+        (terrainRaw.match(/\b(phang|doc|doi|nga_re|bo_nuoc|bac_thang)\b/g) || ['phang'])
+      )
+    );
+
+    const propsBlockMatch = sec.match(/- \*\*Đạo cụ mặc định[^\n]*\n([\s\S]*?)(?=\n- \*\*Khí quyển|$)/);
+    const propCodes = [];
+    if (propsBlockMatch) {
+      const codeMatches = propsBlockMatch[1].matchAll(/`([a-z0-9_]+)`/g);
+      for (const cm of codeMatches) {
+        const token = cm[1];
+        if (['nen', 'giua', 'truoc', 'dat', 'tuong', 'troi', 'tren', 'cam', 'dong', 'he_mo', 'be_cua', 'mat_ban_trai', 'mat_ban_giua', 'mat_ban_phai'].includes(token)) {
+          continue;
+        }
+        if (!propCodes.includes(token)) propCodes.push(token);
+      }
+    }
+
+    const atmoMatch = sec.match(/`Atmosphere`:\s*([^\n]+)/);
+    const atmoTokens = atmoMatch
+      ? Array.from(new Set(Array.from(atmoMatch[1].matchAll(/`(rain|wind|leaves|steam|birds|sun|hollow_sun|crescent|ring_pulse)`/g), (x) => x[1])))
+      : [];
+
+    results.push({
+      code,
+      name,
+      terrains,
+      props: propCodes.slice(0, 8),
+      atmo: atmoTokens,
+    });
+  }
+  return results;
+}
+
+function parseTierCFromHoDaoCu() {
+  const md = fs.readFileSync(HO_DAO_CU_PATH, 'utf8');
+  const families = [];
+  const familyRegex = /### Họ (\d+) — `([^`]+)` \(([^·)]+)[^)]*\)\n([\s\S]*?)(?=\n### Họ |\n---\n\n## 4\.)/g;
+  let fm;
+  while ((fm = familyRegex.exec(md)) !== null) {
+    const order = Number(fm[1]);
+    const familyCode = fm[2].trim();
+    const familyLabel = fm[3].trim();
+    const body = fm[4];
+    const items = [];
+    const itemRegex = /^\s*-\s+`([a-z0-9_]+)`\s+\*\(mới — ([^)]+)\)\*/gm;
+    let im;
+    while ((im = itemRegex.exec(body)) !== null) {
+      const presetCode = im[1].trim();
+      const rawDesc = im[2].trim();
+      // Nếu mã đã có trong propCatalog (Tầng A hoặc B) thì không đưa vào Tầng C
+      if (presetCode in BUILT_IN_PROP_CATALOG) continue;
+      // Làm sạch mô tả ngắn, bỏ từ bị cấm nếu có
+      const shortDesc = rawDesc
+        .replace(/`/g, '')
+        .replace(/\b(px|fps|viewBox)\b/gi, '')
+        .replace(/#[0-9A-Fa-f]{3,6}\b/g, '')
+        .trim();
+      items.push({ code: presetCode, desc: shortDesc });
+    }
+    families.push({ order, code: familyCode, label: familyLabel, items });
+  }
+  return families;
+}
+
+function formatPropOneLine(typeName, def, isTierB = false) {
+  const aliasTarget = PROP_FAMILY_ALIASES[typeName];
+  const baseLabel = def.labelVi || typeName;
+  const label = aliasTarget ? `${baseLabel} (alias \`${aliasTarget}\`)` : baseLabel;
+  const ctx = PROP_CONTEXTS[typeName] || 'khong_gian_ky_hieu';
+  const kinds =
+    isTierB && TIER_B_ANCHORS[typeName]
+      ? TIER_B_ANCHORS[typeName]
+      : (def.allowedAnchorKinds || [def.anchorKind || 'dat']).join('/');
+  const anchorKeys = Object.keys(def.anchors || {});
+  const anchorStr = anchorKeys.length > 0
+    ? `${kinds} [điểm neo: ${anchorKeys.join(', ')}]`
+    : kinds;
+  const variants = Object.keys(def.variants || {});
+  const varNote = variants.length > 0 ? ` · trạng thái: ${variants.join('/')}` : '';
+  const canRed = isTierB
+    ? !TIER_B_NON_RED.has(typeName) && def.canBeRed !== false
+    : Boolean(def.canBeRed);
+  return `- \`${typeName}\` · ${label}${varNote} · bối cảnh: ${ctx} · neo: ${anchorStr} · vật đỏ: ${canRed ? 'Có' : 'Không'}`;
+}
+
+// ── Build thu-vien.md từ code + docs/motif ────────────────────────
 function buildThuVienMd() {
   const fmtList = (arr) => arr.map((x) => `\`${x}\``).join(', ');
   const atmosphereTypes = AtmosphereTypeEnum.options;
+  const boiCanhList = parseBoiCanhFromDoc();
+  const tierCFamilies = parseTierCFromHoDaoCu();
+
+  const tierA = [];
+  const tierB = [];
+  for (const [typeName, def] of Object.entries(BUILT_IN_PROP_CATALOG)) {
+    if (def.status === 'duyet') {
+      tierA.push([typeName, def]);
+    } else {
+      tierB.push([typeName, def]);
+    }
+  }
+  const tierCCount = tierCFamilies.reduce((sum, f) => sum + f.items.length, 0);
 
   const lines = [
-    '# Thư Viện Đạo Cụ & Động Từ Hợp Lệ — Trà Nguội (`propCatalog`)',
+    '# Thư Viện Kho Đạo Cụ 3 Tầng, Bối Cảnh & Động Từ — Trà Nguội',
     '',
-    '> Tệp sinh tự động từ mã nguồn qua `npm run gen:skill`. Chỉ dùng các tên đã duyệt dưới đây; tuyệt đối không tự vẽ đồ vật hay ghi toạ độ.',
+    '> Sinh tự động qua `npm run gen:skill` từ `propCatalog`, `semanticStage`, `HO-DAO-CU.md` và `BO-BOI-CANH.md`. Không tự vẽ đồ vật hay ghi toạ độ.',
     '',
-    '## 1. Bối cảnh (`boi_canh`), Lớp sâu (`lop`), Loại neo (`loai_neo`) & Khe vị trí (`vi_tri`)',
-    `- Địa hình (\`boi_canh.dia_hinh\`): ${fmtList(Object.keys(SEMANTIC_TERRAINS))}.`,
-    `- Khí quyển (\`boi_canh.khi_quyen[].loai\`): ${fmtList(atmosphereTypes)} (kèm \`vi_tri\`, \`huong\`: \`trai\`/\`phai\`, \`mat_do\`).`,
-    '- Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): khai báo `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "giua" | ..., "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.',
-    `- Lớp sâu (\`lop\`): ${fmtList(SEMANTIC_LAYERS)} (\`nen\` cho cửa sổ, mây phía sau; va chạm tính giữa các vật cùng lớp).`,
-    `- Loại neo (\`loai_neo\`): ${fmtList(ANCHOR_KINDS)} (\`dat\`: mặt đất, \`tuong\`: treo tường, \`troi\`: bầu trời, \`tren\`: đặt trên điểm neo vật khác, \`cam\`: nhân vật cầm).`,
-    `- Khe vị trí ngang (\`vi_tri\` / \`di_toi\`): ${fmtList(Object.keys(SEMANTIC_SLOTS))}.`,
-    `- Quy tắc kích thước thật: vật dưới ${NGUONG_VAT_NHO_CM} cm nhân \`HE_SO_PHONG_DAI = ${HE_SO_PHONG_DAI}\`, từ ${NGUONG_VAT_NHO_CM} cm trở lên nhân \`1\` (\`TY_LE_CANH = ${TY_LE_CANH}\`).`,
-    '',
-    '## 2. Nhân vật (`lu_khach` & `nguoi_b`), Tư thế (`tu_the`), Nghiêng (`nghieng`) & Cầm/Ngồi',
-    '- Nhân vật thứ 2 (`vai: "nguoi_b"`): đặt `id` tuỳ ý (vd `"em"`), cùng phong cách bóng mực nhưng **nhạt hơn** Lữ khách; thêm `"toc_duoi_ngua": true` nếu cần tóc buộc đuôi ngựa. Hỗ trợ đủ `vi_tri`, `huong`, `tu_the`, động từ nhịp và va chạm như Lữ khách.',
-    `- Tư thế hợp lệ (\`tu_the\`): ${fmtList(Object.keys(SEMANTIC_POSES))}.`,
-    `- Độ nghiêng (\`nghieng\`): ${fmtList(SEMANTIC_LEANS)}.`,
-    `- Hướng mặt (\`huong\`): \`trai\`, \`phai\`. Hướng nhìn (\`nhin_theo\`): \`"<id_vat_hoac_nhan_vat>"\` hoặc \`null\`.`,
-    `- Vị trí cầm đạo cụ (\`cam_boi\`): \`<id_nhan_vat>.tay\`, \`<id_nhan_vat>.dau\`, \`<id_nhan_vat>.lung\` (${fmtList(Object.keys(SEMANTIC_SOCKETS))}).`,
-    '- Ngồi ghế bàn: bắt buộc `ngoi_tren: "<id_ghe>.mat_ghe"`; thêm `ngoi_vao: "<id_ban>"` để tự kê ghế sát bàn nhìn ngang.',
-    '- Chén trà cầm tay (`cam_chen_tra: true`): mặc định nét mực + wash; **chỉ đổi đỏ ở cú lật** khi khai báo `vat_do_tren_tay: "<id>.chen_tra"` ở cấp gốc.',
-    '',
-    '## 3. Nhịp & Bộ động từ hiện có (`nhip[]`)',
-    `- Mốc thời gian (\`moc\`): ${fmtList(SEMANTIC_BEAT_ANCHORS)} (kèm \`sau\` và \`thoi_luong\` tính bằng giây).`,
-    `- Động từ nhân vật (\`nhip[].nhan_vat.<id>\`): ${fmtList(SEMANTIC_ACTOR_BEAT_VERBS)}.`,
-    '  - `di_vao`: `"trai"`/`"phai"`/`true` (bước từ mép khung vào `vi_tri`); `di_ra`: `"trai"`/`"phai"`/`true` (bước ra mép khung rồi mờ dần);',
-    '  - `khung_lai`: `true` (giật nhẹ rồi đứng sững); `lui_buoc`: `true`/`"nua_buoc"`/`"mot_buoc"` (lùi lại mà vẫn giữ hướng mặt);',
-    '  - `quay_dau`: `true` (ngoái nhìn ra phía sau rồi quay lại hướng cũ); `nhin_nhau`: `true`/`"<id_doi_phuong>"` (hai nhân vật tự xoay mặt nhìn nhau);',
-    '  - `tha_roi`: `true`/`"<id_dao_cu>"` (thả đạo cụ đang cầm rơi có trọng lực xuống đất).',
-    `- Động từ đạo cụ (\`nhip[].dao_cu.<id>\`): ${fmtList(SEMANTIC_PROP_BEAT_VERBS)}.`,
-    '- Động từ đoạn đường (`nhip[].doan_duong.<id>`): `doi_do`, `duong_mo` (làm đoạn đường đỏ mờ dần ở hậu vị).',
-    '',
-    '## 4. Đạo cụ đã duyệt trong `propCatalog` (`duyet` — skill được phép dùng)',
-    '| Mã đạo cụ (`type`) | Nghĩa / Tên gọi | Lớp mặc định | Loại neo | Vật đỏ (`vat_do`) | Trạng thái (`trang_thai`) | Điểm neo (`<id>.<diem_neo>`) |',
-    '| :--- | :--- | :---: | :--- | :---: | :--- | :--- |',
+    '## 1. 9 Bộ Bối Cảnh Chuẩn (`BO-BOI-CANH`)',
   ];
 
-  const draftFamilyEntries = [];
-
-  for (const [typeName, def] of Object.entries(BUILT_IN_PROP_CATALOG)) {
-    if (!def.box) continue;
-    if (def.status !== 'duyet') {
-      draftFamilyEntries.push([typeName, def]);
-      continue;
-    }
-    const aliasTarget = PROP_FAMILY_ALIASES[typeName];
-    const labelStr = aliasTarget
-      ? `${def.labelVi || typeName} *(alias của \`${aliasTarget}\`)*`
-      : def.labelVi || typeName;
-    const anchors = Object.keys(def.anchors || {});
-    const ancStr =
-      anchors.length > 0
-        ? anchors.map((a) => `\`${a}\``).join(', ')
-        : '*(không có)*';
-    const variants = ['mac_dinh', ...Object.keys(def.variants || {})];
-    const varStr = variants.map((v) => `\`${v}\``).join(', ');
-    const kinds = (def.allowedAnchorKinds || [def.anchorKind || 'dat'])
-      .map((k) => `\`${k}\``)
-      .join(', ');
+  for (const bc of boiCanhList) {
+    const atmoText = bc.atmo.length > 0 ? ` · khí quyển: ${bc.atmo.join(', ')}` : '';
     lines.push(
-      `| \`${typeName}\` | ${labelStr} | \`${def.defaultLayer || 'giua'}\` | ${kinds} | ${def.canBeRed ? 'Có' : 'Không'} | ${varStr} | ${ancStr} |`
+      `- \`${bc.code}\` · **${bc.name}** · địa hình: ${bc.terrains.join('/')} · đạo cụ gợi ý: ${bc.props.join(', ')}${atmoText}`
     );
   }
 
-  if (draftFamilyEntries.length > 0) {
-    lines.push('');
-    lines.push(
-      '## 5. Preset mới đang chờ duyệt (`nhap` — CHƯA DUYỆT, skill TUYỆT ĐỐI CHƯA ĐƯỢC DÙNG)'
-    );
-    lines.push(
-      '> Các preset dưới đây mới dựng ở trạng thái `nhap`, đang chờ chủ kênh nghiệm thu tờ duyệt. Skill không được xuất các mã này trong Gói Chén cho tới khi chuyển sang `duyet`.'
-    );
-    lines.push('');
-    lines.push(
-      '| Mã preset (`nhap`) | Nghĩa / Tên gọi | Trạng thái duyệt | Lớp mặc định | Loại neo | Vật đỏ (`vat_do`) | Điểm neo (`<id>.<diem_neo>`) |'
-    );
-    lines.push('| :--- | :--- | :---: | :---: | :--- | :---: | :--- |');
-    for (const [typeName, def] of draftFamilyEntries) {
-      const anchors = Object.keys(def.anchors || {});
-      const ancStr =
-        anchors.length > 0
-          ? anchors.map((a) => `\`${a}\``).join(', ')
-          : '*(không có)*';
-      const kinds = (def.allowedAnchorKinds || [def.anchorKind || 'dat'])
-        .map((k) => `\`${k}\``)
-        .join(', ');
+  lines.push(
+    '',
+    '## 2. Địa Hình, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ',
+    `- Địa hình (\`boi_canh.dia_hinh\`): ${fmtList(Object.keys(SEMANTIC_TERRAINS))}.`,
+    '- Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.',
+    `- Khí quyển (\`boi_canh.khi_quyen[].loai\`): ${fmtList(atmosphereTypes)} (kèm \`vi_tri\`, \`huong\`: \`trai\`/\`phai\`, \`mat_do\`).`,
+    `- Lớp sâu (\`lop\`): ${fmtList(SEMANTIC_LAYERS)} · Loại neo (\`loai_neo\`): ${fmtList(ANCHOR_KINDS)} · Khe vị trí (\`vi_tri\`/\`di_toi\`): ${fmtList(Object.keys(SEMANTIC_SLOTS))}.`,
+    `- Nhân vật (\`nhan_vat[].vai\`): ${fmtList(SEMANTIC_ACTOR_ROLES)} (\`lu_khach\` bóng mực đậm mặc định; \`nguoi_b\` bóng mực nhạt hơn, tuỳ chọn \`toc_duoi_ngua: true\`, đủ \`vi_tri\`, \`huong\`, \`tu_the\`, va chạm như Lữ khách).`,
+    `- Tư thế (\`tu_the\`): ${fmtList(Object.keys(SEMANTIC_POSES))} · Nghiêng (\`nghieng\`): ${fmtList(SEMANTIC_LEANS)} · Hướng (\`huong\`): \`trai\`, \`phai\` · Điểm cầm (\`cam_boi\`): ${fmtList(Object.keys(SEMANTIC_SOCKETS))}.`,
+    '- Ngồi ghế bàn: bắt buộc `ngoi_tren: "<id_ghe>.mat_ghe"`, thêm `ngoi_vao: "<id_ban>"` để kê sát bàn. Chén trà cầm tay (`cam_chen_tra: true`) mặc định nét mực wash; chỉ đổi đỏ khi có `vat_do_tren_tay: "<id>.chen_tra"`.',
+    `- Mốc nhịp (\`nhip[].moc\`): ${fmtList(SEMANTIC_BEAT_ANCHORS)} (kèm \`sau\`, \`thoi_luong\` tính bằng giây).`,
+    `- Động từ nhân vật (\`nhip[].nhan_vat.<id>\`): ${fmtList(SEMANTIC_ACTOR_BEAT_VERBS)} (\`di_vao\`/\`di_ra\`: từ/ra mép khung; \`khung_lai\`: giật nhẹ dừng; \`lui_buoc\`: lùi vẫn giữ hướng; \`quay_dau\`: ngoái sau rồi quay lại; \`nhin_nhau\`: hai nhân vật xoay mặt nhìn nhau; \`tha_roi\`: thả vật cầm rơi xuống đất).`,
+    `- Động từ đạo cụ (\`nhip[].dao_cu.<id>\`): ${fmtList(SEMANTIC_PROP_BEAT_VERBS)}.`,
+    `- Động từ địa hình / đoạn đường (\`nhip[].doan_duong.<id>\`): ${fmtList(SEMANTIC_TERRAIN_SEGMENT_VERBS)} (\`doi_do\`: đổi đỏ đậm; \`duong_mo\`: mờ dần ở hậu vị).`,
+    `- Tỷ lệ thật: vật dưới ${NGUONG_VAT_NHO_CM} cm nhân \`HE_SO_PHONG_DAI = ${HE_SO_PHONG_DAI}\`, từ ${NGUONG_VAT_NHO_CM} cm trở lên nhân \`1\` (\`TY_LE_CANH = ${TY_LE_CANH}\`).`,
+    '',
+    `## 3. TẦNG A — Dùng ngay (${tierA.length} món đã duyệt \`duyet\`, gồm alias)`,
+    '> Ưu tiên chọn trong tầng này để xuất Gói Chén dựng ngay không cảnh báo.',
+    ...tierA.map(([k, d]) => formatPropOneLine(k, d, false)),
+    '',
+    `## 4. TẦNG B — Có sẵn, chưa chuẩn hoá nét (${tierB.length} món \`nhap\`)`,
+    '> Đã có code trong kho, dùng được trong Gói Chén nếu đúng nghĩa; ô nhập tool web sẽ hiện cảnh báo vàng để chủ kênh biết chưa chuẩn hoá nét.',
+    ...tierB.map(([k, d]) => formatPropOneLine(k, d, true)),
+    '',
+    `## 5. TẦNG C — Đang lên kế hoạch (${tierCCount} preset theo 12 họ · CHỈ LÊN Ý TƯỞNG, KHÔNG XUẤT JSON)`,
+    '> Các preset này chưa có code trong `propCatalog`. Nếu phương án Bước 2 cần món tầng C, ghi rõ `Cần bổ sung: <mã preset>` và kèm phương án thay thế dựng được ngay bằng tầng A/B. Tuyệt đối KHÔNG xuất mã tầng C trong JSON Bước 3.',
+  );
+
+  for (const fam of tierCFamilies) {
+    const fmeta = FAMILY_META[fam.code] || { ctx: 'khong_gian_ky_hieu', anchor: 'dat', red: 'Có' };
+    if (fam.items.length === 0) {
+      lines.push(`### Họ ${fam.order} · \`${fam.code}\` (${fam.label}) — đã đủ trong Tầng A`);
+      continue;
+    }
+    lines.push(`### Họ ${fam.order} · \`${fam.code}\` (${fam.label} · ${fam.items.length} món chờ dựng)`);
+    for (const it of fam.items) {
+      const canRed =
+        fam.code === 'mat_phang'
+          ? it.code === 'chiec_goi'
+            ? 'Có'
+            : 'Không'
+          : fmeta.red;
       lines.push(
-        `| \`${typeName}\` | ${def.labelVi || typeName} | \`nhap\` *(chưa duyệt — cấm dùng)* | \`${def.defaultLayer || 'giua'}\` | ${kinds} | ${def.canBeRed ? 'Có' : 'Không'} | ${ancStr} |`
+        `- \`${it.code}\` · ${it.desc} · bối cảnh: ${fmeta.ctx} · neo: ${fmeta.anchor} · vật đỏ: ${canRed}`
       );
     }
   }
 
   lines.push('');
-  return lines.join('\n');
+  return {
+    md: lines.join('\n'),
+    counts: { tierA: tierA.length, tierB: tierB.length, tierC: tierCCount },
+  };
 }
 
-// ── Nội dung SKILL.md (≤100 dòng) ─────────────────────────────────
+// ── Nội dung SKILL.md (≤ 80 dòng) ─────────────────────────────────
 const SKILL_MD_CONTENT = `---
 name: dao-dien-tra-nguoi
 description: Đạo diễn câu chữ 3 bước và xuất Gói Chén JSON cho kênh Trà Nguội (@tranguoi.15s). Dùng khi tạo Chén mới, viết thơ/quote, hoặc thiết kế cảnh.
@@ -148,7 +328,7 @@ description: Đạo diễn câu chữ 3 bước và xuất Gói Chén JSON cho k
 
 # Đạo Diễn Trà Nguội (@tranguoi.15s)
 
-Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc \`references/thu-vien.md\` (đạo cụ đã duyệt, tư thế, động từ/nhịp, khe vị trí, bối cảnh) và \`references/goi-chen.md\` (chuẩn Gói Chén, kèm mẫu \`references/q001.json\`). Làm tuần tự **3 bước**, kết thúc Bước 1 và Bước 2 đều **DỪNG chờ chủ kênh chốt**.
+Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc \`references/thu-vien.md\` (kho đạo cụ 3 tầng, 9 bộ bối cảnh, địa hình, khí quyển, nhân vật, động từ) và \`references/goi-chen.md\` (chuẩn Gói Chén, kèm mẫu \`references/q001.json\`). Làm tuần tự **3 bước**, kết thúc Bước 1 và Bước 2 đều **DỪNG chờ chủ kênh chốt**.
 
 ## Nhân vật: Lữ Khách Bóng Mực & Người Thứ Hai (\`nguoi_b\`)
 - Giữ nguyên phong cách bóng mực thuỷ mặc (**không mắt, không lá trà**). Có thể dùng thêm nhân vật thứ 2 (\`vai: "nguoi_b"\`, nhạt hơn Lữ khách, tuỳ chọn \`toc_duoi_ngua: true\`) khi câu có người đối diện.
@@ -161,21 +341,21 @@ Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc \
 
 ## Bước 2 — Cú lật (3 phương án ngắn, DỪNG chờ chốt)
 NGUYÊN TẮC: hình không kể lại chữ, hình làm cú lật mạnh hơn. Chữ là chính.
+Lên ý tưởng trên cả 3 tầng. Ưu tiên tầng A; tầng B được dùng nếu đúng nghĩa; tầng C chỉ được đưa vào phương án kèm 'Cần bổ sung' và phải có phương án thay thế dựng được ngay.
 Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 dòng:
 1. Bản lề: "Người xem tưởng A → câu lật thành B." Không viết được thì hỏi lại chủ kênh.
 2. Trước cú lật: hình dựng thế giới của A (bối cảnh quen, Lữ khách sống bình thường), KHÔNG lộ B.
 3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd câu Chén 18 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Không chọn được vật cụ thể → dùng chính địa hình/khí quyển (vd một đoạn đường) hoặc ghi 'Cần bổ sung'. Gán nghĩa vòng vo (laptop vì 'tính nhanh') là SAI.
 4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
 5. Đồ trên sân khấu: mọi đạo cụ phải được dùng hoặc mang nghĩa; đồ chỉ để trang trí thì bỏ (tối đa 3 vật).
-6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (văn phòng / phố ngõ / hiên trà / phòng trong nhà / thiên nhiên / không gian ký hiệu). Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
+6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong \`references/thu-vien.md\`). Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
 7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại.
 TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa.
-Nếu thư viện thiếu thứ phương án mạnh nhất cần (vd nhân vật thứ hai, động từ quay lại) → vẫn đưa phương án đó lên đầu, ghi "Cần bổ sung: ...", và đưa phương án dựng được ngay ở vị trí 2.
 
 ## Bước 3 — Xuất Gói Chén JSON
 Sau khi chủ kênh chốt phương án ở Bước 2, xuất **đúng 1 khối JSON Gói Chén** theo \`references/goi-chen.md\`:
 - Đủ trường gốc: \`phien_ban_goi: 1\`, \`tieu_de\`, \`cau\`, \`cu_lat\`, \`boi_canh\`, \`nhan_vat\`, \`dao_cu\`, \`nhip\`.
-- Chỉ dùng tên đạo cụ, điểm neo, trạng thái, tư thế, động từ và khe vị trí trong \`references/thu-vien.md\`.
+- Chỉ dùng mã đạo cụ Tầng A hoặc Tầng B trong \`references/thu-vien.md\` (tuyệt đối KHÔNG xuất mã Tầng C vào JSON), cùng điểm neo, trạng thái, tư thế, động từ và khe vị trí hợp lệ.
 - Nhân vật ngồi ghế bắt buộc có \`ngoi_tren: "<id_ghe>.mat_ghe"\` (thêm \`ngoi_vao: "<id_ban>"\` khi ngồi vào bàn); đạo cụ trên bàn dùng \`loai_neo: "tren"\` + \`dat_tren: "<id_ban>.<diem_neo>"\`.
 - Tuyệt đối không có \`x\`, \`y\`, \`scale\`, \`shapes\`, \`altShapes\`.
 
@@ -188,8 +368,8 @@ Khi chủ kênh dán lại đoạn mở đầu bằng **"Gói Chén của bạn 
 // ── Kiểm tra ràng buộc ────────────────────────────────────────────
 function verifySkillConstraints(mdText, label) {
   const lines = mdText.trimEnd().split('\n');
-  if (label === 'SKILL.md' && lines.length > 100) {
-    throw new Error(`SKILL.md vượt quá 100 dòng (${lines.length} dòng)`);
+  if (label === 'SKILL.md' && lines.length > 80) {
+    throw new Error(`SKILL.md vượt quá 80 dòng (${lines.length} dòng)`);
   }
   const forbidden = [
     { re: /#[0-9A-Fa-f]{3,6}\b/, name: 'mã màu hex' },
@@ -209,7 +389,7 @@ function verifySkillConstraints(mdText, label) {
 function main() {
   fs.mkdirSync(REF_DIR, { recursive: true });
 
-  const thuVienMd = buildThuVienMd();
+  const { md: thuVienMd, counts } = buildThuVienMd();
   const goiChenMd = fs.readFileSync(path.join(ROOT, 'docs/GOI-CHEN.md'), 'utf8');
   const q001Content = fs.readFileSync(path.join(ROOT, 'docs/goi-mau/q001.json'), 'utf8');
 
@@ -232,10 +412,11 @@ with zipfile.ZipFile(${JSON.stringify(ZIP_PATH)}, "w", compression=zipfile.ZIP_D
   const r = spawnSync('/usr/bin/python3', ['-c', pyZip], { stdio: 'inherit' });
   if (r.status !== 0) throw new Error('python3 zip thất bại');
 
-  const lineCount = SKILL_MD_CONTENT.trimEnd().split('\n').length;
+  const skillLines = SKILL_MD_CONTENT.trimEnd().split('\n').length;
+  const thuVienLines = thuVienMd.trimEnd().split('\n').length;
   const zipSize = fs.statSync(ZIP_PATH).size;
   console.log(
-    `✅ Đã sinh SKILL.md (${lineCount} dòng), references/ (thu-vien.md + goi-chen.md + q001.json) và ${path.relative(ROOT, ZIP_PATH)} (${(zipSize / 1024).toFixed(1)} KB)`
+    `✅ Đã sinh SKILL.md (${skillLines} dòng), thu-vien.md (${thuVienLines} dòng · Tầng A: ${counts.tierA}, Tầng B: ${counts.tierB}, Tầng C: ${counts.tierC}), references/ và ${path.relative(ROOT, ZIP_PATH)} (${(zipSize / 1024).toFixed(1)} KB)`
   );
 }
 
