@@ -22,6 +22,7 @@
 | 3 | TF3 — sửa đồi che vật đỏ, đất kéo hết ngang, dấu phiên bản + log | `Đọc tasks/TF3.md và làm.` |
 | 4 | TF4 — skill đạo diễn viết làn tự do (mẫu Chén 19) | `Đọc tasks/TF4.md và làm.` |
 | 5 | TF5 — làn tự do không bị engine tự thêm (DNA ngẫu nhiên, mở màn ép) | `Đọc tasks/TF5.md và làm.` |
+| 6 | TF6 — nhịp hiện chữ (/ tách, + nối) + sửa thanh cỡ chữ | `Đọc tasks/TF6.md và làm.` |
 | — | Sau đó: làm 2–3 Chén thật qua làn tự do, rồi mới quyết thêm gì | |
 TẠM DỪNG: T8-DNA-b, các họ đạo cụ (T8-HO), mọi luật mới.
 
