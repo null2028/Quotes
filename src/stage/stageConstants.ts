@@ -74,10 +74,10 @@ export function computeExpectedCatalogSpanFromCm(kichThuocThatCm: number): numbe
 
 /**
  * Hằng số Tự căn khung chung cho mọi Chén:
- * - Khung bao chung của nhân vật + đạo cụ + vật đỏ chiếm ~72% chiều ngang vùng hình (tối ưu cho cả cảnh đơn lẫn 2 nhân vật).
- * - Lữ khách cao tối thiểu 30% chiều cao vùng hình, vẫn chừa lề trên tối thiểu 12% chiều cao vùng hình.
+ * - Khung bao chung của nhân vật + đạo cụ + vật đỏ chiếm 58% chiều ngang vùng hình (đã duyệt).
+ * - Lữ khách cao tối thiểu 30% chiều cao vùng hình làm mức sàn, vẫn chừa lề trên tối thiểu 12% chiều cao vùng hình.
  */
-export const AUTO_FRAME_TARGET_WIDTH_RATIO = 0.72;
+export const AUTO_FRAME_TARGET_WIDTH_RATIO = 0.58;
 export const AUTO_FRAME_MIN_TOP_MARGIN_RATIO = 0.12;
 export const AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO = 0.3;
 
@@ -155,6 +155,9 @@ export const PROP_FINE_STROKE = 1.35;
 
 /** fillOpacity chuẩn cho wash đóng (fill="bg") — engine cũ dùng 0.11-0.14 */
 export const PROP_WASH_FILL_OPACITY = 0.13;
+
+/** Độ phủ tô đỏ cho riêng trạng thái đỏ của vật cú lật (bản thường giữ nguyên nhẹ) */
+export const RED_PIVOT_FILL_OPACITY = 0.7;
 
 /** strokeScale chuẩn cho nét thân chính đạo cụ */
 export const PROP_BODY_STROKE_SCALE = 1.0;

@@ -6,14 +6,17 @@
  * - Nhìn ngang chính diện (orthographic side-view), không phối cảnh 3D.
  * - Tuân thủ phong cách T2: nét mảnh, wash nền giấy nhạt (`fill: 'bg'`), bản đỏ đồng dạng 100% (`IoU = 1.0`).
  */
-import { PROP_WASH_FILL_OPACITY } from '../stageConstants';
+import {
+  PROP_WASH_FILL_OPACITY,
+  RED_PIVOT_FILL_OPACITY,
+} from '../stageConstants';
 import type { InlineShape } from '../stageScriptSchema';
 
 export const FAMILY_BODY_STROKE_SCALE = 0.65;
 export const FAMILY_LARGE_BODY_STROKE_SCALE = 0.72;
 export const FAMILY_DETAIL_STROKE_SCALE = 0.48;
 export const FAMILY_WASH_OPACITY = 0.11;
-export const FAMILY_RED_FILL_OPACITY = 0.32;
+export const FAMILY_RED_FILL_OPACITY = RED_PIVOT_FILL_OPACITY;
 
 const f2 = (n: number): string => Number(n.toFixed(2)).toString();
 

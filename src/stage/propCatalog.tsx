@@ -11,6 +11,7 @@ import {
   PROP_FINE_STROKE,
   INK_BASE_STROKE_WIDTH,
   INK_SCALE_POWER,
+  RED_PIVOT_FILL_OPACITY,
 } from './stageConstants';
 import {
   DO_CHUA_ALL_PRESET_NAMES,
@@ -2194,19 +2195,23 @@ export function renderShapeListStatic(
               ? palette.inkSecondary
               : palette.inkPrimary;
 
+    const isAccentPropFill =
+      allowAccent &&
+      !isNegativeCarve &&
+      (s.fill === 'accent' || (isWashClosed && strokeColor === accentPropColor));
     const baseFillOpacity =
       !s.fill || s.fill === 'none' || isNegativeCarve
         ? 0
-        : s.fillOpacity !== undefined
-          ? s.fillOpacity
-          : isWashClosed
-            ? 0.12
-            : s.fill === 'accent' && allowAccent
-              ? 0.24
+        : isAccentPropFill
+          ? Math.max(s.fillOpacity ?? 0, RED_PIVOT_FILL_OPACITY)
+          : s.fillOpacity !== undefined
+            ? s.fillOpacity
+            : isWashClosed
+              ? 0.12
               : 0.14;
     const resolvedFillOpacity =
-      isDark && s.fill === 'accent' && allowAccent
-        ? Math.min(0.68, Math.max(0.46, baseFillOpacity * 2.1))
+      isDark && isAccentPropFill
+        ? Math.min(0.85, Math.max(RED_PIVOT_FILL_OPACITY, baseFillOpacity))
         : baseFillOpacity;
 
     const sw =
@@ -2302,7 +2307,8 @@ export function renderShapeListStatic(
       ...strokeSelfDrawProps,
     };
 
-    const needsOpaqueBacking = isWashClosed || resolvedFillOpacity >= 0.85;
+    const needsOpaqueBacking =
+      isWashClosed || isAccentPropFill || resolvedFillOpacity >= 0.85;
 
     if (s.d) {
       return (
