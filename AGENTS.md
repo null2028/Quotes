@@ -1,53 +1,27 @@
-# Sổ Tay Ngữ Cảnh Dự Án — TRÀ NGUỘI (`@tranguoi.15s`) · Studio V8.3.1
+# Sổ Tay Ngữ Cảnh Dự Án — TRÀ NGUỘI (`@tranguoi.15s`)
 
-> **Quy trình làm việc chuẩn (GitHub-Only)**: Chỉ làm việc trực tiếp với kho GitHub `null2028/Quotes` thông qua **GitHub MCP Server** (tạo nhánh riêng, commit, mở Pull Request, đọc kết quả GitHub Actions) và đồng bộ về `/Volumes/Data/Quotes` qua **GitHub Desktop**. Tuyệt đối không sử dụng bản sao tạm trên Google Drive.
+> **Mọi agent đọc file này đầu tiên**, sau đó đọc ngay [docs/BAN-DO-HE-THONG.md](docs/BAN-DO-HE-THONG.md), [docs/NHAT-KY-QUYET-DINH.md](docs/NHAT-KY-QUYET-DINH.md) và [docs/QUY-TRINH-LAM-VIEC.md](docs/QUY-TRINH-LAM-VIEC.md) trước khi sửa bất kỳ dòng code nào.
 
-## 1. Bản sắc kênh & Tiêu chuẩn biên tập câu chữ
+## 1. Dự án là gì & Kiến trúc hiện hành
 
-- **Định vị kênh**: **TRÀ NGUỘI** (`@tranguoi.15s`) — *"Chút thơ, chút đời, chút ngẫm"*. Video dọc chuẩn **9:16 (`1080×1920`, 15 giây, 60 fps CFR — `900 frames`)** phong cách tối giản trên nền giấy trà ấm (`MINIMAL_LIGHT` / `SLATE_CALM`) hoặc nền đêm tĩnh (`MINIMAL_DARK` / `WARM_NOIR`), nét vẽ mực tàu kết hợp điểm nhấn **Đỏ Chu Sa (Cinnabar Red)** ở từ khóa điểm lật (`pivotWord`), triện `茶` góc an toàn và đạo cụ chủ đạo.
-- **DNA ngôn từ ("Lắng — Kiệm lời — Đời thực — Có dư vị")**:
-  - Ưu tiên chi tiết vật lý, đời thường dễ dựng thành hoạt cảnh sân khấu (ấm trà sáng, hiên nắng, chiếc ô ngày mưa, ánh đèn sau khung cửa, thẻ chấm công, thang máy văn phòng, cuốn sổ nhỏ đóng mở ký ức).
-  - Nhịp đọc tối ưu **14 – 28 âm tiết tiếng Việt** cho khung 15s (trần tối đa **40 âm tiết**), luôn có **nhịp lật cảm xúc hoặc hóm ngầm** ở vế cuối phục vụ hiệu ứng tô đỏ `pivotWord` và chuyển cảnh `Act 1 → Act 2` trên sân khấu.
-  - **Tuyệt đối tránh**: Từ ngữ bi lụy kịch tính (*"tê tái lòng"*, *"chôn chặt đáy Đại Dương"*), giọng răn đe/khẩu hiệu sách kỹ năng sống cũ (*"Hãy..."*, *"Đừng..."*), câu dịch cứng (*"một loại... không kể xiết"*), hoặc thơ thả thính sáo rỗng đại trà.
-  - **Tôn trọng nguyên tác**: Với trích dẫn văn học có tên tác giả rõ ràng (như Lưu Quang Vũ, Nguyễn Ngọc Tư), giữ nguyên câu chữ 100%, không tự ý sửa từ.
-- **Tỷ trọng Danh mục Nội dung Chiến lược (`40–30–20–10`)**:
-  - **40%** Đời sống công sở · Tự trào duyên dáng · Chơi chữ / Nói lái.
-  - **30%** Chiêm nghiệm trưởng thành · Sống chậm · Chữa lành không giáo điều.
-  - **20%** Thả thính tinh tế · Duyên tình ý nhị.
-  - **10%** Văn học nguyên tác có tên tác giả (`author`).
-  - **Quy tắc Khung Đêm (`Night`)**: Không xếp 2 Chén khung `Night` mang sắc thái nặng/buồn (`Trầm buồn`, `Hoài niệm`, `Chua chát`) liền kề nhau mà không có 1 Chén ấm dịu (`Ấm áp`, `Nhẹ nhàng`, `Thi vị`) xen giữa (được kiểm tra trực tiếp trên `CupQueueSidebar.tsx`).
+- **Trà Nguội Studio** là hệ thống dựng video thơ/quote ngắn bằng **Remotion + React/Vite/Express** (`/Volumes/Data/Quotes`, chạy cục bộ tại `http://localhost:3688` qua `npm run app` hoặc `Trà Nguội.app`).
+- **Luồng chính hiện hành (Gói Chén ngữ nghĩa)**:
+  1. Đạo diễn trên Gemini Web dùng Skill sinh từ code (`npm run gen:skill` → `.agents/skills/dao-dien-tra-nguoi/dao-dien-tra-nguoi.zip`, kho đạo cụ 3 tầng A/B/C & 9 bộ bối cảnh `boi_canh.bo`) xuất **1 khối JSON Gói Chén** (`phien_ban_goi: 1`, không toạ độ/không `shapes`).
+  2. Dán vào Studio UI (`GeminiBundleImportModal`) hoặc chạy CLI (`npx tsx scripts/check-goi.mjs <file.json>`) → `parseGoiChen` → `compileSemanticStageScript` → `stageValidator` chặn cứng → `DeclarativeStagePlayer` → render MP4.
+  3. **51 kịch bản cũ** (`LEGACY_SCENE_IDS` + `data/custom-props.json`) và 12 cảnh gốc được đóng băng riêng; mọi kịch bản mới bắt buộc theo chuẩn Gói Chén + Validator chặn cứng.
 
-## 2. Cấu trúc Kho Dữ Liệu Tách Tệp (`data/cups/*.json`) & Airtable 3 Bảng
+## 2. Bản sắc kênh, Dữ liệu Airtable & Chuẩn xuất video
 
-- **Kiến trúc Lưu trữ Tách Tệp Hướng 2 (`server/cupStore.ts`)**:
-  - Mỗi Chén được lưu thành 1 tệp độc lập gọn nhẹ (`~38 dòng` / `1.2 KB`) tại `data/cups/quote-XXX.json` (`quote-001.json` .. `quote-360.json`), chỉ giữ dữ liệu biên tập câu chữ, `stageTuning`, SEO và mã tham chiếu `sceneId` (không nhúng trùng `stageScript` hay `customPropsResolved` xuống đĩa).
-  - Kịch bản sân khấu lưu tại `data/stage-scripts.json` (gọt sạch `customPropsResolved`), hình học đạo cụ SVG lưu tại `data/custom-props.json`, và danh mục Kho Cảnh lưu tại `data/vault-meta.json`. Khi chạy Studio hoặc xuất MP4, `cupStore.ts` tự ghép trên RAM giúp `<Player>` phản hồi `0.01s`.
-- **Thông tin Base & 3 Bảng Trung tâm Airtable**:
-  - **Base**: `Trà Nguội` (`app9rk1rYkbXuIi3e`)
-  - **Bảng 1 — Kho thành phẩm chính**: `Poetry & Quote Library` (`tblNySzay61Opo3SL`, mã `Q001`–`Q042`+).
-  - **Bảng 2 — Xưởng Chơi Chữ & Bắt Trend**: `Wordplay & Trend Lab` (`tblG0SqIZOVn5D2NJ`, mã `W001`–`W072`+).
-  - **Bảng 3 — Trạm Xuất bản & Đo lường Cộng hưởng**: `Tủ Chén & Lịch Đăng` (`airtableCupTracker.ts` đồng bộ 2 chiều 10 cột chuẩn).
-  - **Bản sao cục bộ để đọc tức thì**: `/Volumes/Data/Quotes/data/airtable-cache.json` (mã `pat...` bảo mật riêng trong `localStorage` `tra_nguoi_airtable_pat` tại `http://localhost:3688`).
+- **Bản sắc kênh**: `@tranguoi.15s` — *"Chút thơ, chút đời, chút ngẫm"*. Lữ khách bóng mực thuỷ mặc tối giản (**không mắt, không lá trà**, cỡ đứng cố định `28%` vùng hình), nền giấy trà ấm (`MINIMAL_LIGHT`) hoặc đêm tĩnh (`MINIMAL_DARK` / `WARM_NOIR`), đúng **1 điểm nhấn Đỏ Chu Sa** gắn với từ khóa cú lật (`cu_lat`).
+- **DNA ngôn từ ("Lắng — Kiệm lời — Đời thực — Có dư vị")**: 14–28 âm tiết (trần 40), tỷ trọng `40%` công sở/tự trào · `30%` chiêm nghiệm · `20%` duyên tình · `10%` văn học nguyên tác (giữ nguyên văn 100%). Tránh sáo rỗng, khẩu hiệu giáo điều, hashtag rác.
+- **Kho tách tệp & Airtable 3 bảng**:
+  - Mỗi Chén lưu gọn tại `data/cups/quote-XXX.json` (lưu kèm `goiChenGoc` khi nhập Gói Chén); sân khấu tại `data/stage-scripts.json`; bản sao Airtable cục bộ tại `data/airtable-cache.json`.
+  - Base `Trà Nguội` (`app9rk1rYkbXuIi3e`): `Poetry & Quote Library` (`tblNySzay61Opo3SL`, `Q*`), `Wordplay & Trend Lab` (`tblG0SqIZOVn5D2NJ`, `W*`), `Tủ Chén & Lịch Đăng` (`airtableCupTracker.ts`).
+- **Chuẩn xuất video**: **9:16 (`1080×1920`)**, **60 fps CFR**, `H.264 High Profile (L4.2)`, màu **`bt709`**, `10 Mbps`, âm thanh **Foley gốc `AAC 192 kbps @ 48 kHz` chuẩn `-14.0 LUFS`**, lưới `swissGrid` (`marginLeft=132px`, né safe zone đa kênh); xuất song song `/Volumes/Data/Quotes/videos/` và `videos/seo-master/`.
 
-## 3. Kiến trúc Kỹ thuật Studio V8.3.1 & Chuẩn Thuật toán Video 15s
+## 3. Bốn luật làm việc bắt buộc cho mọi agent
 
-- **Ứng dụng macOS chạy ngầm**: `/Volumes/Data/Quotes/Trà Nguội.app` (`LSUIElement = true`, biểu tượng **🍵** trên Menu Bar, chạy Express API + Vite HMR tại **`http://localhost:3688`**).
-- **Chuẩn Kết xuất Video & Đặt tên SEO (`server/renderQueueService.ts`, `src/automation/fileNaming.ts`)**:
-  - Khung gốc **9:16 (`1080×1920`)**, **`60 fps` CFR (`900 frames`)**, `H.264 High Profile (L4.2)`, không gian màu **`bt709`** (`color_primaries=bt709:color_trc=bt709:colorspace=bt709`), bitrate **`10 Mbps`** (`maxrate 12M`, `bufsize 20M`), âm thanh **`AAC 192 kbps @ 48 kHz`**, cờ `faststart`.
-  - Tự động xuất song song 2 bản sạch 100% bản quyền (không trộn cứng nhạc nền ngoài vào MP4): `/Volumes/Data/Quotes/videos/Chén XX - Tên.mp4` và bản Master đặt tên chuẩn SEO `/Volumes/Data/Quotes/videos/seo-master/chen-XX-tu-khoa-tra-nguoi.mp4`.
-- **Lưới Bố cục `swissGrid` (`palettes.ts`) & Thước ngắm Vùng An Toàn 3 Chế độ (`LivePhonePreview.tsx`)**:
-  - Lưới `swissGrid` chuẩn giữ lề trái `marginLeft = 132px` (`contentWidth = 816px`, `quoteBlockWidth = 732px`, né trọn dải xén biên `97px` của màn `9:19.5` và cụm nút tương tác bên phải `safeRight = 216px`).
-  - Thước ngắm trực quan trên `LivePhonePreview.tsx`: `1:1 Sạch`, `Safe Đa Kênh` (`X=[157, 833]`, `Y=[180, 1540]`) và `Shop/Ads` (`X=[217, 803]`, `Y=[240, 1260]`).
-- **Nhịp Mở Chữ Hướng 1 (`0.35s`), Vi Chuyển Động 68 BPM, Camera Push-in, Seamless Loop & Foley `-14.0 LUFS`**:
-  - **Nhịp thở mở màn `0.35s` (`Frame 0 → 21`) & Thấm mực đồng nhất 4 dòng**: Sân khấu `Act 1` chuyển động ngay từ `frame 0`, mặt giấy để thoáng `0.35s` trước khi Dòng 1 thấm mực mềm mại (`opacity 0 → 1`, `blur 5.2px → 0`, `translateY 10px → 0`) giống hệt Dòng 2–4.
-  - **Vi chuyển động 68 BPM, Push-in `+4.8%` tại Pivot & Seamless Loop (`14.20s → 15.00s`)**: Toàn bộ khối chữ tan êm về `opacity = 0` từ `frame 852 → 899`, đạo cụ hòa nhịp `loopBlend` về trạng thái `frame 0`, nối mượt `15.0s → 0.0s` không giật chữ.
-  - **Âm thanh Foley Gốc `-14.0 LUFS` (`src/engine/foleyEngine.ts`)**: WAV Stereo `48 kHz` đồng bộ tiếng cọ mực / giấy dó cho cả 4 dòng (từ `0.35s`) và âm điểm nhấn tại `pivotFrame`, chuẩn ITU-R BS.1770-4 `-14.0 LUFS` (`-1.5 dBTP`).
-- **Động cơ Cộng hưởng `TN-Score` & Kiểm thử Tự động GitHub Actions**:
-  - Thang điểm `100.00đ` chuẩn / `138.75đ` trần; từ `110đ` mở khóa `Thăng hạng W → Kho Q`.
-  - Mọi nhánh `push` và `pull_request` tự động chạy `scripts/qa-gates-ci.mjs` kiểm định Gate 1 & Gate 2; chạy `npm run qa:5gates` để nghiệm thu trọn gói cả render MP4 thực tế (Gate 3–5).
-
-## 4. Quy trình 3 bước bắt buộc khi làm hoặc biên tập lại Chén
-
-1. **Bước 1 — Tinh chỉnh câu chữ từ bản gốc & Chờ duyệt (Gated Step)**: Đề xuất 3 phương án tinh chỉnh (tối ưu `14–28` âm tiết, trần tối đa `40` âm tiết; riêng trích dẫn văn học có `author` giữ nguyên 100%) kèm `pivotWord` và **dừng chờ chốt chữ**.
-2. **Bước 2 — Phân tích ẩn dụ & Đề xuất 3 kịch bản sân khấu**: Đề xuất 3 phương án `Act 1 → Act 2 tại Pivot → Act 3 Dư ảnh nối vòng` + đạo cụ **Đỏ Chu Sa** để chốt phương án.
-3. **Bước 3 — Ghi tệp `data/cups/quote-XXX.json` trên GitHub & Đồng bộ Studio**: Commit tệp gọn nhẹ lên nhánh GitHub, kiểm tra tích xanh GitHub Actions rồi bấm **Pull origin** trên **GitHub Desktop** về `/Volumes/Data/Quotes`.
+1. **Tra bản đồ trước khi thêm cơ chế mới**: kiểm tra `docs/BAN-DO-HE-THONG.md` xem đã có cơ chế cùng việc chưa; nếu có thì mở rộng hoặc sửa cái cũ, **không dựng cơ chế thứ hai chồng lên**.
+2. **Không thêm HÀNH VI NGẦM ngoài yêu cầu task**: không tự sửa/tự ép/tự chọn ngẫu nhiên ngoài phạm vi được giao. Nếu thấy cần → ghi mục **`ĐỀ XUẤT`** trong báo cáo, mặc định **TẮT**.
+3. **Đồng bộ bản đồ & báo cáo thay đổi hành vi**: mỗi task làm thay đổi hành vi hệ thống bắt buộc cập nhật đúng dòng trong `docs/BAN-DO-HE-THONG.md` + thêm 1 dòng vào báo cáo dưới mục **"Thay đổi hành vi"**.
+4. **Báo xong phải kèm BẰNG CHỨNG thật**: luôn đính kèm output lệnh thật (`npm run typecheck`, `check-goi`...) và ảnh xuất từ **luồng render thật** (Remotion / `stage-preview.mjs`), tuyệt đối không mô tả suông.
