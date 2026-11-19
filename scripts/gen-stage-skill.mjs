@@ -74,6 +74,16 @@ const EXAMPLE_Q001_PATH = path.join(REF_DIR, 'q001.json');
 const EXAMPLE_C19_PATH = path.join(REF_DIR, 'c19.json');
 const ZIP_PATH = path.join(SKILL_DIR, 'dao-dien-tra-nguoi.zip');
 
+const SANG_TAC_SKILL_DIR = path.join(ROOT, '.agents/skills/sang-tac-tra-nguoi');
+const SANG_TAC_ZIP_PATH = path.join(SANG_TAC_SKILL_DIR, 'sang-tac-tra-nguoi.zip');
+const SANG_TAC_FILES = [
+  'SKILL.md',
+  'references/giong-tra-nguoi.md',
+  'references/loi-mon.md',
+  'references/motif.md',
+  'scripts/kiem_cau.py',
+];
+
 const HO_DAO_CU_PATH = path.join(ROOT, 'docs/motif/HO-DAO-CU.md');
 const BO_BOI_CANH_PATH = path.join(ROOT, 'docs/motif/BO-BOI-CANH.md');
 
@@ -571,12 +581,31 @@ with zipfile.ZipFile(${JSON.stringify(ZIP_PATH)}, "w", compression=zipfile.ZIP_D
   const r = spawnSync('/usr/bin/python3', ['-c', pyZip], { stdio: 'inherit' });
   if (r.status !== 0) throw new Error('python3 zip thất bại');
 
+  // TS1: Đóng gói skill sáng tác câu chữ (chỉ đóng đúng 5 file nguồn, không sửa nội dung, không đưa __pycache__)
+  const sangTacEntries = SANG_TAC_FILES.map((rel) => {
+    const abs = path.join(SANG_TAC_SKILL_DIR, rel);
+    if (!fs.existsSync(abs)) {
+      throw new Error(`Thiếu file skill sáng tác: ${path.relative(ROOT, abs)}`);
+    }
+    return { abs, arc: rel };
+  });
+  const pyZipSangTac = `
+import zipfile
+entries = ${JSON.stringify(sangTacEntries)}
+with zipfile.ZipFile(${JSON.stringify(SANG_TAC_ZIP_PATH)}, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+    for item in entries:
+        zf.write(item["abs"], arcname=item["arc"])
+`;
+  const r2 = spawnSync('/usr/bin/python3', ['-c', pyZipSangTac], { stdio: 'inherit' });
+  if (r2.status !== 0) throw new Error('python3 zip sang-tac-tra-nguoi thất bại');
+
   const skillLines = SKILL_MD_CONTENT.trimEnd().split('\n').length;
   const thuVienLines = thuVienMd.trimEnd().split('\n').length;
   const lanTuDoLines = lanTuDoMd.trimEnd().split('\n').length;
   const zipSize = fs.statSync(ZIP_PATH).size;
+  const sangTacZipSize = fs.statSync(SANG_TAC_ZIP_PATH).size;
   console.log(
-    `✅ Đã sinh SKILL.md (${skillLines} dòng), lan-tu-do.md (${lanTuDoLines} dòng), c19.json, thu-vien.md (${thuVienLines} dòng · Tầng A: ${counts.tierA}, Tầng B: ${counts.tierB}, Tầng C: ${counts.tierC}), references/ và ${path.relative(ROOT, ZIP_PATH)} (${(zipSize / 1024).toFixed(1)} KB)`
+    `✅ Đã sinh SKILL.md (${skillLines} dòng), lan-tu-do.md (${lanTuDoLines} dòng), c19.json, thu-vien.md (${thuVienLines} dòng · Tầng A: ${counts.tierA}, Tầng B: ${counts.tierB}, Tầng C: ${counts.tierC}), references/, ${path.relative(ROOT, ZIP_PATH)} (${(zipSize / 1024).toFixed(1)} KB) và ${path.relative(ROOT, SANG_TAC_ZIP_PATH)} (${(sangTacZipSize / 1024).toFixed(1)} KB)`
   );
 }
 

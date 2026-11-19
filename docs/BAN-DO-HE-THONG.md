@@ -43,7 +43,7 @@
 
 ---
 
-## 2. Bảng cơ chế (25 cơ chế)
+## 2. Bảng cơ chế (26 cơ chế)
 
 | # | Tên cơ chế | Làm gì | File chính | Bật khi nào | Hằng số chính | Có thể xung đột với |
 |---|---|---|---|---|---|---|
@@ -72,6 +72,7 @@
 | 23 | Gói Chén Parser, Làn tự do, Skill & Lưu gốc | **Làn tự do (`che_do: "tu_do"`, mặc định trên Skill từ TF4)**: nhận StageScript bọc trong CupBundle, hiện cảnh báo vàng, chỉ khoá nút Nhập khi có lỗi chặn, lưu nguyên văn `scriptGoc`; nút Copy lỗi mở đầu bằng *"Kịch bản làn tự do của bạn..."*; `npm run gen:skill` sinh thêm `references/lan-tu-do.md` + `references/c19.json` từ code vào `.zip` (TF6 bổ sung mô tả 2 ký hiệu nhịp `" / "` & `"+"` vào Bước 1 `SKILL.md` và `lan-tu-do.md`). **Gói Chén (lối tắt)**: chặn toạ độ/shapes, lưu `goiChenGoc`, nút Copy lỗi giữ *"Gói Chén của bạn..."* | `src/stage/goiChenParser.ts`, `geminiBundleBridge.ts`, `GeminiBundleImportModal.tsx`, `scripts/gen-stage-skill.mjs`, `server/cupStore.ts`, `server/sceneManagerService.ts` | Gói Chén: `phien_ban_goi: 1`; Làn tự do: `che_do: "tu_do"` | `goiChenGoc` / `scriptGoc`, `bundleVersion: "goichen_1" \| "tudo_1"`, `SKILL.md <= 80 dòng` | Không có |
 | 24 | Auto-fix dán JSON cũ (`geminiBundleBridge`) | Tách JSON từ markdown, đổi synonym (`pose`/`layer`/`atmosphere`/`theme`), khớp lại `pivotWord`, sửa import `tsxCode`, lọc hashtag | `src/automation/geminiBundleBridge.ts` | Khi dán JSON không phải Gói Chén vào Studio UI | `ATMOSPHERE/POSE/COLOR_ROLE_SYNONYM_MAP` | Luật "không lỗi im lặng" (chỉ áp cho định dạng cũ) |
 | 25 | Auto-fix biên dịch ngữ nghĩa (`semanticStage`) | Tự nâng `thoi_luong` ngắn, gộp cue trùng, tự thêm cue đổi đỏ `pivot+0.4s`; vật đỏ nhỏ chỉ báo **cảnh báo vàng** (đã bỏ tự đẩy `1.14×` và tự `follow: hand` ở T8-DNA-a) | `src/stage/semanticStage.ts` | Mặc định khi biên dịch Gói Chén | `TEMPO`, `MIN_RED_AREA_PX2=2000` | Không còn chồng camera hay tự nhấc vật |
+| 26 | Skill sáng tác câu chữ (`sang-tac-tra-nguoi`) | Bước 0 trên Gemini Web trước bước Đạo diễn: sinh 12 bản thô (4 khuôn × 3) theo DNA giọng kênh, lọc lỗi cơ học bằng `kiem_cau.py` + một lượt biên tập riêng, chủ kênh chốt rồi chuyển nguyên văn sang skill đạo diễn; đóng gói `sang-tac-tra-nguoi.zip` (đúng 5 file nguồn) cùng lệnh `npm run gen:skill` | `.agents/skills/sang-tac-tra-nguoi/`, `scripts/kiem_cau.py`, `scripts/gen-stage-skill.mjs` | Khi sáng tác/tinh chỉnh câu chữ trên Gemini Web trước bước đạo diễn | 4 dải `S 6–13 · M 14–28 · L 29–42 · XL 43–58` âm; trần `48` (tự sáng tác) / `58` (có tác giả); `kiem_cau.py` bắt lỗi ĐỎ `Đ1–Đ7` & cảnh báo `V1–V9` | `goiChenParser.ts` đang khoá `cau` 2–4 phần tử (thơ 5–6 câu dải L/XL phải gộp câu) |
 
 ---
 
