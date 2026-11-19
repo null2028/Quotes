@@ -1479,6 +1479,54 @@ export function validateStageScriptHard(
     prevEntitiesById = new Map(entities.map((e) => [`${e.kind}:${e.id}`, e]));
   }
 
+  // 2d. T7e #1: Kiểm tra vật `tren` (placedOn) phải chạm đúng điểm neo ở cả khung cuối SAU đẩy máy
+  {
+    const fFinalAfterPush = Math.max(
+      maxSampleFrame,
+      timeline.durationInFrames - 2
+    );
+    const compFinal = evaluateStageScriptAtFrame(
+      script,
+      fFinalAfterPush,
+      timeline,
+      palette
+    );
+    const finalEntities = collectEntitiesFromCompiled(compFinal, true);
+    const finalTimeSec = (fFinalAfterPush / fps).toFixed(2);
+    for (const ent of finalEntities) {
+      if (seenFloating.has(ent.id)) continue;
+      if (ent.kind !== 'prop' || !ent.placedOnRef) continue;
+      if (ent.anchorKind === 'cam' || ent.isDropping) continue;
+      const [hostId, ancName] = ent.placedOnRef.split('.');
+      const hostEnt = finalEntities.find((e) => e.id === hostId);
+      const hostDef = hostEnt ? BUILT_IN_PROP_CATALOG[hostEnt.type] : undefined;
+      const anc = ancName ? hostDef?.anchors?.[ancName] : undefined;
+      if (hostEnt && anc) {
+        const entDef = BUILT_IN_PROP_CATALOG[ent.type];
+        const entVar =
+          ent.variant && entDef?.variants
+            ? entDef.variants[ent.variant]
+            : undefined;
+        const localBox = entVar?.box ?? entDef?.box ?? [0, 0, 0, 0];
+        const localCenterX = (localBox[0] + localBox[2]) * 0.5;
+        const expectedY = hostEnt.worldY + anc[1] * hostEnt.scale;
+        const expectedX =
+          hostEnt.worldX + anc[0] * hostEnt.scale + localCenterX * ent.scale;
+        const dy = Math.abs(ent.box.y1 - expectedY);
+        const dx = Math.abs((ent.box.x0 + ent.box.x1) * 0.5 - expectedX);
+        const tolY = Math.max(3.5, 1.5 * ent.scale);
+        const tolX = Math.max(8.0, 3.0 * ent.scale);
+        if (dy > tolY || dx > tolX) {
+          seenFloating.add(ent.id);
+          issues.push({
+            code: 'FLOATING_OBJECT',
+            message: `Đạo cụ "${ent.id}" đặt trên điểm neo "${ent.placedOnRef}" bị lệch sau đẩy máy tại khung cuối t=${finalTimeSec}s (${dx.toFixed(1)}px ngang, ${dy.toFixed(1)}px dọc).`,
+          });
+        }
+      }
+    }
+  }
+
   // 3. Kiểm tra luật đúng 1 vật đỏ & diện tích tối thiểu thống nhất MIN_RED_AREA_PX2 (2400 px²)
   //    Đo tại khung cú lật SAU khi máy quay đã đẩy vào hoàn tất (pivot + 1.4s).
   const fPost1 = Math.min(

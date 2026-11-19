@@ -2056,19 +2056,27 @@ export function evaluateStageScriptAtFrame(
       );
 
       if (pushProgress > 0.001) {
+        const pushZoom = 1 + (neededZoom - 1) * pushProgress;
+        const finalZoom = Number((camera.zoom * pushZoom).toFixed(4));
+        const maxPushZoom = camera.zoom * neededZoom;
+
         // Target pan: ưu tiên vật đỏ — vật đỏ ≈ giữa hình, nhân vật được cắt mép — T7d #3
+        // T7e #2: Giữ đường đất (terrain.y) nằm gọn trong viewBox (y ≤ 362 < 376) để chân bàn/đất không bị cắt mất khi đẩy máy
         const targetCenterX = redProp.x * 0.8 + heroActor.x * 0.2;
         const targetCenterY = redProp.y * 0.8 + heroActor.y * 0.2;
         const targetPanX = targetCenterX - 270;
-        const targetPanY = targetCenterY - 315;
+        let targetPanY = targetCenterY - 315 + 22 / Math.max(1, maxPushZoom);
+        if (terrain.y - redProp.y <= 90) {
+          const minPanYForGround = (terrain.y - 315) - 47 / Math.max(1, maxPushZoom);
+          targetPanY = Math.max(targetPanY, minPanYForGround);
+        }
 
-        const pushZoom = 1 + (neededZoom - 1) * pushProgress;
-        camera.zoom = Number((camera.zoom * pushZoom).toFixed(4));
+        camera.zoom = finalZoom;
         camera.panX = Number(
-          (camera.panX + (targetPanX - camera.panX) * pushProgress * 0.65).toFixed(2)
+          (camera.panX + (targetPanX - camera.panX) * pushProgress).toFixed(2)
         );
         camera.panY = Number(
-          (camera.panY + (targetPanY - camera.panY) * pushProgress * 0.65).toFixed(2)
+          (camera.panY + (targetPanY - camera.panY) * pushProgress).toFixed(2)
         );
       }
     }

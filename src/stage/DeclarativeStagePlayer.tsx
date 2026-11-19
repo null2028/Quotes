@@ -925,6 +925,26 @@ export const DeclarativeStagePlayer: React.FC<{
   // strokeWidth đã bù zoom cho mọi phần tử nằm trong cameraTransform group
   const zoomStroke = strokeWidth / cam.zoom;
 
+  // T7e #2: Khi đẩy máy (zoom > 1.02), kéo dài đường đất ra vượt mép vùng hình ở mọi mức zoom & pan
+  // để không bao giờ bị cụt nét hay mờ mất ở mép khung nhìn
+  const renderTerrain = (() => {
+    if (cam.zoom <= 1.02) return effectiveTerrain;
+    const visHalfW = 270 / cam.zoom;
+    const visMinX = 270 + cam.panX - parallax.mid - visHalfW;
+    const visMaxX = 270 + cam.panX - parallax.mid + visHalfW;
+    const padX = Math.max(visHalfW * 0.9, 120);
+    const extStartX = Math.min(effectiveTerrain.startX, visMinX - padX);
+    const extEndX = Math.max(effectiveTerrain.endX, visMaxX + padX);
+    if (extStartX === effectiveTerrain.startX && extEndX === effectiveTerrain.endX) {
+      return effectiveTerrain;
+    }
+    return {
+      ...effectiveTerrain,
+      startX: Number(extStartX.toFixed(1)),
+      endX: Number(extEndX.toFixed(1)),
+    };
+  })();
+
   return (
     <svg
       width={svgWidth}
@@ -998,7 +1018,7 @@ export const DeclarativeStagePlayer: React.FC<{
 
         <g transform={`translate(${parallax.mid.toFixed(2)}, 0)`}>
           <TerrainRenderer
-            terrain={effectiveTerrain}
+            terrain={renderTerrain}
             terrainSegments={blendedTerrainSegments}
             drawProgress={Math.min(state.drawProgress, compiledNow.openingTerrainProgress)}
             phase={phase}

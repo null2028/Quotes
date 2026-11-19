@@ -2,3 +2,7 @@
 - Preview 6 khung đã vẽ camera đúng (DSP pipeline); lỗi cũ do zoom quá nhỏ (1.14) và bộ lọc `spec.colorRole==='accent'` bỏ sót vật đỏ chuyển màu runtime. Giờ c19 zoom tới 2.2× — chén đỏ rõ ràng ở khung cuối.
 - check-goi: c19-t7b ✅, chen18-v2 ✅, w051 ✅. q001 ❌ 3 lỗi (đè nhau hoa_don/laptop — không liên quan ngưỡng đỏ mới).
 - Xuất qa-artifacts-ci/T7c-c19.png (có chữ), T7d-mp4.png (cú lật | 13s).
+- [T7e] Nguyên nhân chén lơ lửng & q001 lỗi đè laptop: `semanticStage.ts` tự gắn `follow: hero:hand` khi `afterPushPx2 < MIN_RED_AREA_PX2` (2400), nhấc cả `chen_tra` và `hoa_don` khỏi mặt bàn (`dat_tren`). Sửa: không tự chuyển sang tay khi vật có `dat_tren`; thêm kiểm tra vật `tren` chạm điểm neo ở khung cuối sau đẩy máy trong `stageValidator.ts`.
+- [T7e] Sửa mất đường đất khi đẩy máy: `trackCompiler.ts` kẹp `panY` giữ `terrain.y` trong viewBox (`≤ 362`), `DeclarativeStagePlayer.tsx` kéo dài `renderTerrain.startX/endX` vượt mép vùng nhìn ở mọi mức zoom/pan.
+- [T7e] Kiểm tra: `typecheck` 0 lỗi; `check-goi` q001/w051/chen18-v2/c19-t7b đều ✅ OK; xuất lại `qa-artifacts-ci/T7d-mp4.png` cắt từ MP4 Remotion thật (hàng 1: c19-t7b cú lật | 13s; hàng 2: q001 cú lật | 13s).
+- [T7e] Ngoài phạm vi (ghi chú): `semanticStage.ts` vẫn giữ cue `zoom=1.14` cộng dồn với push `2.2×` (`2.508×`) để `chen_tra` (`436 px²`) đạt `≥ 2400 px²`; không sửa ngưỡng hay cỡ vật.

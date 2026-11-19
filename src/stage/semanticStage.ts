@@ -1108,6 +1108,7 @@ export function compileSemanticStageScript(
           afterPushPx2 < MIN_RED_AREA_PX2 &&
           allowsHand &&
           !p.cam_boi &&
+          !p.dat_tren &&
           !alreadyHandledInBeats &&
           compiledActors.length > 0
         ) {
