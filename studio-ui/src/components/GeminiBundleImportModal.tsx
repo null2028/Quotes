@@ -57,6 +57,32 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
   const [copiedGoiChenErrors, setCopiedGoiChenErrors] = useState(false);
   const [downloadedType, setDownloadedType] = useState<'zip' | 'md' | null>(null);
   const [skillMdContent, setSkillMdContent] = useState<string>('Đang tải...');
+  const [serverStamp, setServerStamp] = useState<{
+    commit: string;
+    startedAtLabel: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    fetch('/api/health')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        if (data.commit || data.startedAtLabel) {
+          setServerStamp({
+            commit: String(data.commit || 'unknown'),
+            startedAtLabel: String(data.startedAtLabel || ''),
+          });
+        }
+      })
+      .catch(() => {
+        // ignore health fetch errors
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && activeTab === 'skill_setup') {
@@ -220,9 +246,20 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="font-serif text-base font-bold text-tea-ink">
-                Nạp Gói Kịch Bản Gemini · Xem Live Preview Ngay (0.1s)
-              </h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="font-serif text-base font-bold text-tea-ink">
+                  Nạp Gói Kịch Bản Gemini · Xem Live Preview Ngay (0.1s)
+                </h2>
+                {serverStamp && (
+                  <span
+                    className="px-2 py-0.5 rounded-md bg-white border border-tea-border text-[10px] font-mono text-tea-muted"
+                    title="Phiên bản đang chạy: mã commit · giờ khởi động server"
+                  >
+                    {serverStamp.commit}
+                    {serverStamp.startedAtLabel ? ` · ${serverStamp.startedAtLabel}` : ''}
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-tea-muted">
                 Không cần chạm vào code — dán thẳng phản hồi từ Gemini là lên đầy đủ Câu chữ, Đạo cụ, Sân khấu &amp; Foley
               </p>

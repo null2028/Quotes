@@ -48,11 +48,48 @@ export function createStudioApiApp() {
   app.use('/output', express.static(OUTPUT_DIR));
   app.use('/audio', express.static(AUDIO_DIR));
 
-  // 1. Health Check & Clean Shutdown
+  // 1. Health Check & Clean Shutdown (TF3 #3: kèm mã commit + giờ khởi động server)
+  const serverStartedDate = new Date();
+  const serverStartedAt = serverStartedDate.toISOString();
+  const pad2 = (n: number) => String(n).padStart(2, '0');
+  const serverStartedAtLabel = `${pad2(serverStartedDate.getHours())}:${pad2(serverStartedDate.getMinutes())}:${pad2(serverStartedDate.getSeconds())} ${pad2(serverStartedDate.getDate())}/${pad2(serverStartedDate.getMonth() + 1)}`;
+  let serverCommit = 'unknown';
+  try {
+    const { execSync } = require('child_process') as typeof import('child_process');
+    serverCommit = execSync('git rev-parse --short HEAD', {
+      cwd: PROJECT_ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    serverCommit = 'unknown';
+  }
+  try {
+    fs.writeFileSync(
+      path.resolve(PROJECT_ROOT, 'data/studio-runtime.json'),
+      JSON.stringify(
+        {
+          commit: serverCommit,
+          startedAt: serverStartedAt,
+          startedAtLabel: serverStartedAtLabel,
+          pid: process.pid,
+        },
+        null,
+        2
+      ) + '\n',
+      'utf8'
+    );
+  } catch {
+    // ignore runtime file write errors
+  }
+
   app.get('/api/health', (_req, res) => {
     res.json({
       ok: true,
       version: '8.3.1',
+      commit: serverCommit,
+      startedAt: serverStartedAt,
+      startedAtLabel: serverStartedAtLabel,
       mode: 'universal-stage-script-engine-9x16-foley-master',
     });
   });

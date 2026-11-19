@@ -1,11 +1,50 @@
+import fs from 'fs';
 import http from 'http';
 import path from 'path';
 import { execFile } from 'child_process';
 import react from '@vitejs/plugin-react';
-import { createServer as createViteServer } from 'vite';
+import { createLogger, createServer as createViteServer } from 'vite';
 import { createStudioApiApp } from './index';
 
 const DEFAULT_STUDIO_PORT = 3688;
+// TF3 #3: Giới hạn kích thước data/studio-desktop.log xoay vòng ~10MB (8MB file chính + 2MB bản lưu gần nhất)
+const LOG_MAX_BYTES = 8 * 1024 * 1024;
+const LOG_KEEP_TAIL_BYTES = 2 * 1024 * 1024;
+const LOG_ROTATE_INTERVAL_MS = 60_000;
+
+export function rotateStudioDesktopLogIfNeeded(projectRoot: string): void {
+  const logPath = path.resolve(projectRoot, 'data/studio-desktop.log');
+  const backupPath = path.resolve(projectRoot, 'data/studio-desktop.log.1');
+  try {
+    if (!fs.existsSync(logPath)) return;
+    const st = fs.statSync(logPath);
+    if (st.size <= LOG_MAX_BYTES) return;
+    const keepBytes = Math.min(LOG_KEEP_TAIL_BYTES, st.size);
+    const fd = fs.openSync(logPath, 'r');
+    const buf = Buffer.allocUnsafe(keepBytes);
+    try {
+      fs.readSync(fd, buf, 0, keepBytes, st.size - keepBytes);
+    } finally {
+      fs.closeSync(fd);
+    }
+    fs.writeFileSync(backupPath, buf);
+    fs.truncateSync(logPath, 0);
+  } catch {
+    // ignore log rotation errors
+  }
+}
+
+function createQuietViteLogger() {
+  const base = createLogger('info');
+  const HMR_SPAM_RE = /\bhmr\s+(update|invalidate)\b|\bpage reload\b/i;
+  return {
+    ...base,
+    info(msg: string, options?: Parameters<typeof base.info>[1]) {
+      if (HMR_SPAM_RE.test(msg)) return;
+      base.info(msg, options);
+    },
+  };
+}
 
 function openBrowser(url: string, onDone?: () => void) {
   execFile('/usr/bin/open', [url], () => {
@@ -62,6 +101,10 @@ async function startUnifiedStudio() {
   const url = `http://localhost:${PORT}`;
   const projectRoot = path.resolve(__dirname, '..');
 
+  // Xoay vòng log khi khởi động và định kỳ mỗi 60s để data/studio-desktop.log luôn gọn ~10MB
+  rotateStudioDesktopLogIfNeeded(projectRoot);
+  setInterval(() => rotateStudioDesktopLogIfNeeded(projectRoot), LOG_ROTATE_INTERVAL_MS).unref();
+
   // Dọn tiến trình cổng 3300 cũ nếu còn sót từ phiên trước
   if (PORT !== 3300) {
     void requestPreviousInstanceShutdown(3300);
@@ -107,6 +150,7 @@ async function startUnifiedStudio() {
 
   const vite = await createViteServer({
     configFile: false,
+    customLogger: createQuietViteLogger(),
     root: path.resolve(projectRoot, 'studio-ui'),
     publicDir: path.resolve(projectRoot, 'public'),
     plugins: [react()],

@@ -2067,49 +2067,93 @@ function buildSemanticBackdropProps(
 
     case 'thien_nhien': {
       const items: PropSpec[] = [];
-      // Đường đồi xa 1 nét mảnh (tách 2 vế trái/phải để tạo triền đồi xa thanh thoát, không che vật đỏ giữa)
-      items.push(
-        makeBackdropProp(
-          'tn_doi_trai',
-          144,
-          groundY,
-          [
-            {
-              d: 'M -66 -1 Q -20 -46 34 -20 Q 58 -9 82 -3',
-              fill: 'none',
-              role: 'ink',
-              strokeScale: 0.72,
-            },
-          ],
-          { scale: 1.0, opacity: 0.42 }
-        )
+      // TF3 E-b: Đồi nền & cây phải né vật đỏ và cụm nhân vật/đạo cụ (dời/thu nhỏ/bỏ bớt đồi, không cố định x=144/392)
+      const avoidMinX =
+        redX !== undefined ? Math.min(clusterMinX, redX) : clusterMinX;
+      const avoidMaxX =
+        redX !== undefined ? Math.max(clusterMaxX, redX) : clusterMaxX;
+
+      // Vế đồi trái: chỉ đặt trong khoảng thoáng [78 .. leftLimit] trước cụm nhân vật & vật đỏ
+      const leftLimit = Math.min(
+        208,
+        avoidMinX - 24,
+        redX !== undefined ? redX - 30 : 208
       );
-      items.push(
-        makeBackdropProp(
-          'tn_doi_phai',
-          392,
-          groundY,
-          [
-            {
-              d: 'M -80 -4 Q -30 -28 18 -50 Q 50 -58 72 -1',
-              fill: 'none',
-              role: 'ink',
-              strokeScale: 0.72,
-            },
-          ],
-          { scale: 1.0, opacity: 0.42 }
-        )
+      const leftAvailW = leftLimit - 78;
+      if (leftAvailW >= 54) {
+        const sL = Number(Math.min(1.0, leftAvailW / 148).toFixed(3));
+        const hillLeftX = Number((78 + 66 * sL).toFixed(1));
+        items.push(
+          makeBackdropProp(
+            'tn_doi_trai',
+            hillLeftX,
+            groundY,
+            [
+              {
+                d: 'M -66 -1 Q -20 -46 34 -20 Q 58 -9 82 -3',
+                fill: 'none',
+                role: 'ink',
+                strokeScale: 0.72,
+              },
+            ],
+            { scale: sL, opacity: 0.42 }
+          )
+        );
+      }
+
+      // Vế đồi phải: chỉ đặt trong khoảng thoáng [rightStart .. 462] sau cụm nhân vật & vật đỏ
+      const rightStart = Math.max(
+        332,
+        avoidMaxX + 24,
+        redX !== undefined ? redX + 30 : 332
       );
-      // 1 cây trơ cành (bare_tree) đặt bên thoáng
+      const rightAvailW = 462 - rightStart;
+      if (rightAvailW >= 54) {
+        const sR = Number(Math.min(1.0, rightAvailW / 152).toFixed(3));
+        const hillRightX = Number((rightStart + 80 * sR).toFixed(1));
+        items.push(
+          makeBackdropProp(
+            'tn_doi_phai',
+            hillRightX,
+            groundY,
+            [
+              {
+                d: 'M -80 -4 Q -30 -28 18 -50 Q 50 -58 72 -1',
+                fill: 'none',
+                role: 'ink',
+                strokeScale: 0.72,
+              },
+            ],
+            { scale: sR, opacity: 0.42 }
+          )
+        );
+      }
+
+      // 1 cây trơ cành (bare_tree) đặt bên thoáng, kiểm tra né vật đỏ & nhân vật
       const treeShapes = cloneCatalogShapesAsBackdrop('bare_tree', 0.76);
       if (treeShapes.length > 0 && !ctx.existingPropTypes.has('bare_tree')) {
-        const treeX = preferRight ? rightX + 6 : leftX - 6;
-        items.push(
-          makeBackdropProp('tn_cay', treeX, groundY, treeShapes, {
-            scale: 1.15,
-            opacity: 0.44,
-          })
-        );
+        const primaryTreeX = preferRight
+          ? Math.min(444, Math.max(rightX + 8, avoidMaxX + 46))
+          : Math.max(96, Math.min(leftX - 8, avoidMinX - 46));
+        const fallbackTreeX = preferRight
+          ? Math.max(96, Math.min(leftX - 8, avoidMinX - 46))
+          : Math.min(444, Math.max(rightX + 8, avoidMaxX + 46));
+        const clearsRed = (tx: number) =>
+          (redX === undefined || Math.abs(tx - redX) >= 42) &&
+          (tx <= avoidMinX - 30 || tx >= avoidMaxX + 30);
+        const chosenTreeX = clearsRed(primaryTreeX)
+          ? primaryTreeX
+          : clearsRed(fallbackTreeX)
+            ? fallbackTreeX
+            : null;
+        if (chosenTreeX !== null) {
+          items.push(
+            makeBackdropProp('tn_cay', Number(chosenTreeX.toFixed(1)), groundY, treeShapes, {
+              scale: 1.15,
+              opacity: 0.44,
+            })
+          );
+        }
       }
       return items;
     }

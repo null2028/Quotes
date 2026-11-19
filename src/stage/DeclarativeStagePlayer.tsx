@@ -957,25 +957,8 @@ export const DeclarativeStagePlayer: React.FC<{
   // strokeWidth đã bù zoom cho mọi phần tử nằm trong cameraTransform group
   const zoomStroke = strokeWidth / cam.zoom;
 
-  // T7e #2: Khi đẩy máy (zoom > 1.02), kéo dài đường đất ra vượt mép vùng hình ở mọi mức zoom & pan
-  // để không bao giờ bị cụt nét hay mờ mất ở mép khung nhìn
-  const renderTerrain = (() => {
-    if (cam.zoom <= 1.02) return effectiveTerrain;
-    const visHalfW = 270 / cam.zoom;
-    const visMinX = 270 + cam.panX - parallax.mid - visHalfW;
-    const visMaxX = 270 + cam.panX - parallax.mid + visHalfW;
-    const padX = Math.max(visHalfW * 0.9, 120);
-    const extStartX = Math.min(effectiveTerrain.startX, visMinX - padX);
-    const extEndX = Math.max(effectiveTerrain.endX, visMaxX + padX);
-    if (extStartX === effectiveTerrain.startX && extEndX === effectiveTerrain.endX) {
-      return effectiveTerrain;
-    }
-    return {
-      ...effectiveTerrain,
-      startX: Number(extStartX.toFixed(1)),
-      endX: Number(extEndX.toFixed(1)),
-    };
-  })();
+  // TF3 E-c: Tôn trọng đúng startX/endX đường đất của kịch bản ở mọi mức zoom (không tự kéo dài hết bề ngang)
+  const renderTerrain = effectiveTerrain;
 
   const hasBackdropSet = Boolean(
     script.tags?.some((t) => t.startsWith('boi_canh_bo:'))

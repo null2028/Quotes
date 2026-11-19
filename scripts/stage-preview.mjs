@@ -61,6 +61,23 @@ function getGitShortCommit() {
   }
 }
 
+function getServerStartStampLabel() {
+  try {
+    const rtPath = path.join(ROOT, 'data/studio-runtime.json');
+    if (fs.existsSync(rtPath)) {
+      const rt = JSON.parse(fs.readFileSync(rtPath, 'utf8'));
+      if (rt?.startedAtLabel) {
+        return `server ${rt.startedAtLabel}`;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `chạy lúc ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} ${p(d.getDate())}/${p(d.getMonth() + 1)}`;
+}
+
 /**
  * Chuẩn hoá SVG trước khi raster bằng @resvg/resvg-js (chạy đồng nhất trên macOS & Linux arm64/x64):
  * - Chuẩn hoá mã màu hex 8 ký tự / rgb() nếu có.
@@ -1464,12 +1481,13 @@ function renderSixFramePreview(
     }));
 
   const commitHash = getGitShortCommit();
+  const serverStartLabel = getServerStartStampLabel();
   const durSec = (timeline.durationInFrames / fps).toFixed(1);
   const pivotSec = (timeline.pivotFrame / fps).toFixed(2);
   const horizonStr = vdna.horizonOffsetPx >= 0 ? `+${vdna.horizonOffsetPx}px` : `${vdna.horizonOffsetPx}px`;
 
   const bannerTitle = `DIRECTOR PREVIEW — ${resolvedCupProps.title} (${script.sceneId || baseName}) · ${modeLabel}`;
-  const bannerMeta = `commit: ${commitHash}  |  thời lượng: ${durSec}s (${timeline.durationInFrames}f · ${effectiveDurationMode})  |  seed: ${vdna.seed} (id: ${resolvedCupProps.id})  |  layout: ${vdna.layout} · horizon: ${horizonStr} · pivot: t=${pivotSec}s`;
+  const bannerMeta = `${commitHash} · ${serverStartLabel}  |  thời lượng: ${durSec}s (${timeline.durationInFrames}f · ${effectiveDurationMode})  |  seed: ${vdna.seed} (id: ${resolvedCupProps.id})  |  layout: ${vdna.layout} · horizon: ${horizonStr} · pivot: t=${pivotSec}s`;
   const bannerStatus =
     tf1Warnings.length > 0
       ? `[WARN] TF1 cảnh báo vàng (${tf1Warnings.length}): ${tf1Warnings.map((w) => `[${w.code}@${w.timeSec.toFixed(2)}s]`).join(' · ')}`
