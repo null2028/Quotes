@@ -180,6 +180,9 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
   if (obj.vat_do_tren_tay) {
     semInput.vat_do_tren_tay = obj.vat_do_tren_tay;
   }
+  if (obj.kieu_cu_lat !== undefined) {
+    semInput.kieu_cu_lat = obj.kieu_cu_lat;
+  }
 
   // ── 7. Validate cấu trúc ngữ nghĩa ──
   // Thu thập id các vật bị lỗi tên/neo → không kiểm hình học cho chúng

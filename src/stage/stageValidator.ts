@@ -48,6 +48,7 @@ import {
   SEMANTIC_ACTOR_ROLES,
   SEMANTIC_BACKDROPS,
   SEMANTIC_LEANS,
+  SEMANTIC_PIVOT_STYLES,
   SEMANTIC_POSES,
   SEMANTIC_SOCKETS,
   SEMANTIC_TERRAINS,
@@ -83,6 +84,7 @@ const ALLOWED_SEMANTIC_ROOT_KEYS = new Set([
   'ten',
   'mo_ta',
   'boi_canh',
+  'kieu_cu_lat',
   'vat_do_tren_tay',
   'nhan_vat',
   'dao_cu',
@@ -426,6 +428,15 @@ export function validateSemanticSpecStructure(
         message: `Thiếu trường bắt buộc "${req}" ở cấp gốc.`,
       });
     }
+  }
+
+  if (sem.kieu_cu_lat !== undefined && !(String(sem.kieu_cu_lat) in SEMANTIC_PIVOT_STYLES)) {
+    const validStyles = Object.keys(SEMANTIC_PIVOT_STYLES);
+    const hint = suggestClosestName(String(sem.kieu_cu_lat), validStyles);
+    issues.push({
+      code: 'UNKNOWN_NAME',
+      message: `kieu_cu_lat: "${sem.kieu_cu_lat}" không hợp lệ (chỉ có: ${validStyles.join(', ')})${hint ? `, ý bạn là "${hint}"?` : ''}`,
+    });
   }
 
   if (sem.boi_canh && typeof sem.boi_canh === 'object') {
@@ -1548,16 +1559,22 @@ export function validateStageScriptHard(
     }
   }
 
-  // 3. Kiểm tra luật đúng 1 vật đỏ & diện tích tối thiểu thống nhất MIN_RED_AREA_PX2 (2400 px²)
-  //    Đo tại khung cú lật SAU khi máy quay đã đẩy vào hoàn tất (pivot + 1.4s).
+  // 3. Kiểm tra luật đúng 1 vật đỏ & diện tích tối thiểu thống nhất MIN_RED_AREA_PX2 (2000 px²)
+  //    T8-DNA-a #1 & #4: Với `semantic_v1`, đo tại khung ngay trước 0.8s mờ cuối (`fBeforeFade`) theo đúng kiểu `kieu_cu_lat` đã chọn.
+  const isSemanticScript = Boolean(script.tags?.includes('semantic_v1'));
   const fPost1 = Math.min(
     timeline.durationInFrames - Math.round(1.6 * fps),
     timeline.pivotFrame + Math.round(1.4 * fps)
   );
   const fPost2 = Math.max(fPost1, timeline.durationInFrames - Math.round(2.0 * fps));
+  const fBeforeFade = Math.max(
+    fPost1,
+    timeline.durationInFrames - Math.round(0.85 * fps)
+  );
+  const redSampleFrames = isSemanticScript ? [fBeforeFade] : [fPost1, fPost2];
 
   let maxRedSnapshot: Array<{ id: string; typeName: string; screenPx2: number; zoom: number }> = [];
-  for (const pf of [fPost1, fPost2]) {
+  for (const pf of redSampleFrames) {
     const compiled = evaluateStageScriptAtFrame(script, pf, timeline, palette);
     const zoom2 = compiled.camera.zoom * compiled.camera.zoom;
     const reds: Array<{ id: string; typeName: string; screenPx2: number; zoom: number }> = [];
@@ -1642,14 +1659,13 @@ export function validateStageScriptHard(
       });
     }
 
-    // T7b #3: Vật đỏ phải còn đỏ và còn nhìn thấy từ lúc đổi đỏ đến hết video (khung cuối)
-    if (script.tags?.includes('semantic_v1')) {
-      const fEnd = Math.max(fPost1, timeline.durationInFrames - 2);
+    // T7b #3 & T8-DNA-a #4: Vật đỏ phải còn đỏ và còn nhìn thấy từ lúc đổi đỏ đến khung ngay trước lúc mờ cuối (0.8s)
+    if (isSemanticScript) {
+      const fEnd = fBeforeFade;
       const persistSamples = Array.from(
         new Set([
           fPost1,
           Math.round((fPost1 + fEnd) * 0.5),
-          Math.max(fPost1, timeline.durationInFrames - Math.round(1.0 * fps)),
           fEnd,
         ])
       );

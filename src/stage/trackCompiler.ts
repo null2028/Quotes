@@ -786,10 +786,16 @@ export function evaluateStageScriptAtFrame(
       extrapolateRight: 'clamp',
     }
   );
+  const isSemantic = Boolean(script.tags?.includes('semantic_v1'));
+
+  // T8-DNA-a #1: Gói Chén (`semantic_v1`) KHÔNG chịu ảnh hưởng từ Visual DNA Trục 4 (`pivotMechanic`);
+  // camera quanh cú lật do duy nhất `kieu_cu_lat` điều khiển ở cuối khối `if (isSemantic)`.
   const activePivotMechanic =
-    visualDNA && !visualDNA.isLegacyLocked
-      ? visualDNA.pivotMechanic
-      : 'ACCENT_PUSH_IN';
+    isSemantic
+      ? 'NONE'
+      : visualDNA && !visualDNA.isLegacyLocked
+        ? visualDNA.pivotMechanic
+        : 'ACCENT_PUSH_IN';
 
   if (camZoomSegs.length > 0) {
     evaluatedZoom = evaluateNumericChannel(
@@ -802,6 +808,8 @@ export function evaluateStageScriptAtFrame(
         (evaluatedZoom * (1.065 - 0.085 * pivotCurve)).toFixed(4)
       );
     }
+  } else if (isSemantic) {
+    evaluatedZoom = baseZoomInit;
   } else if (activePivotMechanic === 'PULLBACK_REVEAL') {
     const breathZoom = Math.sin(loopProgress * Math.PI * 2) * 0.003;
     evaluatedZoom =
@@ -834,6 +842,8 @@ export function evaluateStageScriptAtFrame(
       basePanXInit,
       camPanXSegs
     ).value;
+  } else if (isSemantic) {
+    evaluatedPanX = basePanXInit;
   } else {
     evaluatedPanX = basePanXInit + Math.sin(loopProgress * Math.PI * 2) * 1.4;
   }
@@ -876,6 +886,8 @@ export function evaluateStageScriptAtFrame(
       basePanYInit,
       camPanYSegs
     ).value;
+  } else if (isSemantic) {
+    evaluatedPanY = basePanYInit;
   } else {
     const autoLiftY = interpolate(
       frame,
@@ -896,7 +908,6 @@ export function evaluateStageScriptAtFrame(
     panY: evaluatedPanY,
   };
 
-  const isSemantic = Boolean(script.tags?.includes('semantic_v1'));
   const holdFrames = Math.round(TEMPO.POST_MOTION_HOLD_SEC * fps);
   const actorLookAtTransitions = new Map<
     string,
@@ -2012,44 +2023,16 @@ export function evaluateStageScriptAtFrame(
       actor.opacity = Number((actor.opacity * actorInkGate).toFixed(3));
     });
 
-    // Terrain segments: also stagger along with terrain
-    for (const seg of terrainSegments) {
-      seg.opacity = Number((seg.opacity * openingTerrainProgress).toFixed(3));
-    }
-
-    // ========================================================================
-    // ĐẨY MÁY CÚ LẬT cho vật đỏ nhỏ — T7c #8
-    // Sau khi vật đỏ đổi màu (pivot + RED_COLOR_DELAY), đẩy máy quay chậm rãi
-    // về phía giữa vật đỏ và nhân vật, zoom đủ để vật đỏ ≥ MIN_RED_AREA_PX2 × 2
-    // ========================================================================
-    const redProp = props.find(
-      (p) => p.isAccentActive
-    );
-    const heroActor = actors.find((a) => a.focusRole === 'hero') ?? actors[0];
-
-    if (redProp && heroActor && frame >= timeline.pivotFrame) {
-      // Estimate current red area at base zoom
-      const baseRedPx2 = computePropRedStageArea(redProp) * PX2_PER_STAGE_UNIT2;
-
-      const targetArea = MIN_RED_AREA_PX2 * TEMPO.PIVOT_PUSH_RED_AREA_MULT;
-      let neededZoom = 1.0;
-      if (baseRedPx2 > 0 && baseRedPx2 < targetArea) {
-        // Area scales with zoom², so neededZoom = sqrt(targetArea / baseRedPx2)
-        neededZoom = Math.sqrt(targetArea / baseRedPx2);
-      }
-      // Clamp to allowed range
-      neededZoom = Math.max(TEMPO.PIVOT_PUSH_MIN_ZOOM, Math.min(TEMPO.PIVOT_PUSH_MAX_ZOOM, neededZoom));
-
-      // If red prop is already big enough, minimal push
-      if (baseRedPx2 >= targetArea) {
-        neededZoom = TEMPO.PIVOT_PUSH_MIN_ZOOM;
-      }
-
-      const pushStartF = timeline.pivotFrame + Math.round(TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC * fps);
-      const pushEndF = pushStartF + Math.round(TEMPO.PIVOT_PUSH_DUR_SEC * fps);
-      const pushProgress = interpolate(
+    // Đạo cụ có enterAt tường minh (gồm kiểu `xuat_hien` hiện ở `pivot`): tự vẽ nét + mực loang mượt khi vào cảnh
+    for (const pw of ordered) {
+      const p = pw.p;
+      if (p.spec.enterAt === undefined) continue;
+      const enterF = resolveCueFrame(p.spec.enterAt, timeline);
+      if (enterF <= 6) continue;
+      const drawDurF = Math.max(1, Math.round(TEMPO.RED_TRANSITION_SEC * fps));
+      const cueDraw = interpolate(
         frame,
-        [pushStartF, Math.max(pushStartF + 1, pushEndF)],
+        [enterF, enterF + drawDurF],
         [0, 1],
         {
           easing: Easing.inOut(Easing.cubic),
@@ -2057,9 +2040,117 @@ export function evaluateStageScriptAtFrame(
           extrapolateRight: 'clamp',
         }
       );
+      p.drawProgress = Number(Math.min(p.drawProgress, cueDraw).toFixed(3));
+      if (frame < enterF) {
+        p.opacity = 0;
+      }
+    }
+
+    // Terrain segments: also stagger along with terrain
+    for (const seg of terrainSegments) {
+      seg.opacity = Number((seg.opacity * openingTerrainProgress).toFixed(3));
+    }
+
+    // ========================================================================
+    // T8-DNA-a #1: MỘT BỘ ĐIỀU KHIỂN CAMERA DUY NHẤT Ở CÚ LẬT (`kieu_cu_lat`)
+    // - `day_may` (mặc định): đẩy chậm 2.0s hướng vật đỏ, kẹp zoom ≤ 2.2
+    // - `xuat_hien`: vật đỏ vẽ nét + loang ở cú lật rồi đẩy máy nhẹ
+    // - `keo_rong`: mở màn ở cận cảnh (1.55×), cú lật lùi ra 1.0× lộ bối cảnh lớn hơn
+    // - `dung_lang`: giữ máy đứng yên 100%, chỉ vật đổi đỏ
+    // ========================================================================
+    const kieuTag = script.tags?.find((t) => t.startsWith('kieu_cu_lat:'));
+    const kieuCuLat = (
+      kieuTag ? kieuTag.slice('kieu_cu_lat:'.length) : 'day_may'
+    ) as 'day_may' | 'xuat_hien' | 'keo_rong' | 'dung_lang';
+
+    const heroActor = actors.find((a) => a.focusRole === 'hero') ?? actors[0];
+    const activeRedProp = props.find((p) => p.isAccentActive);
+    const plannedRedProp =
+      activeRedProp ??
+      props.find((p) => p.spec.focusRole === 'hero' && p.layer !== 'far');
+    const handCupActor = !activeRedProp
+      ? actors.find((a) => {
+          const aSpec = (script.actors ?? []).find((x) => x.id === a.id);
+          return a.showTeaCup > 0.2 && aSpec?.teaCupRed === true;
+        })
+      : undefined;
+
+    const pushStartF =
+      timeline.pivotFrame +
+      Math.round(TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC * fps);
+    const pushEndF = pushStartF + Math.round(TEMPO.PIVOT_PUSH_DUR_SEC * fps);
+    const pushProgress = interpolate(
+      frame,
+      [pushStartF, Math.max(pushStartF + 1, pushEndF)],
+      [0, 1],
+      {
+        easing: Easing.inOut(Easing.cubic),
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    const computeGroundedPan = (
+      focusX: number,
+      focusY: number,
+      targetZoom: number
+    ) => {
+      const targetPanX = focusX - 270;
+      let targetPanY = focusY - 315 + 22 / Math.max(1, targetZoom);
+      if (terrain.y - focusY <= 90) {
+        const minPanYForGround =
+          terrain.y - 315 - 47 / Math.max(1, targetZoom);
+        targetPanY = Math.max(targetPanY, minPanYForGround);
+      }
+      return { targetPanX, targetPanY };
+    };
+
+    if (kieuCuLat === 'keo_rong') {
+      // Mở màn ở cận cảnh quanh nhân vật/vật đỏ, sau cú lật kéo máy lùi dần về toàn cảnh 1.0×
+      const startZoom = 1.55;
+      const focusX = plannedRedProp
+        ? plannedRedProp.x * 0.55 + (heroActor?.x ?? plannedRedProp.x) * 0.45
+        : heroActor?.x ?? 270;
+      const focusY = plannedRedProp
+        ? plannedRedProp.y * 0.55 + (heroActor?.y ?? plannedRedProp.y) * 0.45
+        : (heroActor?.y ?? 352) - 24;
+      const { targetPanX: startPanX, targetPanY: startPanY } =
+        computeGroundedPan(focusX, focusY, startZoom);
+      const keepCloseWeight = 1 - pushProgress;
+      camera.zoom = Number(
+        (1 + (startZoom - 1) * keepCloseWeight).toFixed(4)
+      );
+      camera.panX = Number((startPanX * keepCloseWeight).toFixed(2));
+      camera.panY = Number((startPanY * keepCloseWeight).toFixed(2));
+    } else if (
+      (kieuCuLat === 'day_may' || kieuCuLat === 'xuat_hien') &&
+      heroActor &&
+      frame >= timeline.pivotFrame &&
+      (activeRedProp || handCupActor)
+    ) {
+      const redX = activeRedProp ? activeRedProp.x : handCupActor!.x;
+      const redY = activeRedProp ? activeRedProp.y : handCupActor!.y - 24;
+      const baseRedPx2 = activeRedProp
+        ? computePropRedStageArea(activeRedProp) * PX2_PER_STAGE_UNIT2
+        : 7 * 5 * 0.88 * handCupActor!.scale * handCupActor!.scale * PX2_PER_STAGE_UNIT2;
+
+      const areaMult =
+        kieuCuLat === 'xuat_hien' ? 1.25 : TEMPO.PIVOT_PUSH_RED_AREA_MULT;
+      const targetArea = MIN_RED_AREA_PX2 * areaMult;
+      let neededZoom: number = TEMPO.PIVOT_PUSH_MIN_ZOOM;
+      if (baseRedPx2 > 0 && baseRedPx2 < targetArea) {
+        neededZoom = Math.sqrt(targetArea / baseRedPx2);
+      }
+      const maxZoomCap =
+        kieuCuLat === 'xuat_hien' && baseRedPx2 >= MIN_RED_AREA_PX2
+          ? Math.min(1.38, TEMPO.PIVOT_PUSH_MAX_ZOOM)
+          : TEMPO.PIVOT_PUSH_MAX_ZOOM;
+      neededZoom = Math.max(
+        TEMPO.PIVOT_PUSH_MIN_ZOOM,
+        Math.min(maxZoomCap, neededZoom)
+      );
 
       if (pushProgress > 0.001) {
-        // T8-BOI-CANH #5b: Kẹp TỔNG mức phóng camera ở cú lật ≤ PIVOT_PUSH_MAX_ZOOM (2.2), không cộng dồn vượt trần
         const baseCamZoom = Math.min(TEMPO.PIVOT_PUSH_MAX_ZOOM, camera.zoom);
         const targetZoom = Math.min(
           TEMPO.PIVOT_PUSH_MAX_ZOOM,
@@ -2068,18 +2159,13 @@ export function evaluateStageScriptAtFrame(
         const finalZoom = Number(
           (baseCamZoom + (targetZoom - baseCamZoom) * pushProgress).toFixed(4)
         );
-        const maxPushZoom = Math.max(1, targetZoom);
-
-        // Target pan: ưu tiên vật đỏ — vật đỏ ≈ giữa hình, nhân vật được cắt mép — T7d #3
-        // T7e #2: Giữ đường đất (terrain.y) nằm gọn trong viewBox (y ≤ 362 < 376) để chân bàn/đất không bị cắt mất khi đẩy máy
-        const targetCenterX = redProp.x * 0.8 + heroActor.x * 0.2;
-        const targetCenterY = redProp.y * 0.8 + heroActor.y * 0.2;
-        const targetPanX = targetCenterX - 270;
-        let targetPanY = targetCenterY - 315 + 22 / Math.max(1, maxPushZoom);
-        if (terrain.y - redProp.y <= 90) {
-          const minPanYForGround = (terrain.y - 315) - 47 / Math.max(1, maxPushZoom);
-          targetPanY = Math.max(targetPanY, minPanYForGround);
-        }
+        const targetCenterX = redX * 0.8 + heroActor.x * 0.2;
+        const targetCenterY = redY * 0.8 + heroActor.y * 0.2;
+        const { targetPanX, targetPanY } = computeGroundedPan(
+          targetCenterX,
+          targetCenterY,
+          Math.max(1, targetZoom)
+        );
 
         camera.zoom = finalZoom;
         camera.panX = Number(
@@ -2090,6 +2176,7 @@ export function evaluateStageScriptAtFrame(
         );
       }
     }
+    // `dung_lang`: giữ nguyên camera tĩnh (zoom=1, panX=0, panY=0)
   } else if ((!visualDNA || !visualDNA.isLegacyLocked)) {
     // Kiến trúc Khai bút Mở màn 4 Pha V8.6.1 (Hướng C — Slow Calligraphic Layered Choreography):
     // - CHOREO-03 (Trọng lực Nhân quả chậm rãi): Lớp nền/Cửa sổ/Ghế ngồi vẽ trước (Tier 1: 0.40s..2.25s)

@@ -21,6 +21,7 @@ import {
   SEMANTIC_BACKDROPS,
   SEMANTIC_BEAT_ANCHORS,
   SEMANTIC_LEANS,
+  SEMANTIC_PIVOT_STYLES,
   SEMANTIC_POSES,
   SEMANTIC_PROP_BEAT_VERBS,
   SEMANTIC_SOCKETS,
@@ -277,9 +278,11 @@ function buildThuVienMd() {
 
   lines.push(
     '',
-    '## 2. Địa Hình, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ',
+    '## 2. Địa Hình, Kiểu Cú Lật, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ',
     `- Bộ bối cảnh (\`boi_canh.bo\`): ${fmtList(Object.keys(SEMANTIC_BACKDROPS))}.`,
     `- Địa hình (\`boi_canh.dia_hinh\`): ${fmtList(Object.keys(SEMANTIC_TERRAINS))}.`,
+    '- Kiểu cú lật (`kieu_cu_lat` — mặc định `day_may`, điều khiển duy nhất camera quanh cú lật):',
+    ...Object.entries(SEMANTIC_PIVOT_STYLES).map(([k, desc]) => `  - \`${k}\`: ${desc}.`),
     '- Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.',
     `- Khí quyển (\`boi_canh.khi_quyen[].loai\`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): ${fmtList(atmosphereTypes)} (kèm \`vi_tri\`, \`huong\`: \`trai\`/\`phai\`, \`mat_do\`).`,
     `- Lớp sâu (\`lop\`): ${fmtList(SEMANTIC_LAYERS)} · Loại neo (\`loai_neo\`): ${fmtList(ANCHOR_KINDS)} · Khe vị trí (\`vi_tri\`/\`di_toi\`): ${fmtList(Object.keys(SEMANTIC_SLOTS))}.`,
@@ -362,6 +365,7 @@ Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 d�
 6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong \`references/thu-vien.md\`). Chỉ mô tả những gì Gói Chén thể hiện được; bối cảnh phải ghi bằng \`boi_canh.bo\`. Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
 7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại. Vật đỏ phải còn đỏ đến khung cuối; không cho vật đỏ mờ/biến mất.
 8. Nhịp Trà Nguội: Lữ khách làm mọi thứ chậm rãi như người đang uống trà; ít cử chỉ, mỗi dòng tối đa 1 cử chỉ nhỏ, phần lớn thời gian là lặng.
+9. Kiểu cú lật (\`kieu_cu_lat\`): chọn 1 trong 4 — \`day_may\` (mặc định: đẩy chậm vào vật đỏ nhỏ/vừa); \`xuat_hien\` (vật đỏ mới vẽ nét xuất hiện ở cú lật rồi đẩy nhẹ); \`keo_rong\` (mở màn cận cảnh, cú lật lùi rộng lộ bối cảnh đổi nghĩa); \`dung_lang\` (máy đứng yên tuyệt đối, chỉ vật đổi đỏ).
 TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa. Thử 3 giây: tắt tiếng, không đọc dòng cuối — chỉ nhìn hình quanh cú lật, người xem có thấy 'một chuyện vừa xảy ra' không? Không thấy → phương án yếu, đổi.
 
 ## Bước 3 — Xuất Gói Chén JSON

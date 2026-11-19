@@ -14,9 +14,14 @@
 - `nha_que` · **Nhà quê, mâm cơm** · nền tự dựng: Bóng ngôi nhà mái hiên (warm_house) + hàng rào gỗ thấp ven sân · địa hình: phang · đạo cụ gợi ý: mam_com, bat_com, am_tra, don_go, ghe_tua, cua_nha, nha_nho
 - `ga_tau` · **Ga tàu** · nền tự dựng: Bóng toa tàu chạy ngang có hàng ô cửa + cột đồng hồ sân ga · địa hình: phang · đạo cụ gợi ý: toa_tau, vali, ghe_dai, bench, dong_ho_treo
 
-## 2. Địa Hình, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ
+## 2. Địa Hình, Kiểu Cú Lật, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ
 - Bộ bối cảnh (`boi_canh.bo`): `pho_ngo`, `khong_gian_ky_hieu`, `thien_nhien`, `van_phong`, `phong_trong_nha`, `hien_tra`, `quan`, `nha_que`, `ga_tau`.
 - Địa hình (`boi_canh.dia_hinh`): `phang`, `doc`, `doi`, `nga_re`, `bo_nuoc`, `bac_thang`.
+- Kiểu cú lật (`kieu_cu_lat` — mặc định `day_may`, điều khiển duy nhất camera quanh cú lật):
+  - `day_may`: Vật đỏ đổi màu rồi đẩy máy chậm về vật đỏ (mặc định — hợp vật đỏ nhỏ/vừa cần nhấn cận).
+  - `xuat_hien`: Vật đỏ chưa có từ đầu, tự vẽ nét + loang xuất hiện ở cú lật rồi đẩy máy nhẹ (hợp vật bất ngờ xuất hiện).
+  - `keo_rong`: Mở màn ở cận cảnh, cú lật kéo máy lùi ra lộ bối cảnh lớn hơn làm đổi nghĩa (hợp cú lật mở rộng tầm nhìn).
+  - `dung_lang`: Không chuyển động máy, chỉ vật đổi đỏ (hợp cảnh tĩnh tuyệt đối, chiêm nghiệm).
 - Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.
 - Khí quyển (`boi_canh.khi_quyen[].loai`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): `rain`, `wind`, `leaves`, `steam`, `birds`, `sun`, `hollow_sun`, `crescent`, `ring_pulse` (kèm `vi_tri`, `huong`: `trai`/`phai`, `mat_do`).
 - Lớp sâu (`lop`): `nen`, `giua`, `truoc` · Loại neo (`loai_neo`): `dat`, `tuong`, `troi`, `tren`, `cam` · Khe vị trí (`vi_tri`/`di_toi`): `xa_trai`, `trai`, `giua_trai`, `giua`, `giua_phai`, `phai`, `xa_phai`.

@@ -6,7 +6,6 @@ import {
   LU_KHACH_HEIGHT_RATIO,
   LU_KHACH_STANDING_UNITS,
   MIN_RED_AREA_PX2,
-  PIVOT_CAMERA_PUSH_IN_ZOOM,
   SEMANTIC_SLOTS,
   SemanticLayer,
   SemanticSlot,
@@ -96,6 +95,14 @@ export const SEMANTIC_BACKDROPS = {
   },
 } as const;
 export type SemanticBackdropName = keyof typeof SEMANTIC_BACKDROPS;
+
+export const SEMANTIC_PIVOT_STYLES = {
+  day_may: 'Vật đỏ đổi màu rồi đẩy máy chậm về vật đỏ (mặc định — hợp vật đỏ nhỏ/vừa cần nhấn cận)',
+  xuat_hien: 'Vật đỏ chưa có từ đầu, tự vẽ nét + loang xuất hiện ở cú lật rồi đẩy máy nhẹ (hợp vật bất ngờ xuất hiện)',
+  keo_rong: 'Mở màn ở cận cảnh, cú lật kéo máy lùi ra lộ bối cảnh lớn hơn làm đổi nghĩa (hợp cú lật mở rộng tầm nhìn)',
+  dung_lang: 'Không chuyển động máy, chỉ vật đổi đỏ (hợp cảnh tĩnh tuyệt đối, chiêm nghiệm)',
+} as const;
+export type SemanticPivotStyleName = keyof typeof SEMANTIC_PIVOT_STYLES;
 
 export const SEMANTIC_BACKDROP_ALIASES: Record<string, SemanticBackdropName> = {
   thien_nhien_mo: 'thien_nhien',
@@ -263,6 +270,7 @@ export interface SemanticStageScript {
     khi_quyen?: SemanticAtmosphereSpec[];
     doan_duong?: SemanticTerrainSegmentSpec[];
   };
+  kieu_cu_lat?: SemanticPivotStyleName;
   vat_do_tren_tay?: string; // "<actorId>.chen_tra" nếu chén trên tay Lữ khách chính là vật đỏ của cú lật
   nhan_vat: SemanticActorSpec[];
   dao_cu: SemanticPropSpec[];
@@ -912,6 +920,11 @@ export function compileSemanticStageScript(
     Number((STAGE_CENTER_X + (rx - rawCenterX) * spreadScale).toFixed(2));
 
   // Bước C: Áp dụng autoScale và căn giữa (STAGE_CENTER_X = 270) cho mọi đạo cụ & nhân vật
+  const kieuCuLat: SemanticPivotStyleName =
+    sem.kieu_cu_lat && sem.kieu_cu_lat in SEMANTIC_PIVOT_STYLES
+      ? sem.kieu_cu_lat
+      : 'day_may';
+
   const propWorldPos = new Map<
     string,
     { x: number; y: number; scale: number; type: string; lop: SemanticLayer }
@@ -977,7 +990,7 @@ export function compileSemanticStageScript(
       colorRole: entry.lop === 'nen' && !p.vat_do ? 'secondary' : 'ink',
       focusRole: p.vat_do ? 'hero' : entry.lop === 'nen' ? 'ambient' : 'support',
       idle: entry.loaiNeo === 'troi' ? 'float' : 'none',
-      enterAt: p.xuat_hien_tu,
+      enterAt: p.xuat_hien_tu ?? (p.vat_do && kieuCuLat === 'xuat_hien' ? 'pivot' : undefined),
     };
   });
 
@@ -1083,29 +1096,21 @@ export function compileSemanticStageScript(
 
   const timeline: TimelineCue[] = [];
 
+  // T8-DNA-a #1 & #2: Không tự sinh cue camera zoom=1.14 hay tự chuyển vật lên tay (follow hand).
+  // Camera quanh cú lật do duy nhất `kieu_cu_lat` điều khiển trong trackCompiler; vật đỏ nhỏ chỉ báo cảnh báo vàng gợi ý.
   if (sem.vat_do_tren_tay) {
     const [cupActorId] = sem.vat_do_tren_tay.split('.');
     const cupActor = compiledActors.find((a) => a.id === cupActorId);
     const cupScale = cupActor?.scale ?? autoScale;
     const cupPx2 = 7 * 5 * 0.88 * cupScale * cupScale * PX2_PER_STAGE_UNIT2;
     if (cupPx2 < MIN_RED_AREA_PX2) {
-      const focusX = actorHomeX.get(cupActorId) ?? STAGE_CENTER_X;
-      const panX = Number(
-        Math.max(-42, Math.min(42, (focusX - STAGE_CENTER_X) * 0.28)).toFixed(2)
+      compileWarnings?.push(
+        `Vật đỏ "${sem.vat_do_tren_tay}" nhỏ (${Math.round(cupPx2)} px²) — cân nhắc cam_boi hoặc day_may.`
       );
-      timeline.push({
-        at: 'pivot',
-        duration: 1.1,
-        exactDuration: true,
-        target: 'camera',
-        zoom: PIVOT_CAMERA_PUSH_IN_ZOOM,
-        panX,
-        panY: 0,
-      });
     }
   }
 
-  // Tự động kích hoạt vật đỏ tại cú lật & đo diện tích đỏ SAU khi đã tự căn khung (autoScale)
+  // Tự động kích hoạt vật đỏ tại cú lật & kiểm diện tích đỏ cơ sở (cảnh báo vàng nếu nhỏ)
   for (const p of sem.dao_cu) {
     if (p.vat_do) {
       const catDef = BUILT_IN_PROP_CATALOG[p.type];
@@ -1121,7 +1126,10 @@ export function compileSemanticStageScript(
       );
       // Cú lật chỉ có vật đổi đỏ dần theo Nhịp Trà Nguội (>= 0.8s), tắt hoàn toàn vòng tròn mờ (pulseRing / glow)
       timeline.push({
-        at: `pivot+${TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC}s`,
+        at:
+          kieuCuLat === 'xuat_hien'
+            ? 'pivot'
+            : `pivot+${TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC}s`,
         duration: TEMPO.RED_TRANSITION_SEC,
         exactDuration: true,
         target: p.id,
@@ -1129,58 +1137,15 @@ export function compileSemanticStageScript(
         morphProgress: hasAlt ? 1 : undefined,
       });
 
-      // Đo diện tích vật đỏ SAU khi đã căn khung (autoScale)
       const framedRedPx2 = estimateCatalogPropBaseRedPx2(
         p.type,
         activeVarName,
         autoScale
       );
-      const posInfo = propWorldPos.get(p.id);
-      if (framedRedPx2 < MIN_RED_AREA_PX2) {
-        const pushZoom = PIVOT_CAMERA_PUSH_IN_ZOOM; // 1.14 (+14% push-in)
-        const afterPushPx2 = framedRedPx2 * pushZoom * pushZoom;
-        const focusX = posInfo && posInfo.x > 0 ? posInfo.x : STAGE_CENTER_X;
-        const panX = Number(
-          Math.max(-42, Math.min(42, (focusX - STAGE_CENTER_X) * 0.28)).toFixed(
-            2
-          )
+      if (framedRedPx2 > 0 && framedRedPx2 < MIN_RED_AREA_PX2) {
+        compileWarnings?.push(
+          `Vật đỏ "${p.id}" nhỏ (${Math.round(framedRedPx2)} px²) — cân nhắc cam_boi hoặc day_may.`
         );
-        timeline.push({
-          at: 'pivot',
-          duration: 1.1,
-          exactDuration: true,
-          target: 'camera',
-          zoom: pushZoom,
-          panX,
-          panY: 0,
-        });
-
-        const allowsHand = (
-          catDef?.allowedAnchorKinds ?? [catDef?.anchorKind ?? 'dat']
-        ).includes('cam');
-        const alreadyHandledInBeats = sem.nhip.some(
-          (b) => b.dao_cu && b.dao_cu[p.id]?.cam_boi !== undefined
-        );
-        if (
-          afterPushPx2 < MIN_RED_AREA_PX2 &&
-          allowsHand &&
-          !p.cam_boi &&
-          !p.dat_tren &&
-          !alreadyHandledInBeats &&
-          compiledActors.length > 0
-        ) {
-          const heroId = compiledActors[0].id;
-          timeline.push({
-            at: 'pivot',
-            duration: 0.8,
-            exactDuration: true,
-            target: p.id,
-            follow: `${heroId}:hand`,
-            x: 0,
-            y: 0,
-            variant: catDef?.variants?.cam ? 'cam' : activeVarName,
-          });
-        }
       }
     }
   }
@@ -1708,9 +1673,11 @@ export function compileSemanticStageScript(
       })
     : [];
 
-  const finalTags = resolvedBo
-    ? ['semantic_v1', `boi_canh_bo:${resolvedBo}`]
-    : ['semantic_v1'];
+  const finalTags = [
+    'semantic_v1',
+    `kieu_cu_lat:${kieuCuLat}`,
+    ...(resolvedBo ? [`boi_canh_bo:${resolvedBo}`] : []),
+  ];
 
   return {
     sceneId: sem.sceneId,

@@ -19,6 +19,7 @@ import {
   ResolvedVisualDNA,
   resolveLayoutGeometry,
 } from '../engine/visualDnaResolver';
+import { resolveStageScript } from '../stage/stageScriptRegistry';
 
 const { fontFamily: notoSerifFontFamily } = loadNotoSerifFont('normal', {
   weights: ['400', '500', '600'],
@@ -206,7 +207,18 @@ export const AdaptiveTypography: React.FC<{
           )
         )
       : 0;
-  const typoLoopBlend = 0.5 - 0.5 * Math.cos(Math.PI * rawLoopU);
+  const activeSceneId = props.motion?.sceneId || props.motion?.archetype;
+  const resolvedStageScript = resolveStageScript(
+    activeSceneId,
+    props.motion?.stageScript
+  );
+  const isSemanticStage = Boolean(
+    resolvedStageScript?.tags?.includes('semantic_v1')
+  );
+  // T8-DNA-a #4: Với Gói Chén (`semantic_v1`), 0.8s cuối chỉ vùng hình mờ dần về giấy, khối chữ GIỮ NGUYÊN
+  const typoLoopBlend = isSemanticStage
+    ? 0
+    : 0.5 - 0.5 * Math.cos(Math.PI * rawLoopU);
 
   const segmentTexts = sync.segmentTimings.map((s) => s.text);
 

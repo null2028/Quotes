@@ -73,6 +73,7 @@ export const DeclarativeStagePlayer: React.FC<{
   palette,
   strokeWidth,
   frame,
+  fps,
   durationInFrames,
   timeline,
   visualDNA,
@@ -155,14 +156,45 @@ export const DeclarativeStagePlayer: React.FC<{
     visualDNA
   );
 
+  const isSemantic = Boolean(script.tags?.includes('semantic_v1'));
   const loopBlend = state.seamlessLoopBlend ?? 0;
-  const isLoopClosing = loopBlend > 0.002;
+  // T8-DNA-a #4: Gói Chén (`semantic_v1`) KHÔNG kéo ngược vật đỏ/camera về frame 0;
+  // thay bằng mờ dần cả vùng hình về giấy trong 0.8s cuối để khớp khung đầu.
+  const isLoopClosing = !isSemantic && loopBlend > 0.002;
   const compiledZero = isLoopClosing
     ? evaluateStageScriptAtFrame(script, 0, timeline, palette, visualDNA)
     : null;
 
+  const effFps = fps || timeline.fps || 60;
+  const outroFadeFrames = Math.max(1, Math.round(0.8 * effFps));
+  const outroStartFrame = Math.max(
+    timeline.pivotFrame + Math.round(1.0 * effFps),
+    durationInFrames - outroFadeFrames
+  );
+  const rawOutroU =
+    isSemantic && frame >= outroStartFrame
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            (frame - outroStartFrame) /
+              Math.max(1, durationInFrames - 1 - outroStartFrame)
+          )
+        )
+      : 0;
+  const stageOutroOpacity = isSemantic
+    ? 1 - (0.5 - 0.5 * Math.cos(Math.PI * rawOutroU))
+    : 1;
+
   const isPrePivot = frame < timeline.pivotFrame - 6;
-  const isAfterPivot = !isPrePivot && loopBlend < 0.75;
+  const isAfterPivot = isSemantic
+    ? !isPrePivot
+    : !isPrePivot && loopBlend < 0.75;
+  const postPivotFade = isSemantic
+    ? 1
+    : frame > timeline.pivotFrame
+      ? state.drawProgress
+      : 1;
   const phase = state.continuousPhase;
   const isSolidStyle =
     Boolean(script.tags?.includes('solid_style')) ||
@@ -986,9 +1018,9 @@ export const DeclarativeStagePlayer: React.FC<{
           </radialGradient>
         </defs>
       )}
-      <g transform={cameraTransform}>
+      <g transform={cameraTransform} opacity={stageOutroOpacity.toFixed(4)}>
         <g
-          opacity={(frame > timeline.pivotFrame ? state.drawProgress : 1) * peripheryDim}
+          opacity={postPivotFade * peripheryDim}
           transform={`translate(${parallax.sky.toFixed(2)}, 0)`}
         >
           {renderPropsByLayer('sky')}
@@ -1003,7 +1035,7 @@ export const DeclarativeStagePlayer: React.FC<{
         </g>
 
         <g
-          opacity={(frame > timeline.pivotFrame ? state.drawProgress : 1) * peripheryDim}
+          opacity={postPivotFade * peripheryDim}
           transform={`translate(${parallax.far.toFixed(2)}, 0)`}
         >
           {renderPropsByLayer('far')}
@@ -1024,7 +1056,11 @@ export const DeclarativeStagePlayer: React.FC<{
           <TerrainRenderer
             terrain={renderTerrain}
             terrainSegments={blendedTerrainSegments}
-            drawProgress={Math.min(state.drawProgress, compiledNow.openingTerrainProgress)}
+            drawProgress={
+              isSemantic
+                ? compiledNow.openingTerrainProgress
+                : Math.min(state.drawProgress, compiledNow.openingTerrainProgress)
+            }
             phase={phase}
             stroke={palette.inkPrimary}
             secondaryStroke={palette.inkSecondary}
@@ -1033,14 +1069,14 @@ export const DeclarativeStagePlayer: React.FC<{
             solidHorizon={isSolidStyle}
           />
 
-          <g opacity={frame > timeline.pivotFrame ? state.drawProgress : 1}>
+          <g opacity={postPivotFade}>
             {renderPropsByLayer('mid')}
             {renderActorsByLayer('mid')}
           </g>
         </g>
 
         <g
-          opacity={frame > timeline.pivotFrame ? state.drawProgress : 1}
+          opacity={postPivotFade}
           transform={`translate(${parallax.fore.toFixed(2)}, 0)`}
         >
           {renderActorsByLayer('fore')}
