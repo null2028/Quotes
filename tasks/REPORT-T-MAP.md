@@ -1,4 +1,0 @@
-- Đã viết `docs/BAN-DO-HE-THONG.md` (107 dòng): sơ đồ luồng chính + 4 nhánh luồng cũ song song, bảng **25 cơ chế**, **15 hành vi ngầm**, và **8 cặp chồng chéo đã biết**.
-- Đã viết `docs/NHAT-KY-QUYET-DINH.md`: 18 quyết định chủ kênh đã chốt theo mốc thời gian từ `cf1ad53`, `KE-HOACH.md`, `QUY-TRINH-LAM-VIEC.md` và toàn bộ `tasks/REPORT-*.md`.
-- Đã viết lại `AGENTS.md` (27 dòng ≤ 60 dòng): bỏ thông tin lỗi thời (V8.3.1, GitHub-only), giữ bản sắc kênh/Airtable/chuẩn xuất video, thêm luồng Gói Chén + trỏ `BAN-DO-HE-THONG.md`, `NHAT-KY-QUYET-DINH.md` + 4 luật làm việc bắt buộc.
-- Chỉ viết tài liệu, không sửa code (`git diff -- src/` trống).

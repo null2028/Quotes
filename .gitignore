@@ -23,3 +23,6 @@ Tr*Ngu*i.app/
 tn-core/out/
 qa-artifacts-ci/
 .tmp_frames*/
+
+# Lưu trữ: bản thử cũ, spec cũ, task đã xong (không dùng, giữ để tra lại)
+_luu-tru/

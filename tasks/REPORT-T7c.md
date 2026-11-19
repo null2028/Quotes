@@ -1,4 +1,0 @@
-1. Nghi thức Mở màn mặc định cho semantic_v1: đường đất vẽ trái→phải (evolvePath, 0.9s), đạo cụ hiện lần lượt trái→phải theo lớp (nền→giữa, 0.4s/món cách 0.2s), nhân vật hiện cuối cùng (0.5s mực loang). Tổng ≤2.5s gói trong dòng 1. Vật đỏ cu_lat không hiện ở mở màn.
-2. Đẩy máy cú lật: sau khi vật đỏ đổi màu, camera đẩy chậm (2.0s, ease-in-out) về giữa vật đỏ+nhân vật, zoom sao cho diện tích đỏ ≥ MIN_RED_AREA_PX2×2 (giới hạn 1.6×); vật đủ to → 1.1× hoặc không đẩy. Giữ đến hết video. Lớp chữ không bị đẩy.
-3. Validator: thời gian mở màn không tính vào luật số chuyển động (T7a); va chạm/vùng an toàn tự bỏ qua vật chưa hiện (opacity≤0.2 / drawProgress≤0.35 sẵn có).
-4. TEMPO constants mới: MO_MAN_TERRAIN_DUR_SEC, MO_MAN_PROP_DUR_SEC/STAGGER_SEC, MO_MAN_ACTOR_DUR_SEC, MO_MAN_TOTAL_MAX_SEC, PIVOT_PUSH_DUR_SEC/MAX_ZOOM/MIN_ZOOM/RED_AREA_MULT.
