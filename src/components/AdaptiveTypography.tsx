@@ -488,6 +488,7 @@ export const AdaptiveTypography: React.FC<{
                   lineHeight,
                   color: palette.inkPrimary,
                   textAlign: 'left',
+                  whiteSpace: 'pre-wrap',
                   overflowWrap: 'break-word',
                   wordBreak: 'normal',
                   textWrap: props.textFormat === 'POEM' ? 'wrap' : 'pretty',

@@ -2,6 +2,7 @@ import { BUILT_IN_PROP_CATALOG } from './propCatalog';
 import {
   AnchorKind,
   AUTO_FRAME_MIN_TOP_MARGIN_RATIO,
+  AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO,
   AUTO_FRAME_TARGET_WIDTH_RATIO,
   DEFAULT_SCENE_SCALE,
   MIN_RED_AREA_PX2,
@@ -491,7 +492,8 @@ export function compileSemanticStageScript(
     rawActorPos.set(a.id, { rawX, facing, isSeated });
   }
 
-  // Bước B: Tính khung bao chung (Combined Bounding Box) của toàn bộ nhân vật & đạo cụ ở tỷ lệ đơn vị 1.0
+  // Bước B: Tính khung bao chung (Combined Bounding Box) CHỈ tính NHÂN VẬT + ĐẠO CỤ + VẬT ĐỎ
+  // (không tính địa hình, đường, khí quyển, mây trời phụ; địa hình luôn kéo dài ra mép khung).
   let rawMinX = Infinity;
   let rawMaxX = -Infinity;
   let rawMinY = 0; // Đỉnh cao nhất so với mặt đất (số âm)
@@ -505,6 +507,8 @@ export function compileSemanticStageScript(
   for (const p of sem.dao_cu) {
     const entry = rawPropPos.get(p.id);
     if (!entry || entry.loaiNeo === 'cam') continue;
+    // Bỏ qua vật trang trí nền trời (mây, trăng, mặt trời) trừ khi chính nó là vật đỏ
+    if (entry.loaiNeo === 'troi' && !p.vat_do) continue;
     const catDef = BUILT_IN_PROP_CATALOG[p.type];
     const vDef =
       entry.initVariant && catDef?.variants
@@ -549,20 +553,30 @@ export function compileSemanticStageScript(
   const rawSpanH = Math.max(24, Math.abs(rawMinY));
   const rawCenterX = (rawMinX + rawMaxX) * 0.5;
 
-  // Phóng to sao cho khung bao chung chiếm ~70% chiều ngang vùng hình (STAGE_VB_W * 0.70),
-  // đồng thời giới hạn bởi chiều cao an toàn (AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS = 212) để không cắt đầu nhân vật.
+  // Ràng buộc: Lữ khách cao tối thiểu 30% chiều cao vùng hình (50 * scale >= 0.30 * STAGE_VB_H),
+  // đồng thời giữ nguyên lề trên tối thiểu 12% chiều cao vùng hình (AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS).
   const targetWidthUnits = STAGE_VB_W * AUTO_FRAME_TARGET_WIDTH_RATIO;
   const scaleByWidth = targetWidthUnits / rawSpanW;
   const scaleByHeight = AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS / rawSpanH;
+  const heroBaseHeight = sem.nhan_vat.some((a) => !a.ngoi_tren) ? 50 : 47.5;
+  const minHeroScale =
+    sem.nhan_vat.length > 0
+      ? (STAGE_VB_H * AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO) / heroBaseHeight
+      : DEFAULT_SCENE_SCALE;
   const autoScale = Number(
-    Math.max(
-      DEFAULT_SCENE_SCALE,
-      Math.min(scaleByWidth, scaleByHeight, 4.65)
+    Math.min(
+      scaleByHeight,
+      4.65,
+      Math.max(DEFAULT_SCENE_SCALE, minHeroScale, scaleByWidth)
     ).toFixed(3)
   );
 
+  // Giữ vị trí ngang nằm trong vùng an toàn [84..456] kể cả khi tỷ lệ nhân vật được nâng lên mức tối thiểu
+  const maxSafeSpanScale = (STAGE_VB_W - 44) / rawSpanW;
+  const spreadScale = Math.min(autoScale, maxSafeSpanScale);
+
   const transformX = (rx: number) =>
-    Number((STAGE_CENTER_X + (rx - rawCenterX) * autoScale).toFixed(2));
+    Number((STAGE_CENTER_X + (rx - rawCenterX) * spreadScale).toFixed(2));
 
   // Bước C: Áp dụng autoScale và căn giữa (STAGE_CENTER_X = 270) cho mọi đạo cụ & nhân vật
   const propWorldPos = new Map<
@@ -591,7 +605,19 @@ export function compileSemanticStageScript(
         y = Number((host.y + anc[1] * host.scale).toFixed(2));
       }
     } else {
-      x = transformX(entry.rawX);
+      const seatBind = seatToDeskBinding.get(p.id);
+      const deskEntry = seatBind ? rawPropPos.get(seatBind.deskId) : undefined;
+      if (seatBind && deskEntry) {
+        const sign = seatBind.facing === 'right' ? -1 : 1;
+        x = Number(
+          (
+            transformX(deskEntry.rawX) +
+            sign * SEATED_AT_DESK_OFFSET_UNITS * autoScale
+          ).toFixed(2)
+        );
+      } else {
+        x = transformX(entry.rawX);
+      }
       y = Number((entry.rawY * autoScale).toFixed(2));
     }
 

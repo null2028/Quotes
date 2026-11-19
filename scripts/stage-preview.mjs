@@ -50,6 +50,7 @@ class CGRect(Structure): _fields_ = [("origin", CGPoint), ("size", CGSize)]
 
 cg = ctypes.CDLL("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")
 cf = ctypes.CDLL("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")
+ct = ctypes.CDLL("/System/Library/Frameworks/CoreText.framework/CoreText")
 imageio = ctypes.CDLL("/System/Library/Frameworks/ImageIO.framework/ImageIO")
 coresvg = ctypes.CDLL("/System/Library/PrivateFrameworks/CoreSVG.framework/CoreSVG")
 
@@ -57,9 +58,21 @@ cf.CFDataCreate.restype = c_void_p
 cf.CFDataCreate.argtypes = [c_void_p, c_char_p, c_size_t]
 cf.CFStringCreateWithCString.restype = c_void_p
 cf.CFStringCreateWithCString.argtypes = [c_void_p, c_char_p, c_uint32]
+cf.CFAttributedStringCreate.restype = c_void_p
+cf.CFAttributedStringCreate.argtypes = [c_void_p, c_void_p, c_void_p]
+cf.CFDictionaryCreate.restype = c_void_p
+cf.CFDictionaryCreate.argtypes = [c_void_p, ctypes.POINTER(c_void_p), ctypes.POINTER(c_void_p), c_size_t, c_void_p, c_void_p]
 cf.CFURLCreateFromFileSystemRepresentation.restype = c_void_p
 cf.CFURLCreateFromFileSystemRepresentation.argtypes = [c_void_p, c_char_p, c_size_t, c_bool]
 cf.CFRelease.argtypes = [c_void_p]
+
+ct.CTFontCreateWithName.restype = c_void_p
+ct.CTFontCreateWithName.argtypes = [c_void_p, c_double, c_void_p]
+ct.CTLineCreateWithAttributedString.restype = c_void_p
+ct.CTLineCreateWithAttributedString.argtypes = [c_void_p]
+ct.CTLineGetTypographicBounds.restype = c_double
+ct.CTLineGetTypographicBounds.argtypes = [c_void_p, ctypes.POINTER(c_double), ctypes.POINTER(c_double), ctypes.POINTER(c_double)]
+kCTFontAttributeName = c_void_p.in_dll(ct, "kCTFontAttributeName")
 
 coresvg.CGSVGDocumentCreateFromData.restype = c_void_p
 coresvg.CGSVGDocumentCreateFromData.argtypes = [c_void_p, c_void_p]
@@ -85,11 +98,38 @@ imageio.CGImageDestinationFinalize.argtypes = [c_void_p]
 cs_rgb = cg.CGColorSpaceCreateDeviceRGB()
 uti_png = cf.CFStringCreateWithCString(None, b"public.png", 0x08000100)
 
+import html
 RE_RGB = re.compile(r"rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)")
 RE_RGBA_CSS = re.compile(r"rgba\\((\\d+),\\s*(\\d+),\\s*(\\d+),\\s*([0-9.]+)\\)")
 RE_RGBA_HEX = re.compile(r"#([0-9a-fA-F]{6})([0-9a-fA-F]{2})\\b")
+RE_CT_SHIFT = re.compile(r'data-ct-base="([^"]*)"\\s+data-ct-fs="([^"]*)"\\s+data-ct-pre="([^"]*)"\\s+data-ct-piv="([^"]*)"')
+
+def measure_ct_width(txt, font_name, font_size):
+    if not txt:
+        return 0.0
+    fn = cf.CFStringCreateWithCString(None, font_name.encode("utf-8"), 0x08000100)
+    font = ct.CTFontCreateWithName(fn, float(font_size), None)
+    keys = (c_void_p * 1)(kCTFontAttributeName)
+    vals = (c_void_p * 1)(font)
+    attrs = cf.CFDictionaryCreate(None, keys, vals, 1, None, None)
+    st = cf.CFStringCreateWithCString(None, txt.encode("utf-8"), 0x08000100)
+    astr = cf.CFAttributedStringCreate(None, st, attrs)
+    line = ct.CTLineCreateWithAttributedString(astr)
+    a, d, l = c_double(), c_double(), c_double()
+    w = ct.CTLineGetTypographicBounds(line, ctypes.byref(a), ctypes.byref(d), ctypes.byref(l))
+    cf.CFRelease(line); cf.CFRelease(astr); cf.CFRelease(st); cf.CFRelease(attrs); cf.CFRelease(font); cf.CFRelease(fn)
+    return w
+
+def _resolve_ct_shift(m):
+    base_x = float(m.group(1))
+    fs = float(m.group(2))
+    pre = html.unescape(m.group(3))
+    piv = html.unescape(m.group(4))
+    dx = measure_ct_width(pre, "Georgia", fs) + (measure_ct_width(piv, "Georgia", fs) if piv else 0.0)
+    return f'x="{base_x + dx:.2f}"'
 
 def clean_svg(svg):
+    svg = RE_CT_SHIFT.sub(_resolve_ct_shift, svg)
     svg = RE_RGBA_CSS.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
     svg = RE_RGB.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
     svg = RE_RGBA_HEX.sub(lambda m: f"#{m.group(1)}", svg)
@@ -185,12 +225,10 @@ function renderSvgQuoteLineWithPivot(ln, seg, yPos, isPivotRedActive, palette, b
     const pre = ln.slice(0, seg.pivotCharStartIndex);
     const piv = ln.slice(seg.pivotCharStartIndex, seg.pivotCharEndIndex);
     const post = ln.slice(seg.pivotCharEndIndex);
-    const preW = estimateGeorgiaTextWidth(pre, fontSize);
-    const pivW = estimateGeorgiaTextWidth(piv, fontSize) * 1.03;
     return [
       `<text x="${baseX}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(pre)}</text>`,
-      `<text x="${(baseX + preW).toFixed(1)}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" font-weight="bold" fill="${palette.accentText}">${escXml(piv)}</text>`,
-      post ? `<text x="${(baseX + preW + pivW).toFixed(1)}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(post)}</text>` : ''
+      `<text data-ct-base="${baseX}" data-ct-fs="${fontSize}" data-ct-pre="${escXml(pre)}" data-ct-piv="" y="${yPos}" font-family="Georgia" font-size="${fontSize}" font-weight="bold" fill="${palette.accentText}">${escXml(piv)}</text>`,
+      post ? `<text data-ct-base="${baseX}" data-ct-fs="${fontSize}" data-ct-pre="${escXml(pre)}" data-ct-piv="${escXml(piv)}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(post)}</text>` : ''
     ].filter(Boolean).join('\n');
   }
   return `<text x="${baseX}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(ln)}</text>`;
