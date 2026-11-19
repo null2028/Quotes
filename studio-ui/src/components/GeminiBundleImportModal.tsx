@@ -122,6 +122,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
         return {
           ok: false as const,
           isGoiChenError: true as const,
+          isFreeModeError: err.isFreeMode,
           goiChenErrors: err.errors,
           error: err.message,
         };
@@ -129,6 +130,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
       return {
         ok: false as const,
         isGoiChenError: false as const,
+        isFreeModeError: false,
         goiChenErrors: [] as string[],
         error: err instanceof Error ? err.message : String(err),
       };
@@ -534,7 +536,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                     <>
                       <div className="font-bold text-red-900 flex items-center gap-1.5">
                         <X className="w-4 h-4 text-red-700" />
-                        ❌ Có {livePreviewCheck.goiChenErrors.length} lỗi chặn nhập
+                        ❌ {livePreviewCheck.isFreeModeError ? 'Kịch bản làn tự do' : 'Gói Chén'} có {livePreviewCheck.goiChenErrors.length} lỗi chặn nhập
                       </div>
                       <ul className="list-none space-y-1 text-[11px] font-mono">
                         {livePreviewCheck.goiChenErrors.map((e, i) => (
@@ -547,7 +549,10 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                       <button
                         type="button"
                         onClick={async () => {
-                          const text = `Gói Chén của bạn bị tool báo các lỗi sau, hãy sửa và xuất lại toàn bộ gói:\n${livePreviewCheck.goiChenErrors.map(e => `• ${e}`).join('\n')}`;
+                          const intro = livePreviewCheck.isFreeModeError
+                            ? 'Kịch bản làn tự do của bạn bị tool báo các lỗi sau, hãy sửa và xuất lại toàn bộ kịch bản:'
+                            : 'Gói Chén của bạn bị tool báo các lỗi sau, hãy sửa và xuất lại toàn bộ gói:';
+                          const text = `${intro}\n${livePreviewCheck.goiChenErrors.map(e => `• ${e}`).join('\n')}`;
                           await navigator.clipboard.writeText(text);
                           setCopiedGoiChenErrors(true);
                           setTimeout(() => setCopiedGoiChenErrors(false), 2400);

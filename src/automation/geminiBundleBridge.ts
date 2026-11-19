@@ -1166,10 +1166,12 @@ export function sanitizeGeneratedTsxSceneCode(
  */
 export class GoiChenValidationError extends Error {
   public readonly errors: string[];
-  constructor(errors: string[]) {
+  public readonly isFreeMode: boolean;
+  constructor(errors: string[], isFreeMode = false) {
     super(errors.join('\n'));
     this.name = 'GoiChenValidationError';
     this.errors = errors;
+    this.isFreeMode = isFreeMode;
   }
 }
 
@@ -1636,7 +1638,7 @@ export function sanitizeAndNormalizeCupBundle(
     const vdna = resolveVisualDNA(tlProps, scriptWithResolvedCustom);
     const freeVal = validateStageScriptHard(scriptWithResolvedCustom, tl, vdna);
     if (!freeVal.valid) {
-      throw new GoiChenValidationError(freeVal.issues.map((i) => i.message));
+      throw new GoiChenValidationError(freeVal.issues.map((i) => i.message), true);
     }
     layoutWarnings = (freeVal.warnings ?? []).map((w, idx) => ({
       code: 'FREE_MODE_WARN' as const,

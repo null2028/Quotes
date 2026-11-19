@@ -5,17 +5,17 @@
 ## 1. Luồng xử lý chính & Luồng cũ chạy song song
 
 ```text
-[LUỒNG MỚI — 2 làn chính thức]
-  (A) Gói Chén ngữ nghĩa (`phien_ban_goi: 1`, lối tắt cảnh đơn giản)
-    ├── CLI: scripts/check-goi.mjs · scripts/stage-preview.mjs ──► parseGoiChen() [src/stage/goiChenParser.ts]
+[LUỒNG MỚI — 2 làn chính thức (Skill Gemini `dao-dien-tra-nguoi.zip`: mặc định Làn tự do `lan-tu-do.md` + `c19.json`, lối tắt Gói Chén `goi-chen.md` + `thu-vien.md` + `q001.json`)]
+  (A) Làn tự do (`che_do: "tu_do"`, mặc định từ TF4 — toàn quyền StageScript: shapes/altShapes/drawProgress/toạ độ/timeline)
+    ├── CLI: scripts/check-goi.mjs <file> [sceneId] · npm run preview (tự nhận dạng) ──► validateFreeModeStageScript()
+    └── Studio UI: GeminiBundleImportModal ──► sanitizeAndNormalizeCupBundle() (lưu nguyên văn `scriptGoc`, nút Copy lỗi phân biệt rõ "kịch bản làn tự do")
+  (B) Gói Chén ngữ nghĩa (`phien_ban_goi: 1`, lối tắt cảnh đơn giản)
+    ├── CLI: scripts/check-goi.mjs · npm run preview ──► parseGoiChen() [src/stage/goiChenParser.ts]
     └── Studio UI: GeminiBundleImportModal ──► convertGoiChenToBundle() [src/automation/geminiBundleBridge.ts]
           │ (lưu nguyên văn `goiChenGoc` + gọi `parseGoiChen`)
           ▼
     compileSemanticStageScript() [src/stage/semanticStage.ts]
       (autoScale cỡ Lữ khách 0.28, xếp vị trí từ slot/neo, dựng lớp nền `boi_canh.bo`, gắn tag `semantic_v1`)
-  (B) Làn tự do (`che_do: "tu_do"`, TF1 — toàn quyền StageScript: shapes/altShapes/drawProgress/toạ độ/timeline)
-    ├── CLI: scripts/check-goi.mjs <file> [sceneId] (tự nhận dạng) ──► validateFreeModeStageScript()
-    └── Studio UI: GeminiBundleImportModal ──► sanitizeAndNormalizeCupBundle() (lưu nguyên văn `scriptGoc`)
           ▼
     validateSemanticStageScript() + validateStageScriptHard() [src/stage/stageValidator.ts]
       (Gói Chén: chặn cứng đầy đủ; Làn tự do: CHỈ kiểm vỡ hình mỗi 0.25s — chặn cứng 1 vật đỏ/tràn khung, cảnh báo vàng đè/lơ lửng/ngồi/cỡ/vật đỏ nhỏ kèm `t`)
@@ -69,7 +69,7 @@
 | 20 | Header tập tự tan mực theo Ảnh Bìa | Hiện `CHÉN XX — TÊN` sắc nét qua `recommendedCoverFrame`, tan hoàn toàn trước `pivotFrame`, hồi lại ở loop | `MinimalistBackground.tsx`, `timelineSync.ts` | Mặc định mọi video | `holdAfterCover=0.3s`, `dissolve=0.55–0.8s` | Không có (độc lập lớp nền) |
 | 21 | Âm thanh Foley & BGM (`-14.0 LUFS`) | Tổng hợp WAV stereo tiếng cọ/giấy theo từng dòng + âm điểm lật (`TEA_CUP`/`WIND_CHIME`/`WOOD_SEAL`/`AUTO`) | `src/engine/foleyEngine.ts`, `src/components/BgmController.tsx` | Mặc định `PIVOT_ACCENT` (Studio Gói Chén ép `FOLEY_MASTER`); tắt bằng `TIKTOK_SILENT` | `TARGET_INTEGRATED_LUFS=-14.0`, `48kHz`, `debounce=380ms` | Không có |
 | 22 | Tinh chỉnh thủ công UI (`stageTuning`) & Cắt khung sân khấu (`clipPath`) | 4 thanh trượt X/Y/Scale/Stroke; với Gói Chén khoá `offsetX/offsetY/scale` (`0/0/1`, ghi `"cỡ do engine quyết"`), chỉ giữ `strokeScale`; cắt cứng vùng sân khấu (`overflow: hidden` + SVG `<clipPath>` `[0,126,540,250]`) để đồ không tràn lên tiêu đề/chữ khi đẩy máy | `MotionStageRouter.tsx`, `DeclarativeStagePlayer.tsx`, `studio-ui/src/components/StoryDirectorDesk.tsx` | Khoá slider & cắt khung mặc định bật cho Gói Chén / mọi mức zoom | `clipRect: [0, 126, 540, 250]`, khoá `{0, 0, 1}` cho `semantic_v1` | Không còn xung đột cỡ Lữ khách hay tràn mái hiên lên header (T8-DNA-b) |
-| 23 | Gói Chén Parser, Làn tự do & Lưu gốc | **Gói Chén**: chặn toạ độ/shapes, gom lỗi 2 tầng, lưu `goiChenGoc`. **Làn tự do (`che_do: "tu_do"`, TF1)**: nhận StageScript bọc trong CupBundle, hiện cảnh báo vàng, chỉ khoá nút Nhập khi có lỗi chặn, lưu nguyên văn `scriptGoc` trong `data/cups/*.json` | `src/stage/goiChenParser.ts`, `geminiBundleBridge.ts`, `GeminiBundleImportModal.tsx`, `server/cupStore.ts`, `server/sceneManagerService.ts` | Gói Chén: `phien_ban_goi: 1`; Làn tự do: `che_do: "tu_do"` | `goiChenGoc` / `scriptGoc`, `bundleVersion: "goichen_1" \| "tudo_1"` | Không có |
+| 23 | Gói Chén Parser, Làn tự do, Skill & Lưu gốc | **Làn tự do (`che_do: "tu_do"`, mặc định trên Skill từ TF4)**: nhận StageScript bọc trong CupBundle, hiện cảnh báo vàng, chỉ khoá nút Nhập khi có lỗi chặn, lưu nguyên văn `scriptGoc`; nút Copy lỗi mở đầu bằng *"Kịch bản làn tự do của bạn..."*; `npm run gen:skill` sinh thêm `references/lan-tu-do.md` + `references/c19.json` từ code vào `.zip`. **Gói Chén (lối tắt)**: chặn toạ độ/shapes, lưu `goiChenGoc`, nút Copy lỗi giữ *"Gói Chén của bạn..."* | `src/stage/goiChenParser.ts`, `geminiBundleBridge.ts`, `GeminiBundleImportModal.tsx`, `scripts/gen-stage-skill.mjs`, `server/cupStore.ts`, `server/sceneManagerService.ts` | Gói Chén: `phien_ban_goi: 1`; Làn tự do: `che_do: "tu_do"` | `goiChenGoc` / `scriptGoc`, `bundleVersion: "goichen_1" \| "tudo_1"`, `SKILL.md <= 80 dòng` | Không có |
 | 24 | Auto-fix dán JSON cũ (`geminiBundleBridge`) | Tách JSON từ markdown, đổi synonym (`pose`/`layer`/`atmosphere`/`theme`), khớp lại `pivotWord`, sửa import `tsxCode`, lọc hashtag | `src/automation/geminiBundleBridge.ts` | Khi dán JSON không phải Gói Chén vào Studio UI | `ATMOSPHERE/POSE/COLOR_ROLE_SYNONYM_MAP` | Luật "không lỗi im lặng" (chỉ áp cho định dạng cũ) |
 | 25 | Auto-fix biên dịch ngữ nghĩa (`semanticStage`) | Tự nâng `thoi_luong` ngắn, gộp cue trùng, tự thêm cue đổi đỏ `pivot+0.4s`; vật đỏ nhỏ chỉ báo **cảnh báo vàng** (đã bỏ tự đẩy `1.14×` và tự `follow: hand` ở T8-DNA-a) | `src/stage/semanticStage.ts` | Mặc định khi biên dịch Gói Chén | `TEMPO`, `MIN_RED_AREA_PX2=2000` | Không còn chồng camera hay tự nhấc vật |
 

@@ -10,11 +10,21 @@ import {
 import {
   ANCHOR_KINDS,
   HE_SO_PHONG_DAI,
+  LU_KHACH_HEIGHT_RATIO,
+  MIN_RED_AREA_PX2,
   NGUONG_VAT_NHO_CM,
   SEMANTIC_LAYERS,
   SEMANTIC_SLOTS,
   TY_LE_CANH,
+  VALIDATION_SAMPLE_STEP_SEC,
 } from '../src/stage/stageConstants.ts';
+import {
+  STAGE_VB_X0,
+  STAGE_VB_X1,
+  STAGE_VB_Y0,
+  STAGE_VB_Y1,
+} from '../src/stage/stageGeometry.ts';
+import { DEFAULT_GROUND_Y, STAGE_VIEWBOX } from '../src/stage/terrainSystem.ts';
 import {
   SEMANTIC_ACTOR_BEAT_VERBS,
   SEMANTIC_ACTOR_ROLES,
@@ -30,7 +40,25 @@ import {
   SEMANTIC_TERRAIN_SEGMENT_VERBS,
   SEMANTIC_TERRAINS,
 } from '../src/stage/semanticStage.ts';
-import { AtmosphereTypeEnum } from '../src/stage/stageScriptSchema.ts';
+import {
+  ActorSpecSchema,
+  AtmosphereItemSchema,
+  AtmosphereTypeEnum,
+  CameraSpecSchema,
+  ColorRoleSchema,
+  FocusRoleSchema,
+  IdleModeEnum,
+  InlineShapeSchema,
+  LayerSchema,
+  PropEmittersSchema,
+  PropSpecSchema,
+  ShapeAnimTypeEnum,
+  StageScriptSchema,
+  TerrainTypeEnum,
+  TimelineCueSchema,
+  TravelerPoseSchema,
+  XKeywordEnum,
+} from '../src/stage/stageScriptSchema.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,7 +69,9 @@ const REF_DIR = path.join(SKILL_DIR, 'references');
 const SKILL_MD_PATH = path.join(SKILL_DIR, 'SKILL.md');
 const REF_THU_VIEN_PATH = path.join(REF_DIR, 'thu-vien.md');
 const REF_GOI_CHEN_PATH = path.join(REF_DIR, 'goi-chen.md');
+const REF_LAN_TU_DO_PATH = path.join(REF_DIR, 'lan-tu-do.md');
 const EXAMPLE_Q001_PATH = path.join(REF_DIR, 'q001.json');
+const EXAMPLE_C19_PATH = path.join(REF_DIR, 'c19.json');
 const ZIP_PATH = path.join(SKILL_DIR, 'dao-dien-tra-nguoi.zip');
 
 const HO_DAO_CU_PATH = path.join(ROOT, 'docs/motif/HO-DAO-CU.md');
@@ -338,66 +368,166 @@ function buildThuVienMd() {
   };
 }
 
+// ── Build references/lan-tu-do.md & references/c19.json từ code ──
+function buildLanTuDoMd() {
+  const fmt = (arr) => arr.map((x) => `\`${x}\``).join(', ');
+  const stageW = STAGE_VB_X1 - STAGE_VB_X0;
+  const stageH = STAGE_VB_Y1 - STAGE_VB_Y0;
+  const stageCenterX = Math.round((STAGE_VB_X0 + STAGE_VB_X1) / 2);
+  const rootKeys = Object.keys(StageScriptSchema.shape).filter(
+    (k) => k !== 'legacy' && k !== 'strictValidation' && k !== 'customPropsResolved'
+  );
+  const actorKeys = Object.keys(ActorSpecSchema.shape);
+  const propKeys = Object.keys(PropSpecSchema.shape);
+  const shapeKeys = Object.keys(InlineShapeSchema.shape);
+  const emitterKeys = Object.keys(PropEmittersSchema.shape);
+  const atmoKeys = Object.keys(AtmosphereItemSchema.shape);
+  const cameraKeys = Object.keys(CameraSpecSchema.shape);
+  const cueKeys = Object.keys(TimelineCueSchema.shape);
+
+  const lines = [
+    '# Làn Tự Do (`"che_do": "tu_do"`) — Chuẩn StageScript Toàn Quyền',
+    '',
+    '> Sinh tự động từ `stageScriptSchema.ts`, `stageGeometry.ts`, `stageConstants.ts`, `terrainSystem.ts` và `validateFreeModeStageScript` qua `npm run gen:skill`. Xem mẫu hoàn chỉnh tại `references/c19.json`.',
+    '',
+    '## 1. Cấu trúc JSON bọc Chén (dán thẳng vào Studio)',
+    '- Object gốc gồm câu chữ + kịch bản sân khấu:',
+    '  - `title` (string, bắt buộc): tiêu đề Chén.',
+    '  - `segments` (string[], bắt buộc, 2–4 dòng): các dòng thơ/quote.',
+    '  - `pivotWord` (string, bắt buộc): cụm chữ đổi đỏ nằm trong dòng cuối của `segments`.',
+    '  - `author` (string, tuỳ chọn), `textFormat` (`"POEM"` | `"PROSE"`), `themeId` (`"MINIMAL_LIGHT"` | `"MINIMAL_DARK"` | `"WARM_NOIR"`, mặc định `"MINIMAL_LIGHT"`), `durationMode` (`"AUTO_SEED"` mặc định).',
+    '  - `stageScript` (object, bắt buộc): mang cờ **`"che_do": "tu_do"`** (tuyệt đối KHÔNG ghi `"legacy": true`).',
+    '',
+    '## 2. Khung toạ độ sân khấu & Vùng cấm vẽ',
+    `- Khung sân khấu \`viewBox="${STAGE_VIEWBOX}"\`: ngang \`x ∈ [${STAGE_VB_X0}..${STAGE_VB_X1}]\` (rộng ${stageW}, tâm ngang \`x = ${stageCenterX}\`), dọc \`y ∈ [${STAGE_VB_Y0}..${STAGE_VB_Y1}]\` (cao ${stageH}).`,
+    `- Đường đất mặc định: \`y = ${DEFAULT_GROUND_Y}\` (khai \`startX\`, \`endX\` trong \`[${STAGE_VB_X0}..${STAGE_VB_X1}]\`; engine tôn trọng đúng \`startX\`/\`endX\` ở mọi mức zoom).`,
+    `- **Vùng CẤM vẽ (chặn cứng)**: phía trên \`y < ${STAGE_VB_Y0}\` là vùng **tiêu đề**; phía dưới \`y > ${STAGE_VB_Y1}\` là vùng **khối chữ**. Mọi nhân vật, đạo cụ, hình vẽ và khí quyển phải nằm gọn trong \`y ∈ [${STAGE_VB_Y0}..${STAGE_VB_Y1}]\`.`,
+    `- **Cỡ Lữ khách chuẩn**: chiều cao đứng chuẩn = ${Math.round(LU_KHACH_HEIGHT_RATIO * 100)}% chiều cao khung (\`LU_KHACH_HEIGHT_RATIO = ${LU_KHACH_HEIGHT_RATIO}\`, tương ứng \`scale ≈ 1.3–1.44\`, cao ~63–70 đơn vị; lệch > 25% sẽ bị cảnh báo vàng).`,
+    '',
+    '## 3. Các trường `stageScript` và giá trị hợp lệ (từ `stageScriptSchema.ts`)',
+    `- **Cấp gốc \`stageScript\`**: ${fmt(rootKeys)}. Bắt buộc có \`"che_do": "tu_do"\`.`,
+    `- **\`terrain\`**: \`type\` trong ${fmt(TerrainTypeEnum.options)}; kèm \`y\` (mặc định ${DEFAULT_GROUND_Y}), \`startX\`, \`endX\`, \`angleDeg\`, \`hillCenterX\`, \`hillHeight\`, \`hillWidth\`, \`forkAtX\`, \`forkAngleDeg\`, \`shoreX\`, \`waterSide\` (\`left\`|\`right\`), \`gapCenterX\`, \`gapHalfWidth\`, \`bridgeProgress\`, \`stepCount\`, \`stepRise\`, \`points\` (\`[[x,y],...]\`), \`customSvgD\`, \`segments[]\` (\`{ id, startX, endX, colorRole, strokeWidth, opacity }\`).`,
+    `- **\`actors[]\`**: ${fmt(actorKeys)}.`,
+    `  - \`pose\`: ${fmt(TravelerPoseSchema.options)} · \`facing\`: \`left\`, \`right\` · \`layer\`: ${fmt(LayerSchema.options)} · \`role\`: \`lu_khach\`, \`nguoi_b\`.`,
+    `  - \`x\`: số trong \`[${STAGE_VB_X0}..${STAGE_VB_X1}]\` hoặc từ khoá ${fmt(XKeywordEnum.options)}.`,
+    `  - \`colorRole\`: ${fmt(ColorRoleSchema.options)} · \`focusRole\`: ${fmt(FocusRoleSchema.options)} · \`teaCupRed: true\` làm chén cầm tay đổi đỏ (tính là 1 nguồn đỏ!).`,
+    `- **\`props[]\`**: ${fmt(propKeys)}.`,
+    `  - Dùng \`type\` sẵn trong kho (\`references/thu-vien.md\`) HOẶC tự vẽ mới bằng \`shapes[]\` / \`altShapes[]\` (đặt \`type\` tự do, kèm \`anchorType\`: \`"ground"\` | \`"hand"\` | \`"center"\`).`,
+    `  - Quy ước toạ độ \`y\` của prop: CHỈ \`layer: "sky"\` dùng \`y\` tuyệt đối trong \`[${STAGE_VB_Y0}..${STAGE_VB_Y1}]\` (VD \`y: 200\` cho mây); mọi layer khác (\`far\`/\`mid\`/\`fore\`) dùng \`y\` là **độ lệch so với mặt đất \`terrain.y\`** (\`y: 0\` chạm đất, \`y\` âm là cao hơn mặt đất, VD \`y: -28\` cho cửa sổ trên tường).`,
+    `  - \`idle\`: ${fmt(IdleModeEnum.options)} hoặc \`{ type, speed, amplitude, spanX, spanY }\` · \`emitters\`: ${fmt(emitterKeys)}.`,
+    `  - \`drawProgress\` (\`0→1\`) vẽ dần nét mọc ra; \`morphProgress\` (\`0→1\`) chuyển từ \`shapes\` sang \`altShapes\`; \`splitProgress\`, \`floatAwayProgress\` (\`0→1\`).`,
+    `- **Cách vẽ \`shapes[]\` / \`altShapes[]\`**: ${fmt(shapeKeys)}.`,
+    '  - Hình học: `d` (SVG path cục bộ; nếu `anchorType: "ground"`, gốc `(0,0)` nằm ngay mặt đất, vẽ hướng lên dùng `y` âm), `line: [x1,y1,x2,y2]`, `circle: [cx,cy,r]`, `rect: [x,y,w,h,rx?]`, `ellipse: [cx,cy,rx,ry]`.',
+    `  - Tô/nét (tuyệt đối không ghi mã màu hex): \`fill\` (\`none\`, \`bg\`, \`ink\`, \`secondary\`, \`accent\`), \`fillOpacity\` (\`0..1\`), \`role\` (${fmt(ColorRoleSchema.options)}), \`strokeScale\`, \`dashed\`, \`opacity\`, \`show\` (\`always\`, \`before_pivot\`, \`after_pivot\`), \`anim.type\` (${fmt(ShapeAnimTypeEnum.options)}).`,
+    `- **\`atmosphere[]\`**: ${fmt(atmoKeys)} · \`type\`: ${fmt(AtmosphereTypeEnum.options)}. Lưu ý \`colorRole: "accent"\` hoặc \`leaves\` sau cú lật đều được tính là nguồn đỏ.`,
+    `- **\`camera\`**: ${fmt(cameraKeys)} (\`zoom\` trong \`0.6..2.0\`, \`panX\`, \`panY\`).`,
+    `- **\`timeline[]\`**: ${fmt(cueKeys)}.`,
+    '  - `at`: mốc `"start"`, `"line_1"`, `"line_2"`, `"line_3"`, `"line_4"`, `"pivot"`, `"end"`, hỗ trợ cộng/trừ giây (VD `"start+0.3s"`, `"pivot+0.15s"`, `"pivot+2.2s"`).',
+    '  - `duration`: thời lượng chuyển (giây, `0.05..15`) · `target`: `id` của actor/prop hoặc `"camera"` / `"terrain"`.',
+    '',
+    `## 4. Máy kiểm tra Làn tự do (\`validateFreeModeStageScript\`, quét mỗi ${VALIDATION_SAMPLE_STEP_SEC}s)`,
+    '> Không ép TEMPO, không đếm cử chỉ, không giới hạn đạo cụ trong kho — máy chỉ kiểm VỠ HÌNH:',
+    '### CHẶN CỨNG (khoá nút Nhập & chặn render)',
+    '- Không đúng 1 vật đỏ sau cú lật (0 nguồn đỏ hoặc ≥ 2 nguồn đỏ cùng lúc; đếm cả nguồn đỏ ngầm: `teaCupRed`, `props`/`actors`/`atmosphere` `colorRole: "accent"`, `leaves`, khói/emitter đỏ, đoạn đường đỏ).',
+    `- Hình vẽ, nhân vật, đạo cụ hoặc khí quyển tràn lên vùng tiêu đề (\`y0 < ${STAGE_VB_Y0}\`) hoặc tràn xuống vùng khối chữ (\`y1 > ${STAGE_VB_Y1}\`).`,
+    '### CẢNH BÁO VÀNG (vẫn cho nhập; preview chụp đúng khung tại thời điểm `t`)',
+    '- Đè hoặc đi xuyên giữa hai vật cùng lớp sâu (`nen`/`giua`/`truoc`) hoặc giữa nhân vật với vật.',
+    '- Vật hoặc nhân vật lơ lửng / lệch mặt đất > 3 đơn vị mà không có mặt đỡ bên dưới (trừ vật lớp `sky` / treo tường / cầm tay / `anchorType: "center"|"hand"`).',
+    '- Nhân vật ở tư thế ngồi (`sit_lean` / `sitProgress >= 0.5`) nhưng không có mặt ngồi bên dưới.',
+    `- Cỡ Lữ khách chính lệch > 25% so với chuẩn ${Math.round(LU_KHACH_HEIGHT_RATIO * 100)}% chiều cao khung (\`LU_KHACH_HEIGHT_RATIO\`).`,
+    `- Diện tích vật đỏ ở khung cuối nhỏ hơn ngưỡng nhìn rõ (\`MIN_RED_AREA_PX2 = ${MIN_RED_AREA_PX2}\`).`,
+    '',
+  ];
+  return lines.join('\n');
+}
+
+function buildC19ExampleJson() {
+  const cup19 = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/cups/quote-019.json'), 'utf8'));
+  const scriptsMap = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/stage-scripts.json'), 'utf8'));
+  const scriptC19 = scriptsMap['SCRIPT_C19_NET_DAT_NAY_MAM'];
+  if (!scriptC19) {
+    throw new Error('Không tìm thấy SCRIPT_C19_NET_DAT_NAY_MAM trong data/stage-scripts.json');
+  }
+  const bundle = {
+    title: cup19.props.title,
+    textFormat: cup19.props.textFormat || 'POEM',
+    segments: cup19.props.segments,
+    pivotWord: cup19.props.pivotWord,
+    themeId: cup19.props.themeId || 'MINIMAL_LIGHT',
+    durationMode: cup19.props.durationMode || 'AUTO_SEED',
+    stageScript: scriptC19,
+  };
+  return JSON.stringify(bundle, null, 2) + '\n';
+}
+
 // ── Nội dung SKILL.md (≤ 80 dòng) ─────────────────────────────────
 const SKILL_MD_CONTENT = `---
 name: dao-dien-tra-nguoi
-description: Đạo diễn câu chữ 3 bước và xuất Gói Chén JSON cho kênh Trà Nguội (@tranguoi.15s). Dùng khi tạo Chén mới, viết thơ/quote, hoặc thiết kế cảnh.
+description: Đạo diễn câu chữ 3 bước và xuất kịch bản JSON (Làn tự do mặc định hoặc lối tắt Gói Chén) cho kênh Trà Nguội (@tranguoi.15s). Dùng khi tạo Chén mới, viết thơ/quote, hoặc thiết kế cảnh.
 ---
 
 # Đạo Diễn Trà Nguội (@tranguoi.15s)
 
-Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc \`references/thu-vien.md\` (kho đạo cụ 3 tầng, 9 bộ bối cảnh, địa hình, khí quyển, nhân vật, động từ) và \`references/goi-chen.md\` (chuẩn Gói Chén, kèm mẫu \`references/q001.json\`). Làm tuần tự **3 bước**, kết thúc Bước 1 và Bước 2 đều **DỪNG chờ chủ kênh chốt**.
+Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc \`references/lan-tu-do.md\` (chuẩn Làn tự do mặc định + mẫu \`references/c19.json\`). Chỉ khi chủ kênh gọi lối tắt **"gói chén"** mới cần bám \`references/goi-chen.md\`, \`references/thu-vien.md\` và \`references/q001.json\`. Làm tuần tự **3 bước**, kết thúc Bước 1 và Bước 2 đều **DỪNG chờ chủ kênh chốt**.
 
 ## Nhân vật: Lữ Khách Bóng Mực & Người Thứ Hai (\`nguoi_b\`)
-- Giữ nguyên phong cách bóng mực thuỷ mặc (**không mắt, không lá trà**). Có thể dùng thêm nhân vật thứ 2 (\`vai: "nguoi_b"\`, nhạt hơn Lữ khách, tuỳ chọn \`toc_duoi_ngua: true\`) khi câu có người đối diện.
-- Nhân vật chỉ phản ứng bằng tư thế (\`tu_the\`), hướng đầu (\`nhin_theo\`/\`nhin_nhau\`), nghiêng người (\`nghieng\`), bước chân (\`di_toi\`/\`di_vao\`/\`di_ra\`/\`lui_buoc\`), \`khung_lai\`, \`quay_dau\`, \`tha_roi\`, và hướng đứng/ngồi (\`huong\`).
+- Giữ nguyên phong cách bóng mực thuỷ mặc tối giản (**không mắt, không lá trà**). Có thể thêm nhân vật thứ 2 (hoặc bóng người qua đường) khi câu có người đối diện hoặc cần tương phản bối cảnh.
+- Nhân vật biểu cảm bằng tư thế, hướng đầu, độ nghiêng, bước đi, dừng lại, ngoái nhìn, vươn tay; ít mà đắt.
 
 ## Bước 1 — Câu chữ (DỪNG chờ chốt)
-- Nếu chủ kênh **đưa sẵn câu**: giữ nguyên văn 100%, chia dòng hợp lý (2–4 dòng) và đề xuất \`cu_lat\` ở dòng cuối.
-- Nếu chủ kênh **đưa ý tưởng**: đưa **3 phương án** câu chữ (2–4 dòng, **14–28 âm tiết**, \`cu_lat\` nằm ở **dòng cuối**).
+- Nếu chủ kênh **đưa sẵn câu**: giữ nguyên văn 100%, chia dòng hợp lý (2–4 dòng) và đề xuất cụm chữ lật ở dòng cuối.
+- Nếu chủ kênh **đưa ý tưởng**: đưa **3 phương án** câu chữ (2–4 dòng, **14–28 âm tiết**, cụm chữ lật nằm ở **dòng cuối**).
 - Giữ chất **“Lắng — Kiệm lời — Đời thực — Có dư vị”**. Tránh từ sáo rỗng bi lụy, khẩu hiệu dạy đời, văn dịch cứng, hashtag rác (\`#fyp\`, \`#foryou\`, \`#xuhuong\`, \`#viral\`).
 
 ## Bước 2 — Cú lật (3 phương án ngắn, DỪNG chờ chốt)
-NGUYÊN TẮC: hình không kể lại chữ, hình làm cú lật mạnh hơn. Chữ là chính.
-Lên ý tưởng trên cả 3 tầng. Ưu tiên tầng A; tầng B được dùng nếu đúng nghĩa; tầng C chỉ được đưa vào phương án kèm 'Cần bổ sung' và phải có phương án thay thế dựng được ngay.
+NGUYÊN TẮC: hình không kể lại chữ, hình làm cú lật mạnh hơn. Chữ là chính. Sáng tạo tự do hình ảnh đắt nhất cho từng câu (chỉ bị giới hạn bởi kho đạo cụ tầng A/B/C và "chỉ mô tả những gì Gói Chén thể hiện được" khi chủ kênh chọn lối tắt **"gói chén"**).
 Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 dòng:
 1. Bản lề: "Người xem tưởng A → câu lật thành B." Không viết được thì hỏi lại chủ kênh.
 2. Trước cú lật: hình dựng thế giới của A (bối cảnh quen, Lữ khách sống bình thường), KHÔNG lộ B.
-3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd câu Chén 18 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Chữ lật trừu tượng (kỳ diệu, hạnh phúc, cô đơn, thời gian…) → CỤ THỂ HOÁ thành một vật đời thường nhìn thấy được đang mang khái niệm đó (vd 'kỳ diệu' → chén trà bỗng bốc khói ấm; 'cô đơn' → chiếc ghế thứ hai trống). Chỉ dùng địa hình khi chính chữ lật nói về đường/lối. Gán nghĩa vòng vo (laptop vì 'tính nhanh') là SAI.
+3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Chữ lật trừu tượng (kỳ diệu, hạnh phúc, cô đơn, thời gian…) → CỤ THỂ HOÁ thành một vật/hiện tượng nhìn thấy được đang mang khái niệm đó (vd 'kỳ diệu' → nét đất bỗng nảy mầm đỏ; 'cô đơn' → chiếc ghế thứ hai trống). Gán nghĩa vòng vo là SAI.
 4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
-5. Đồ trên sân khấu: mỗi đồ (kể cả khí quyển như nắng, lá, mưa, gió và ánh sáng \`anh_sang\`) phải được nhân vật dùng, nhìn, hoặc mang nghĩa trong câu; ghế/đồ/ánh sáng chỉ để lấp chỗ trống hay trang trí là SAI (tối đa 3 đạo cụ; khí quyển & \`anh_sang\` mặc định TẮT).
-6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong \`references/thu-vien.md\`). Chỉ mô tả những gì Gói Chén thể hiện được; bối cảnh phải ghi bằng \`boi_canh.bo\`. Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
-7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại. Vật đỏ phải còn đỏ đến khung cuối; không cho vật đỏ mờ/biến mất.
-8. Nhịp Trà Nguội: Lữ khách làm mọi thứ chậm rãi như người đang uống trà; ít cử chỉ, mỗi dòng tối đa 1 cử chỉ nhỏ, phần lớn thời gian là lặng.
-9. Kiểu cú lật (\`kieu_cu_lat\`): chọn 1 trong 4 — \`day_may\` (mặc định: đẩy chậm vào vật đỏ nhỏ/vừa); \`xuat_hien\` (vật đỏ mới vẽ nét xuất hiện ở cú lật rồi đẩy nhẹ); \`keo_rong\` (mở màn cận cảnh, cú lật lùi rộng lộ bối cảnh đổi nghĩa); \`dung_lang\` (máy đứng yên tuyệt đối, chỉ vật đổi đỏ).
-TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa. Thử 3 giây: tắt tiếng, không đọc dòng cuối — chỉ nhìn hình quanh cú lật, người xem có thấy 'một chuyện vừa xảy ra' không? Không thấy → phương án yếu, đổi.
+5. Đồ trên sân khấu: mỗi đồ (kể cả khí quyển) phải được nhân vật dùng, nhìn, hoặc mang nghĩa trong câu; đồ chỉ để lấp chỗ trống hay trang trí là SAI.
+6. Bối cảnh nhất quán: mọi chi tiết thuộc cùng một không gian sống thật (lối tắt Gói Chén bắt buộc chọn 1 trong 9 bộ \`boi_canh.bo\` trong \`references/thu-vien.md\` và chỉ mô tả những gì Gói Chén thể hiện được).
+7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại. Đúng **1 vật đỏ duy nhất** và còn đỏ đến khung cuối.
+8. Nhịp Trà Nguội: chậm rãi như người đang uống trà, có khoảng lặng trước và sau cú lật.
+TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật. Thử 3 giây: tắt tiếng, không đọc dòng cuối — chỉ nhìn hình quanh cú lật, người xem có thấy 'một chuyện vừa xảy ra' không? Không thấy → đổi.
 
-## Bước 3 — Xuất Gói Chén JSON
-Sau khi chủ kênh chốt phương án ở Bước 2, xuất **đúng 1 khối JSON Gói Chén** theo \`references/goi-chen.md\`:
+## Bước 3 — Xuất JSON (2 lối)
+Sau khi chủ kênh chốt phương án ở Bước 2, xuất **đúng 1 khối JSON** hoàn chỉnh:
+
+### Lối 1 (MẶC ĐỊNH) — Làn tự do (\`"che_do": "tu_do"\`)
+Đọc \`references/lan-tu-do.md\` và mẫu \`references/c19.json\`:
+- Bọc Chén gồm \`title\`, \`segments[]\`, \`pivotWord\`, và \`stageScript\` mang cờ **\`"che_do": "tu_do"\`** (KHÔNG ghi \`legacy: true\`).
+- Tự do sáng tạo địa hình, nhiều nhân vật, đạo cụ tự vẽ bằng nét SVG cục bộ trong \`shapes[]\`/\`altShapes[]\`, \`drawProgress\`, \`morphProgress\`, toạ độ, \`timeline[]\`, \`camera\`. Không ghi mã màu hex — dùng \`role\`/\`fill\` (\`ink\`, \`secondary\`, \`accent\`, \`bg\`, \`none\`).
+- Tuân thủ 2 luật chặn cứng của máy: **đúng 1 vật đỏ** sau cú lật (tính cả \`teaCupRed\`, \`atmosphere\` accent/\`leaves\`, khói đỏ) và **mọi hình nằm gọn trong vùng hình** (không tràn lên tiêu đề hay xuống khối chữ). Giữ đồ tiếp đất chắc, không đè cùng lớp, cỡ Lữ khách gần chuẩn 28% khung.
+
+### Lối 2 (Lối tắt — chỉ dùng khi chủ kênh nói "gói chén")
+Đọc \`references/goi-chen.md\`, \`references/thu-vien.md\` và mẫu \`references/q001.json\`:
 - Đủ trường gốc: \`phien_ban_goi: 1\`, \`tieu_de\`, \`cau\`, \`cu_lat\`, \`boi_canh\`, \`nhan_vat\`, \`dao_cu\`, \`nhip\`.
-- Chỉ dùng mã đạo cụ Tầng A hoặc Tầng B trong \`references/thu-vien.md\` (tuyệt đối KHÔNG xuất mã Tầng C vào JSON), cùng điểm neo, trạng thái, tư thế, động từ và khe vị trí hợp lệ.
-- Nhân vật ngồi ghế bắt buộc có \`ngoi_tren: "<id_ghe>.mat_ghe"\` (thêm \`ngoi_vao: "<id_ban>"\` khi ngồi vào bàn); đạo cụ trên bàn dùng \`loai_neo: "tren"\` + \`dat_tren: "<id_ban>.<diem_neo>"\`.
-- Không cần ghi \`thoi_luong\` (engine tự tính chậm rãi theo Nhịp Trà Nguội); phản ứng lớn ở \`cu_lat\` phải có \`sau\` ≥ 0.45 (chữ dẫn, hình theo); \`boi_canh.khi_quyen\` để trống trừ khi Bước 2 đã giải thích nghĩa.
-- Tuyệt đối không có \`x\`, \`y\`, \`scale\`, \`shapes\`, \`altShapes\`.
+- Chỉ dùng mã đạo cụ Tầng A hoặc Tầng B trong \`references/thu-vien.md\` (không xuất Tầng C), không ghi toạ độ hay mảng hình vẽ tự do; ngồi ghế dùng \`ngoi_tren\`, đặt trên bàn dùng \`dat_tren\`, phản ứng lớn ở \`cu_lat\` có \`sau\` ≥ 0.45.
 
 ## Khi nhận thông báo lỗi từ tool
-Khi chủ kênh dán lại đoạn mở đầu bằng **"Gói Chén của bạn bị tool báo các lỗi sau…"**:
-- Sửa **đúng** các lỗi được liệt kê, **không đổi phần đã đúng**.
-- Xuất lại **TOÀN BỘ** Gói Chén JSON hoàn chỉnh.
+Khi chủ kênh dán lại đoạn mở đầu bằng **"Kịch bản làn tự do của bạn bị tool báo các lỗi sau…"** hoặc **"Gói Chén của bạn bị tool báo các lỗi sau…"**:
+- Sửa **đúng** các lỗi được liệt kê, **không đổi phần đã đúng** và **giữ đúng lối** (làn tự do hoặc Gói Chén) của bản trước.
+- Xuất lại **TOÀN BỘ** khối JSON hoàn chỉnh để chủ kênh dán lại ngay.
 `;
 
 // ── Kiểm tra ràng buộc ────────────────────────────────────────────
-function verifySkillConstraints(mdText, label) {
+function verifySkillConstraints(mdText, label, opts = {}) {
   const lines = mdText.trimEnd().split('\n');
   if (label === 'SKILL.md' && lines.length > 80) {
     throw new Error(`SKILL.md vượt quá 80 dòng (${lines.length} dòng)`);
   }
   const forbidden = [
     { re: /#[0-9A-Fa-f]{3,6}\b/, name: 'mã màu hex' },
-    { re: /<path\b|\bd="M\s/i, name: 'đường SVG' },
-    { re: /\bviewBox\b|\bfps\b|\bpx\b/i, name: 'thông số pixel / fps / viewBox' },
-    { re: /"x"\s*:|"y"\s*:|"scale"\s*:|"shapes"\s*:/i, name: 'toạ độ / shapes' },
   ];
+  if (!opts.allowFreeModeCoords) {
+    forbidden.push(
+      { re: /<path\b|\bd="M\s/i, name: 'đường SVG' },
+      { re: /\bviewBox\b|\bfps\b|\bpx\b/i, name: 'thông số pixel / fps / viewBox' },
+      { re: /"x"\s*:|"y"\s*:|"scale"\s*:|"shapes"\s*:/i, name: 'toạ độ / shapes' }
+    );
+  }
   for (const f of forbidden) {
     const m = mdText.match(f.re);
     if (m) {
@@ -411,21 +541,28 @@ function main() {
   fs.mkdirSync(REF_DIR, { recursive: true });
 
   const { md: thuVienMd, counts } = buildThuVienMd();
+  const lanTuDoMd = buildLanTuDoMd();
+  const c19Content = buildC19ExampleJson();
   const goiChenMd = fs.readFileSync(path.join(ROOT, 'docs/GOI-CHEN.md'), 'utf8');
   const q001Content = fs.readFileSync(path.join(ROOT, 'docs/goi-mau/q001.json'), 'utf8');
 
   verifySkillConstraints(SKILL_MD_CONTENT, 'SKILL.md');
   verifySkillConstraints(thuVienMd, 'references/thu-vien.md');
+  verifySkillConstraints(lanTuDoMd, 'references/lan-tu-do.md', { allowFreeModeCoords: true });
 
   fs.writeFileSync(SKILL_MD_PATH, SKILL_MD_CONTENT, 'utf8');
   fs.writeFileSync(REF_THU_VIEN_PATH, thuVienMd, 'utf8');
   fs.writeFileSync(REF_GOI_CHEN_PATH, goiChenMd, 'utf8');
+  fs.writeFileSync(REF_LAN_TU_DO_PATH, lanTuDoMd, 'utf8');
   fs.writeFileSync(EXAMPLE_Q001_PATH, q001Content, 'utf8');
+  fs.writeFileSync(EXAMPLE_C19_PATH, c19Content, 'utf8');
 
   const pyZip = `
 import zipfile
 with zipfile.ZipFile(${JSON.stringify(ZIP_PATH)}, "w", compression=zipfile.ZIP_DEFLATED) as zf:
     zf.write(${JSON.stringify(SKILL_MD_PATH)}, arcname="SKILL.md")
+    zf.write(${JSON.stringify(REF_LAN_TU_DO_PATH)}, arcname="references/lan-tu-do.md")
+    zf.write(${JSON.stringify(EXAMPLE_C19_PATH)}, arcname="references/c19.json")
     zf.write(${JSON.stringify(REF_THU_VIEN_PATH)}, arcname="references/thu-vien.md")
     zf.write(${JSON.stringify(REF_GOI_CHEN_PATH)}, arcname="references/goi-chen.md")
     zf.write(${JSON.stringify(EXAMPLE_Q001_PATH)}, arcname="references/q001.json")
@@ -435,9 +572,10 @@ with zipfile.ZipFile(${JSON.stringify(ZIP_PATH)}, "w", compression=zipfile.ZIP_D
 
   const skillLines = SKILL_MD_CONTENT.trimEnd().split('\n').length;
   const thuVienLines = thuVienMd.trimEnd().split('\n').length;
+  const lanTuDoLines = lanTuDoMd.trimEnd().split('\n').length;
   const zipSize = fs.statSync(ZIP_PATH).size;
   console.log(
-    `✅ Đã sinh SKILL.md (${skillLines} dòng), thu-vien.md (${thuVienLines} dòng · Tầng A: ${counts.tierA}, Tầng B: ${counts.tierB}, Tầng C: ${counts.tierC}), references/ và ${path.relative(ROOT, ZIP_PATH)} (${(zipSize / 1024).toFixed(1)} KB)`
+    `✅ Đã sinh SKILL.md (${skillLines} dòng), lan-tu-do.md (${lanTuDoLines} dòng), c19.json, thu-vien.md (${thuVienLines} dòng · Tầng A: ${counts.tierA}, Tầng B: ${counts.tierB}, Tầng C: ${counts.tierC}), references/ và ${path.relative(ROOT, ZIP_PATH)} (${(zipSize / 1024).toFixed(1)} KB)`
   );
 }
 
