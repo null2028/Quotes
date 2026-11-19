@@ -1,0 +1,4 @@
+- Sửa đẩy máy: `MIN_RED_AREA_PX2` 500→2400, `PIVOT_PUSH_MAX_ZOOM` 1.6→2.2, tâm đẩy ưu tiên vật đỏ (80/20 thay vì 50/50). Sửa bug camera push không nhận vật đỏ có `colorRole` chuyển bằng timeline cue (chỉ kiểm `isAccentActive` thay vì cả `spec.colorRole`).
+- Preview 6 khung đã vẽ camera đúng (DSP pipeline); lỗi cũ do zoom quá nhỏ (1.14) và bộ lọc `spec.colorRole==='accent'` bỏ sót vật đỏ chuyển màu runtime. Giờ c19 zoom tới 2.2× — chén đỏ rõ ràng ở khung cuối.
+- check-goi: c19-t7b ✅, chen18-v2 ✅, w051 ✅. q001 ❌ 3 lỗi (đè nhau hoa_don/laptop — không liên quan ngưỡng đỏ mới).
+- Xuất qa-artifacts-ci/T7c-c19.png (có chữ), T7d-mp4.png (cú lật | 13s).

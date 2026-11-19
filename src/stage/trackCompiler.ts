@@ -2020,7 +2020,7 @@ export function evaluateStageScriptAtFrame(
     // về phía giữa vật đỏ và nhân vật, zoom đủ để vật đỏ ≥ MIN_RED_AREA_PX2 × 2
     // ========================================================================
     const redProp = props.find(
-      (p) => p.isAccentActive && p.spec.colorRole === 'accent'
+      (p) => p.isAccentActive
     );
     const heroActor = actors.find((a) => a.focusRole === 'hero') ?? actors[0];
 
@@ -2056,9 +2056,9 @@ export function evaluateStageScriptAtFrame(
       );
 
       if (pushProgress > 0.001) {
-        // Target pan: midpoint between red prop and hero actor
-        const targetCenterX = (redProp.x + heroActor.x) / 2;
-        const targetCenterY = (redProp.y + heroActor.y) / 2;
+        // Target pan: ưu tiên vật đỏ — vật đỏ ≈ giữa hình, nhân vật được cắt mép — T7d #3
+        const targetCenterX = redProp.x * 0.8 + heroActor.x * 0.2;
+        const targetCenterY = redProp.y * 0.8 + heroActor.y * 0.2;
         const targetPanX = targetCenterX - 270;
         const targetPanY = targetCenterY - 315;
 

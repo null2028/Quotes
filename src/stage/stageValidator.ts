@@ -1479,7 +1479,7 @@ export function validateStageScriptHard(
     prevEntitiesById = new Map(entities.map((e) => [`${e.kind}:${e.id}`, e]));
   }
 
-  // 3. Kiểm tra luật đúng 1 vật đỏ & diện tích tối thiểu thống nhất MIN_RED_AREA_PX2 (500 px²)
+  // 3. Kiểm tra luật đúng 1 vật đỏ & diện tích tối thiểu thống nhất MIN_RED_AREA_PX2 (2400 px²)
   //    Đo tại khung cú lật SAU khi máy quay đã đẩy vào hoàn tất (pivot + 1.4s).
   const fPost1 = Math.min(
     timeline.durationInFrames - Math.round(1.6 * fps),

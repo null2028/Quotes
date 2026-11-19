@@ -3,7 +3,7 @@
  */
 
 // MỘT hằng số diện tích vật đỏ tối thiểu duy nhất trên khung 1080×1920 (đồng bộ với tn-core)
-export const MIN_RED_AREA_PX2 = 500;
+export const MIN_RED_AREA_PX2 = 2400;
 
 // 3 lớp sâu ngữ nghĩa: chỉ kiểm tra đè nhau giữa các vật CÙNG lớp
 export const SEMANTIC_LAYERS = ['nen', 'giua', 'truoc'] as const;
@@ -125,7 +125,7 @@ export const TEMPO = {
 
   // === Đẩy máy cú lật (T7c) ===
   PIVOT_PUSH_DUR_SEC: 2.0,           // Thời lượng đẩy máy quay sau cú lật
-  PIVOT_PUSH_MAX_ZOOM: 1.6,          // Mức zoom tối đa cho đẩy máy
+  PIVOT_PUSH_MAX_ZOOM: 2.2,          // Mức zoom tối đa cho đẩy máy
   PIVOT_PUSH_MIN_ZOOM: 1.1,          // Mức zoom tối thiểu khi vật đỏ đã đủ to
   PIVOT_PUSH_RED_AREA_MULT: 2.0,     // Nhân hệ số MIN_RED_AREA_PX2 để tính mức đẩy
 } as const;
