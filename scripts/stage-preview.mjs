@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Resvg } from '@resvg/resvg-js';
 
 import {
   APPROVAL_BATCH_PROP_NAMES,
@@ -29,10 +30,13 @@ import {
   WALL_MOUNT_Y_OFFSET,
 } from '../src/stage/stageConstants.ts';
 import { compareNormalAndRedSilhouette } from '../src/stage/stageGeometry.ts';
-import { computeTimelineSync } from '../src/engine/timelineSync.ts';
+import { computeTimelineSync, stripInlineMarkdown } from '../src/engine/timelineSync.ts';
 import { evaluateMotionState } from '../src/engine/motionPhysics.ts';
 import { LAYOUT_TOKENS, THEME_PALETTES } from '../src/theme/palettes.ts';
-import { resolveVisualDNA } from '../src/engine/visualDnaResolver.ts';
+import {
+  resolveLayoutGeometry,
+  resolveVisualDNA,
+} from '../src/engine/visualDnaResolver.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,157 +44,168 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'qa-artifacts-ci');
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const PY_RASTERIZER = `
-import ctypes, json, re, sys
-from ctypes import c_void_p, c_size_t, c_double, c_uint32, c_char_p, c_bool, Structure
+const CROSS_PLATFORM_SERIF_FONT =
+  "Georgia, 'Noto Serif', 'DejaVu Serif', 'Liberation Serif', serif";
+const CROSS_PLATFORM_SANS_FONT =
+  "'Be Vietnam Pro', 'DejaVu Sans', 'Liberation Sans', 'Helvetica Neue', sans-serif";
 
-class CGPoint(Structure): _fields_ = [("x", c_double), ("y", c_double)]
-class CGSize(Structure): _fields_ = [("width", c_double), ("height", c_double)]
-class CGRect(Structure): _fields_ = [("origin", CGPoint), ("size", CGSize)]
-
-cg = ctypes.CDLL("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")
-cf = ctypes.CDLL("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")
-ct = ctypes.CDLL("/System/Library/Frameworks/CoreText.framework/CoreText")
-imageio = ctypes.CDLL("/System/Library/Frameworks/ImageIO.framework/ImageIO")
-coresvg = ctypes.CDLL("/System/Library/PrivateFrameworks/CoreSVG.framework/CoreSVG")
-
-cf.CFDataCreate.restype = c_void_p
-cf.CFDataCreate.argtypes = [c_void_p, c_char_p, c_size_t]
-cf.CFStringCreateWithCString.restype = c_void_p
-cf.CFStringCreateWithCString.argtypes = [c_void_p, c_char_p, c_uint32]
-cf.CFAttributedStringCreate.restype = c_void_p
-cf.CFAttributedStringCreate.argtypes = [c_void_p, c_void_p, c_void_p]
-cf.CFDictionaryCreate.restype = c_void_p
-cf.CFDictionaryCreate.argtypes = [c_void_p, ctypes.POINTER(c_void_p), ctypes.POINTER(c_void_p), c_size_t, c_void_p, c_void_p]
-cf.CFURLCreateFromFileSystemRepresentation.restype = c_void_p
-cf.CFURLCreateFromFileSystemRepresentation.argtypes = [c_void_p, c_char_p, c_size_t, c_bool]
-cf.CFRelease.argtypes = [c_void_p]
-
-ct.CTFontCreateWithName.restype = c_void_p
-ct.CTFontCreateWithName.argtypes = [c_void_p, c_double, c_void_p]
-ct.CTLineCreateWithAttributedString.restype = c_void_p
-ct.CTLineCreateWithAttributedString.argtypes = [c_void_p]
-ct.CTLineGetTypographicBounds.restype = c_double
-ct.CTLineGetTypographicBounds.argtypes = [c_void_p, ctypes.POINTER(c_double), ctypes.POINTER(c_double), ctypes.POINTER(c_double)]
-kCTFontAttributeName = c_void_p.in_dll(ct, "kCTFontAttributeName")
-
-coresvg.CGSVGDocumentCreateFromData.restype = c_void_p
-coresvg.CGSVGDocumentCreateFromData.argtypes = [c_void_p, c_void_p]
-coresvg.CGSVGDocumentRelease.argtypes = [c_void_p]
-coresvg.CGContextDrawSVGDocument.argtypes = [c_void_p, c_void_p]
-
-cg.CGColorSpaceCreateDeviceRGB.restype = c_void_p
-cg.CGBitmapContextCreate.restype = c_void_p
-cg.CGBitmapContextCreate.argtypes = [c_void_p, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_uint32]
-cg.CGContextRelease.argtypes = [c_void_p]
-cg.CGContextSetInterpolationQuality.argtypes = [c_void_p, c_uint32]
-cg.CGContextDrawImage.argtypes = [c_void_p, CGRect, c_void_p]
-cg.CGBitmapContextCreateImage.restype = c_void_p
-cg.CGBitmapContextCreateImage.argtypes = [c_void_p]
-cg.CGImageRelease.argtypes = [c_void_p]
-
-imageio.CGImageDestinationCreateWithURL.restype = c_void_p
-imageio.CGImageDestinationCreateWithURL.argtypes = [c_void_p, c_void_p, c_size_t, c_void_p]
-imageio.CGImageDestinationAddImage.argtypes = [c_void_p, c_void_p, c_void_p]
-imageio.CGImageDestinationFinalize.restype = c_bool
-imageio.CGImageDestinationFinalize.argtypes = [c_void_p]
-
-cs_rgb = cg.CGColorSpaceCreateDeviceRGB()
-uti_png = cf.CFStringCreateWithCString(None, b"public.png", 0x08000100)
-
-import html
-RE_RGB = re.compile(r"rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)")
-RE_RGBA_CSS = re.compile(r"rgba\\((\\d+),\\s*(\\d+),\\s*(\\d+),\\s*([0-9.]+)\\)")
-RE_RGBA_HEX = re.compile(r"#([0-9a-fA-F]{6})([0-9a-fA-F]{2})\\b")
-RE_CT_SHIFT = re.compile(r'data-ct-base="([^"]*)"\\s+data-ct-fs="([^"]*)"\\s+data-ct-pre="([^"]*)"\\s+data-ct-piv="([^"]*)"')
-
-def measure_ct_width(txt, font_name, font_size):
-    if not txt:
-        return 0.0
-    fn = cf.CFStringCreateWithCString(None, font_name.encode("utf-8"), 0x08000100)
-    font = ct.CTFontCreateWithName(fn, float(font_size), None)
-    keys = (c_void_p * 1)(kCTFontAttributeName)
-    vals = (c_void_p * 1)(font)
-    attrs = cf.CFDictionaryCreate(None, keys, vals, 1, None, None)
-    st = cf.CFStringCreateWithCString(None, txt.encode("utf-8"), 0x08000100)
-    astr = cf.CFAttributedStringCreate(None, st, attrs)
-    line = ct.CTLineCreateWithAttributedString(astr)
-    a, d, l = c_double(), c_double(), c_double()
-    w = ct.CTLineGetTypographicBounds(line, ctypes.byref(a), ctypes.byref(d), ctypes.byref(l))
-    cf.CFRelease(line); cf.CFRelease(astr); cf.CFRelease(st); cf.CFRelease(attrs); cf.CFRelease(font); cf.CFRelease(fn)
-    return w
-
-def _resolve_ct_shift(m):
-    base_x = float(m.group(1))
-    fs = float(m.group(2))
-    pre = html.unescape(m.group(3))
-    piv = html.unescape(m.group(4))
-    dx = measure_ct_width(pre, "Georgia", fs) + (measure_ct_width(piv, "Georgia", fs) if piv else 0.0)
-    return f'x="{base_x + dx:.2f}"'
-
-def clean_svg(svg):
-    svg = RE_CT_SHIFT.sub(_resolve_ct_shift, svg)
-    svg = RE_RGBA_CSS.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
-    svg = RE_RGB.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
-    svg = RE_RGBA_HEX.sub(lambda m: f"#{m.group(1)}", svg)
-    svg = svg.replace('style="overflow:visible;background:transparent"', '')
-    return svg
-
-payload = json.loads(sys.stdin.read())
-mode = payload["mode"]
-out_png = payload["out"]
-
-if mode == "single":
-    svg = clean_svg(payload["svg"])
-    w, h = int(payload["w"]), int(payload["h"])
-    data = svg.encode("utf-8")
-    cfdata = cf.CFDataCreate(None, data, len(data))
-    doc = coresvg.CGSVGDocumentCreateFromData(cfdata, None)
-    ctx = cg.CGBitmapContextCreate(None, w, h, 8, w * 4, cs_rgb, 1)
-    coresvg.CGContextDrawSVGDocument(ctx, doc)
-    im = cg.CGBitmapContextCreateImage(ctx)
-    pbytes = out_png.encode("utf-8")
-    url = cf.CFURLCreateFromFileSystemRepresentation(None, pbytes, len(pbytes), False)
-    dest = imageio.CGImageDestinationCreateWithURL(url, uti_png, 1, None)
-    imageio.CGImageDestinationAddImage(dest, im, None)
-    imageio.CGImageDestinationFinalize(dest)
-    cf.CFRelease(dest); cf.CFRelease(url); cg.CGImageRelease(im); cg.CGContextRelease(ctx); coresvg.CGSVGDocumentRelease(doc); cf.CFRelease(cfdata)
-elif mode == "strip6":
-    svgs = payload["svgs"]
-    tw, th = 360, 640
-    W_tot, H_tot = tw * len(svgs), th
-    strip_ctx = cg.CGBitmapContextCreate(None, W_tot, H_tot, 8, W_tot * 4, cs_rgb, 1)
-    cg.CGContextSetInterpolationQuality(strip_ctx, 3)
-    for idx, raw_s in enumerate(svgs):
-        s = clean_svg(raw_s)
-        data = s.encode("utf-8")
-        cfdata = cf.CFDataCreate(None, data, len(data))
-        doc = coresvg.CGSVGDocumentCreateFromData(cfdata, None)
-        fctx = cg.CGBitmapContextCreate(None, 1080, 1920, 8, 1080 * 4, cs_rgb, 1)
-        coresvg.CGContextDrawSVGDocument(fctx, doc)
-        fim = cg.CGBitmapContextCreateImage(fctx)
-        cg.CGContextDrawImage(strip_ctx, CGRect(CGPoint(idx * tw, 0), CGSize(tw, th)), fim)
-        cg.CGImageRelease(fim); cg.CGContextRelease(fctx); coresvg.CGSVGDocumentRelease(doc); cf.CFRelease(cfdata)
-    out_im = cg.CGBitmapContextCreateImage(strip_ctx)
-    pbytes = out_png.encode("utf-8")
-    url = cf.CFURLCreateFromFileSystemRepresentation(None, pbytes, len(pbytes), False)
-    dest = imageio.CGImageDestinationCreateWithURL(url, uti_png, 1, None)
-    imageio.CGImageDestinationAddImage(dest, out_im, None)
-    imageio.CGImageDestinationFinalize(dest)
-    cf.CFRelease(dest); cf.CFRelease(url); cg.CGImageRelease(out_im); cg.CGContextRelease(strip_ctx)
-print("OK")
-`;
-
-function rasterizeWithCoreSVG(payload) {
-  const res = spawnSync('/usr/bin/python3', ['-c', PY_RASTERIZER], {
-    input: JSON.stringify(payload),
-    encoding: 'utf8',
-    maxBuffer: 96 * 1024 * 1024,
-  });
-  if (res.status !== 0) {
-    throw new Error(`Lỗi kết xuất PNG CoreSVG: ${res.stderr || res.stdout}`);
+function getGitShortCommit() {
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return 'unknown';
   }
 }
+
+/**
+ * Chuẩn hoá SVG trước khi raster bằng @resvg/resvg-js (chạy đồng nhất trên macOS & Linux arm64/x64):
+ * - Chuẩn hoá mã màu hex 8 ký tự / rgb() nếu có.
+ * - Namespace toàn bộ id/url(#...) khi nhúng nhiều khung vào cùng 1 ảnh ghép.
+ */
+function sanitizeSvgForResvg(svg, idPrefix = '') {
+  let out = String(svg || '');
+  out = out.replace(/#([0-9a-fA-F]{6})([0-9a-fA-F]{2})\b/g, '#$1');
+  if (idPrefix) {
+    out = out
+      .replace(/\bid="([^"]+)"/g, `id="${idPrefix}$1"`)
+      .replace(/url\(#([^)]+)\)/g, `url(#${idPrefix}$1)`)
+      .replace(/clip-path="url\(#([^)]+)\)"/g, `clip-path="url(#${idPrefix}$1)"`);
+  }
+  return out;
+}
+
+function renderSvgStringToPngFile(svgString, widthPx, outPath) {
+  const resvg = new Resvg(svgString, {
+    fitTo: { mode: 'width', value: Math.round(widthPx) },
+    font: {
+      loadSystemFonts: true,
+      defaultFontFamily: 'Georgia',
+    },
+  });
+  const pngBuffer = resvg.render().asPng();
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, pngBuffer);
+}
+
+/**
+ * Bộ raster đa nền tảng thay thế CoreSVG (chạy được cả macOS darwin-arm64 lẫn Linux linux-arm64/x64).
+ */
+function rasterizeWithResvg(payload) {
+  const { mode, out } = payload;
+  if (mode === 'single') {
+    const clean = sanitizeSvgForResvg(payload.svg);
+    renderSvgStringToPngFile(clean, Number(payload.w) || 1080, out);
+    return;
+  }
+
+  if (mode === 'strip6') {
+    const svgs = payload.svgs || [];
+    const tw = 360;
+    const th = 640;
+    const W = tw * Math.max(1, svgs.length);
+    const H = th;
+    const embedded = svgs
+      .map((raw, idx) => {
+        const inner = sanitizeSvgForResvg(raw, `s${idx}_`)
+          .replace(/^<\?xml[^>]*>\s*/i, '')
+          .replace(/<svg\b[^>]*>/i, '')
+          .replace(/<\/svg>\s*$/i, '');
+        return `<svg x="${idx * tw}" y="0" width="${tw}" height="${th}" viewBox="0 0 1080 1920">${inner}</svg>`;
+      })
+      .join('\n');
+    const master = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${embedded}</svg>`;
+    renderSvgStringToPngFile(master, W, out);
+    return;
+  }
+
+  if (mode === 'sheet') {
+    const { bannerTitle, bannerMeta, bannerStatus, sections } = payload;
+    const padX = 28;
+    const padTop = 24;
+    const bannerH = bannerStatus ? 106 : 82;
+    const cardW = 270;
+    const cardH = 480;
+    const labelH = 38;
+    const gapX = 16;
+    const gapY = 20;
+    const secHeaderH = 36;
+    const secGap = 24;
+
+    const maxCols = Math.max(
+      6,
+      ...sections.map((sec) => Math.min(sec.cols || 8, Math.max(1, sec.cards.length)))
+    );
+    const W = padX * 2 + maxCols * cardW + (maxCols - 1) * gapX;
+
+    let curY = padTop + bannerH + 18;
+    const bodyParts = [];
+    let cardGlobalIdx = 0;
+
+    for (const sec of sections) {
+      if (!sec.cards || sec.cards.length === 0) continue;
+      const cols = sec.cols || maxCols;
+      bodyParts.push(
+        `<text x="${padX}" y="${curY + 22}" font-family="${CROSS_PLATFORM_SANS_FONT}" font-size="16" font-weight="bold" fill="${sec.isWarningSection ? '#92400E' : '#2D2721'}">${escXml(sec.title)}</text>`
+      );
+      bodyParts.push(
+        `<line x1="${padX}" y1="${curY + 30}" x2="${W - padX}" y2="${curY + 30}" stroke="${sec.isWarningSection ? '#D97706' : '#C8BEB0'}" stroke-width="1.2" opacity="0.7"/>`
+      );
+      curY += secHeaderH + 8;
+
+      const rows = Math.ceil(sec.cards.length / cols);
+      for (let r = 0; r < rows; r++) {
+        const rowCards = sec.cards.slice(r * cols, (r + 1) * cols);
+        for (let c = 0; c < rowCards.length; c++) {
+          const card = rowCards[c];
+          const x = padX + c * (cardW + gapX);
+          const y = curY;
+          const borderCol = card.isWarning ? '#D97706' : '#C8BEB0';
+          const borderW = card.isWarning ? 2.5 : 1.2;
+          const pillFill = card.isWarning ? '#FEF3C7' : '#F4EFE6';
+          const titleFill = card.isWarning ? '#92400E' : '#2D2721';
+
+          const inner = sanitizeSvgForResvg(card.svg, `c${cardGlobalIdx++}_`)
+            .replace(/^<\?xml[^>]*>\s*/i, '')
+            .replace(/<svg\b[^>]*>/i, '')
+            .replace(/<\/svg>\s*$/i, '');
+
+          bodyParts.push(`
+            <g>
+              <rect x="${x}" y="${y}" width="${cardW}" height="${labelH}" rx="4" fill="${pillFill}" stroke="${borderCol}" stroke-width="${borderW}"/>
+              <text x="${x + 8}" y="${y + 16}" font-family="${CROSS_PLATFORM_SANS_FONT}" font-size="11.5" font-weight="bold" fill="${titleFill}">${escXml(card.badge)}</text>
+              <text x="${x + 8}" y="${y + 31}" font-family="${CROSS_PLATFORM_SANS_FONT}" font-size="10" fill="#5C534A">${escXml(card.subBadge || '')}</text>
+              <rect x="${x}" y="${y + labelH + 2}" width="${cardW}" height="${cardH}" fill="#EAE4D9" stroke="${borderCol}" stroke-width="${borderW}"/>
+              <svg x="${x}" y="${y + labelH + 2}" width="${cardW}" height="${cardH}" viewBox="0 0 1080 1920">${inner}</svg>
+            </g>
+          `);
+        }
+        curY += labelH + 2 + cardH + gapY;
+      }
+      curY += secGap - gapY;
+    }
+
+    const H = curY + 12;
+    const master = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+      <rect width="${W}" height="${H}" fill="#E6DED2"/>
+      <rect x="${padX}" y="${padTop}" width="${W - padX * 2}" height="${bannerH}" rx="8" fill="#FAF6EF" stroke="#C8BEB0" stroke-width="1.4"/>
+      <text x="${padX + 18}" y="${padTop + 30}" font-family="${CROSS_PLATFORM_SERIF_FONT}" font-size="22" font-weight="bold" fill="#1E1B18">${escXml(bannerTitle)}</text>
+      <text x="${padX + 18}" y="${padTop + 56}" font-family="${CROSS_PLATFORM_SANS_FONT}" font-size="13.5" fill="#4A423A">${escXml(bannerMeta)}</text>
+      ${bannerStatus ? `<text x="${padX + 18}" y="${padTop + 82}" font-family="${CROSS_PLATFORM_SANS_FONT}" font-size="12.5" font-weight="bold" fill="${bannerStatus.startsWith('[WARN]') ? '#B45309' : '#166534'}">${escXml(bannerStatus)}</text>` : ''}
+      ${bodyParts.join('\n')}
+    </svg>`;
+    renderSvgStringToPngFile(master, W, out);
+    return;
+  }
+
+  throw new Error(`Chế độ raster không hỗ trợ: ${mode}`);
+}
+
+// Giữ tên hàm cũ để tương thích mọi nhánh phụ trong file (--prop-sheet, --zoom-stage, --compare-pivot)
+const rasterizeWithCoreSVG = rasterizeWithResvg;
 
 function escXml(str) {
   return String(str || '')
@@ -225,13 +240,9 @@ function renderSvgQuoteLineWithPivot(ln, seg, yPos, isPivotRedActive, palette, b
     const pre = ln.slice(0, seg.pivotCharStartIndex);
     const piv = ln.slice(seg.pivotCharStartIndex, seg.pivotCharEndIndex);
     const post = ln.slice(seg.pivotCharEndIndex);
-    return [
-      `<text x="${baseX}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(pre)}</text>`,
-      `<text data-ct-base="${baseX}" data-ct-fs="${fontSize}" data-ct-pre="${escXml(pre)}" data-ct-piv="" y="${yPos}" font-family="Georgia" font-size="${fontSize}" font-weight="bold" fill="${palette.accentText}">${escXml(piv)}</text>`,
-      post ? `<text data-ct-base="${baseX}" data-ct-fs="${fontSize}" data-ct-pre="${escXml(pre)}" data-ct-piv="${escXml(piv)}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(post)}</text>` : ''
-    ].filter(Boolean).join('\n');
+    return `<text x="${baseX}" y="${yPos}" font-family="${CROSS_PLATFORM_SERIF_FONT}" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(pre)}<tspan font-weight="bold" fill="${palette.accentText}">${escXml(piv)}</tspan>${escXml(post)}</text>`;
   }
-  return `<text x="${baseX}" y="${yPos}" font-family="Georgia" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(ln)}</text>`;
+  return `<text x="${baseX}" y="${yPos}" font-family="${CROSS_PLATFORM_SERIF_FONT}" font-size="${fontSize}" fill="${palette.inkPrimary}">${escXml(ln)}</text>`;
 }
 
 function wrapViText(str, maxChars = 132) {
@@ -939,19 +950,289 @@ function generateApprovalSheet(outPath) {
 }
 
 /**
- * Xuất ảnh 6 khung kiểm tra trước khi render cho 1 Chén hoặc 1 file kịch bản JSON
+ * Chia dòng văn bản tiếng Việt theo độ rộng tối đa (px) và vẫn giữ vị trí cụm pivotWord để tô đỏ bằng <tspan>.
  */
-function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
+function wrapQuoteSegmentForSvg(rawText, seg, maxWidthPx, fontSize) {
+  const clean = stripInlineMarkdown(String(rawText || ''));
+  const words = clean.split(/(\s+)/).filter((t) => t.length > 0);
+  const wrapped = [];
+  let curText = '';
+  let curStart = 0;
+  let cursor = 0;
+
+  for (const tok of words) {
+    const isSpace = /^\s+$/.test(tok);
+    if (!curText && isSpace) {
+      cursor += tok.length;
+      curStart = cursor;
+      continue;
+    }
+    const candidate = curText + tok;
+    if (curText && !isSpace && estimateGeorgiaTextWidth(candidate, fontSize) > maxWidthPx) {
+      wrapped.push({ text: curText.trimEnd(), startIdx: curStart });
+      curText = tok;
+      curStart = cursor;
+    } else {
+      curText = candidate;
+    }
+    cursor += tok.length;
+  }
+  if (curText.trim().length > 0) {
+    wrapped.push({ text: curText.trimEnd(), startIdx: curStart });
+  }
+  if (wrapped.length === 0) {
+    wrapped.push({ text: clean, startIdx: 0 });
+  }
+
+  return wrapped.map((wLine) => {
+    const endIdx = wLine.startIdx + wLine.text.length;
+    const hasPiv =
+      Boolean(seg?.containsPivot) &&
+      seg.pivotCharStartIndex >= 0 &&
+      seg.pivotCharEndIndex > seg.pivotCharStartIndex;
+    if (!hasPiv) {
+      return { text: wLine.text, pivStart: -1, pivEnd: -1 };
+    }
+    const ovStart = Math.max(wLine.startIdx, seg.pivotCharStartIndex);
+    const ovEnd = Math.min(endIdx, seg.pivotCharEndIndex);
+    if (ovEnd > ovStart) {
+      return {
+        text: wLine.text,
+        pivStart: ovStart - wLine.startIdx,
+        pivEnd: ovEnd - wLine.startIdx,
+      };
+    }
+    return { text: wLine.text, pivStart: -1, pivEnd: -1 };
+  });
+}
+
+function renderWrappedQuoteLineSvg(wLine, x, y, fontSize, isPivotRedActive, palette, opacity) {
+  const opStr = opacity.toFixed(3);
+  if (isPivotRedActive && wLine.pivStart >= 0 && wLine.pivEnd > wLine.pivStart) {
+    const pre = wLine.text.slice(0, wLine.pivStart);
+    const piv = wLine.text.slice(wLine.pivStart, wLine.pivEnd);
+    const post = wLine.text.slice(wLine.pivEnd);
+    return `<text x="${x}" y="${y}" font-family="${CROSS_PLATFORM_SERIF_FONT}" font-size="${fontSize}" fill="${palette.inkPrimary}" opacity="${opStr}">${escXml(pre)}<tspan font-weight="600" fill="${palette.accentText}">${escXml(piv)}</tspan>${escXml(post)}</text>`;
+  }
+  return `<text x="${x}" y="${y}" font-family="${CROSS_PLATFORM_SERIF_FONT}" font-size="${fontSize}" fill="${palette.inkPrimary}" opacity="${opStr}">${escXml(wLine.text)}</text>`;
+}
+
+/**
+ * Dựng 1 khung hình 1080×1920 khớp luồng Remotion Studio thật
+ * (cùng timelineSync, visualDNA, layoutGeometry, stageTuning, DeclarativeStagePlayer, khối chữ & header).
+ */
+function renderStudioMatchedFrameSvg({
+  script,
+  resolvedCupProps,
+  cupNumberLabel,
+  timeline,
+  palette,
+  vdna,
+  geo,
+  frame,
+  showBBox,
+}) {
+  const fps = timeline.fps;
+  const safeTotalFrames = Math.max(2, timeline.durationInFrames);
+  const segs = timeline.segmentTimings || [];
+  const lines = resolvedCupProps.segments || [];
+
+  const mState = evaluateMotionState(
+    frame,
+    fps,
+    timeline.pivotFrame,
+    timeline.allTextFinishedFrame,
+    timeline.durationInFrames,
+    resolvedCupProps.motion
+  );
+
+  const tuning = resolvedCupProps.stageTuning || {
+    offsetX: 0,
+    offsetY: 0,
+    scale: 1,
+    strokeScale: 1,
+  };
+  const isSemanticScript = Boolean(script.tags?.includes('semantic_v1'));
+  const effOffsetX = isSemanticScript ? 0 : tuning.offsetX || 0;
+  const effOffsetY = isSemanticScript ? 0 : tuning.offsetY || 0;
+  const effScale = isSemanticScript ? 1 : tuning.scale || 1;
+  const tunedStrokeWidth = Number(
+    (LAYOUT_TOKENS.strokeWidth * (tuning.strokeScale ?? 1)).toFixed(2)
+  );
+
+  const stageMarkup = renderToStaticMarkup(
+    React.createElement(DeclarativeStagePlayer, {
+      script,
+      state: mState,
+      palette,
+      strokeWidth: tunedStrokeWidth,
+      frame,
+      fps,
+      durationInFrames: timeline.durationInFrames,
+      timeline,
+      visualDNA: vdna,
+      stageBox: {
+        width: geo.stageWidth,
+        height: geo.stageHeight,
+      },
+      frameMode: geo.stageFrameMode,
+      showDebugBBoxes: showBBox,
+    })
+  );
+
+  // Header fade khớp 100% MinimalistBackground.tsx
+  let headerOpacity = 1;
+  if (frame <= timeline.headerDissolveStartFrame) {
+    headerOpacity = 1;
+  } else if (frame < timeline.headerDissolveEndFrame) {
+    const span = Math.max(1, timeline.headerDissolveEndFrame - timeline.headerDissolveStartFrame);
+    const u = Math.max(0, Math.min(1, (frame - timeline.headerDissolveStartFrame) / span));
+    headerOpacity = 1 - (0.5 - 0.5 * Math.cos(Math.PI * u));
+  } else if (frame < timeline.loopRestoreStartFrame) {
+    headerOpacity = 0;
+  } else {
+    const span = Math.max(1, safeTotalFrames - 1 - timeline.loopRestoreStartFrame);
+    const u = Math.max(0, Math.min(1, (frame - timeline.loopRestoreStartFrame) / span));
+    headerOpacity = 0.5 - 0.5 * Math.cos(Math.PI * u);
+  }
+
+  const rawTitle = String(resolvedCupProps.title || script.name || '').trim().toUpperCase();
+  const headerText = cupNumberLabel
+    ? `CHÉN ${cupNumberLabel}${rawTitle ? ` — ${rawTitle}` : ''}`
+    : rawTitle;
+
+  // Khối chữ khớp AdaptiveTypography.tsx (railOffsetPx=28, sàn minFontSize=38, topSpacerMaxPx)
+  const fontSizeScale = resolvedCupProps.fontSizeScale ?? 1.0;
+  const quoteFontSize = Math.max(
+    LAYOUT_TOKENS.typography.minFontSize,
+    Math.round(46 * fontSizeScale)
+  );
+  const lineHeightPx = Math.round(quoteFontSize * 1.48);
+  const rowGapPx = 18;
+  const textX = geo.typographyLeft + LAYOUT_TOKENS.typography.railOffsetPx;
+  const maxTextW = geo.typographyMaxWidth || 788;
+
+  const isPivotActive = frame >= timeline.pivotFrame;
+  const fadeFrames = Math.max(1, Math.round(1.05 * fps));
+  const blockTopY = geo.typographyTop + Math.round(geo.topSpacerMaxPx || 145);
+  let curY = blockTopY;
+  const textEls = [];
+  let visibleBlockBottom = blockTopY;
+  let anyVisibleLine = false;
+
+  for (let lIdx = 0; lIdx < lines.length; lIdx++) {
+    const st = segs[lIdx]?.startFrame ?? lIdx * 90;
+    const wrappedLines = wrapQuoteSegmentForSvg(lines[lIdx], segs[lIdx], maxTextW, quoteFontSize);
+    const lineOp =
+      frame < st ? 0 : Math.min(1, (frame - st) / fadeFrames);
+
+    for (let wi = 0; wi < wrappedLines.length; wi++) {
+      const baselineY = curY + quoteFontSize;
+      if (lineOp > 0.01) {
+        anyVisibleLine = true;
+        textEls.push(
+          renderWrappedQuoteLineSvg(
+            wrappedLines[wi],
+            textX,
+            baselineY,
+            quoteFontSize,
+            isPivotActive,
+            palette,
+            lineOp
+          )
+        );
+        visibleBlockBottom = baselineY + 12;
+      }
+      curY += lineHeightPx;
+    }
+    curY += rowGapPx;
+  }
+
+  const barHeight = anyVisibleLine
+    ? Math.max(48, visibleBlockBottom - blockTopY)
+    : 0;
+  const sealOp =
+    frame >= timeline.allTextFinishedFrame
+      ? Math.min(1, (frame - timeline.allTextFinishedFrame) / Math.round(0.6 * fps))
+      : 0;
+  const sealText = `• ${String(resolvedCupProps.brandText || 'TRÀ NGUỘI').toUpperCase()}`;
+
+  // Stage container transform (khớp MotionStageRouter: translate(effOffset) scale(effScale) quanh 50% 62.5%)
+  const ox = geo.stageWidth * 0.5;
+  const oy = geo.stageHeight * 0.625;
+  const stageTransform =
+    effOffsetX !== 0 || effOffsetY !== 0 || Math.abs(effScale - 1) > 0.0001
+      ? `translate(${geo.stageLeft + effOffsetX + ox}, ${geo.stageTop + effOffsetY + oy}) scale(${effScale}) translate(${-ox}, ${-oy})`
+      : `translate(${geo.stageLeft}, ${geo.stageTop})`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+    <defs>
+      <clipPath id="stage-box-clip">
+        <rect x="${geo.stageLeft}" y="${geo.stageTop}" width="${geo.stageWidth}" height="${geo.stageHeight}"/>
+      </clipPath>
+    </defs>
+    <rect width="1080" height="1920" fill="${palette.background}"/>
+    ${
+      headerOpacity > 0.01 && headerText
+        ? `<g opacity="${headerOpacity.toFixed(3)}">
+            <text x="132" y="298" font-family="${CROSS_PLATFORM_SANS_FONT}" font-size="22" letter-spacing="4" fill="${palette.inkSecondary}">${escXml(headerText)}</text>
+            <circle cx="944" cy="291" r="4" fill="${palette.accentText}"/>
+            <line x1="132" y1="316" x2="948" y2="316" stroke="${palette.inkSecondary}" stroke-width="1.2" opacity="0.3"/>
+          </g>`
+        : ''
+    }
+    <g clip-path="url(#stage-box-clip)">
+      <g transform="${stageTransform}">
+        ${stageMarkup}
+      </g>
+    </g>
+    ${
+      barHeight > 0
+        ? `<rect x="${geo.typographyLeft}" y="${blockTopY + 4}" width="4.5" height="${barHeight}" rx="2" fill="${palette.accentText}" opacity="0.88"/>`
+        : ''
+    }
+    ${textEls.join('\n')}
+    ${
+      sealOp > 0.01
+        ? `<text x="${textX}" y="${visibleBlockBottom + 44}" font-family="${CROSS_PLATFORM_SANS_FONT}" font-size="18" letter-spacing="4" fill="${palette.inkSecondary}" opacity="${(sealOp * 0.78).toFixed(3)}">${escXml(sealText)}</text>`
+        : ''
+    }
+  </svg>`;
+}
+
+/**
+ * Xuất ảnh Director Preview thống nhất cho cả Gói Chén lẫn Làn tự do (`che_do: "tu_do"`):
+ * - Cùng seed, thời lượng AUTO_SEED, visualDNA, layoutGeometry và camera như Studio thật.
+ * - Gồm: 6 khung tổng quan + 8 khung dày quanh cú lật (pivot -0.5s → +3.0s) + mỗi thời điểm t mà TF1 cảnh báo.
+ * - Đầu ảnh in: mã commit + thời lượng + seed.
+ */
+function renderSixFramePreview(
+  targetArg,
+  showBBox,
+  outOverride,
+  allowInvalid,
+  sceneIdArg,
+  singleFrameArg
+) {
   const fullPath = path.resolve(ROOT, targetArg);
-  const rawJson = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+  const rawFileJson = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+
+  let rawJson = rawFileJson;
+  if (sceneIdArg && rawFileJson && typeof rawFileJson === 'object' && !Array.isArray(rawFileJson)) {
+    if (!(sceneIdArg in rawFileJson)) {
+      throw new Error(`Không tìm thấy "${sceneIdArg}" trong ${targetArg}`);
+    }
+    rawJson = rawFileJson[sceneIdArg];
+  }
 
   let cupProps = null;
   let scriptInput = null;
-  let baseName = path.basename(targetArg, '.json');
-  let isGoiChenInput = false;
+  let cupNumberLabel = '';
+  let baseName = sceneIdArg || path.basename(targetArg, '.json');
+  let modeLabel = 'StageScript';
 
   if (isGoiChen(rawJson)) {
-    isGoiChenInput = true;
+    modeLabel = 'Gói Chén';
     const parsed = parseGoiChen(rawJson);
     if (!parsed.ok && !allowInvalid) {
       console.error(`❌ CHẶN RENDER GÓI CHÉN [${baseName}] — ${parsed.errors.length} lỗi:`);
@@ -973,50 +1254,98 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
     };
   } else if (rawJson.props && rawJson.cupNumber) {
     cupProps = rawJson.props;
+    cupNumberLabel = String(rawJson.cupNumber).padStart(2, '0');
     const sid = cupProps.motion?.sceneId || cupProps.motion?.archetype;
     scriptInput = resolveStageScript(sid, cupProps.motion?.stageScript);
-    baseName = `chen-${String(rawJson.cupNumber).padStart(2, '0')}`;
+    baseName = `chen-${cupNumberLabel}`;
+    modeLabel =
+      scriptInput?.che_do === 'tu_do'
+        ? 'Làn tự do (che_do: tu_do)'
+        : scriptInput?.tags?.includes('semantic_v1')
+          ? 'Gói Chén'
+          : 'CupRecord';
+  } else if (
+    rawJson.stageScript &&
+    typeof rawJson.stageScript === 'object' &&
+    Array.isArray(rawJson.segments)
+  ) {
+    // CupBundle bọc stageScript (vd Làn tự do `che_do: "tu_do"`)
+    scriptInput = resolveStageScript(rawJson.stageScript.sceneId, rawJson.stageScript);
+    cupProps = {
+      id: rawJson.cupId || rawJson.id || scriptInput?.sceneId || baseName,
+      title: rawJson.title || scriptInput?.name || baseName,
+      segments: rawJson.segments,
+      pivotWord: rawJson.pivotWord || '',
+      themeId: rawJson.themeId || 'MINIMAL_LIGHT',
+      fontSizeScale: rawJson.fontSizeScale,
+      stageTuning: rawJson.stageTuning,
+      visualDNA: rawJson.visualDNA,
+      targetDurationSeconds: rawJson.targetDurationSeconds || 15,
+      durationMode: rawJson.durationMode || 'AUTO_SEED',
+      textFormat: rawJson.textFormat || 'POEM',
+    };
+    modeLabel =
+      scriptInput?.che_do === 'tu_do' ? 'Làn tự do (che_do: tu_do)' : 'CupBundle';
   } else if (isSemanticStageScript(rawJson)) {
     scriptInput = rawJson;
+    modeLabel = 'SemanticStageScript';
   } else {
-    scriptInput = rawJson;
+    scriptInput = resolveStageScript(rawJson.sceneId, rawJson);
+    if (scriptInput?.che_do === 'tu_do') {
+      modeLabel = 'Làn tự do (che_do: tu_do)';
+    }
   }
 
   if (!scriptInput) {
     throw new Error(`Không tìm thấy kịch bản sân khấu cho: ${targetArg}`);
   }
 
-  const effectiveDurationMode =
-    cupProps?.durationMode || (isGoiChenInput ? 'AUTO_SEED' : 'FIXED');
+  const effectiveDurationMode = cupProps?.durationMode || 'AUTO_SEED';
+  const defaultFallbackSegments =
+    scriptInput.sceneId === 'SCRIPT_C19_NET_DAT_NAY_MAM'
+      ? [
+          'Chỉ có hai cách để sống một cuộc đời:',
+          'Một là chẳng có gì là kỳ diệu.',
+          'Hai là xem mọi thứ đều là điều kỳ diệu.',
+        ]
+      : [
+          'Tháng năm tất tả chưa từng dừng,',
+          'Tiền chưa đầy túi đã đau lưng.',
+          'Lắm hôm mệt quá toan buông xuống,',
+          'Nhìn tờ hóa đơn… lại khỏe tưng!',
+        ];
+  const defaultFallbackPivot =
+    scriptInput.sceneId === 'SCRIPT_C19_NET_DAT_NAY_MAM'
+      ? 'điều kỳ diệu'
+      : 'lại khỏe tưng';
 
   const resolvedCupProps = {
-    id: cupProps?.id || baseName,
+    id: cupProps?.id || scriptInput.sceneId || baseName,
+    title: cupProps?.title || scriptInput.name || baseName,
     textFormat: cupProps?.textFormat || 'POEM',
-    segments: cupProps?.segments || [
-      'Tháng năm tất tả chưa từng dừng,',
-      'Tiền chưa đầy túi đã đau lưng.',
-      'Lắm hôm mệt quá toan buông xuống,',
-      'Nhìn tờ hóa đơn… lại khỏe tưng!',
-    ],
-    pivotWord: (cupProps?.pivotWord || 'lại khỏe tưng').replace(/[!?.…]+$/u, ''),
+    fontSizeScale: cupProps?.fontSizeScale ?? 1.0,
+    segments: cupProps?.segments || defaultFallbackSegments,
+    pivotWord: (cupProps?.pivotWord || defaultFallbackPivot).replace(/[!?.…]+$/u, ''),
     highlightStyle: 'BOTH',
     targetDurationSeconds: cupProps?.targetDurationSeconds || 15,
     durationMode: effectiveDurationMode,
-    typingSpeedMsPerChar: 55,
-    holdAfterFinishSeconds: 5.5,
+    typingSpeedMsPerChar: cupProps?.typingSpeedMsPerChar || 55,
+    holdAfterFinishSeconds: cupProps?.holdAfterFinishSeconds || 5.5,
     themeId: cupProps?.themeId || 'MINIMAL_LIGHT',
+    stageTuning: cupProps?.stageTuning,
+    visualDNA: cupProps?.visualDNA,
     motion: cupProps?.motion || {
       archetype: 'BOULDER_TO_BENCH',
       pacingMode: 'CONTEMPLATIVE',
       stateA: { intensity: 0.8, spread: 0.2, tiltDeg: -16 },
       stateB: { intensity: 0.1, spread: 0.75, tiltDeg: 0 },
     },
-    bgm: { audioMode: 'PIVOT_ACCENT', foleyPivotStyle: 'AUTO' },
-    brandText: 'TRÀ NGUỘI',
+    bgm: { audioMode: 'NONE', foleyPivotStyle: 'AUTO' },
+    brandText: cupProps?.brandText || 'TRÀ NGUỘI',
   };
 
   const timeline = computeTimelineSync(resolvedCupProps);
-  const preVdna = cupProps ? resolveVisualDNA(resolvedCupProps, scriptInput) : undefined;
+  const preVdna = resolveVisualDNA(resolvedCupProps, scriptInput);
 
   const valRes = validateAndCompileStageInput(scriptInput, timeline, preVdna);
   if (!valRes.valid && !allowInvalid) {
@@ -1028,100 +1357,164 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
   }
 
   const script = valRes.compiledScript;
-  const themeId = cupProps?.themeId || 'MINIMAL_LIGHT';
+  const themeId = resolvedCupProps.themeId || 'MINIMAL_LIGHT';
   const palette = THEME_PALETTES[themeId] || THEME_PALETTES.MINIMAL_LIGHT;
-  const vdna = cupProps ? resolveVisualDNA(resolvedCupProps, script) : undefined;
+  const vdna = resolveVisualDNA(resolvedCupProps, script);
+  const geo = resolveLayoutGeometry(vdna.layout, vdna.brushOrientation);
   const fps = timeline.fps;
+  const clampF = (f) => Math.max(0, Math.min(timeline.durationInFrames - 1, Math.round(f)));
+
+  // Tuỳ chọn xuất 1 khung 1080×1920 duy nhất (--frame=N) để đối chiếu 1:1 với MP4 render thật
+  if (singleFrameArg !== undefined && Number.isFinite(singleFrameArg)) {
+    const fTarget = clampF(singleFrameArg);
+    const singleSvg = renderStudioMatchedFrameSvg({
+      script,
+      resolvedCupProps,
+      cupNumberLabel,
+      timeline,
+      palette,
+      vdna,
+      geo,
+      frame: fTarget,
+      showBBox,
+    });
+    const outFile =
+      outOverride || path.join(OUT_DIR, `${baseName}-frame-${fTarget}.png`);
+    rasterizeWithResvg({ mode: 'single', svg: singleSvg, w: 1080, h: 1920, out: outFile });
+    console.log(
+      `✅ Đã xuất khung đơn f=${fTarget} (t=${(fTarget / fps).toFixed(2)}s): ${path.relative(ROOT, outFile)}`
+    );
+    return;
+  }
 
   const segs = timeline.segmentTimings || [];
-  const sampleFrames = [
-    Math.round(0.45 * fps),
-    segs[0] ? Math.min(timeline.pivotFrame - 12, segs[0].endTypingFrame + 6) : Math.round(2.0 * fps),
-    segs[1] ? Math.min(timeline.pivotFrame - 10, segs[1].endTypingFrame + 6) : Math.round(4.2 * fps),
-    segs[2] ? Math.min(timeline.pivotFrame - 8, segs[2].endTypingFrame + 6) : Math.round(6.4 * fps),
-    Math.min(timeline.durationInFrames - 90, timeline.pivotFrame + Math.round(0.55 * fps)),
-    Math.max(timeline.pivotFrame + 60, timeline.durationInFrames - Math.round(1.8 * fps)),
+  // 1. 6 khung tổng quan
+  const overviewSpec = [
+    { label: '1. Đầu video', frame: clampF(0.45 * fps) },
+    {
+      label: '2. Dòng 1',
+      frame: clampF(segs[0] ? Math.min(timeline.pivotFrame - 12, segs[0].endTypingFrame + 6) : 2.0 * fps),
+    },
+    {
+      label: '3. Dòng 2',
+      frame: clampF(segs[1] ? Math.min(timeline.pivotFrame - 10, segs[1].endTypingFrame + 6) : 4.0 * fps),
+    },
+    {
+      label: segs[2] ? '4. Dòng 3' : '4. Trước lật',
+      frame: clampF(
+        segs[2]
+          ? Math.min(timeline.pivotFrame - 8, segs[2].endTypingFrame + 6)
+          : Math.max(0.8 * fps, timeline.pivotFrame - 0.6 * fps)
+      ),
+    },
+    {
+      label: '5. Cú lật',
+      frame: clampF(Math.min(timeline.durationInFrames - 90, timeline.pivotFrame + 0.55 * fps)),
+    },
+    {
+      label: '6. Cuối video',
+      frame: clampF(Math.max(timeline.pivotFrame + 60, timeline.durationInFrames - 1.5 * fps)),
+    },
   ];
-  const frameLabels = ['1. Đầu video', '2. Dòng 1', '3. Dòng 2', '4. Dòng 3', '5. Cú lật', '6. Cuối video'];
 
-  const lines = cupProps?.segments || [
-    'Tháng năm tất tả chưa từng dừng,',
-    'Tiền chưa đầy túi đã đau lưng.',
-    'Lắm hôm mệt quá toan buông xuống,',
-    'Nhìn tờ hóa đơn… lại khỏe tưng!',
-  ];
-  const titleText = (cupProps?.title || script.name || baseName).toUpperCase();
+  // 2. 8 khung dày quanh cú lật (pivot -0.5s đến +3.0s, bước 0.5s)
+  const pivotOffsets = [-0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
+  const pivotDenseSpec = pivotOffsets.map((off, idx) => ({
+    label: `P${idx + 1}. pivot${off >= 0 ? `+${off.toFixed(1)}` : off.toFixed(1)}s`,
+    frame: clampF(timeline.pivotFrame + off * fps),
+  }));
 
-  const svgs = sampleFrames.map((f, fIdx) => {
-    const mState = evaluateMotionState(
-      f,
-      fps,
-      timeline.pivotFrame,
-      timeline.allTextFinishedFrame,
-      timeline.durationInFrames,
-      cupProps?.motion || {
-        archetype: 'BOULDER_TO_BENCH',
-        pacingMode: 'CONTEMPLATIVE',
-        stateA: { intensity: 0.8, spread: 0.2, tiltDeg: -16 },
-        stateB: { intensity: 0.1, spread: 0.75, tiltDeg: 0 },
-      }
-    );
+  // 3. Mỗi thời điểm t mà TF1 cảnh báo (warnings có timeSec)
+  const tf1Warnings = (valRes.warnings || []).filter((w) => typeof w.timeSec === 'number');
+  const warnByTime = new Map();
+  for (const w of tf1Warnings) {
+    const key = w.timeSec.toFixed(2);
+    if (!warnByTime.has(key)) {
+      warnByTime.set(key, { timeSec: w.timeSec, codes: [], msgs: [] });
+    }
+    const bucket = warnByTime.get(key);
+    bucket.codes.push(w.code);
+    bucket.msgs.push(w.message);
+  }
+  const warningSpec = Array.from(warnByTime.values())
+    .sort((a, b) => a.timeSec - b.timeSec)
+    .map((b, idx) => ({
+      label: `[WARN] W${idx + 1}`,
+      subLabel: b.codes.join(', '),
+      frame: clampF(b.timeSec * fps),
+      isWarning: true,
+    }));
 
-    const stageMarkup = renderToStaticMarkup(
-      React.createElement(DeclarativeStagePlayer, {
+  const buildCards = (specs) =>
+    specs.map((sp) => ({
+      badge: `${sp.label} · t=${(sp.frame / fps).toFixed(2)}s`,
+      subBadge: sp.subLabel || `frame ${sp.frame}/${timeline.durationInFrames}`,
+      isWarning: Boolean(sp.isWarning),
+      svg: renderStudioMatchedFrameSvg({
         script,
-        state: mState,
-        palette,
-        strokeWidth: LAYOUT_TOKENS.strokeWidth,
-        frame: f,
-        fps,
-        durationInFrames: timeline.durationInFrames,
+        resolvedCupProps,
+        cupNumberLabel,
         timeline,
-        visualDNA: vdna,
-        stageBox: {
-          width: LAYOUT_TOKENS.swissGrid.stageWidth,
-          height: LAYOUT_TOKENS.swissGrid.stageHeight,
-        },
-        showDebugBBoxes: showBBox,
-      })
-    );
+        palette,
+        vdna,
+        geo,
+        frame: sp.frame,
+        showBBox,
+      }),
+    }));
 
-    const visibleLines = lines
-      .map((ln, lIdx) => {
-        const st = segs[lIdx]?.startFrame ?? lIdx * 90;
-        if (f < st) return '';
-        const isPivotActive = f >= timeline.pivotFrame;
-        return renderSvgQuoteLineWithPivot(
-          ln,
-          segs[lIdx],
-          930 + lIdx * 72,
-          isPivotActive,
-          palette
-        );
-      })
-      .filter(Boolean)
-      .join('\n');
+  const commitHash = getGitShortCommit();
+  const durSec = (timeline.durationInFrames / fps).toFixed(1);
+  const pivotSec = (timeline.pivotFrame / fps).toFixed(2);
+  const horizonStr = vdna.horizonOffsetPx >= 0 ? `+${vdna.horizonOffsetPx}px` : `${vdna.horizonOffsetPx}px`;
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
-      <rect width="1080" height="1920" fill="${palette.background}"/>
-      <text x="132" y="220" font-family="Georgia" font-size="26" font-weight="bold" fill="${palette.inkSecondary}">${escXml(frameLabels[fIdx])} (t=${(f / fps).toFixed(2)}s)</text>
-      <text x="132" y="298" font-family="Georgia" font-size="24" letter-spacing="4" fill="${palette.inkSecondary}">${escXml(titleText)}</text>
-      <line x1="132" y1="316" x2="948" y2="316" stroke="${palette.inkSecondary}" stroke-width="1.2" opacity="0.35"/>
-      <g transform="translate(${LAYOUT_TOKENS.swissGrid.stageLeft}, ${LAYOUT_TOKENS.swissGrid.stageTop})">
-        ${stageMarkup}
-      </g>
-      <rect x="132" y="888" width="4.5" height="${Math.max(40, lines.length * 72)}" fill="${palette.accentText}"/>
-      ${visibleLines}
-    </svg>`;
-  });
+  const bannerTitle = `DIRECTOR PREVIEW — ${resolvedCupProps.title} (${script.sceneId || baseName}) · ${modeLabel}`;
+  const bannerMeta = `commit: ${commitHash}  |  thời lượng: ${durSec}s (${timeline.durationInFrames}f · ${effectiveDurationMode})  |  seed: ${vdna.seed} (id: ${resolvedCupProps.id})  |  layout: ${vdna.layout} · horizon: ${horizonStr} · pivot: t=${pivotSec}s`;
+  const bannerStatus =
+    tf1Warnings.length > 0
+      ? `[WARN] TF1 cảnh báo vàng (${tf1Warnings.length}): ${tf1Warnings.map((w) => `[${w.code}@${w.timeSec.toFixed(2)}s]`).join(' · ')}`
+      : `[OK] 0 lỗi chặn cứng · 0 cảnh báo vàng`;
+
+  const sections = [
+    {
+      title: 'I. 6 KHUNG TỔNG QUAN',
+      cols: 6,
+      cards: buildCards(overviewSpec),
+    },
+    {
+      title: `II. 8 KHUNG DÀY QUANH CÚ LẬT (pivot t=${pivotSec}s: −0.5s → +3.0s)`,
+      cols: 8,
+      cards: buildCards(pivotDenseSpec),
+    },
+  ];
+  if (warningSpec.length > 0) {
+    sections.push({
+      title: `III. KHUNG CẢNH BÁO TF1 (${warningSpec.length} thời điểm)`,
+      cols: 6,
+      isWarningSection: true,
+      cards: buildCards(warningSpec),
+    });
+  }
 
   const outFile =
     outOverride ||
     path.join(OUT_DIR, `${baseName}${showBBox ? '-bbox' : ''}-preview.png`);
-  rasterizeWithCoreSVG({ mode: 'strip6', svgs, out: outFile });
-  const durSec = (timeline.durationInFrames / fps).toFixed(1);
+
+  rasterizeWithResvg({
+    mode: 'sheet',
+    bannerTitle,
+    bannerMeta,
+    bannerStatus,
+    sections,
+    out: outFile,
+  });
+
+  const totalFrames = overviewSpec.length + pivotDenseSpec.length + warningSpec.length;
   console.log(
-    `✅ Đã xuất ảnh 6 khung: ${path.relative(ROOT, outFile)} (thời lượng: ${durSec}s · ${timeline.durationInFrames}f · ${effectiveDurationMode})`
+    `✅ Đã xuất Director Preview (${totalFrames} khung: 6 tổng quan + 8 cú lật + ${warningSpec.length} cảnh báo): ${path.relative(ROOT, outFile)}`
+  );
+  console.log(
+    `   commit: ${commitHash} | thời lượng: ${durSec}s · ${timeline.durationInFrames}f · ${effectiveDurationMode} | seed: ${vdna.seed} (id: ${resolvedCupProps.id})`
   );
 }
 
@@ -1445,20 +1838,26 @@ if (zoomStageArg) {
       : path.join(OUT_DIR, 'prop-approval-sheet.png')
   );
 } else {
-  const target = args.find((a) => !a.startsWith('--'));
+  const positional = args.filter((a) => !a.startsWith('--'));
+  const target = positional[0];
+  const sceneIdArg = positional[1];
   if (!target) {
     console.error(
-      'Cách dùng:\n  node --import ./node_modules/tsx/dist/loader.mjs scripts/stage-preview.mjs --prop-sheet\n  node --import ./node_modules/tsx/dist/loader.mjs scripts/stage-preview.mjs <file.json> [--bbox] [--out=path.png]'
+      'Cách dùng:\n  npm run preview -- <file.json> [sceneId] [--out=path.png] [--frame=N] [--bbox]\n  npm run preview -- --prop-sheet'
     );
     process.exit(1);
   }
   const showBBox = args.includes('--bbox');
   const allowInvalid = args.includes('--allow-invalid');
-  const outArg = args.find((a) => a.startsWith('--out='))?.split('=')[1];
+  const outArg = args.find((a) => a.startsWith('--out='))?.slice('--out='.length);
+  const frameArgRaw = args.find((a) => a.startsWith('--frame='))?.slice('--frame='.length);
+  const singleFrameArg = frameArgRaw !== undefined ? Number(frameArgRaw) : undefined;
   renderSixFramePreview(
     target,
     showBBox,
     outArg ? path.resolve(ROOT, outArg) : undefined,
-    allowInvalid
+    allowInvalid,
+    sceneIdArg,
+    singleFrameArg
   );
 }
