@@ -945,6 +945,10 @@ export const DeclarativeStagePlayer: React.FC<{
     };
   })();
 
+  const hasBackdropSet = Boolean(
+    script.tags?.some((t) => t.startsWith('boi_canh_bo:'))
+  );
+
   return (
     <svg
       width={svgWidth}
@@ -1046,7 +1050,7 @@ export const DeclarativeStagePlayer: React.FC<{
         {renderDebugBBoxOverlay()}
       </g>
 
-      {frameMode === 'WINDOW_ARCH' && (
+      {frameMode === 'WINDOW_ARCH' && !hasBackdropSet && (
         <path
           d="M 122 362 L 122 246 A 148 114 0 0 1 418 246 L 418 362"
           fill="none"

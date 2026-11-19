@@ -25,6 +25,7 @@ import type {
   ActorSpec,
   AtmosphereItem,
   AtmosphereType,
+  InlineShape,
   PropSpec,
   StageLayer,
   StageScript,
@@ -55,6 +56,61 @@ export const SEMANTIC_TERRAINS = {
   bac_thang: 'stairs',
 } as const;
 export type SemanticTerrainName = keyof typeof SEMANTIC_TERRAINS;
+
+export const SEMANTIC_BACKDROPS = {
+  pho_ngo: {
+    ten: 'Phố, ngõ',
+    mo_ta: '2–3 bóng nhà phố xa (city_skyline, warm_house) + 1 cột đèn đường nét mảnh, đường đất',
+  },
+  khong_gian_ky_hieu: {
+    ten: 'Không gian ký hiệu',
+    mo_ta: 'Không nền, chỉ đường đất mảnh trên nền giấy trống',
+  },
+  thien_nhien: {
+    ten: 'Thiên nhiên mở',
+    mo_ta: 'Đường đồi xa 1 nét mảnh + cây trơ cành (bare_tree)',
+  },
+  van_phong: {
+    ten: 'Văn phòng',
+    mo_ta: 'Vạch tường góc phòng + 1 cửa sổ (porch_window) treo cao',
+  },
+  phong_trong_nha: {
+    ten: 'Phòng trong nhà',
+    mo_ta: 'Vạch tường + cửa sổ nhỏ (porch_window) và khung tranh treo tường',
+  },
+  hien_tra: {
+    ten: 'Hiên trà',
+    mo_ta: 'Mép mái hiên phía trên + 1 cột hiên + nét sàn gỗ mảnh',
+  },
+  quan: {
+    ten: 'Quán',
+    mo_ta: 'Vạch tường quán + cửa sổ (porch_window) + 1 đèn thả mảnh treo cao',
+  },
+  nha_que: {
+    ten: 'Nhà quê, mâm cơm',
+    mo_ta: 'Bóng ngôi nhà mái hiên (warm_house) + hàng rào gỗ thấp ven sân',
+  },
+  ga_tau: {
+    ten: 'Ga tàu',
+    mo_ta: 'Bóng toa tàu chạy ngang có hàng ô cửa + cột đồng hồ sân ga',
+  },
+} as const;
+export type SemanticBackdropName = keyof typeof SEMANTIC_BACKDROPS;
+
+export const SEMANTIC_BACKDROP_ALIASES: Record<string, SemanticBackdropName> = {
+  thien_nhien_mo: 'thien_nhien',
+  quan_nho: 'quan',
+};
+
+export function resolveSemanticBackdropName(
+  raw: string | undefined
+): SemanticBackdropName | undefined {
+  if (!raw) return undefined;
+  const key = raw.trim();
+  if (key in SEMANTIC_BACKDROPS) return key as SemanticBackdropName;
+  if (key in SEMANTIC_BACKDROP_ALIASES) return SEMANTIC_BACKDROP_ALIASES[key];
+  return undefined;
+}
 
 export const SEMANTIC_SOCKETS = {
   tay: 'hand',
@@ -202,6 +258,7 @@ export interface SemanticStageScript {
   ten: string;
   mo_ta?: string;
   boi_canh?: {
+    bo?: SemanticBackdropName;
     dia_hinh?: SemanticTerrainName;
     khi_quyen?: SemanticAtmosphereSpec[];
     doan_duong?: SemanticTerrainSegmentSpec[];
@@ -1639,13 +1696,29 @@ export function compileSemanticStageScript(
     compileWarnings
   );
 
+  // T8-BOI-CANH: Tự sinh lớp nền tối giản theo `boi_canh.bo` (lớp `nen`/`far`, nét mảnh, độ đậm ~38-42%, không đè nhân vật/vật đỏ)
+  const resolvedBo = resolveSemanticBackdropName(sem.boi_canh?.bo);
+  const backdropProps: PropSpec[] = resolvedBo
+    ? buildSemanticBackdropProps(resolvedBo, {
+        compiledActors,
+        compiledProps,
+        existingPropTypes: new Set(sem.dao_cu.map((p) => p.type)),
+        redPropId: sem.dao_cu.find((p) => p.vat_do)?.id,
+        autoScale,
+      })
+    : [];
+
+  const finalTags = resolvedBo
+    ? ['semantic_v1', `boi_canh_bo:${resolvedBo}`]
+    : ['semantic_v1'];
+
   return {
     sceneId: sem.sceneId,
     name: sem.ten,
     description: sem.mo_ta,
     legacy: false,
     strictValidation: true,
-    tags: ['semantic_v1'],
+    tags: finalTags,
     camera: {
       zoom: 1,
       panX: 0,
@@ -1660,9 +1733,600 @@ export function compileSemanticStageScript(
     },
     atmosphere,
     actors: compiledActors,
-    props: compiledProps,
+    props: [...backdropProps, ...compiledProps],
     timeline: dedupedTimeline,
   };
+}
+
+function cloneCatalogShapesAsBackdrop(
+  typeName: string,
+  strokeMult = 0.72
+): InlineShape[] {
+  const def = BUILT_IN_PROP_CATALOG[typeName];
+  if (!def?.shapes) return [];
+  const out: InlineShape[] = [];
+  for (const s of def.shapes) {
+    // Bỏ chấm sáng accent tròn nhỏ trên cột đèn/nhà phố để lớp nền tuyệt đối không đổi đỏ
+    if (s.circle && (s.role === 'accent' || s.fill === 'accent')) continue;
+    const isAccentShape = s.role === 'accent' || s.fill === 'accent';
+    out.push({
+      ...s,
+      role: 'ink',
+      fill:
+        s.fill === 'accent'
+          ? 'bg'
+          : s.fill === 'ink'
+            ? 'none'
+            : s.fill ?? 'none',
+      fillOpacity: isAccentShape
+        ? 0.08
+        : s.fill && s.fill !== 'none'
+          ? Math.min(0.1, s.fillOpacity ?? 0.08)
+          : undefined,
+      strokeScale: Number(((s.strokeScale ?? 0.85) * strokeMult).toFixed(2)),
+    });
+  }
+  return out;
+}
+
+function makeBackdropProp(
+  id: string,
+  x: number,
+  yOffsetFromGround: number,
+  shapes: InlineShape[],
+  opts?: {
+    scale?: number;
+    opacity?: number;
+    anchorKind?: AnchorKind;
+  }
+): PropSpec {
+  return {
+    id: `__bg_${id}`,
+    type: 'custom',
+    x: Number(x.toFixed(1)),
+    y: Number(yOffsetFromGround.toFixed(1)),
+    scale: opts?.scale ?? 1.0,
+    opacity: opts?.opacity ?? 0.42,
+    layer: 'far',
+    semanticLayer: 'nen',
+    anchorKind: opts?.anchorKind ?? 'dat',
+    colorRole: 'ink',
+    focusRole: 'ambient',
+    idle: 'none',
+    shapes,
+  };
+}
+
+function buildSemanticBackdropProps(
+  bo: SemanticBackdropName,
+  ctx: {
+    compiledActors: ActorSpec[];
+    compiledProps: PropSpec[];
+    existingPropTypes: Set<string>;
+    redPropId?: string;
+    autoScale: number;
+  }
+): PropSpec[] {
+  if (bo === 'khong_gian_ky_hieu') return [];
+
+  // Lưu ý: `PropSpec.y` là độ lệch so với mặt đất (`terrain.y = 352`): y = 0 nằm đúng trên đất, y < 0 là cao hơn đất
+  const groundY = 0;
+  const xs: number[] = [];
+  for (const a of ctx.compiledActors) {
+    if (typeof a.x === 'number') xs.push(a.x);
+  }
+  for (const p of ctx.compiledProps) {
+    if (p.semanticLayer === 'nen') continue;
+    if (typeof p.x === 'number') xs.push(p.x);
+  }
+  const clusterMinX = xs.length > 0 ? Math.min(...xs) : 255;
+  const clusterMaxX = xs.length > 0 ? Math.max(...xs) : 285;
+
+  const redProp = ctx.redPropId
+    ? ctx.compiledProps.find((p) => p.id === ctx.redPropId)
+    : undefined;
+  const redX = typeof redProp?.x === 'number' ? redProp.x : undefined;
+
+  // Vùng nền trái/phải chừa khoảng thở rõ quanh cụm nhân vật & đạo cụ giữa
+  const leftX = Math.max(118, Math.min(182, clusterMinX - 66));
+  const rightX = Math.min(422, Math.max(358, clusterMaxX + 66));
+  const preferRight = redX !== undefined ? redX < 270 : true;
+  const hasWindow =
+    ctx.existingPropTypes.has('porch_window') ||
+    ctx.existingPropTypes.has('cua_so');
+
+  switch (bo) {
+    case 'pho_ngo': {
+      const items: PropSpec[] = [];
+      // 2-3 bóng nhà phố xa (city_skyline trái + warm_house phải xa) + 1 cột đèn phố
+      const skyShapes = cloneCatalogShapesAsBackdrop('city_skyline', 0.78);
+      if (skyShapes.length > 0 && !ctx.existingPropTypes.has('city_skyline')) {
+        items.push(
+          makeBackdropProp('pho_skyline', Math.max(138, leftX - 10), groundY, skyShapes, {
+            scale: 1.22,
+            opacity: 0.4,
+          })
+        );
+      }
+      const houseShapes = cloneCatalogShapesAsBackdrop('warm_house', 0.76);
+      if (houseShapes.length > 0 && !ctx.existingPropTypes.has('warm_house')) {
+        items.push(
+          makeBackdropProp('pho_house', Math.min(416, rightX + 20), groundY, houseShapes, {
+            scale: 1.05,
+            opacity: 0.38,
+          })
+        );
+      }
+      const lampShapes = cloneCatalogShapesAsBackdrop('street_lamp', 0.8);
+      if (lampShapes.length > 0 && !ctx.existingPropTypes.has('street_lamp')) {
+        const lampX = preferRight
+          ? Math.min(372, rightX - 24)
+          : Math.max(166, leftX + 26);
+        items.push(
+          makeBackdropProp('pho_lamp', lampX, groundY, lampShapes, {
+            scale: 1.15,
+            opacity: 0.44,
+          })
+        );
+      }
+      return items;
+    }
+
+    case 'hien_tra': {
+      const items: PropSpec[] = [];
+      const pillarX = Math.max(114, leftX - 24);
+      // Mép mái hiên phía trên (từ trái vươn ngang qua trên cao)
+      items.push(
+        makeBackdropProp(
+          'hien_mai',
+          pillarX + 86,
+          -136,
+          [
+            {
+              d: 'M -104 -18 L 104 -10 L 118 0 L -104 -6 Z',
+              fill: 'bg',
+              fillOpacity: 0.08,
+              role: 'ink',
+              strokeScale: 0.76,
+            },
+            {
+              d: 'M -70 -16 L -64 -5 M -22 -14 L -16 -4 M 26 -12 L 32 -3 M 74 -10 L 80 -2',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.5,
+              opacity: 0.65,
+            },
+          ],
+          { scale: 1.0, opacity: 0.42, anchorKind: 'tuong' }
+        )
+      );
+      // 1 cột hiên mảnh bên trái nối từ sàn gỗ lên mép mái
+      items.push(
+        makeBackdropProp(
+          'hien_cot',
+          pillarX,
+          groundY,
+          [
+            {
+              d: 'M -2.6 0 L -2.6 -142 L 2.6 -142 L 2.6 0',
+              fill: 'bg',
+              fillOpacity: 0.08,
+              role: 'ink',
+              strokeScale: 0.74,
+            },
+            {
+              d: 'M 2.6 -124 Q 12 -128 19 -138',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.58,
+            },
+          ],
+          { scale: 1.0, opacity: 0.44 }
+        )
+      );
+      // Nét sàn gỗ mảnh dọc hai bên chân hiên (dưới đường đất 4-8 đơn vị)
+      items.push(
+        makeBackdropProp(
+          'hien_san_go',
+          270,
+          5,
+          [
+            {
+              d: 'M -178 0 L -78 0 M -48 4 L 54 4 M 84 0 L 178 0',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.58,
+              opacity: 0.75,
+            },
+          ],
+          { scale: 1.0, opacity: 0.38, anchorKind: 'tuong' }
+        )
+      );
+      return items;
+    }
+
+    case 'van_phong': {
+      const items: PropSpec[] = [];
+      // Vạch tường góc phòng mảnh (trái & chân tường phải)
+      items.push(
+        makeBackdropProp(
+          'vp_tuong_trai',
+          Math.max(108, leftX - 24),
+          groundY,
+          [
+            {
+              d: 'M 0 0 L 0 -154 M 0 -6.5 L 34 -6.5',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.66,
+            },
+          ],
+          { scale: 1.0, opacity: 0.38 }
+        )
+      );
+      items.push(
+        makeBackdropProp(
+          'vp_tuong_phai',
+          Math.min(432, rightX + 24),
+          groundY,
+          [
+            {
+              d: 'M 0 0 L 0 -154 M -30 -6.5 L 0 -6.5',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.62,
+              opacity: 0.78,
+            },
+          ],
+          { scale: 1.0, opacity: 0.38 }
+        )
+      );
+      // 1 cửa sổ công sở (porch_window) treo cao, lệch về bên thoáng xa vật đỏ
+      if (!hasWindow) {
+        const winShapes = cloneCatalogShapesAsBackdrop('porch_window', 0.92);
+        const winX = preferRight ? rightX - 6 : leftX + 10;
+        items.push(
+          makeBackdropProp('vp_cua_so', winX, -66, winShapes, {
+            scale: 1.28,
+            opacity: 0.44,
+            anchorKind: 'tuong',
+          })
+        );
+      }
+      return items;
+    }
+
+    case 'phong_trong_nha': {
+      const items: PropSpec[] = [];
+      // Vạch tường góc phòng
+      items.push(
+        makeBackdropProp(
+          'phong_tuong',
+          Math.max(108, leftX - 24),
+          groundY,
+          [
+            {
+              d: 'M 0 0 L 0 -150 M 0 -6 L 36 -6',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.64,
+            },
+          ],
+          { scale: 1.0, opacity: 0.38 }
+        )
+      );
+      // Cửa sổ nhỏ một bên
+      const winX = preferRight ? leftX + 18 : rightX - 18;
+      const frameX = preferRight ? rightX - 8 : leftX + 12;
+      if (!hasWindow) {
+        const winShapes = cloneCatalogShapesAsBackdrop('porch_window', 0.9);
+        items.push(
+          makeBackdropProp('phong_cua_so', winX, -64, winShapes, {
+            scale: 1.04,
+            opacity: 0.42,
+            anchorKind: 'tuong',
+          })
+        );
+      }
+      // Khung tranh treo tường tối giản ở phía đối diện
+      items.push(
+        makeBackdropProp(
+          'phong_tranh',
+          frameX,
+          -74,
+          [
+            {
+              d: 'M -10 -28 L 0 -38 L 10 -28',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.52,
+              opacity: 0.72,
+            },
+            {
+              rect: [-18, -28, 36, 28, 0.8],
+              fill: 'bg',
+              fillOpacity: 0.08,
+              role: 'ink',
+              strokeScale: 0.74,
+            },
+            {
+              rect: [-13.5, -23.5, 27, 19, 0.4],
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.48,
+              opacity: 0.68,
+            },
+            {
+              d: 'M -10 -10 Q -3 -17 4 -11 Q 8 -14 11 -9',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.48,
+              opacity: 0.65,
+            },
+          ],
+          { scale: 1.0, opacity: 0.42, anchorKind: 'tuong' }
+        )
+      );
+      return items;
+    }
+
+    case 'thien_nhien': {
+      const items: PropSpec[] = [];
+      // Đường đồi xa 1 nét mảnh (tách 2 vế trái/phải để tạo triền đồi xa thanh thoát, không che vật đỏ giữa)
+      items.push(
+        makeBackdropProp(
+          'tn_doi_trai',
+          144,
+          groundY,
+          [
+            {
+              d: 'M -66 -1 Q -20 -46 34 -20 Q 58 -9 82 -3',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.72,
+            },
+          ],
+          { scale: 1.0, opacity: 0.42 }
+        )
+      );
+      items.push(
+        makeBackdropProp(
+          'tn_doi_phai',
+          392,
+          groundY,
+          [
+            {
+              d: 'M -80 -4 Q -30 -28 18 -50 Q 50 -58 72 -1',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.72,
+            },
+          ],
+          { scale: 1.0, opacity: 0.42 }
+        )
+      );
+      // 1 cây trơ cành (bare_tree) đặt bên thoáng
+      const treeShapes = cloneCatalogShapesAsBackdrop('bare_tree', 0.76);
+      if (treeShapes.length > 0 && !ctx.existingPropTypes.has('bare_tree')) {
+        const treeX = preferRight ? rightX + 6 : leftX - 6;
+        items.push(
+          makeBackdropProp('tn_cay', treeX, groundY, treeShapes, {
+            scale: 1.15,
+            opacity: 0.44,
+          })
+        );
+      }
+      return items;
+    }
+
+    case 'quan': {
+      const items: PropSpec[] = [];
+      // Vạch tường quán
+      items.push(
+        makeBackdropProp(
+          'quan_tuong',
+          Math.min(432, rightX + 24),
+          groundY,
+          [
+            {
+              d: 'M 0 0 L 0 -152 M -30 -6 L 0 -6',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.64,
+            },
+          ],
+          { scale: 1.0, opacity: 0.38 }
+        )
+      );
+      // Cửa sổ nhìn ra phố
+      const winX = preferRight ? leftX + 12 : rightX - 12;
+      const lampX = preferRight ? rightX - 10 : leftX + 14;
+      if (!hasWindow) {
+        const winShapes = cloneCatalogShapesAsBackdrop('porch_window', 0.9);
+        items.push(
+          makeBackdropProp('quan_cua_so', winX, -62, winShapes, {
+            scale: 1.14,
+            opacity: 0.42,
+            anchorKind: 'tuong',
+          })
+        );
+      }
+      // 1 đèn thả quán nhỏ mảnh treo cao từ trần
+      items.push(
+        makeBackdropProp(
+          'quan_den_tha',
+          lampX,
+          -98,
+          [
+            {
+              d: 'M 0 -64 L 0 -18',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.58,
+            },
+            {
+              d: 'M -12 -6 C -10 -15 -5 -18 0 -18 C 5 -18 10 -15 12 -6 Z',
+              fill: 'bg',
+              fillOpacity: 0.1,
+              role: 'ink',
+              strokeScale: 0.76,
+            },
+            {
+              d: 'M -4.5 -6 Q 0 -2 4.5 -6',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.56,
+            },
+          ],
+          { scale: 1.0, opacity: 0.44, anchorKind: 'tuong' }
+        )
+      );
+      return items;
+    }
+
+    case 'nha_que': {
+      const items: PropSpec[] = [];
+      // Bóng ngôi nhà mái hiên ấm (warm_house) đặt xa một bên
+      const houseShapes = cloneCatalogShapesAsBackdrop('warm_house', 0.78);
+      const houseX = preferRight ? leftX - 4 : rightX + 4;
+      const fenceX = preferRight ? rightX + 6 : leftX - 6;
+      if (houseShapes.length > 0 && !ctx.existingPropTypes.has('warm_house')) {
+        items.push(
+          makeBackdropProp('que_nha', houseX, groundY, houseShapes, {
+            scale: 1.32,
+            opacity: 0.42,
+          })
+        );
+      }
+      // Hàng rào gỗ/tre thấp ven sân phía bên kia
+      items.push(
+        makeBackdropProp(
+          'que_hang_rao',
+          fenceX,
+          groundY,
+          [
+            {
+              d: 'M -42 0 L -42 -26 M -14 0 L -14 -27 M 14 0 L 14 -26 M 42 0 L 42 -25',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.74,
+            },
+            {
+              d: 'M -48 -19 L 48 -19 M -48 -9 L 48 -9',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.64,
+            },
+          ],
+          { scale: 1.0, opacity: 0.4 }
+        )
+      );
+      return items;
+    }
+
+    case 'ga_tau': {
+      const items: PropSpec[] = [];
+      // Bóng thân toa tàu chạy ngang xa có hàng ô cửa sổ
+      const trainX = preferRight ? rightX + 2 : leftX - 2;
+      const clockX = preferRight ? leftX - 18 : rightX + 18;
+      items.push(
+        makeBackdropProp(
+          'ga_toa_tau',
+          trainX,
+          groundY,
+          [
+            {
+              d: 'M -56 -4 L -56 -42 Q -56 -48 -48 -48 L 52 -48 Q 58 -48 58 -42 L 58 -4 Z',
+              fill: 'bg',
+              fillOpacity: 0.08,
+              role: 'ink',
+              strokeScale: 0.78,
+            },
+            {
+              d: 'M -52 -48 L -48 -52 L 50 -52 L 54 -48 M -56 -16 L 58 -16',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.58,
+            },
+            {
+              rect: [-44, -39, 18, 16, 2],
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.65,
+            },
+            {
+              rect: [-18, -39, 18, 16, 2],
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.65,
+            },
+            {
+              rect: [8, -39, 18, 16, 2],
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.65,
+            },
+            {
+              rect: [34, -39, 16, 16, 2],
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.65,
+            },
+            {
+              circle: [-34, -2, 3.5],
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.65,
+            },
+            {
+              circle: [36, -2, 3.5],
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.65,
+            },
+          ],
+          { scale: 1.18, opacity: 0.42 }
+        )
+      );
+      // Cột mái che & đồng hồ sân ga treo cao ở bên đối diện
+      items.push(
+        makeBackdropProp(
+          'ga_dong_ho',
+          clockX,
+          groundY,
+          [
+            {
+              d: 'M 0 0 L 0 -116 L 30 -116',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.76,
+            },
+            {
+              d: 'M 0 -100 Q 8 -105 14 -116 M 21 -116 L 21 -104',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.54,
+            },
+            {
+              circle: [21, -93, 11],
+              fill: 'bg',
+              fillOpacity: 0.09,
+              role: 'ink',
+              strokeScale: 0.74,
+            },
+            {
+              d: 'M 21 -93 L 21 -100 M 21 -93 L 26.5 -90.5',
+              fill: 'none',
+              role: 'ink',
+              strokeScale: 0.64,
+            },
+          ],
+          { scale: 1.0, opacity: 0.44 }
+        )
+      );
+      return items;
+    }
+  }
 }
 
 const MERGEABLE_CUE_PROPS = [

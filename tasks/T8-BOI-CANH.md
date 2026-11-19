@@ -18,5 +18,8 @@ Vấn đề (Chén 19 "Ngã rẽ"): skill viết "bộ pho_ngo, ngã rẽ" nhưn
 2. Ngã rẽ (`dia_hinh: nga_re`) phải đọc ra được là ngã rẽ: nhánh rẽ nét liền mảnh (không nét đứt mờ), góc tách rõ hơn, dài đủ để thấy hai lối.
 3. Skill: thu-vien.md liệt kê 9 giá trị `boi_canh.bo` kèm mô tả nền; SKILL Bước 2 thêm: "Chỉ mô tả những gì Gói Chén thể hiện được; bối cảnh phải ghi bằng `boi_canh.bo`." Chạy `npm run gen:skill`.
 4. Validator: lớp nền không tính va chạm với nhân vật/đạo cụ lớp giữa; nhưng chặn lớp nền che vật đỏ.
+5. Hai việc nhỏ liên quan Visual DNA (bảng "Visual DNA · 4 Trục" trong studio):
+   - Vòm cung sau cảnh đến từ Trục 1 bố cục "Cửa sổ Á Đông" (khung vòm), do Tự động Seed chọn vì Gói Chén không khai báo visualDNA. Tạm thời: Chén dựng từ Gói Chén mặc định bố cục "Cổ điển" (tranh trên, chữ dưới), không vòm, cho tới khi làm task T8-DNA.
+   - Mức phóng 2.5× = cue Trục 4 "Đẩy cận" (ACCENT_PUSH_IN, zoom 1.14) CỘNG đẩy máy cú lật mới (2.2×). Với Gói Chén: đẩy máy cú lật mới là cơ chế duy nhất, bỏ cue Trục 4; kẹp tổng ≤ 2.2.
 KIỂM TRA: typecheck 0 lỗi; check-goi các gói mẫu OK. Xuất 1 tờ 3×3: mỗi ô 1 bộ bối cảnh + Lữ khách đứng giữa, cùng tỷ lệ video (qua luồng thật) → qa-artifacts-ci/BO-BOI-CANH.png; thêm 1 ô ngã rẽ.
 Báo cáo tối đa 4 dòng vào tasks/REPORT-BOI-CANH.md. Không commit git.

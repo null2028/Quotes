@@ -18,6 +18,7 @@ import {
 import {
   SEMANTIC_ACTOR_BEAT_VERBS,
   SEMANTIC_ACTOR_ROLES,
+  SEMANTIC_BACKDROPS,
   SEMANTIC_BEAT_ANCHORS,
   SEMANTIC_LEANS,
   SEMANTIC_POSES,
@@ -262,19 +263,22 @@ function buildThuVienMd() {
     '',
     '> Sinh tự động qua `npm run gen:skill` từ `propCatalog`, `semanticStage`, `HO-DAO-CU.md` và `BO-BOI-CANH.md`. Không tự vẽ đồ vật hay ghi toạ độ.',
     '',
-    '## 1. 9 Bộ Bối Cảnh Chuẩn (`BO-BOI-CANH`)',
-    '> Khí quyển mặc định TẮT — không tự thêm mặt trời/lá/gió trang trí; chỉ khai báo `boi_canh.khi_quyen` khi câu chữ có hình ảnh/ý nghĩa tương ứng và đã giải thích ở Bước 2.',
+    '## 1. 9 Bộ Bối Cảnh Chuẩn (`boi_canh.bo` · `BO-BOI-CANH`)',
+    '> Chọn 1 trong 9 mã `boi_canh.bo` bên dưới để engine tự dựng lớp nền tối giản (`nen`, nét mảnh, độ đậm thấp, tự mở màn trước đạo cụ). Khí quyển mặc định TẮT — không tự thêm mặt trời/lá/gió trang trí; chỉ khai báo `boi_canh.khi_quyen` khi câu chữ có hình ảnh/ý nghĩa tương ứng và đã giải thích ở Bước 2.',
   ];
 
   for (const bc of boiCanhList) {
+    const bgInfo = SEMANTIC_BACKDROPS[bc.code];
+    const bgDesc = bgInfo ? ` · nền tự dựng: ${bgInfo.mo_ta}` : '';
     lines.push(
-      `- \`${bc.code}\` · **${bc.name}** · địa hình: ${bc.terrains.join('/')} · đạo cụ gợi ý: ${bc.props.join(', ')}`
+      `- \`${bc.code}\` · **${bc.name}**${bgDesc} · địa hình: ${bc.terrains.join('/')} · đạo cụ gợi ý: ${bc.props.join(', ')}`
     );
   }
 
   lines.push(
     '',
     '## 2. Địa Hình, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ',
+    `- Bộ bối cảnh (\`boi_canh.bo\`): ${fmtList(Object.keys(SEMANTIC_BACKDROPS))}.`,
     `- Địa hình (\`boi_canh.dia_hinh\`): ${fmtList(Object.keys(SEMANTIC_TERRAINS))}.`,
     '- Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.',
     `- Khí quyển (\`boi_canh.khi_quyen[].loai\`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): ${fmtList(atmosphereTypes)} (kèm \`vi_tri\`, \`huong\`: \`trai\`/\`phai\`, \`mat_do\`).`,
@@ -355,7 +359,7 @@ Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 d�
 3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd câu Chén 18 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Chữ lật trừu tượng (kỳ diệu, hạnh phúc, cô đơn, thời gian…) → CỤ THỂ HOÁ thành một vật đời thường nhìn thấy được đang mang khái niệm đó (vd 'kỳ diệu' → chén trà bỗng bốc khói ấm; 'cô đơn' → chiếc ghế thứ hai trống). Chỉ dùng địa hình khi chính chữ lật nói về đường/lối. Gán nghĩa vòng vo (laptop vì 'tính nhanh') là SAI.
 4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
 5. Đồ trên sân khấu: mỗi đồ (kể cả khí quyển như nắng, lá, mưa, gió) phải được nhân vật dùng, nhìn, hoặc mang nghĩa trong câu; ghế/đồ chỉ để lấp chỗ trống hay trang trí là SAI (tối đa 3 đạo cụ; khí quyển mặc định TẮT).
-6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong \`references/thu-vien.md\`). Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
+6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong \`references/thu-vien.md\`). Chỉ mô tả những gì Gói Chén thể hiện được; bối cảnh phải ghi bằng \`boi_canh.bo\`. Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
 7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại. Vật đỏ phải còn đỏ đến khung cuối; không cho vật đỏ mờ/biến mất.
 8. Nhịp Trà Nguội: Lữ khách làm mọi thứ chậm rãi như người đang uống trà; ít cử chỉ, mỗi dòng tối đa 1 cử chỉ nhỏ, phần lớn thời gian là lặng.
 TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa. Thử 3 giây: tắt tiếng, không đọc dòng cuối — chỉ nhìn hình quanh cú lật, người xem có thấy 'một chuyện vừa xảy ra' không? Không thấy → phương án yếu, đổi.

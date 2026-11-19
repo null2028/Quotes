@@ -79,8 +79,8 @@ export function normalizeTerrainConfig(
       hillCenterX: 270,
       hillHeight: 24,
       hillWidth: 180,
-      forkAtX: 260,
-      forkAngleDeg: -14,
+      forkAtX: 230,
+      forkAngleDeg: -22,
       shoreX: 255,
       waterSide: 'right',
       waveAmplitude: 4.0,
@@ -128,8 +128,8 @@ export function normalizeTerrainConfig(
     hillCenterX: resolveXCoord(input.hillCenterX, 270),
     hillHeight: input.hillHeight ?? 24,
     hillWidth: Math.max(40, input.hillWidth ?? 180),
-    forkAtX: resolveXCoord(input.forkAtX, 260),
-    forkAngleDeg: input.forkAngleDeg ?? -14,
+    forkAtX: resolveXCoord(input.forkAtX, 230),
+    forkAngleDeg: input.forkAngleDeg ?? -22,
     shoreX: resolveXCoord(input.shoreX, 255),
     waterSide: input.waterSide ?? 'right',
     waveAmplitude: input.waveAmplitude ?? 4.0,
@@ -494,21 +494,75 @@ export const TerrainRenderer: React.FC<{
     let forkNode: React.ReactNode = null;
     if (terrain.type === 'fork') {
       const rad = (terrain.forkAngleDeg * Math.PI) / 180;
-      const branchLen = 155;
+      const branchLen = Math.max(195, terrain.endX - terrain.forkAtX - 8);
       const endForkX = terrain.forkAtX + Math.cos(rad) * branchLen;
       const endForkY = terrain.y + Math.sin(rad) * branchLen;
-      const ctrlX = terrain.forkAtX + branchLen * 0.45;
-      const ctrlY = terrain.y + Math.sin(rad) * branchLen * 0.25;
+      const ctrlX = terrain.forkAtX + Math.cos(rad) * branchLen * 0.42;
+      const ctrlY = terrain.y + Math.sin(rad) * branchLen * 0.16;
       const forkPath = `M ${terrain.forkAtX} ${terrain.y} Q ${ctrlX.toFixed(1)} ${ctrlY.toFixed(1)} ${endForkX.toFixed(1)} ${endForkY.toFixed(1)}`;
-      forkNode = React.createElement('path', {
-        d: forkPath,
-        fill: 'none',
-        stroke: secondaryStroke,
-        strokeWidth: 1.0,
-        strokeLinecap: 'round',
-        strokeDasharray: '5 5',
-        opacity: shadowAlphaMult * 0.48,
-      });
+      const forkShadowPath = `M ${(terrain.forkAtX + 6).toFixed(1)} ${(terrain.y + 2.0).toFixed(1)} Q ${(ctrlX + 4).toFixed(1)} ${(ctrlY + 2.0).toFixed(1)} ${(endForkX - 18).toFixed(1)} ${(endForkY + 2.0).toFixed(1)}`;
+      // T8-BOI-CANH #2: Nhánh ngã rẽ nét liền mảnh, góc tách rõ, vẽ tiếp nối sau khi đường chính chạm điểm tách
+      const forkStartRatio = Math.max(
+        0.15,
+        Math.min(0.65, (terrain.forkAtX - terrain.startX) / Math.max(40, terrain.endX - terrain.startX))
+      );
+      const forkDraw = Math.max(
+        0,
+        Math.min(1, (evoDraw - forkStartRatio) / Math.max(0.2, 1 - forkStartRatio))
+      );
+      const forkEvo = evolvePath(Math.max(0.001, forkDraw), forkPath);
+      const forkGradId = `${gradId}-fork`;
+      forkNode = React.createElement(
+        'g',
+        { opacity: forkDraw > 0.005 ? 1 : 0 },
+        React.createElement(
+          'defs',
+          null,
+          React.createElement(
+            'linearGradient',
+            {
+              id: forkGradId,
+              gradientUnits: 'userSpaceOnUse',
+              x1: terrain.forkAtX,
+              y1: terrain.y,
+              x2: endForkX,
+              y2: endForkY,
+            },
+            React.createElement('stop', {
+              offset: '0%',
+              stopColor: stroke,
+              stopOpacity: solidHorizon ? 0.88 : 0.68,
+            }),
+            React.createElement('stop', {
+              offset: '72%',
+              stopColor: stroke,
+              stopOpacity: solidHorizon ? 0.72 : 0.54,
+            }),
+            React.createElement('stop', {
+              offset: '100%',
+              stopColor: stroke,
+              stopOpacity: 0,
+            })
+          )
+        ),
+        React.createElement('path', {
+          d: forkPath,
+          fill: 'none',
+          stroke: `url(#${forkGradId})`,
+          strokeWidth: fineHorizonStrokeWidth * 0.9,
+          strokeLinecap: 'round',
+          strokeDasharray: forkEvo.strokeDasharray,
+          strokeDashoffset: forkEvo.strokeDashoffset,
+        }),
+        React.createElement('path', {
+          d: forkShadowPath,
+          fill: 'none',
+          stroke,
+          strokeWidth: solidHorizon ? 0.45 : 0.7,
+          strokeLinecap: 'round',
+          opacity: (solidHorizon ? 0.12 : 0.09) * shadowAlphaMult * forkDraw,
+        })
+      );
     }
 
     return React.createElement(

@@ -2,19 +2,20 @@
 
 > Sinh tự động qua `npm run gen:skill` từ `propCatalog`, `semanticStage`, `HO-DAO-CU.md` và `BO-BOI-CANH.md`. Không tự vẽ đồ vật hay ghi toạ độ.
 
-## 1. 9 Bộ Bối Cảnh Chuẩn (`BO-BOI-CANH`)
-> Khí quyển mặc định TẮT — không tự thêm mặt trời/lá/gió trang trí; chỉ khai báo `boi_canh.khi_quyen` khi câu chữ có hình ảnh/ý nghĩa tương ứng và đã giải thích ở Bước 2.
-- `pho_ngo` · **Phố, ngõ** · địa hình: phang/nga_re · đạo cụ gợi ý: nha_pho, den_duong, mai_hien, ghe_dai, bench, chiec_o, umbrella, xe_dap
-- `thien_nhien_mo` · **Thiên nhiên mở** · địa hình: doi/doc/bo_nuoc/bac_thang/phang · đạo cụ gợi ý: cay_xanh, cay_tro_canh, bong_hoa, mam_cay, cum_co, den_long, cloud_wisp
-- `phong_trong_nha` · **Phòng trong nhà** · địa hình: phang · đạo cụ gợi ý: cua_so, porch_window, cua_phong, giuong_ngu, chiec_goi, ban_quan, ghe_tua, std_chair
-- `khong_gian_ky_hieu` · **Không gian ký hiệu** · địa hình: phang · đạo cụ gợi ý: trai_tim, tim_net_dut, duong_ke, soi_chi, bong_bong_nghi, chat_bubble, cuon_sach, trang_giay
-- `hien_tra` · **Hiên trà** · địa hình: phang · đạo cụ gợi ý: ban_tra, low_tea_table, don_go, ghe_dai, low_wood_stool, bench, am_tra, chen_tra
-- `van_phong` · **Văn phòng** · địa hình: phang · đạo cụ gợi ý: ban_lam_viec, std_work_desk, ghe_tua, ghe_van_phong, std_chair, laptop, may_tinh_ban, desk_laptop
-- `quan_nho` · **Quán** · địa hình: phang · đạo cụ gợi ý: ban_quan, ghe_tua, std_chair, ly_ca_phe, chen_tra, ly_ruou, dien_thoai, cuon_sach
-- `nha_que` · **Nhà quê, mâm cơm** · địa hình: phang · đạo cụ gợi ý: mam_com, bat_com, am_tra, don_go, ghe_tua, cua_nha, nha_nho
-- `ga_tau` · **Ga tàu** · địa hình: phang · đạo cụ gợi ý: toa_tau, vali, ghe_dai, bench, dong_ho_treo
+## 1. 9 Bộ Bối Cảnh Chuẩn (`boi_canh.bo` · `BO-BOI-CANH`)
+> Chọn 1 trong 9 mã `boi_canh.bo` bên dưới để engine tự dựng lớp nền tối giản (`nen`, nét mảnh, độ đậm thấp, tự mở màn trước đạo cụ). Khí quyển mặc định TẮT — không tự thêm mặt trời/lá/gió trang trí; chỉ khai báo `boi_canh.khi_quyen` khi câu chữ có hình ảnh/ý nghĩa tương ứng và đã giải thích ở Bước 2.
+- `pho_ngo` · **Phố, ngõ** · nền tự dựng: 2–3 bóng nhà phố xa (city_skyline, warm_house) + 1 cột đèn đường nét mảnh, đường đất · địa hình: phang/nga_re · đạo cụ gợi ý: nha_pho, den_duong, mai_hien, ghe_dai, bench, chiec_o, umbrella, xe_dap
+- `thien_nhien` · **Thiên nhiên mở** · nền tự dựng: Đường đồi xa 1 nét mảnh + cây trơ cành (bare_tree) · địa hình: doi/doc/bo_nuoc/bac_thang/phang · đạo cụ gợi ý: cay_xanh, cay_tro_canh, bong_hoa, mam_cay, cum_co, den_long, cloud_wisp
+- `phong_trong_nha` · **Phòng trong nhà** · nền tự dựng: Vạch tường + cửa sổ nhỏ (porch_window) và khung tranh treo tường · địa hình: phang · đạo cụ gợi ý: cua_so, porch_window, cua_phong, giuong_ngu, chiec_goi, ban_quan, ghe_tua, std_chair
+- `khong_gian_ky_hieu` · **Không gian ký hiệu** · nền tự dựng: Không nền, chỉ đường đất mảnh trên nền giấy trống · địa hình: phang · đạo cụ gợi ý: trai_tim, tim_net_dut, duong_ke, soi_chi, bong_bong_nghi, chat_bubble, cuon_sach, trang_giay
+- `hien_tra` · **Hiên trà** · nền tự dựng: Mép mái hiên phía trên + 1 cột hiên + nét sàn gỗ mảnh · địa hình: phang · đạo cụ gợi ý: ban_tra, low_tea_table, don_go, ghe_dai, low_wood_stool, bench, am_tra, chen_tra
+- `van_phong` · **Văn phòng** · nền tự dựng: Vạch tường góc phòng + 1 cửa sổ (porch_window) treo cao · địa hình: phang · đạo cụ gợi ý: ban_lam_viec, std_work_desk, ghe_tua, ghe_van_phong, std_chair, laptop, may_tinh_ban, desk_laptop
+- `quan` · **Quán** · nền tự dựng: Vạch tường quán + cửa sổ (porch_window) + 1 đèn thả mảnh treo cao · địa hình: phang · đạo cụ gợi ý: ban_quan, ghe_tua, std_chair, ly_ca_phe, chen_tra, ly_ruou, dien_thoai, cuon_sach
+- `nha_que` · **Nhà quê, mâm cơm** · nền tự dựng: Bóng ngôi nhà mái hiên (warm_house) + hàng rào gỗ thấp ven sân · địa hình: phang · đạo cụ gợi ý: mam_com, bat_com, am_tra, don_go, ghe_tua, cua_nha, nha_nho
+- `ga_tau` · **Ga tàu** · nền tự dựng: Bóng toa tàu chạy ngang có hàng ô cửa + cột đồng hồ sân ga · địa hình: phang · đạo cụ gợi ý: toa_tau, vali, ghe_dai, bench, dong_ho_treo
 
 ## 2. Địa Hình, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ
+- Bộ bối cảnh (`boi_canh.bo`): `pho_ngo`, `khong_gian_ky_hieu`, `thien_nhien`, `van_phong`, `phong_trong_nha`, `hien_tra`, `quan`, `nha_que`, `ga_tau`.
 - Địa hình (`boi_canh.dia_hinh`): `phang`, `doc`, `doi`, `nga_re`, `bo_nuoc`, `bac_thang`.
 - Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.
 - Khí quyển (`boi_canh.khi_quyen[].loai`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): `rain`, `wind`, `leaves`, `steam`, `birds`, `sun`, `hollow_sun`, `crescent`, `ring_pulse` (kèm `vi_tri`, `huong`: `trai`/`phai`, `mat_do`).

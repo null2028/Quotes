@@ -1884,19 +1884,22 @@ export function evaluateStageScriptAtFrame(
       return a.p.x - b.p.x;
     });
 
-    // Reorder so that hosted props come after their host
+    // Reorder so that hosted props come after their host (duyệt xuôi để giữ đúng thứ tự lớp nền far -> giữa mid -> trước fore, trái→phải)
     const ordered: typeof propWithIndex = [];
     const placed = new Set<string>();
     const pending = [...propWithIndex];
     let safety = pending.length * 2;
     while (pending.length > 0 && safety-- > 0) {
-      for (let i = pending.length - 1; i >= 0; i--) {
+      let i = 0;
+      while (i < pending.length) {
         const pw = pending[i];
         const host = hostOf.get(pw.p.id);
         if (!host || placed.has(host)) {
           ordered.push(pw);
           placed.add(pw.p.id);
           pending.splice(i, 1);
+        } else {
+          i += 1;
         }
       }
     }
@@ -2056,9 +2059,16 @@ export function evaluateStageScriptAtFrame(
       );
 
       if (pushProgress > 0.001) {
-        const pushZoom = 1 + (neededZoom - 1) * pushProgress;
-        const finalZoom = Number((camera.zoom * pushZoom).toFixed(4));
-        const maxPushZoom = camera.zoom * neededZoom;
+        // T8-BOI-CANH #5b: Kẹp TỔNG mức phóng camera ở cú lật ≤ PIVOT_PUSH_MAX_ZOOM (2.2), không cộng dồn vượt trần
+        const baseCamZoom = Math.min(TEMPO.PIVOT_PUSH_MAX_ZOOM, camera.zoom);
+        const targetZoom = Math.min(
+          TEMPO.PIVOT_PUSH_MAX_ZOOM,
+          Math.max(baseCamZoom, neededZoom)
+        );
+        const finalZoom = Number(
+          (baseCamZoom + (targetZoom - baseCamZoom) * pushProgress).toFixed(4)
+        );
+        const maxPushZoom = Math.max(1, targetZoom);
 
         // Target pan: ưu tiên vật đỏ — vật đỏ ≈ giữa hình, nhân vật được cắt mép — T7d #3
         // T7e #2: Giữ đường đất (terrain.y) nằm gọn trong viewBox (y ≤ 362 < 376) để chân bàn/đất không bị cắt mất khi đẩy máy

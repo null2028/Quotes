@@ -9,15 +9,15 @@
 
 ## Tổng quan tỷ trọng 9 Bộ Bối Cảnh
 
-| Nhóm | STT | Tên bộ bối cảnh | Mã gợi ý | Số quote | Tỷ lệ (%) | Motif chủ đạo |
+| Nhóm | STT | Tên bộ bối cảnh | Mã `boi_canh.bo` | Số quote | Tỷ lệ (%) | Motif chủ đạo |
 | :---: | :---: | :--- | :--- | :---: | :---: | :--- |
 | **6 Bộ Chính** | 1 | **Phố, ngõ** | `pho_ngo` | **49** | **18.7%** | M2 (Khoảng cách), M4 (Thời gian), M5 (Hành trình) |
-| **6 Bộ Chính** | 2 | **Thiên nhiên mở** | `thien_nhien_mo` | **38** | **14.5%** | M5 (Hành trình), M7 (Nội tâm), M6 (Đổi quy mô) |
+| **6 Bộ Chính** | 2 | **Thiên nhiên mở** | `thien_nhien` | **38** | **14.5%** | M5 (Hành trình), M7 (Nội tâm), M6 (Đổi quy mô) |
 | **6 Bộ Chính** | 3 | **Phòng trong nhà** | `phong_trong_nha` | **38** | **14.5%** | M7 (Nội tâm), M1 (Vật lật nghĩa), M3 (Vật ở lại) |
 | **6 Bộ Chính** | 4 | **Không gian ký hiệu** | `khong_gian_ky_hieu` | **38** | **14.5%** | M1 (Vật lật nghĩa), M7 (Nội tâm), M2 (Khoảng cách) |
 | **6 Bộ Chính** | 5 | **Hiên trà** | `hien_tra` | **36** | **13.7%** | M4 (Thời gian), M1 (Vật lật nghĩa), M3 (Vật ở lại) |
 | **6 Bộ Chính** | 6 | **Văn phòng** | `van_phong` | **36** | **13.7%** | M1 (Vật lật nghĩa), M8 (Đối chiếu) |
-| **3 Bộ Phụ** | 7 | **Quán** | `quan_nho` | **18** | **6.9%** | M1 (Vật lật nghĩa), M2 (Khoảng cách), M8 (Đối chiếu) |
+| **3 Bộ Phụ** | 7 | **Quán** | `quan` | **18** | **6.9%** | M1 (Vật lật nghĩa), M2 (Khoảng cách), M8 (Đối chiếu) |
 | **3 Bộ Phụ** | 8 | **Nhà quê, mâm cơm** | `nha_que` | **7** | **2.7%** | M4 (Thời gian), M3 (Vật ở lại) |
 | **3 Bộ Phụ** | 9 | **Ga tàu** | `ga_tau` | **2** | **0.8%** | M5 (Hành trình), M8 (Đối chiếu) |
 
@@ -40,7 +40,7 @@
   - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật khi câu chữ thật sự có mưa/lá/nắng mang nghĩa: `rain` (mưa phố), `leaves` (lá bay qua ngõ), `sun` (nắng chiều muộn).
   - Bảng màu: `MINIMAL_LIGHT` (nắng chiều ấm) hoặc `MINIMAL_DARK` / `WARM_NOIR` (phố lên đèn).
 
-### 2. Thiên nhiên mở (`thien_nhien_mo`) — **38 quote (`14.5%`)**
+### 2. Thiên nhiên mở (`thien_nhien`) — **38 quote (`14.5%`)**
 - **Nền (địa hình / tường / vạch)**:
   - Địa hình linh hoạt nhất trong 9 bộ: `"doi"` (sườn đồi thoáng), `"doc"` (dốc bước lên), `"bo_nuoc"` (bờ sông/biển), `"bac_thang"` (bậc đá hành trình), hoặc `"phang"` (đồng cỏ rộng).
   - Không có mảng tường; ưu tiên khoảng trắng giấy lớn phía trên để tôn sự tĩnh lặng (M5, M6, M7).
@@ -117,9 +117,10 @@
 
 ## Phần B — 3 Bộ Bối Cảnh Phụ (`10.3%` kho quote)
 
-### 7. Quán (`quan_nho`) — **18 quote (`6.9%`)**
+### 7. Quán (`quan`) — **18 quote (`6.9%`)**
 - **Nền (địa hình / tường / vạch)**:
-  - Địa hình: `dia_hinh: "phang"`. Lớp `nen` điểm `cua_so` nhìn ra phố hoặc `den_ban` / đèn thả nhỏ tạo cảm giác bàn quán cà phê / quán trà / quán rượu đêm ấm cúng.
+  - Địa hình: `dia_hinh: "phang"`.
+  - Lớp nền tự động (`boi_canh.bo: "quan"`): vạch tường quán + cửa sổ (`porch_window`) nhìn ra phố + 1 đèn thả mảnh treo cao (nét mảnh, độ đậm ~40%, không lấn nhân vật/vật đỏ).
 - **Đạo cụ mặc định (3–5 preset)**:
   1. `ban_quan` *(lớp `giua`, neo `dat` — bàn cao vừa cho 1–2 ghế đối diện)*
   2. `ghe_tua` *(alias `std_chair`, 1 hoặc 2 ghế đối diện quanh bàn)*
@@ -132,7 +133,8 @@
 
 ### 8. Nhà quê, mâm cơm (`nha_que`) — **7 quote (`2.7%`)**
 - **Nền (địa hình / tường / vạch)**:
-  - Địa hình: `dia_hinh: "phang"` (nền hiên gạch / sân nhà quê). Lớp `nen` đặt `cua_nha` hoặc `nha_nho` gợi mái ấm gia đình & ký ức tuổi thơ (`Q027`, `Q048`, `Q057`, `Q066`, `Q068`, `Q115`, `W056`).
+  - Địa hình: `dia_hinh: "phang"` (nền hiên gạch / sân nhà quê).
+  - Lớp nền tự động (`boi_canh.bo: "nha_que"`): bóng ngôi nhà mái hiên (`warm_house` nét mảnh, không đỏ) đặt xa một bên + hàng rào gỗ thấp ven sân (`Q027`, `Q048`, `Q057`, `Q066`, `Q068`, `Q115`, `W056`).
 - **Đạo cụ mặc định (3–5 preset)**:
   1. `mam_com` *(lớp `giua`, neo `dat` hoặc trên phản/bàn thấp — tâm điểm sum vầy)*
   2. `bat_com` / `am_tra` *(neo `tren` trên `mam_com`)*
@@ -144,7 +146,8 @@
 
 ### 9. Ga tàu (`ga_tau`) — **2 quote (`0.8%` · Q012, Q137)**
 - **Nền (địa hình / tường / vạch)**:
-  - Địa hình: `dia_hinh: "phang"` đóng vai mép ke sân ga chạy ngang. Lớp `nen` đặt `toa_tau` chạy dài tạo chiều ngang chia ly / khởi hành.
+  - Địa hình: `dia_hinh: "phang"` đóng vai mép ke sân ga chạy ngang.
+  - Lớp nền tự động (`boi_canh.bo: "ga_tau"`): bóng thân toa tàu mảnh chạy ngang có hàng ô cửa vuông + cột mái che & đồng hồ sân ga treo cao.
 - **Đạo cụ mặc định (3–4 preset)**:
   1. `toa_tau` *(lớp `nen`, neo `dat` — thân tàu có hàng ô cửa vuông)*
   2. `vali` *(lớp `giua`, neo `dat` cạnh Lữ khách hoặc `cam`)*

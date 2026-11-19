@@ -44,7 +44,9 @@ import {
   classifySemanticBeatTempo,
   compileSemanticStageScript,
   isSemanticStageScript,
+  resolveSemanticBackdropName,
   SEMANTIC_ACTOR_ROLES,
+  SEMANTIC_BACKDROPS,
   SEMANTIC_LEANS,
   SEMANTIC_POSES,
   SEMANTIC_SOCKETS,
@@ -87,7 +89,7 @@ const ALLOWED_SEMANTIC_ROOT_KEYS = new Set([
   'nhip',
 ]);
 
-const ALLOWED_BOI_CANH_KEYS = new Set(['dia_hinh', 'khi_quyen', 'doan_duong']);
+const ALLOWED_BOI_CANH_KEYS = new Set(['bo', 'dia_hinh', 'khi_quyen', 'doan_duong']);
 const ALLOWED_KHI_QUYEN_KEYS = new Set(['id', 'loai', 'vi_tri', 'huong', 'mat_do']);
 const ALLOWED_DOAN_DUONG_KEYS = new Set(['id', 'vi_tri', 'nhan_vat', 'tu', 'den', 'vat_do']);
 const ALLOWED_NHAN_VAT_KEYS = new Set([
@@ -429,6 +431,14 @@ export function validateSemanticSpecStructure(
   if (sem.boi_canh && typeof sem.boi_canh === 'object') {
     const bc = sem.boi_canh as Record<string, unknown>;
     checkUnknownKeys('boi_canh', bc, ALLOWED_BOI_CANH_KEYS, issues);
+    if (bc.bo !== undefined && !resolveSemanticBackdropName(String(bc.bo))) {
+      const validBos = Object.keys(SEMANTIC_BACKDROPS);
+      const hint = suggestClosestName(String(bc.bo), validBos);
+      issues.push({
+        code: 'UNKNOWN_NAME',
+        message: `boi_canh.bo: "${bc.bo}" không có trong 9 bộ bối cảnh (${validBos.join(', ')})${hint ? `, ý bạn là "${hint}"?` : ''}`,
+      });
+    }
     if (bc.dia_hinh !== undefined && !(String(bc.dia_hinh) in SEMANTIC_TERRAINS)) {
       const hint = suggestClosestName(String(bc.dia_hinh), Object.keys(SEMANTIC_TERRAINS));
       issues.push({
@@ -997,9 +1007,23 @@ export function validateStageScriptHard(
   const propMap = new Map<string, NonNullable<StageScript['props']>[number]>();
   const scaleByType = new Map<string, { firstId: string; scale: number }>();
 
+  const hasEngineBackdrop = Boolean(
+    script.tags?.some((t) => t.startsWith('boi_canh_bo:'))
+  );
+  const firstSceneProp = (script.props ?? []).find(
+    (pr) => !(hasEngineBackdrop && pr.id.startsWith('__bg_'))
+  );
+  const commonSceneScale =
+    (firstSceneProp?.scale ?? script.actors?.[0]?.scale) ||
+    DEFAULT_SCENE_SCALE;
+
   // 1. Kiểm tra tĩnh đạo cụ, luật kích thước thật, luật cùng loại vật cùng kích thước, và luật bản đỏ trùng dáng
   for (const p of script.props ?? []) {
     propMap.set(p.id, p);
+    // Lớp nền tự sinh từ `boi_canh.bo` (tiền tố `__bg_`, lớp `nen`): không bắt luật catalog/tỷ lệ của đạo cụ lớp giữa
+    if (hasEngineBackdrop && p.id.startsWith('__bg_') && p.layer === 'far') {
+      continue;
+    }
     if ((p.shapes && p.shapes.length > 0) || (p.altShapes && p.altShapes.length > 0)) {
       issues.push({
         code: 'CUSTOM_PROP_FORBIDDEN',
@@ -1039,9 +1063,6 @@ export function validateStageScriptHard(
     }
 
     // Kiểm tra kích thước hiển thị thực tế trong cảnh so với công thức kich_thuoc_that × TY_LE_CANH × HE_SO_PHONG_DAI × sceneScale (mọi vật dùng chung tỷ lệ tự căn khung, sai số tối đa 15%)
-    const commonSceneScale =
-      (script.props?.[0]?.scale ?? script.actors?.[0]?.scale) ||
-      DEFAULT_SCENE_SCALE;
     if (Math.abs(pScale - commonSceneScale) > 0.02) {
       issues.push({
         code: 'REAL_SIZE_SCALING_VIOLATION',
@@ -1691,9 +1712,15 @@ export function validateStageScriptHard(
             const iy = Math.max(0, Math.min(redBox.y1, oBox.y1) - Math.max(redBox.y0, oBox.y0));
             const overlapRatio = (ix * iy) / redArea;
             if (overlapRatio > 0.5) {
+              const isBackdrop =
+                other.id.startsWith('__bg_') ||
+                other.layer === 'far' ||
+                other.spec.semanticLayer === 'nen';
               issues.push({
                 code: 'RED_OBJECT_RULE',
-                message: `Vật đỏ "${onlyRed.id}" bị "${other.id}" che lấp ${(overlapRatio * 100).toFixed(0)}% (> 50%) tại cú lật — vật đỏ phải là một hình riêng nhìn ra rõ ràng.`,
+                message: isBackdrop
+                  ? `Vật đỏ "${onlyRed.id}" bị lớp nền "${other.id}" che lấp ${(overlapRatio * 100).toFixed(0)}% (> 50%) tại cú lật — lớp nền không được che vật đỏ.`
+                  : `Vật đỏ "${onlyRed.id}" bị "${other.id}" che lấp ${(overlapRatio * 100).toFixed(0)}% (> 50%) tại cú lật — vật đỏ phải là một hình riêng nhìn ra rõ ràng.`,
               });
               break;
             }
