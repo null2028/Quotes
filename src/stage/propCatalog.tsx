@@ -18,6 +18,11 @@ import {
   DO_CHUA_APPROVED_ALIASES,
   DO_CHUA_NEW_PRESETS,
 } from './families/do_chua';
+import {
+  MAT_PHANG_ALL_PRESET_NAMES,
+  MAT_PHANG_APPROVED_ALIASES,
+  MAT_PHANG_NEW_PRESETS,
+} from './families/mat_phang';
 
 export const BUILT_IN_PROP_NAMES = [
   'envelope',
@@ -59,8 +64,10 @@ export const BUILT_IN_PROP_NAMES = [
   'phong_bi',
   'hoa_don',
   'porch_window',
-  // Họ 1 — `do_chua` (2 alias `duyet` + 6 preset `nhap`)
+  // Họ 1 — `do_chua` (2 alias `duyet` + 6 preset)
   ...DO_CHUA_ALL_PRESET_NAMES,
+  // Họ 2 — `mat_phang` (2 alias `duyet` + 5 preset `nhap`)
+  ...MAT_PHANG_ALL_PRESET_NAMES,
 ] as const;
 
 export type BuiltInPropName = (typeof BUILT_IN_PROP_NAMES)[number];
@@ -71,6 +78,7 @@ export type BuiltInPropName = (typeof BUILT_IN_PROP_NAMES)[number];
  */
 export const PROP_FAMILY_ALIASES: Record<string, string> = {
   ...DO_CHUA_APPROVED_ALIASES,
+  ...MAT_PHANG_APPROVED_ALIASES,
 };
 
 /**
@@ -1467,6 +1475,9 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
       mat_ban_trai: [-5.2, -19.2],
       mat_ban_giua: [4.8, -19.2],
       mat_ban_phai: [12.8, -19.2],
+      mat_trai: [-5.2, -19.2],
+      mat_giua: [4.8, -19.2],
+      mat_phai: [12.8, -19.2],
     },
     canBeRed: false,
     emitterOffset: [0, -19.2],
@@ -1507,6 +1518,9 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
       mat_ban_trai: [-8.5, -14.2],
       mat_ban_giua: [0, -14.2],
       mat_ban_phai: [8.5, -14.2],
+      mat_trai: [-8.5, -14.2],
+      mat_giua: [0, -14.2],
+      mat_phai: [8.5, -14.2],
     },
     canBeRed: false,
     emitterOffset: [0, -14.2],
@@ -2060,8 +2074,11 @@ export const BUILT_IN_PROP_CATALOG: Record<string, CustomPropDefinition> = {
     ],
   },
 
-  // === HỌ 1: `do_chua` (6 preset mới trạng thái `nhap`) ===
+  // === HỌ 1: `do_chua` ===
   ...DO_CHUA_NEW_PRESETS,
+
+  // === HỌ 2: `mat_phang` (5 preset mới trạng thái `nhap`) ===
+  ...MAT_PHANG_NEW_PRESETS,
 };
 
 // Gắn các alias đã duyệt (`chen_tra` -> `small_cup`, `vo_ruou` -> `wine_jar`) trực tiếp vào propCatalog

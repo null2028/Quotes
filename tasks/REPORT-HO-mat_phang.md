@@ -1,0 +1,5 @@
+- Preset mới (`nhap`, 5 món): `ban_quan` (82 cm), `ban_hop` (168 cm), `giuong_ngu` (185 cm), `chiec_goi` (46 cm, `canBeRed: true`), `tu_kinh` (138 cm).
+- Alias gắn từ món đã `duyet` (2 món, không vẽ lại): `ban_lam_viec` → `std_work_desk` (112 cm), `ban_tra` → `low_tea_table` (98 cm); chuẩn hoá neo `mat_trai`/`mat_giua`/`mat_phai` (giữ `mat_ban_*`).
+- Độ phủ: **38/262 quote** (Họ 2 · `mat_phang` theo `HO-DAO-CU.md`). Kiểm tra: `typecheck` 0 lỗi, `validateCatalogPropsHard` 0 lỗi, `gen:skill` cập nhật xong (5 món mới ở Tầng B chưa duyệt), `check-goi` (`q001`, `w051`, `chen18-v2`) pass.
+- Tờ duyệt (100% qua Gói Chén → Validator → Render 1080×1920): `qa-artifacts-ci/HO-mat_phang.png` (2 dải 1× + phóng 2× toàn cảnh cạnh Lữ khách + 4 thẻ bản Đỏ `chiec_goi` & kiểm điểm neo `dau_goi`, `mat_giua`, `ngan_tren`).
+- Cần chủ kênh quyết: duyệt chuyển trạng thái `nhap` → `duyet` (hoặc yêu cầu chỉnh dáng/tỷ lệ/chi tiết) cho từng món trong 5 preset mới (`ban_quan`, `ban_hop`, `giuong_ngu`, `chiec_goi`, `tu_kinh`).

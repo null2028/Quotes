@@ -34,8 +34,8 @@ const OUT_DIR = path.join(ROOT, 'qa-artifacts-ci');
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const familyArg = (process.argv[2] || 'do_chua').replace(/^--/, '');
-if (familyArg !== 'do_chua') {
-  console.error(`Hiện script tờ duyệt mới cấu hình cho họ: do_chua (nhận: ${familyArg})`);
+if (familyArg !== 'do_chua' && familyArg !== 'mat_phang') {
+  console.error(`Hiện script tờ duyệt mới cấu hình cho họ: do_chua, mat_phang (nhận: ${familyArg})`);
   process.exit(1);
 }
 
@@ -373,11 +373,207 @@ const CARD_CASES = [
   },
 ];
 
-console.log(`Đang dựng khung 1080×1920 toàn cảnh họ "${familyArg}" qua parseGoiChen...`);
-const lineupSvg1x = renderFull1080x1920SvgFromGoiChen(lineupGoiChen, 'pre_pivot');
+const MAT_PHANG_LINEUP_GOI_A = {
+  phien_ban_goi: 1,
+  tieu_de: 'Tờ duyệt họ mat_phang — Nhóm Bàn',
+  cau: [
+    'Bàn trà thấp ấm góc hiên,',
+    'Bàn quán gọn gàng bên thềm nắng phai.',
+    'Bàn làm việc nối bàn dài,',
+    'Bốn mặt phẳng lặng đón ngày đi qua.',
+  ],
+  cu_lat: 'đón ngày đi qua',
+  boi_canh: { dia_hinh: 'phang' },
+  nhan_vat: [{ id: 'hero', vi_tri: 'xa_trai', tu_the: 'dung', huong: 'phai' }],
+  dao_cu: [
+    { id: 'p_ban_tra', type: 'ban_tra', loai_neo: 'dat', vi_tri: 'trai', lop: 'giua' },
+    { id: 'p_chen_ref', type: 'chen_tra', loai_neo: 'tren', dat_tren: 'p_ban_tra.mat_giua', lop: 'giua', vat_do: true },
+    { id: 'p_ban_quan', type: 'ban_quan', loai_neo: 'dat', vi_tri: 'giua_trai', lop: 'giua' },
+    { id: 'p_ban_lv', type: 'ban_lam_viec', loai_neo: 'dat', vi_tri: 'giua_phai', lop: 'giua' },
+    { id: 'p_ban_hop', type: 'ban_hop', loai_neo: 'dat', vi_tri: 'xa_phai', lop: 'giua' },
+  ],
+  nhip: [
+    {
+      moc: 'bat_dau',
+      thoi_luong: 0.4,
+      nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } },
+    },
+  ],
+};
 
-console.log(`Đang dựng ${CARD_CASES.length} khung 1080×1920 bản Đỏ & Lữ khách cầm chén...`);
-const redSvgs = CARD_CASES.map((rc) => ({
+const MAT_PHANG_LINEUP_GOI_B = {
+  phien_ban_goi: 1,
+  tieu_de: 'Tờ duyệt họ mat_phang — Tủ kính, Giường & Gối',
+  cau: [
+    'Tủ kính đứng lặng bên tường,',
+    'Một chiếc gối vải giữa giường ngủ yên.',
+    'Gối đặt cạnh lối dịu hiền,',
+    'Đêm dài lắng lại bình yên căn phòng.',
+  ],
+  cu_lat: 'bình yên căn phòng',
+  boi_canh: { dia_hinh: 'phang' },
+  nhan_vat: [{ id: 'hero', vi_tri: 'xa_trai', tu_the: 'dung', huong: 'phai' }],
+  dao_cu: [
+    { id: 'p_tu_kinh', type: 'tu_kinh', loai_neo: 'dat', vi_tri: 'giua_trai', lop: 'giua' },
+    { id: 'p_goi_dat', type: 'chiec_goi', loai_neo: 'dat', vi_tri: 'giua', lop: 'giua' },
+    { id: 'p_giuong', type: 'giuong_ngu', loai_neo: 'dat', vi_tri: 'xa_phai', lop: 'giua' },
+    { id: 'p_goi_giuong', type: 'chiec_goi', loai_neo: 'tren', dat_tren: 'p_giuong.dau_goi', lop: 'giua', vat_do: true },
+  ],
+  nhip: [
+    {
+      moc: 'bat_dau',
+      thoi_luong: 0.4,
+      nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } },
+    },
+  ],
+};
+
+const MAT_PHANG_CARDS = [
+  {
+    label: 'chiec_goi đỏ trên giuong_ngu.dau_goi',
+    crop: [515, 600, 345, 230],
+    goi: {
+      phien_ban_goi: 1,
+      tieu_de: 'Đỏ chiec_goi trên giường',
+      cau: [
+        'Đèn khuya tắt bóng phòng êm,',
+        'Gối mềm đầu giường vẫn mềm hơi quen.',
+        'Đêm dài trở giấc không tên,',
+        'Một vệt chu sa ấm êm góc giường.',
+      ],
+      cu_lat: 'ấm êm góc giường',
+      boi_canh: { dia_hinh: 'phang' },
+      nhan_vat: [{ id: 'hero', vi_tri: 'trai', tu_the: 'dung', huong: 'phai', nhin_theo: 'vat_do' }],
+      dao_cu: [
+        { id: 'giuong', type: 'giuong_ngu', loai_neo: 'dat', vi_tri: 'giua_phai', lop: 'giua' },
+        { id: 'vat_do', type: 'chiec_goi', loai_neo: 'tren', dat_tren: 'giuong.dau_goi', lop: 'giua', vat_do: true },
+      ],
+      nhip: [{ moc: 'bat_dau', thoi_luong: 0.4, nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } } }],
+    },
+  },
+  {
+    label: 'chiec_goi đỏ đặt lẻ (dat)',
+    crop: [600, 650, 270, 180],
+    goi: {
+      phien_ban_goi: 1,
+      tieu_de: 'Đỏ chiec_goi đặt đất',
+      cau: [
+        'Mực thanh mở nét đầu tiên,',
+        'Chiếc gối vải mềm bình yên góc phòng.',
+        'Chờ khi câu chữ xoay vòng,',
+        'Chu sa ấm lại bên lòng lặng im.',
+      ],
+      cu_lat: 'bên lòng lặng im',
+      boi_canh: { dia_hinh: 'phang' },
+      nhan_vat: [{ id: 'hero', vi_tri: 'trai', tu_the: 'dung', huong: 'phai', nhin_theo: 'vat_do' }],
+      dao_cu: [
+        { id: 'vat_do', type: 'chiec_goi', loai_neo: 'dat', vi_tri: 'giua', lop: 'giua', vat_do: true },
+      ],
+      nhip: [{ moc: 'bat_dau', thoi_luong: 0.4, nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } } }],
+    },
+  },
+  {
+    label: 'ban_quan + ly_ca_phe trên mat_giua',
+    crop: [565, 600, 315, 210],
+    goi: {
+      phien_ban_goi: 1,
+      tieu_de: 'Kiểm neo ban_quan',
+      cau: [
+        'Quán chiều vắng khách bên hiên,',
+        'Bàn quán gọn gàng ly đen nóng nồng.',
+        'Ngồi nghe gió thổi ngang song,',
+        'Ly cà phê đỏ ấm lòng chiều rơi.',
+      ],
+      cu_lat: 'ấm lòng chiều rơi',
+      boi_canh: { dia_hinh: 'phang' },
+      nhan_vat: [{ id: 'hero', vi_tri: 'trai', tu_the: 'dung', huong: 'phai', nhin_theo: 'vat_do' }],
+      dao_cu: [
+        { id: 'ban', type: 'ban_quan', loai_neo: 'dat', vi_tri: 'giua', lop: 'giua' },
+        { id: 'vat_do', type: 'ly_ca_phe', loai_neo: 'tren', dat_tren: 'ban.mat_giua', lop: 'giua', vat_do: true },
+      ],
+      nhip: [{ moc: 'bat_dau', thoi_luong: 0.4, nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } } }],
+    },
+  },
+  {
+    label: 'tu_kinh + ban_hop (neo ngan_tren & mat_giua)',
+    crop: [410, 550, 480, 320],
+    goi: {
+      phien_ban_goi: 1,
+      tieu_de: 'Kiểm neo tu_kinh và ban_hop',
+      cau: [
+        'Tủ kính hai đợt ngay hàng,',
+        'Bàn họp trải dài nắng loang cuối ngày.',
+        'Đặt chén lên đợt tủ này,',
+        'Nhìn chiếc laptop đỏ ngay giữa bàn.',
+      ],
+      cu_lat: 'đỏ ngay giữa bàn',
+      boi_canh: { dia_hinh: 'phang' },
+      nhan_vat: [{ id: 'hero', vi_tri: 'xa_trai', tu_the: 'dung', huong: 'phai' }],
+      dao_cu: [
+        { id: 'tu', type: 'tu_kinh', loai_neo: 'dat', vi_tri: 'giua_trai', lop: 'giua' },
+        { id: 'ch', type: 'chen_tra', loai_neo: 'tren', dat_tren: 'tu.ngan_tren', lop: 'giua' },
+        { id: 'hop', type: 'ban_hop', loai_neo: 'dat', vi_tri: 'giua_phai', lop: 'giua' },
+        { id: 'vat_do', type: 'desk_laptop', loai_neo: 'tren', dat_tren: 'hop.mat_giua', lop: 'giua', vat_do: true },
+      ],
+      nhip: [{ moc: 'bat_dau', thoi_luong: 0.4, nhan_vat: { hero: { tu_the: 'dung', nghieng: 'thang' } } }],
+    },
+  },
+];
+
+const activeLineupGoi = familyArg === 'mat_phang' ? MAT_PHANG_LINEUP_GOI_A : lineupGoiChen;
+const activeLineupGoi2 = familyArg === 'mat_phang' ? MAT_PHANG_LINEUP_GOI_B : null;
+const activeCardCases = familyArg === 'mat_phang' ? MAT_PHANG_CARDS : CARD_CASES;
+
+const sheetMeta =
+  familyArg === 'mat_phang'
+    ? {
+        sheetH: 1850,
+        twoLineups: true,
+        headerTitle: 'TỜ DUYỆT HỌ ĐẠO CỤ: mat_phang — Lần 1 (100% qua Gói Chén → Validator → Render 1080×1920)',
+        headerSub: '1A (Nhóm Bàn): Lữ khách · ban_tra (alias) · ban_quan (82cm) · ban_lam_viec (alias) · ban_hop (168cm)   |   1B (Tủ & Giường): Lữ khách · tu_kinh (138cm) · chiec_goi (46cm) · giuong_ngu (185cm) + chiec_goi',
+        section1ATitle: '1A. Vùng hình 1× (1080×1920) — Nhóm Bàn (ban_tra, ban_quan, ban_lam_viec, ban_hop)',
+        section1BTitle: '1B. Vùng hình 1× (1080×1920) — Tủ kính, Gối & Giường (tu_kinh, chiec_goi, giuong_ngu)',
+        summaryTitle: 'Họ 2 mat_phang (phủ 38/262 quote · 0 lỗi Validator · Trạng thái: nhap — chờ chủ kênh duyệt):',
+        summaryLines: [
+          '• 5 preset mới (nhap): ban_quan (82cm), ban_hop (168cm), giuong_ngu (185cm), chiec_goi (46cm), tu_kinh (138cm)',
+          '• 2 alias duyet sẵn (không vẽ lại): ban_lam_viec → std_work_desk (112cm), ban_tra → low_tea_table (98cm)',
+          '• Điểm neo chuẩn hoá: mat_trai / mat_giua / mat_phai (giữ mat_ban_*); giuong_ngu có dau_goi & mat_giuong',
+          '• tu_kinh thêm ngan_tren / ngan_duoi để đặt vật nhỏ trong tủ; 2 nét chéo mảnh gợi mặt kính phản sáng',
+          '• Vật đỏ (canBeRed: true): chỉ chiec_goi (IoU = 1.00, phủ đỏ RED_PIVOT_FILL_OPACITY = 0.7); bàn/giường/tủ = false',
+          '• Skill đã chạy npm run gen:skill: 5 preset mới ở Tầng B (nhap, cảnh báo vàng khi dùng) chờ duyệt',
+        ],
+        section2Title: '2A. Phóng 2× (200% pixel thật) — Nhóm Bàn (Lữ khách · ban_tra · ban_quan · ban_lam_viec · ban_hop)',
+        section2BTitle: '2B. Phóng 2× (200% pixel thật) — Tủ kính, Gối & Giường (Lữ khách · tu_kinh · chiec_goi · giuong_ngu + chiec_goi)',
+        section3Title: '3. Bản Đỏ Chu Sa (chiec_goi) & Kiểm Điểm Neo Thực Tế (ban_quan, tu_kinh, ban_hop, giuong_ngu)',
+        lastCardNeutral: true,
+      }
+    : {
+        sheetH: 1680,
+        twoLineups: false,
+        headerTitle: 'TỜ DUYỆT HỌ ĐẠO CỤ: do_chua — Lần 2 (Dựng 100% qua Gói Chén → Validator → Render 1080×1920)',
+        headerSub: 'Trái → phải: Lữ khách · [Bàn trà: chen_tra, am_tra] · [Bàn trà: mam_com (2 bat_com + 1 chen_tra)] · [Bàn dài: ly_ca_phe, ly_ruou] · vo_ruou · [Bàn dài: bat_com, hop_com]',
+        summaryTitle: 'Cập nhật theo duyệt của chủ kênh (0 lỗi Validator):',
+        summaryLines: [
+          '• Đã chuyển duyet: ly_ca_phe (14cm), ly_ruou (19cm), bat_com (15cm), hop_com (19cm)',
+          '• am_tra (nhap): bỏ mảng bết đen, nét viền mảnh 0.56 + wash 0.09, mở thoáng nắp và vòi',
+          '• mam_com (nhap, 86cm): đặt trên bàn trà thấp, đặt đủ 2 bat_com + 1 chen_tra lên 3 điểm neo',
+          '• small_cup & wine_jar: giữ nguyên bản thường, thêm altShapes đỏ (IoU = 1.00, ≥ 500 px²)',
+          '• cam_chen_tra: Lữ khách đứng đưa tay đỡ chén ngang ngực (không còn rơi xuống chân)',
+          '• Alias giữ nguyên: chen_tra → small_cup (11.5cm), vo_ruou → wine_jar (58cm)',
+        ],
+        section2Title: '2. Phóng 2× (200% pixel thật) cùng vùng hình — Nửa Trái (am_tra & mam_com trên bàn) & Nửa Phải (ly_ca_phe, ly_ruou, vo_ruou, bat_com, hop_com)',
+        section3Title: '3. Bản Đỏ Chu Sa sau cú lật (7 món làm được vật đỏ) & Lữ khách đứng cầm chén (cam_chen_tra)',
+        lastCardNeutral: true,
+      };
+
+console.log(`Đang dựng khung 1080×1920 toàn cảnh họ "${familyArg}" qua parseGoiChen...`);
+const lineupSvg1x = renderFull1080x1920SvgFromGoiChen(activeLineupGoi, 'pre_pivot');
+const lineupSvg1x2 = activeLineupGoi2
+  ? renderFull1080x1920SvgFromGoiChen(activeLineupGoi2, 'pre_pivot')
+  : null;
+
+console.log(`Đang dựng ${activeCardCases.length} khung 1080×1920 bản Đỏ & kiểm điểm neo...`);
+const redSvgs = activeCardCases.map((rc) => ({
   label: rc.label,
   crop: rc.crop,
   svg: renderFull1080x1920SvgFromGoiChen(rc.goi, 'post_pivot'),
@@ -422,9 +618,12 @@ imageio.CGImageDestinationFinalize.restype = c_bool; imageio.CGImageDestinationF
 cs_rgb = cg.CGColorSpaceCreateDeviceRGB()
 uti_png = cf.CFStringCreateWithCString(None, b"public.png", 0x08000100)
 
+import html
 RE_RGB = re.compile(r"rgb\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)")
+RE_RGBA_CSS = re.compile(r"rgba\\((\\d+),\\s*(\\d+),\\s*(\\d+),\\s*([0-9.]+)\\)")
 RE_RGBA_HEX = re.compile(r"#([0-9a-fA-F]{6})([0-9a-fA-F]{2})\\b")
 def clean_svg(svg):
+    svg = RE_RGBA_CSS.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
     svg = RE_RGB.sub(lambda m: f"#{int(m.group(1)):02X}{int(m.group(2)):02X}{int(m.group(3)):02X}", svg)
     svg = RE_RGBA_HEX.sub(lambda m: f"#{m.group(1)}", svg)
     svg = svg.replace('style="overflow:visible;background:transparent"', '')
@@ -450,6 +649,8 @@ payload = json.loads(sys.stdin.read())
 out_png = payload["out"]
 
 # 1. Render 1080x1920 ở tỷ lệ 1x và 2x cho cảnh toàn bộ họ
+meta = payload["meta"]
+two_lineups = bool(meta.get("twoLineups"))
 im_1x = render_svg_to_cgimage(payload["lineupSvg"], 1080, 1920, 1.0)
 im_2x = render_svg_to_cgimage(payload["lineupSvg"], 1080, 1920, 2.0)
 
@@ -457,47 +658,97 @@ im_2x = render_svg_to_cgimage(payload["lineupSvg"], 1080, 1920, 2.0)
 cx, cy, cw, ch = 132, 540, 816, 270
 crop_1x = cg.CGImageCreateWithImageInRect(im_1x, CGRect(CGPoint(cx, cy), CGSize(cw, ch)))
 
-# Phóng 2x cùng vùng hình (1632 x 540), chia đôi Trái (816x540) và Phải (816x540) để giữ đúng 200% pixel thật
-crop_2x_left = cg.CGImageCreateWithImageInRect(im_2x, CGRect(CGPoint(cx * 2, cy * 2), CGSize(cw, ch * 2)))
-crop_2x_right = cg.CGImageCreateWithImageInRect(im_2x, CGRect(CGPoint((cx + cw // 2) * 2, cy * 2), CGSize(cw, ch * 2)))
-
-# 2. Dựng layout tờ duyệt 1720 x 1680 (phần 3 gồm 2 hàng x 4 ô lớn rõ nét)
-SHEET_W, SHEET_H = 1720, 1680
+SHEET_W, SHEET_H = 1720, int(meta["sheetH"])
 card_w, card_h = 394, 262
 gap_x, gap_y = 18, 48
 
-cards_svg_parts = []
-for idx, item in enumerate(payload["redSvgs"]):
-    col = idx % 4
-    row = idx // 4
-    lx = 44 + col * (card_w + gap_x)
-    ty = 1044 + row * (card_h + gap_y)
-    stroke_col = "#1E1B18" if idx == len(payload["redSvgs"]) - 1 else "#C8432B"
-    cards_svg_parts.append(f'<rect x="{lx}" y="{ty}" width="{card_w}" height="{card_h}" fill="none" stroke="{stroke_col}" stroke-width="1.3" />')
-    cards_svg_parts.append(f'<text x="{lx + card_w // 2}" y="{ty + card_h + 22}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E1B18">{item["label"]}</text>')
-
-labels_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{SHEET_W}" height="{SHEET_H}" viewBox="0 0 {SHEET_W} {SHEET_H}">
+if two_lineups:
+    im_1x_b = render_svg_to_cgimage(payload["lineupSvg2"], 1080, 1920, 1.0)
+    im_2x_b = render_svg_to_cgimage(payload["lineupSvg2"], 1080, 1920, 2.0)
+    crop_1x_b = cg.CGImageCreateWithImageInRect(im_1x_b, CGRect(CGPoint(cx, cy), CGSize(cw, ch)))
+    # Phóng 2x toàn cảnh 1A và 1B (cắt y=565..785 → 220px × 2 = 440px, chiều rộng 816 × 2 = 1632px khớp 100% bề rộng tờ!)
+    cy2, ch2 = 565, 220
+    crop_2x_a = cg.CGImageCreateWithImageInRect(im_2x, CGRect(CGPoint(cx * 2, cy2 * 2), CGSize(cw * 2, ch2 * 2)))
+    crop_2x_b = cg.CGImageCreateWithImageInRect(im_2x_b, CGRect(CGPoint(cx * 2, cy2 * 2), CGSize(cw * 2, ch2 * 2)))
+    cards_top_y = 1524
+    summary_svg_parts = []
+    for sidx, sline in enumerate(meta["summaryLines"]):
+        col = sidx // 3
+        row = sidx % 3
+        sx = 64 + col * 816
+        sy = 468 + row * 24
+        sfill = "#C8432B" if "Vật đỏ" in sline else ("#6B6259" if sidx == len(meta["summaryLines"]) - 1 else "#1E1B18")
+        summary_svg_parts.append(f'<text x="{sx}" y="{sy}" font-family="Helvetica, Arial, sans-serif" font-size="13.5" fill="{sfill}">{html.escape(sline)}</text>')
+    cards_svg_parts = []
+    for idx, item in enumerate(payload["redSvgs"]):
+        col = idx % 4
+        row = idx // 4
+        lx = 44 + col * (card_w + gap_x)
+        ty = cards_top_y + row * (card_h + gap_y)
+        stroke_col = "#1E1B18" if (meta.get("lastCardNeutral") and idx == len(payload["redSvgs"]) - 1) else "#C8432B"
+        cards_svg_parts.append(f'<rect x="{lx}" y="{ty}" width="{card_w}" height="{card_h}" fill="none" stroke="{stroke_col}" stroke-width="1.3" />')
+        cards_svg_parts.append(f'<text x="{lx + card_w // 2}" y="{ty + card_h + 22}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E1B18">{html.escape(item["label"])}</text>')
+    labels_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{SHEET_W}" height="{SHEET_H}" viewBox="0 0 {SHEET_W} {SHEET_H}">
   <rect x="0" y="0" width="{SHEET_W}" height="{SHEET_H}" fill="#EAE1D3" />
-  <text x="44" y="48" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#1E1B18">TỜ DUYỆT HỌ ĐẠO CỤ: do_chua — Lần 2 (Dựng 100% qua Gói Chén → Validator → Render 1080×1920)</text>
-  <text x="44" y="76" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#6B6259">Trái → phải: Lữ khách · [Bàn trà: chen_tra, am_tra] · [Bàn trà: mam_com (2 bat_com + 1 chen_tra)] · [Bàn dài: ly_ca_phe, ly_ruou] · vo_ruou · [Bàn dài: bat_com, hop_com]</text>
+  <text x="44" y="46" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#1E1B18">{html.escape(meta["headerTitle"])}</text>
+  <text x="44" y="72" font-family="Helvetica, Arial, sans-serif" font-size="13.5" fill="#6B6259">{html.escape(meta["headerSub"])}</text>
+
+  <text x="44" y="108" font-family="Helvetica, Arial, sans-serif" font-size="15.5" font-weight="bold" fill="#1E1B18">{html.escape(meta["section1ATitle"])}</text>
+  <rect x="44" y="118" width="808" height="270" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
+  <text x="868" y="108" font-family="Helvetica, Arial, sans-serif" font-size="15.5" font-weight="bold" fill="#1E1B18">{html.escape(meta["section1BTitle"])}</text>
+  <rect x="868" y="118" width="808" height="270" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
+
+  <rect x="44" y="406" width="1632" height="122" rx="8" fill="#F6F1E9" stroke="#C9BFAE" stroke-width="1.2" />
+  <text x="64" y="438" font-family="Helvetica, Arial, sans-serif" font-size="15.5" font-weight="bold" fill="#1E1B18">{html.escape(meta["summaryTitle"])}</text>
+  {"".join(summary_svg_parts)}
+
+  <text x="44" y="558" font-family="Helvetica, Arial, sans-serif" font-size="15.5" font-weight="bold" fill="#1E1B18">{html.escape(meta["section2Title"])}</text>
+  <rect x="44" y="568" width="1632" height="440" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
+
+  <text x="44" y="1038" font-family="Helvetica, Arial, sans-serif" font-size="15.5" font-weight="bold" fill="#1E1B18">{html.escape(meta["section2BTitle"])}</text>
+  <rect x="44" y="1048" width="1632" height="440" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
+
+  <text x="44" y="1512" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C8432B">{html.escape(meta["section3Title"])}</text>
+  {"".join(cards_svg_parts)}
+</svg>'''
+else:
+    # Phóng 2x cùng vùng hình (1632 x 540), chia đôi Trái (816x540) và Phải (816x540) để giữ đúng 200% pixel thật
+    crop_2x_left = cg.CGImageCreateWithImageInRect(im_2x, CGRect(CGPoint(cx * 2, cy * 2), CGSize(cw, ch * 2)))
+    crop_2x_right = cg.CGImageCreateWithImageInRect(im_2x, CGRect(CGPoint((cx + cw // 2) * 2, cy * 2), CGSize(cw, ch * 2)))
+    cards_top_y = 1044
+    cards_svg_parts = []
+    for idx, item in enumerate(payload["redSvgs"]):
+        col = idx % 4
+        row = idx // 4
+        lx = 44 + col * (card_w + gap_x)
+        ty = cards_top_y + row * (card_h + gap_y)
+        stroke_col = "#1E1B18" if (meta.get("lastCardNeutral") and idx == len(payload["redSvgs"]) - 1) else "#C8432B"
+        cards_svg_parts.append(f'<rect x="{lx}" y="{ty}" width="{card_w}" height="{card_h}" fill="none" stroke="{stroke_col}" stroke-width="1.3" />')
+        cards_svg_parts.append(f'<text x="{lx + card_w // 2}" y="{ty + card_h + 22}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#1E1B18">{html.escape(item["label"])}</text>')
+
+    summary_svg_parts = []
+    for sidx, sline in enumerate(meta["summaryLines"]):
+        sy = 188 + sidx * 26
+        sfill = "#C8432B" if "Vật đỏ" in sline or "small_cup" in sline else ("#6B6259" if sidx == len(meta["summaryLines"]) - 1 else "#1E1B18")
+        summary_svg_parts.append(f'<text x="920" y="{sy}" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="{sfill}">{html.escape(sline)}</text>')
+
+    labels_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{SHEET_W}" height="{SHEET_H}" viewBox="0 0 {SHEET_W} {SHEET_H}">
+  <rect x="0" y="0" width="{SHEET_W}" height="{SHEET_H}" fill="#EAE1D3" />
+  <text x="44" y="48" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#1E1B18">{html.escape(meta["headerTitle"])}</text>
+  <text x="44" y="76" font-family="Helvetica, Arial, sans-serif" font-size="14.5" fill="#6B6259">{html.escape(meta["headerSub"])}</text>
 
   <text x="44" y="114" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">1. Vùng hình 1× cắt trực tiếp từ khung 1080×1920 (816×270 px — tỷ lệ 1:1 trên điện thoại)</text>
   <rect x="44" y="126" width="816" height="270" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
 
   <rect x="896" y="126" width="780" height="270" rx="8" fill="#F6F1E9" stroke="#C9BFAE" stroke-width="1.2" />
-  <text x="920" y="160" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">Cập nhật theo duyệt của chủ kênh (0 lỗi Validator):</text>
-  <text x="920" y="188" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• Đã chuyển duyet: ly_ca_phe (14cm), ly_ruou (19cm), bat_com (15cm), hop_com (19cm)</text>
-  <text x="920" y="214" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• am_tra (nhap): bỏ mảng bết đen, nét viền mảnh 0.56 + wash 0.09, mở thoáng nắp và vòi</text>
-  <text x="920" y="240" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• mam_com (nhap, 86cm): đặt trên bàn trà thấp, đặt đủ 2 bat_com + 1 chen_tra lên 3 điểm neo</text>
-  <text x="920" y="266" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#C8432B">• small_cup &amp; wine_jar: giữ nguyên bản thường, thêm altShapes đỏ (IoU = 1.00, ≥ 500 px²)</text>
-  <text x="920" y="292" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1E1B18">• cam_chen_tra: Lữ khách đứng đưa tay đỡ chén ngang ngực (không còn rơi xuống chân)</text>
-  <text x="920" y="320" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#6B6259">Alias giữ nguyên: chen_tra → small_cup (11.5cm), vo_ruou → wine_jar (58cm)</text>
+  <text x="920" y="160" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">{html.escape(meta["summaryTitle"])}</text>
+  {"".join(summary_svg_parts)}
 
-  <text x="44" y="434" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">2. Phóng 2× (200% pixel thật) cùng vùng hình — Nửa Trái (am_tra &amp; mam_com trên bàn) &amp; Nửa Phải (ly_ca_phe, ly_ruou, vo_ruou, bat_com, hop_com)</text>
+  <text x="44" y="434" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1E1B18">{html.escape(meta["section2Title"])}</text>
   <rect x="44" y="446" width="816" height="540" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
   <rect x="876" y="446" width="800" height="540" fill="#F1EAE0" stroke="#C9BFAE" stroke-width="1.5" />
 
-  <text x="44" y="1024" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C8432B">3. Bản Đỏ Chu Sa sau cú lật (7 món làm được vật đỏ) &amp; Lữ khách đứng cầm chén (cam_chen_tra)</text>
+  <text x="44" y="1024" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C8432B">{html.escape(meta["section3Title"])}</text>
   {"".join(cards_svg_parts)}
 </svg>'''
 
@@ -508,9 +759,15 @@ def draw2(img, left_x, top_y, w, h):
     cg.CGContextDrawImage(ctx, CGRect(CGPoint(left_x, SHEET_H - top_y - h), CGSize(w, h)), img)
 
 draw2(sheet_bg, 0, 0, SHEET_W, SHEET_H)
-draw2(crop_1x, 44, 126, 816, 270)
-draw2(crop_2x_left, 44, 446, 816, 540)
-draw2(crop_2x_right, 876, 446, 800, 540)
+if two_lineups:
+    draw2(crop_1x, 44, 118, 808, 270)
+    draw2(crop_1x_b, 868, 118, 808, 270)
+    draw2(crop_2x_a, 44, 568, 1632, 440)
+    draw2(crop_2x_b, 44, 1048, 1632, 440)
+else:
+    draw2(crop_1x, 44, 126, 816, 270)
+    draw2(crop_2x_left, 44, 446, 816, 540)
+    draw2(crop_2x_right, 876, 446, 800, 540)
 
 for idx, item in enumerate(payload["redSvgs"]):
     rim = render_svg_to_cgimage(item["svg"], 1080, 1920, 1.0)
@@ -519,7 +776,7 @@ for idx, item in enumerate(payload["redSvgs"]):
     col = idx % 4
     row = idx // 4
     lx = 44 + col * (card_w + gap_x)
-    ty = 1044 + row * (card_h + gap_y)
+    ty = cards_top_y + row * (card_h + gap_y)
     draw2(rc, lx, ty, card_w, card_h)
     cg.CGImageRelease(rc)
     cg.CGImageRelease(rim)
@@ -532,7 +789,12 @@ imageio.CGImageDestinationAddImage(dest, out_im, None)
 imageio.CGImageDestinationFinalize(dest)
 
 cf.CFRelease(dest); cf.CFRelease(url); cg.CGImageRelease(out_im); cg.CGContextRelease(ctx)
-cg.CGImageRelease(sheet_bg); cg.CGImageRelease(crop_1x); cg.CGImageRelease(crop_2x_left); cg.CGImageRelease(crop_2x_right)
+cg.CGImageRelease(sheet_bg); cg.CGImageRelease(crop_1x)
+if two_lineups:
+    cg.CGImageRelease(crop_1x_b); cg.CGImageRelease(crop_2x_a); cg.CGImageRelease(crop_2x_b)
+    cg.CGImageRelease(im_1x_b); cg.CGImageRelease(im_2x_b)
+else:
+    cg.CGImageRelease(crop_2x_left); cg.CGImageRelease(crop_2x_right)
 cg.CGImageRelease(im_1x); cg.CGImageRelease(im_2x)
 print("SAVED", out_png)
 `;
@@ -541,7 +803,9 @@ const outPngPath = path.join(OUT_DIR, `HO-${familyArg}.png`);
 const res = spawnSync('/usr/bin/python3', ['-c', PY_COMPOSITOR], {
   input: JSON.stringify({
     out: outPngPath,
+    meta: sheetMeta,
     lineupSvg: lineupSvg1x,
+    lineupSvg2: lineupSvg1x2,
     redSvgs,
   }),
   encoding: 'utf8',

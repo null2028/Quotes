@@ -27,7 +27,7 @@
 - Động từ địa hình / đoạn đường (`nhip[].doan_duong.<id>`): `duong_mo`, `doi_do` (`doi_do`: đổi đỏ đậm; `duong_mo`: mờ dần ở hậu vị).
 - Tỷ lệ thật: vật dưới 30 cm nhân `HE_SO_PHONG_DAI = 2`, từ 30 cm trở lên nhân `1` (`TY_LE_CANH = 0.32`).
 
-## 3. TẦNG A — Dùng ngay (26 món đã duyệt `duyet`, gồm alias)
+## 3. TẦNG A — Dùng ngay (28 món đã duyệt `duyet`, gồm alias)
 > Ưu tiên chọn trong tầng này để xuất Gói Chén dựng ngay không cảnh báo.
 - `envelope` · Cánh thư giấy cổ phong · bối cảnh: phong_trong_nha, van_phong, hien_tra · neo: cam/tren/dat · vật đỏ: Có
 - `wine_jar` · Vò rượu gốm Mai Bình · bối cảnh: hien_tra, quan_nho, nha_que · neo: tren/dat · vật đỏ: Có
@@ -38,8 +38,8 @@
 - `cloud_wisp` · Làn mây thuỷ mặc · bối cảnh: thien_nhien_mo, hien_tra, pho_ngo · neo: troi · vật đỏ: Không
 - `std_chair` · Ghế tựa công sở · bối cảnh: van_phong, phong_trong_nha, quan_nho, nha_que · neo: dat [điểm neo: mat_ghe] · vật đỏ: Không
 - `low_wood_stool` · Đôn gỗ thấp ngồi trà · bối cảnh: hien_tra, nha_que · neo: dat [điểm neo: mat_ghe] · vật đỏ: Không
-- `std_work_desk` · Bàn làm việc công sở · bối cảnh: van_phong, phong_trong_nha · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
-- `low_tea_table` · Bàn trà gỗ thấp · bối cảnh: hien_tra, nha_que · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
+- `std_work_desk` · Bàn làm việc công sở · bối cảnh: van_phong, phong_trong_nha · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
+- `low_tea_table` · Bàn trà gỗ thấp · bối cảnh: hien_tra, nha_que · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
 - `desk_calendar` · Lịch để bàn · bối cảnh: van_phong, phong_trong_nha · neo: tren/dat · vật đỏ: Có
 - `desk_laptop` · Laptop công sở · bối cảnh: van_phong, quan_nho · neo: tren/dat · vật đỏ: Có
 - `vi_tien` · Ví gập · trạng thái: khoa · bối cảnh: van_phong, pho_ngo, quan_nho · neo: tren/cam/dat · vật đỏ: Có
@@ -55,8 +55,10 @@
 - `mam_com` · Mâm cơm tròn dẹt · bối cảnh: nha_que · neo: tren/dat [điểm neo: trai_mam, giua_mam, phai_mam] · vật đỏ: Không
 - `chen_tra` · Chén trà gốm nhỏ (alias `small_cup`) · bối cảnh: hien_tra, quan_nho, phong_trong_nha · neo: tren/cam/dat · vật đỏ: Có
 - `vo_ruou` · Vò rượu gốm Mai Bình (alias `wine_jar`) · bối cảnh: hien_tra, quan_nho, nha_que · neo: tren/dat · vật đỏ: Có
+- `ban_lam_viec` · Bàn làm việc công sở (alias `std_work_desk`) · bối cảnh: van_phong, phong_trong_nha · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
+- `ban_tra` · Bàn trà gỗ thấp (alias `low_tea_table`) · bối cảnh: hien_tra, nha_que · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
 
-## 4. TẦNG B — Có sẵn, chưa chuẩn hoá nét (19 món `nhap`)
+## 4. TẦNG B — Có sẵn, chưa chuẩn hoá nét (24 món `nhap`)
 > Đã có code trong kho, dùng được trong Gói Chén nếu đúng nghĩa; ô nhập tool web sẽ hiện cảnh báo vàng để chủ kênh biết chưa chuẩn hoá nét.
 - `bridal_veil` · Khăn voan lụa · bối cảnh: phong_trong_nha, khong_gian_ky_hieu · neo: cam/dat · vật đỏ: Có
 - `dashed_heart` · Tim nét đứt · bối cảnh: khong_gian_ky_hieu · neo: troi/cam/dat · vật đỏ: Có
@@ -77,16 +79,16 @@
 - `seesaw` · Bập bênh gỗ · bối cảnh: khong_gian_ky_hieu, thien_nhien_mo · neo: dat · vật đỏ: Có
 - `hourglass` · Đồng hồ cát · bối cảnh: khong_gian_ky_hieu, van_phong, phong_trong_nha · neo: tren/dat · vật đỏ: Có
 - `chat_bubble` · Khung tin nhắn · bối cảnh: khong_gian_ky_hieu, phong_trong_nha · neo: troi · vật đỏ: Có
+- `ban_quan` · Bàn quán cỡ vừa · bối cảnh: quan_nho, phong_trong_nha, hien_tra · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
+- `ban_hop` · Bàn dài văn phòng · bối cảnh: van_phong · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
+- `giuong_ngu` · Giường ngủ khung thấp · bối cảnh: phong_trong_nha · neo: dat [điểm neo: dau_goi, mat_giuong, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
+- `chiec_goi` · Chiếc gối vải mềm · bối cảnh: phong_trong_nha · neo: tren/cam/dat · vật đỏ: Có
+- `tu_kinh` · Tủ kính trưng bày · bối cảnh: phong_trong_nha, quan_nho, hien_tra · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, ngan_tren, ngan_duoi] · vật đỏ: Không
 
-## 5. TẦNG C — Đang lên kế hoạch (54 preset theo 12 họ · CHỈ LÊN Ý TƯỞNG, KHÔNG XUẤT JSON)
+## 5. TẦNG C — Đang lên kế hoạch (49 preset theo 12 họ · CHỈ LÊN Ý TƯỞNG, KHÔNG XUẤT JSON)
 > Các preset này chưa có code trong `propCatalog`. Nếu phương án Bước 2 cần món tầng C, ghi rõ `Cần bổ sung: <mã preset>` và kèm phương án thay thế dựng được ngay bằng tầng A/B. Tuyệt đối KHÔNG xuất mã tầng C trong JSON Bước 3.
-### Họ 1 · `do_chua` (Đồ chứa ẩm thực & trà đạo) — đã đủ trong Tầng A
-### Họ 2 · `mat_phang` (Bàn, giường, tủ kê đồ · 5 món chờ dựng)
-- `ban_quan` · bàn gỗ vuông/tròn cỡ vừa cho quán trà/cà phê · bối cảnh: van_phong, phong_trong_nha, quan_nho · neo: dat (mat_trai/giua/phai) · vật đỏ: Không
-- `ban_hop` · bàn dài văn phòng 3 điểm neo rộng · bối cảnh: van_phong, phong_trong_nha, quan_nho · neo: dat (mat_trai/giua/phai) · vật đỏ: Không
-- `giuong_ngu` · khung giường thấp + đầu giường + nệm phẳng · bối cảnh: van_phong, phong_trong_nha, quan_nho · neo: dat (mat_trai/giua/phai) · vật đỏ: Không
-- `chiec_goi` · gối vải bo mềm đặt trên giuong_ngu.dau_goi, canBeRed: true · bối cảnh: van_phong, phong_trong_nha, quan_nho · neo: dat (mat_trai/giua/phai) · vật đỏ: Có
-- `tu_kinh` · khối tủ trưng bày có khung mặt kính và đợt ngang · bối cảnh: van_phong, phong_trong_nha, quan_nho · neo: dat (mat_trai/giua/phai) · vật đỏ: Không
+### Họ 1 · `do_chua` (Đồ chứa ẩm thực & trà đạo) — đã có trong Tầng A/B
+### Họ 2 · `mat_phang` (Bàn, giường, tủ kê đồ) — đã có trong Tầng A/B
 ### Họ 3 · `khung` (Khung kiến trúc, cửa, gương, bậc thang · 7 món chờ dựng)
 - `cua_phong` · khung cửa đứng trong nhà, biến thể dong / he_mo · bối cảnh: phong_trong_nha, hien_tra, pho_ngo, nha_que · neo: tuong/dat · vật đỏ: Tuỳ vật (khung_tranh/guong_soi/cua)
 - `cua_nha` · cửa gỗ hai cánh có bậc thềm · bối cảnh: phong_trong_nha, hien_tra, pho_ngo, nha_que · neo: tuong/dat · vật đỏ: Tuỳ vật (khung_tranh/guong_soi/cua)

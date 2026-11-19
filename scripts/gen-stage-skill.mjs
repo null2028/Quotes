@@ -58,7 +58,14 @@ const PROP_CONTEXTS = {
   std_chair: 'van_phong, phong_trong_nha, quan_nho, nha_que',
   low_wood_stool: 'hien_tra, nha_que',
   std_work_desk: 'van_phong, phong_trong_nha',
+  ban_lam_viec: 'van_phong, phong_trong_nha',
   low_tea_table: 'hien_tra, nha_que',
+  ban_tra: 'hien_tra, nha_que',
+  ban_quan: 'quan_nho, phong_trong_nha, hien_tra',
+  ban_hop: 'van_phong',
+  giuong_ngu: 'phong_trong_nha',
+  chiec_goi: 'phong_trong_nha',
+  tu_kinh: 'phong_trong_nha, quan_nho, hien_tra',
   desk_calendar: 'van_phong, phong_trong_nha',
   desk_laptop: 'van_phong, quan_nho',
   vi_tien: 'van_phong, pho_ngo, quan_nho',
@@ -296,7 +303,7 @@ function buildThuVienMd() {
   for (const fam of tierCFamilies) {
     const fmeta = FAMILY_META[fam.code] || { ctx: 'khong_gian_ky_hieu', anchor: 'dat', red: 'Có' };
     if (fam.items.length === 0) {
-      lines.push(`### Họ ${fam.order} · \`${fam.code}\` (${fam.label}) — đã đủ trong Tầng A`);
+      lines.push(`### Họ ${fam.order} · \`${fam.code}\` (${fam.label}) — đã có trong Tầng A/B`);
       continue;
     }
     lines.push(`### Họ ${fam.order} · \`${fam.code}\` (${fam.label} · ${fam.items.length} món chờ dựng)`);
