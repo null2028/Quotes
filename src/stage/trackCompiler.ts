@@ -5,7 +5,11 @@ import { ResolvedVisualDNA } from '../engine/visualDnaResolver';
 import { ThemePalette } from '../theme/palettes';
 import { levitateWeightless } from '../kit/SlowMotionVerbs';
 import type { TravelerPoseWeights } from '../kit/CloakedTraveler';
-import { TEMPO } from './stageConstants';
+import { TEMPO, MIN_RED_AREA_PX2 } from './stageConstants';
+import {
+  computePropRedStageArea,
+  PX2_PER_STAGE_UNIT2,
+} from './stageGeometry';
 import {
   ColorRole,
   FocusRole,
@@ -523,6 +527,8 @@ export interface CompiledStageFrame {
   actors: EvaluatedActorState[];
   actorMap: Record<string, EvaluatedActorState>;
   props: EvaluatedPropState[];
+  /** T7c: Tiến trình vẽ đường đất mở màn (0→1 trong MO_MAN_TERRAIN_DUR_SEC) */
+  openingTerrainProgress: number;
 }
 
 export function applyHorizonOffsetToTerrain(
@@ -1811,14 +1817,269 @@ export function evaluateStageScriptAtFrame(
     actor.hasLookTarget = curGaze.hasLookTarget;
   }
 
-  // Kiến trúc Khai bút Mở màn 4 Pha V8.6.1 (Hướng C — Slow Calligraphic Layered Choreography):
-  // - CHOREO-03 (Trọng lực Nhân quả chậm rãi): Lớp nền/Cửa sổ/Ghế ngồi vẽ trước (Tier 1: 0.40s..2.25s)
-  //   -> Bàn & Đạo cụ mặt đất vẽ tiếp theo (Tier 2: 1.15s..3.10s)
-  //   -> Vật đặt trên mặt bàn vẽ sau khi có bàn (Tier 3: 1.95s..3.85s)
-  //   -> Nhân vật ngồi tự họa nét sau khi ghế đã thành hình (1.20s..3.05s); nhân vật đi bộ họa nét ở 0.35s..2.00s.
-  // - CHOREO-06 (Bảo toàn Cue Câu Thơ): Đạo cụ và nhân vật có enterAt (như walking_bill ở câu 3) giữ nguyên mốc cue
-  //   và tự họa nét thư pháp chậm rãi trong 1.50s..1.55s.
-  if ((!visualDNA || !visualDNA.isLegacyLocked) && !script.tags?.includes('semantic_v1')) {
+  // === T7c: Nghi thức Mở màn & Đẩy máy cú lật ===
+  // openingTerrainProgress: tiến trình vẽ đường đất (0→1) dùng cho cả semantic lẫn non-semantic
+  let openingTerrainProgress = 1;
+
+  if (isSemantic) {
+    // ========================================================================
+    // NGHI THỨC MỞ MÀN cho Gói Chén (semantic_v1) — T7c
+    // 1. Đường đất vẽ trái→phải (evolvePath)       0s .. TERRAIN_DUR
+    // 2. Đạo cụ hiện lần lượt trái→phải (nền→giữa) TERRAIN_DUR .. propEndSec
+    //    Vật đặt trên vật khác hiện SAU vật chủ.
+    //    Vật đỏ có xuat_hien "cu_lat" KHÔNG hiện.
+    // 3. Nhân vật hiện cuối cùng                     propEndSec .. actorEndSec
+    // Tổng gói trong dòng chữ thứ nhất (≤ MO_MAN_TOTAL_MAX_SEC)
+    // ========================================================================
+    const terrainDurSec = TEMPO.MO_MAN_TERRAIN_DUR_SEC;
+    const propDurSec = TEMPO.MO_MAN_PROP_DUR_SEC;
+    const propStaggerSec = TEMPO.MO_MAN_PROP_STAGGER_SEC;
+    const actorDurSec = TEMPO.MO_MAN_ACTOR_DUR_SEC;
+    const totalMaxSec = TEMPO.MO_MAN_TOTAL_MAX_SEC;
+
+    // Terrain progress
+    const terrainEndFrame = Math.round(terrainDurSec * fps);
+    openingTerrainProgress = interpolate(
+      frame,
+      [0, Math.max(1, terrainEndFrame)],
+      [0, 1],
+      {
+        easing: Easing.inOut(Easing.cubic),
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      }
+    );
+
+    // Sort props: layer priority (far/sky first, then mid, then fore), then X left→right
+    // Props with dat_tren (placed on host) come after their host.
+    const layerOrder: Record<string, number> = { sky: 0, far: 1, mid: 2, fore: 3 };
+    const propWithIndex = props.map((p, i) => ({ p, origIdx: i }));
+
+    // Build host→child dependency: child must appear after host
+    const hostOf = new Map<string, string>();
+    for (const pw of propWithIndex) {
+      const datTren = pw.p.spec.placedOn;
+      if (datTren) {
+        const hostId = datTren.split('.')[0];
+        hostOf.set(pw.p.id, hostId);
+      }
+    }
+
+    // Determine if prop is a cu_lat red prop (should NOT appear at opening)
+    const isCuLatRedProp = (p: EvaluatedPropState): boolean => {
+      return (
+        p.spec.colorRole === 'accent' &&
+        p.spec.enterAt !== undefined &&
+        (typeof p.spec.enterAt === 'string'
+          ? p.spec.enterAt.includes('pivot')
+          : false)
+      );
+    };
+
+    // Sort: layer order → x position
+    propWithIndex.sort((a, b) => {
+      const la = layerOrder[a.p.layer] ?? 2;
+      const lb = layerOrder[b.p.layer] ?? 2;
+      if (la !== lb) return la - lb;
+      return a.p.x - b.p.x;
+    });
+
+    // Reorder so that hosted props come after their host
+    const ordered: typeof propWithIndex = [];
+    const placed = new Set<string>();
+    const pending = [...propWithIndex];
+    let safety = pending.length * 2;
+    while (pending.length > 0 && safety-- > 0) {
+      for (let i = pending.length - 1; i >= 0; i--) {
+        const pw = pending[i];
+        const host = hostOf.get(pw.p.id);
+        if (!host || placed.has(host)) {
+          ordered.push(pw);
+          placed.add(pw.p.id);
+          pending.splice(i, 1);
+        }
+      }
+    }
+    // Any remaining (circular dep) just append
+    ordered.push(...pending);
+
+    // Calculate timing for each prop in the opening
+    const propsToReveal = ordered.filter((pw) => {
+      // Skip props with explicit enterAt (they have their own timing)
+      if (pw.p.spec.enterAt !== undefined) return false;
+      return true;
+    });
+
+    // Compute available time for props
+    const propStartSec = terrainDurSec;
+    const propCount = propsToReveal.length;
+    // If too many props, compress stagger so total stays within budget
+    const rawPropTotalSec = propCount > 0
+      ? propDurSec + (propCount - 1) * propStaggerSec
+      : 0;
+    const actorBudgetSec = actorDurSec;
+    const maxPropTotalSec = Math.max(0.4, totalMaxSec - propStartSec - actorBudgetSec);
+    const compressionRatio = rawPropTotalSec > maxPropTotalSec && rawPropTotalSec > 0
+      ? maxPropTotalSec / rawPropTotalSec
+      : 1;
+    const effPropDurSec = propDurSec * compressionRatio;
+    const effPropStaggerSec = propStaggerSec * compressionRatio;
+
+    // Apply drawProgress + opacity to each prop
+    for (let i = 0; i < propsToReveal.length; i++) {
+      const pw = propsToReveal[i];
+      const p = pw.p;
+
+      // cu_lat red props: completely hidden during opening, appear only at pivot
+      if (isCuLatRedProp(p)) continue;
+
+      const pStart = propStartSec + i * effPropStaggerSec;
+      const pEnd = pStart + effPropDurSec;
+      const pStartF = Math.round(pStart * fps);
+      const pEndF = Math.round(pEnd * fps);
+
+      const propDraw = interpolate(
+        frame,
+        [pStartF, Math.max(pStartF + 1, pEndF)],
+        [0, 1],
+        {
+          easing: Easing.linear,
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+      const propInkGate = interpolate(
+        frame,
+        [pStartF, Math.max(pStartF + 1, pStartF + Math.round(0.25 * fps))],
+        [0, 1],
+        {
+          easing: Easing.inOut(Easing.sin),
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+      // Mực loang + nâng nhẹ 1–2px
+      const liftPx = propDraw < 1 ? (1 - propDraw) * 1.5 : 0;
+
+      p.drawProgress = Number(Math.min(p.drawProgress, propDraw).toFixed(3));
+      p.opacity = Number((p.opacity * propInkGate).toFixed(3));
+      if (liftPx > 0.01) {
+        p.y = Number((p.y - liftPx).toFixed(2));
+      }
+    }
+
+    // Actor reveal: last, after all props
+    const actorStartSec = Math.min(
+      totalMaxSec - actorBudgetSec,
+      propStartSec + (propsToReveal.length > 0
+        ? (propsToReveal.length - 1) * effPropStaggerSec + effPropDurSec * 0.5
+        : 0)
+    );
+
+    actors.forEach((actor) => {
+      const actorSpec = (script.actors ?? []).find((a) => a.id === actor.id);
+      const hasExplicitEnterAt = actorSpec?.enterAt !== undefined;
+      if (hasExplicitEnterAt) return; // has di_vao or explicit enter — keep its timing
+
+      const aStartF = Math.round(actorStartSec * fps);
+      const aEndF = Math.round((actorStartSec + actorDurSec) * fps);
+
+      const actorDraw = interpolate(
+        frame,
+        [aStartF, Math.max(aStartF + 1, aEndF)],
+        [0, 1],
+        {
+          easing: Easing.linear,
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+      const actorInkGate = interpolate(
+        frame,
+        [aStartF, Math.max(aStartF + 1, aStartF + Math.round(0.3 * fps))],
+        [0, 1],
+        {
+          easing: Easing.inOut(Easing.sin),
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+
+      actor.drawProgress = Number(Math.min(actor.drawProgress, actorDraw).toFixed(3));
+      actor.opacity = Number((actor.opacity * actorInkGate).toFixed(3));
+    });
+
+    // Terrain segments: also stagger along with terrain
+    for (const seg of terrainSegments) {
+      seg.opacity = Number((seg.opacity * openingTerrainProgress).toFixed(3));
+    }
+
+    // ========================================================================
+    // ĐẨY MÁY CÚ LẬT cho vật đỏ nhỏ — T7c #8
+    // Sau khi vật đỏ đổi màu (pivot + RED_COLOR_DELAY), đẩy máy quay chậm rãi
+    // về phía giữa vật đỏ và nhân vật, zoom đủ để vật đỏ ≥ MIN_RED_AREA_PX2 × 2
+    // ========================================================================
+    const redProp = props.find(
+      (p) => p.isAccentActive && p.spec.colorRole === 'accent'
+    );
+    const heroActor = actors.find((a) => a.focusRole === 'hero') ?? actors[0];
+
+    if (redProp && heroActor && frame >= timeline.pivotFrame) {
+      // Estimate current red area at base zoom
+      const baseRedPx2 = computePropRedStageArea(redProp) * PX2_PER_STAGE_UNIT2;
+
+      const targetArea = MIN_RED_AREA_PX2 * TEMPO.PIVOT_PUSH_RED_AREA_MULT;
+      let neededZoom = 1.0;
+      if (baseRedPx2 > 0 && baseRedPx2 < targetArea) {
+        // Area scales with zoom², so neededZoom = sqrt(targetArea / baseRedPx2)
+        neededZoom = Math.sqrt(targetArea / baseRedPx2);
+      }
+      // Clamp to allowed range
+      neededZoom = Math.max(TEMPO.PIVOT_PUSH_MIN_ZOOM, Math.min(TEMPO.PIVOT_PUSH_MAX_ZOOM, neededZoom));
+
+      // If red prop is already big enough, minimal push
+      if (baseRedPx2 >= targetArea) {
+        neededZoom = TEMPO.PIVOT_PUSH_MIN_ZOOM;
+      }
+
+      const pushStartF = timeline.pivotFrame + Math.round(TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC * fps);
+      const pushEndF = pushStartF + Math.round(TEMPO.PIVOT_PUSH_DUR_SEC * fps);
+      const pushProgress = interpolate(
+        frame,
+        [pushStartF, Math.max(pushStartF + 1, pushEndF)],
+        [0, 1],
+        {
+          easing: Easing.inOut(Easing.cubic),
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }
+      );
+
+      if (pushProgress > 0.001) {
+        // Target pan: midpoint between red prop and hero actor
+        const targetCenterX = (redProp.x + heroActor.x) / 2;
+        const targetCenterY = (redProp.y + heroActor.y) / 2;
+        const targetPanX = targetCenterX - 270;
+        const targetPanY = targetCenterY - 315;
+
+        const pushZoom = 1 + (neededZoom - 1) * pushProgress;
+        camera.zoom = Number((camera.zoom * pushZoom).toFixed(4));
+        camera.panX = Number(
+          (camera.panX + (targetPanX - camera.panX) * pushProgress * 0.65).toFixed(2)
+        );
+        camera.panY = Number(
+          (camera.panY + (targetPanY - camera.panY) * pushProgress * 0.65).toFixed(2)
+        );
+      }
+    }
+  } else if ((!visualDNA || !visualDNA.isLegacyLocked)) {
+    // Kiến trúc Khai bút Mở màn 4 Pha V8.6.1 (Hướng C — Slow Calligraphic Layered Choreography):
+    // - CHOREO-03 (Trọng lực Nhân quả chậm rãi): Lớp nền/Cửa sổ/Ghế ngồi vẽ trước (Tier 1: 0.40s..2.25s)
+    //   -> Bàn & Đạo cụ mặt đất vẽ tiếp theo (Tier 2: 1.15s..3.10s)
+    //   -> Vật đặt trên mặt bàn vẽ sau khi có bàn (Tier 3: 1.95s..3.85s)
+    //   -> Nhân vật ngồi tự họa nét sau khi ghế đã thành hình (1.20s..3.05s); nhân vật đi bộ họa nét ở 0.35s..2.00s.
+    // - CHOREO-06 (Bảo toàn Cue Câu Thơ): Đạo cụ và nhân vật có enterAt (như walking_bill ở câu 3) giữ nguyên mốc cue
+    //   và tự họa nét thư pháp chậm rãi trong 1.50s..1.55s.
     const timeScale = visualDNA?.shotMode === 'BRUSH_DRAW' ? 1.12 : 1.0;
 
     props.forEach((p, propIdx) => {
@@ -2029,6 +2290,7 @@ export function evaluateStageScriptAtFrame(
     actors,
     actorMap,
     props,
+    openingTerrainProgress,
   };
 }
 

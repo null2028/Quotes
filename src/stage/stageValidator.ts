@@ -1732,6 +1732,10 @@ export function validateStageScriptHard(
 
         if (!changed || startF <= 2) continue;
 
+        // T7c: Không tính chuyển động mở màn vào luật chuyển động
+        const openingEndFrame = Math.round(TEMPO.MO_MAN_TOTAL_MAX_SEC * fps);
+        if (startF <= openingEndFrame) continue;
+
         const durF = Math.max(1, Math.round((cue.duration ?? TEMPO.MIN_LOOK_TURN_SEC) * fps));
         const endF = Math.min(timeline.durationInFrames, startF + durF);
         activeIntervals.push([startF, endF]);

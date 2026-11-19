@@ -114,6 +114,20 @@ export const TEMPO = {
   },
   BREATH_CYCLE_SEC: 4.5,
   STILL_LEAN_BREATH_AMP_DEG: 0.55,
+
+  // === Nghi thức Mở màn (T7c) ===
+  MO_MAN_TERRAIN_DUR_SEC: 0.9,       // Thời lượng vẽ đường đất trái→phải
+  MO_MAN_PROP_DUR_SEC: 0.4,          // Thời lượng vẽ nét+wash mỗi đạo cụ
+  MO_MAN_PROP_STAGGER_SEC: 0.2,      // Khoảng cách giữa hai đạo cụ liên tiếp
+  MO_MAN_ACTOR_DUR_SEC: 0.5,         // Thời lượng mực loang nhân vật
+  MO_MAN_TOTAL_MAX_SEC: 2.5,         // Tổng mở màn tối đa (gói gọn trong dòng 1)
+  MO_MAN_FORK_DELAY_SEC: 0.25,       // Delay vẽ nhánh ngã rẽ sau đường chính
+
+  // === Đẩy máy cú lật (T7c) ===
+  PIVOT_PUSH_DUR_SEC: 2.0,           // Thời lượng đẩy máy quay sau cú lật
+  PIVOT_PUSH_MAX_ZOOM: 1.6,          // Mức zoom tối đa cho đẩy máy
+  PIVOT_PUSH_MIN_ZOOM: 1.1,          // Mức zoom tối thiểu khi vật đỏ đã đủ to
+  PIVOT_PUSH_RED_AREA_MULT: 2.0,     // Nhân hệ số MIN_RED_AREA_PX2 để tính mức đẩy
 } as const;
 
 // =====================================================================

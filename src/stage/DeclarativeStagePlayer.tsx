@@ -1000,7 +1000,7 @@ export const DeclarativeStagePlayer: React.FC<{
           <TerrainRenderer
             terrain={effectiveTerrain}
             terrainSegments={blendedTerrainSegments}
-            drawProgress={state.drawProgress}
+            drawProgress={Math.min(state.drawProgress, compiledNow.openingTerrainProgress)}
             phase={phase}
             stroke={palette.inkPrimary}
             secondaryStroke={palette.inkSecondary}
