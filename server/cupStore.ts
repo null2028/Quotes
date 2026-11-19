@@ -26,6 +26,8 @@ export interface CupRecord {
   thumbUrl?: string;
   captionText: string;
   errorMessage?: string;
+  /** Nguyên văn JSON Gói Chén đã dán khi nhập (lưu kèm để đối chiếu kịch bản ↔ output) */
+  goiChenGoc?: Record<string, unknown>;
   props: VideoInputProps;
 }
 

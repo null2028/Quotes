@@ -900,6 +900,47 @@ export function validateSemanticSpecStructure(
       }
     });
 
+    // T7b #3: Chặn mọi lệnh làm mờ/biến mất (duong_mo, bay_len) áp lên chính vật đỏ trước khi hết video
+    const redPropIds = new Set<string>(
+      (Array.isArray(sem.dao_cu) ? sem.dao_cu : [])
+        .filter((p) => p && typeof p === 'object' && (p as Record<string, unknown>).vat_do === true)
+        .map((p) => String((p as Record<string, unknown>).id || ''))
+        .filter(Boolean)
+    );
+    const redSegIds = new Set<string>(
+      (sem.boi_canh && typeof sem.boi_canh === 'object' && Array.isArray((sem.boi_canh as Record<string, unknown>).doan_duong)
+        ? ((sem.boi_canh as Record<string, unknown>).doan_duong as unknown[])
+        : []
+      )
+        .filter((s) => s && typeof s === 'object' && (s as Record<string, unknown>).vat_do === true)
+        .map((s) => String((s as Record<string, unknown>).id || ''))
+        .filter(Boolean)
+    );
+    sem.nhip.forEach((rawB, idx) => {
+      if (!rawB || typeof rawB !== 'object') return;
+      const b = rawB as Record<string, unknown>;
+      if (b.doan_duong && typeof b.doan_duong === 'object') {
+        for (const [sid, sObj] of Object.entries(b.doan_duong as Record<string, unknown>)) {
+          if (redSegIds.has(sid) && sObj && typeof sObj === 'object' && (sObj as Record<string, unknown>).duong_mo === true) {
+            issues.push({
+              code: 'RED_OBJECT_RULE',
+              message: `nhip[${idx}].doan_duong.${sid}: không được dùng "duong_mo" làm mờ/biến mất vật đỏ "${sid}" trước khi hết video — vật đỏ phải còn đỏ và nhìn rõ đến khung cuối. Hãy bỏ "duong_mo".`,
+            });
+          }
+        }
+      }
+      if (b.dao_cu && typeof b.dao_cu === 'object') {
+        for (const [pid, pObj] of Object.entries(b.dao_cu as Record<string, unknown>)) {
+          if (redPropIds.has(pid) && pObj && typeof pObj === 'object' && (pObj as Record<string, unknown>).bay_len === true) {
+            issues.push({
+              code: 'RED_OBJECT_RULE',
+              message: `nhip[${idx}].dao_cu.${pid}: không được dùng "bay_len" làm vật đỏ "${pid}" biến mất trước khi hết video — vật đỏ phải còn đỏ đến khung cuối. Hãy bỏ "bay_len".`,
+            });
+          }
+        }
+      }
+    });
+
     // Kiểm luật Nhịp Trà Nguội (giới hạn số chuyển động lớn) & "Chữ dẫn, hình theo" tại cú lật
     if (Array.isArray(sem.nhan_vat) && Array.isArray(sem.dao_cu)) {
       const tempoInfo = classifySemanticBeatTempo(sem as unknown as SemanticStageScript);
@@ -1489,7 +1530,8 @@ export function validateStageScriptHard(
       if (ts.opacity <= 0.15 || !ts.isAccentActive) continue;
       const segLenUnits = computeTerrainSegmentArcLength(compiled.terrain, ts.startX, ts.endX);
       if (segLenUnits <= 0.5) continue;
-      const areaUnits2 = segLenUnits * ts.strokeWidth;
+      // Dải lối đi có bề rộng ~5.8 đơn vị (2 mép song song tách khỏi nét đất đen)
+      const areaUnits2 = segLenUnits * Math.max(ts.strokeWidth, 5.8);
       reds.push({
         id: ts.id,
         typeName: 'doan_duong',
@@ -1529,6 +1571,87 @@ export function validateStageScriptHard(
         code: 'RED_OBJECT_RULE',
         message: `Vật đỏ "${onlyRed.id}" (${onlyRed.typeName}) quá nhỏ trên màn hình (${Math.round(onlyRed.screenPx2)} px² < ngưỡng tối thiểu ${MIN_RED_AREA_PX2} px² ngay cả sau khi đẩy máy quay zoom=${onlyRed.zoom.toFixed(2)}). Tuyệt đối không phóng to riêng vật nhỏ; hãy đổi sang vật đỏ khác đủ diện tích như: ${suggestions}.`,
       });
+    }
+
+    // T7b #3: Vật đỏ phải còn đỏ và còn nhìn thấy từ lúc đổi đỏ đến hết video (khung cuối)
+    if (script.tags?.includes('semantic_v1')) {
+      const fEnd = Math.max(fPost1, timeline.durationInFrames - 2);
+      const persistSamples = Array.from(
+        new Set([
+          fPost1,
+          Math.round((fPost1 + fEnd) * 0.5),
+          Math.max(fPost1, timeline.durationInFrames - Math.round(1.0 * fps)),
+          fEnd,
+        ])
+      );
+      for (const sf of persistSamples) {
+        const compS = evaluateStageScriptAtFrame(script, sf, timeline, palette);
+        let stillVisibleAndRed = false;
+        if (onlyRed.typeName === 'doan_duong') {
+          const ts = (compS.terrainSegments ?? []).find((s) => s.id === onlyRed.id);
+          stillVisibleAndRed = Boolean(ts && ts.isAccentActive && ts.opacity > 0.35);
+        } else if (onlyRed.id.endsWith('.chen_tra')) {
+          const aid = onlyRed.id.replace(/\.chen_tra$/, '');
+          const act = compS.actors.find((a) => a.id === aid);
+          stillVisibleAndRed = Boolean(act && act.opacity > 0.35 && act.showTeaCup > 0.2);
+        } else if (onlyRed.typeName === 'human') {
+          const act = compS.actors.find((a) => a.id === onlyRed.id);
+          stillVisibleAndRed = Boolean(
+            act &&
+              act.opacity > 0.35 &&
+              act.dissolveToCloud < 0.5 &&
+              act.color === (palette.accentProp || palette.accent)
+          );
+        } else {
+          const pr = compS.props.find((p) => p.id === onlyRed.id);
+          stillVisibleAndRed = Boolean(
+            pr && pr.opacity > 0.35 && pr.floatAwayProgress < 0.5 && pr.isAccentActive
+          );
+        }
+        if (!stillVisibleAndRed) {
+          issues.push({
+            code: 'RED_OBJECT_RULE',
+            message: `Vật đỏ "${onlyRed.id}" bị mờ hoặc biến mất tại t=${(sf / fps).toFixed(2)}s trước khi hết video — vật đỏ phải còn đỏ và nhìn rõ đến khung cuối cùng. Hãy bỏ lệnh làm mờ/biến mất (duong_mo / bay_len / opacity=0).`,
+          });
+          break;
+        }
+      }
+
+      // T7b #6: Vật đỏ phải là một hình riêng nhìn ra rõ ràng (không bị đạo cụ khác che lấp > 50%)
+      if (
+        onlyRed.typeName !== 'doan_duong' &&
+        onlyRed.typeName !== 'human' &&
+        !onlyRed.id.endsWith('.chen_tra')
+      ) {
+        const compRed = evaluateStageScriptAtFrame(script, fPost1, timeline, palette);
+        const redProp = compRed.props.find((p) => p.id === onlyRed.id);
+        const redBox = redProp ? getPropWorldBBox(redProp, undefined, true) : null;
+        if (redProp && redBox) {
+          const redArea = Math.max(
+            0.01,
+            (redBox.x1 - redBox.x0) * (redBox.y1 - redBox.y0)
+          );
+          const redHostId = redProp.spec.placedOn?.split('.')[0];
+          for (const other of compRed.props) {
+            if (other.id === redProp.id || other.id === redHostId) continue;
+            if (other.opacity <= 0.2 || other.drawProgress <= 0.35) continue;
+            // Bỏ qua vật đặt trên mặt đất khác lớp nền (ví dụ cửa sổ/mây ở nền xa) nếu không cùng lớp?
+            // Luật T7b #6 kiểm che lấp hình chiếu 2D của mọi đạo cụ khác cùng sân khấu (trừ vật chủ trực tiếp đặt dưới)
+            const oBox = getPropWorldBBox(other, undefined, true);
+            if (!oBox) continue;
+            const ix = Math.max(0, Math.min(redBox.x1, oBox.x1) - Math.max(redBox.x0, oBox.x0));
+            const iy = Math.max(0, Math.min(redBox.y1, oBox.y1) - Math.max(redBox.y0, oBox.y0));
+            const overlapRatio = (ix * iy) / redArea;
+            if (overlapRatio > 0.5) {
+              issues.push({
+                code: 'RED_OBJECT_RULE',
+                message: `Vật đỏ "${onlyRed.id}" bị "${other.id}" che lấp ${(overlapRatio * 100).toFixed(0)}% (> 50%) tại cú lật — vật đỏ phải là một hình riêng nhìn ra rõ ràng.`,
+              });
+              break;
+            }
+          }
+        }
+      }
     }
   }
 

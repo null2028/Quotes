@@ -735,6 +735,11 @@ export function importDirectorBundle(
     progress: 0,
     seoFileName,
     captionText: buildTraNguoiCaption(cupId, fullProps),
+    ...(bundle.goiChenGoc
+      ? { goiChenGoc: bundle.goiChenGoc }
+      : prevCup?.goiChenGoc
+        ? { goiChenGoc: prevCup.goiChenGoc }
+        : {}),
     props: fullProps,
   };
 

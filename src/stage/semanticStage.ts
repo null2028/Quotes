@@ -617,7 +617,8 @@ export function classifySemanticBeatTempo(
  * 3. Đo diện tích vật đỏ SAU khi đã tự căn khung.
  */
 export function compileSemanticStageScript(
-  sem: SemanticStageScript
+  sem: SemanticStageScript,
+  compileWarnings?: string[]
 ): StageScript {
   const terrainName = sem.boi_canh?.dia_hinh ?? 'phang';
   const terrainType: TerrainType = SEMANTIC_TERRAINS[terrainName] ?? 'flat';
@@ -1176,6 +1177,7 @@ export function compileSemanticStageScript(
   for (const beat of sortedBeats) {
     const atExpr = resolveMocToTimeExpr(beat.moc, beat.sau ?? 0);
     const beatTempo = tempoAnalysis.byBeatRef.get(beat);
+    const beatNum = (beatTempo?.beatIndex ?? 0) + 1;
     const dur = beatTempo?.effectiveDuration ?? beat.thoi_luong ?? TEMPO.MIN_LOOK_TURN_SEC;
     const isPivotOrBefore =
       beat.moc !== 'cu_lat' || (beat.sau ?? 0) <= 0.15;
@@ -1227,6 +1229,11 @@ export function compileSemanticStageScript(
           st.x = destX;
         } else if (act.di_toi) {
           const destX = transformX(SEMANTIC_SLOTS[act.di_toi]);
+          if (Math.abs(destX - st.x) < 1) {
+            compileWarnings?.push(
+              `Nhịp ${beatNum} (${beat.moc}): nhân vật "${actorId}" có di_toi="${act.di_toi}" trùng vị trí hiện tại nên không tạo bước đi.`
+            );
+          }
           cue.toX = destX;
           if (!act.huong && Math.abs(destX - st.x) > 2) {
             const moveDir = destX >= st.x ? 'right' : 'left';
@@ -1250,6 +1257,11 @@ export function compileSemanticStageScript(
         }
 
         if (act.lui_buoc) {
+          if (act.di_toi || act.di_vao !== undefined || act.di_ra !== undefined) {
+            compileWarnings?.push(
+              `Nhịp ${beatNum} (${beat.moc}): nhân vật "${actorId}" vừa có bước di chuyển vừa có lui_buoc — lui_buoc đã ghi đè vị trí đích.`
+            );
+          }
           const stepUnits = act.lui_buoc === 'mot_buoc' ? 20 : 12;
           const dirSign = st.facing === 'right' ? 1 : -1;
           const backX = Number(
@@ -1372,6 +1384,10 @@ export function compileSemanticStageScript(
           if (isPivotOrBefore) {
             partnerSt.pivotFacing = partnerSt.facing;
           }
+        } else {
+          compileWarnings?.push(
+            `Nhịp ${beatNum} (${beat.moc}): nhân vật "${actorId}" có nhin_nhau nhưng không tìm thấy nhân vật thứ hai nên động từ bị bỏ qua.`
+          );
         }
       }
 
@@ -1439,6 +1455,10 @@ export function compileSemanticStageScript(
             dropGravity: true,
             variant: '',
           });
+        } else {
+          compileWarnings?.push(
+            `Nhịp ${beatNum} (${beat.moc}): nhân vật "${actorId}" có tha_roi nhưng hiện không cầm đạo cụ nào nên động từ bị bỏ qua.`
+          );
         }
       }
 
@@ -1500,6 +1520,10 @@ export function compileSemanticStageScript(
           if (catDef?.variants?.cam && pact.trang_thai === undefined) {
             cue.variant = '';
           }
+        } else {
+          compileWarnings?.push(
+            `Nhịp ${beatNum} (${beat.moc}): đạo cụ "${propId}" có dat_tren="${pact.dat_tren}" không khớp vật chủ/điểm neo nên động từ bị bỏ qua.`
+          );
         }
       }
       if (pact.di_toi) {
@@ -1609,6 +1633,11 @@ export function compileSemanticStageScript(
     };
   });
 
+  const dedupedTimeline = deduplicateOverlappingTimelineCues(
+    timeline,
+    compileWarnings
+  );
+
   return {
     sceneId: sem.sceneId,
     name: sem.ten,
@@ -1631,6 +1660,101 @@ export function compileSemanticStageScript(
     atmosphere,
     actors: compiledActors,
     props: compiledProps,
-    timeline,
+    timeline: dedupedTimeline,
   };
+}
+
+const MERGEABLE_CUE_PROPS = [
+  'colorRole',
+  'opacity',
+  'strokeWidth',
+  'leanDeg',
+  'toX',
+  'toY',
+  'pose',
+  'facing',
+  'morphProgress',
+  'floatAwayProgress',
+  'splitProgress',
+  'zoom',
+] as const;
+
+function parseAnchorOffset(expr: string | number | undefined): {
+  anchor: string;
+  offset: number;
+} | null {
+  if (typeof expr !== 'string') return null;
+  const m = expr.match(/^([a-z0-9_]+)([+-]\d+(?:\.\d+)?)?s?$/i);
+  if (!m) return null;
+  return { anchor: m[1], offset: m[2] ? Number(m[2]) : 0 };
+}
+
+/**
+ * T7b #4: Gộp 2 lệnh trùng lặp cùng đối tượng, cùng thuộc tính và chồng thời gian thành 1 lệnh duy nhất,
+ * kèm cảnh báo vàng rõ ràng (vd `duong_sang` vừa có `vat_do: true` tại pivot+0.4s vừa có `doi_do` tại pivot+0.45s).
+ */
+export function deduplicateOverlappingTimelineCues(
+  timeline: TimelineCue[],
+  warnings?: string[]
+): TimelineCue[] {
+  const result: TimelineCue[] = [];
+  const consumed = new Set<number>();
+
+  for (let i = 0; i < timeline.length; i++) {
+    if (consumed.has(i)) continue;
+    let merged: TimelineCue = { ...timeline[i] };
+    const pA = parseAnchorOffset(merged.at ?? merged.when);
+
+    for (let j = i + 1; j < timeline.length; j++) {
+      if (consumed.has(j)) continue;
+      const cand = timeline[j];
+      if (cand.target !== merged.target) continue;
+      const pB = parseAnchorOffset(cand.at ?? cand.when);
+      if (!pA || !pB || pA.anchor !== pB.anchor) continue;
+
+      const durA = merged.duration ?? 0.5;
+      const durB = cand.duration ?? 0.5;
+      const startA = pA.offset;
+      const endA = startA + durA;
+      const startB = pB.offset;
+      const endB = startB + durB;
+
+      // Chồng thời gian (không gộp cặp nối tiếp ngay sát nhau như khung_lai recoil -> settle)
+      const overlaps = startB < endA - 0.02 && startA < endB - 0.02;
+      if (!overlaps) continue;
+
+      const sharedProps = MERGEABLE_CUE_PROPS.filter(
+        (k) => merged[k] !== undefined && cand[k] !== undefined
+      );
+      if (sharedProps.length === 0) continue;
+
+      consumed.add(j);
+      const minStart = Math.min(startA, startB);
+      const maxEnd = Math.max(endA, endB);
+      const mergedAt =
+        Math.abs(minStart) < 0.005
+          ? pA.anchor
+          : minStart > 0
+            ? `${pA.anchor}+${Number(minStart.toFixed(2))}s`
+            : `${pA.anchor}${Number(minStart.toFixed(2))}s`;
+      const prevAtLabel = merged.at ?? merged.when ?? '?';
+      const candAtLabel = cand.at ?? cand.when ?? '?';
+
+      merged = {
+        ...merged,
+        ...cand,
+        at: mergedAt,
+        duration: Number(Math.max(0.1, maxEnd - minStart).toFixed(2)),
+      };
+      pA.offset = minStart;
+
+      warnings?.push(
+        `Đã gộp 2 lệnh trùng lặp cùng đối tượng "${merged.target}" (${sharedProps.join(', ')}) chồng thời gian (${prevAtLabel} và ${candAtLabel}) thành 1 lệnh tại ${mergedAt}.`
+      );
+    }
+
+    result.push(merged);
+  }
+
+  return result;
 }

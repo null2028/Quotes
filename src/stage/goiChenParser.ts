@@ -237,8 +237,15 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
   // ── 8. Biên dịch → StageScript ──
   let compiled: StageScript | null = null;
   if (isSemanticStageScript(semInput)) {
+    const compileWarnings: string[] = [];
     try {
-      compiled = compileSemanticStageScript(semInput as SemanticStageScript);
+      compiled = compileSemanticStageScript(
+        semInput as SemanticStageScript,
+        compileWarnings
+      );
+      for (const cw of compileWarnings) {
+        warnings.push(cw);
+      }
     } catch (e) {
       formatErrors.push(`Lỗi biên dịch cảnh: ${(e as Error).message}`);
       return {

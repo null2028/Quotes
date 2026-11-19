@@ -42,6 +42,8 @@ export interface SanitizedCupBundle {
   mode: 'create_new' | 'overwrite_cup';
   targetCupId?: string;
   cupId?: string;
+  /** Nguyên văn JSON Gói Chén người dùng đã dán khi nhập (để đối chiếu kịch bản ↔ output) */
+  goiChenGoc?: Record<string, unknown>;
   title: string;
   author: string;
   textFormat: 'POEM' | 'PROSE';
@@ -1207,6 +1209,7 @@ function convertGoiChenToBundle(
     bundleVersion: 'goichen_1',
     mode: requestedMode,
     targetCupId: options?.targetCupId,
+    goiChenGoc: obj,
     title,
     author,
     textFormat,

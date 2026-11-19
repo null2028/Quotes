@@ -345,23 +345,65 @@ function renderTerrainSegmentsNode(
     const x1 = Math.min(terrain.endX, Math.max(seg.startX, seg.endX));
     if (x1 <= x0 + 0.5) continue;
     const steps = 28;
-    const cmds: string[] = [];
+    // T7b #6: Vẽ đoạn đường thành DẢI LỐI ĐI có bề rộng (2 mép song song hơi chếch, tách khỏi nét đất đen)
+    const topOffsetY = 1.6;
+    const botOffsetY = seg.isAccentActive ? 7.4 : 5.4;
+    const shearX = -4.2;
+    const topPts: Array<[number, number]> = [];
+    const botPts: Array<[number, number]> = [];
     for (let i = 0; i <= steps; i++) {
       const cx = x0 + ((x1 - x0) * i) / steps;
       const pt = getTerrainPoint(terrain, cx, phase);
-      cmds.push(`${i === 0 ? 'M' : 'L'} ${cx.toFixed(1)} ${pt.y.toFixed(1)}`);
+      topPts.push([cx, pt.y + topOffsetY]);
+      botPts.push([cx + shearX, pt.y + botOffsetY]);
     }
+    const topPath = topPts
+      .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
+      .join(' ');
+    const botPath = botPts
+      .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
+      .join(' ');
+    const ribbonFillPath = [
+      topPath,
+      ...botPts
+        .slice()
+        .reverse()
+        .map(([x, y]) => `L ${x.toFixed(1)} ${y.toFixed(1)}`),
+      'Z',
+    ].join(' ');
+
+    const edgeStroke = seg.isAccentActive
+      ? Math.max(1.45, seg.strokeWidth * 0.52)
+      : Math.max(0.85, seg.strokeWidth * 0.65);
+
     nodes.push(
-      React.createElement('path', {
-        key: `tseg-${seg.id}`,
-        d: cmds.join(' '),
-        fill: 'none',
-        stroke: seg.color,
-        strokeWidth: seg.strokeWidth,
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        opacity: seg.opacity * inkAlpha,
-      })
+      React.createElement(
+        'g',
+        { key: `tseg-${seg.id}`, opacity: seg.opacity * inkAlpha },
+        React.createElement('path', {
+          d: ribbonFillPath,
+          fill: seg.color,
+          fillOpacity: seg.isAccentActive ? 0.24 : 0.06,
+          stroke: 'none',
+        }),
+        React.createElement('path', {
+          d: topPath,
+          fill: 'none',
+          stroke: seg.color,
+          strokeWidth: edgeStroke,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+        }),
+        React.createElement('path', {
+          d: botPath,
+          fill: 'none',
+          stroke: seg.color,
+          strokeWidth: edgeStroke * 0.9,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round',
+          opacity: seg.isAccentActive ? 0.88 : 0.62,
+        })
+      )
     );
   }
   return nodes.length > 0 ? React.createElement(React.Fragment, null, ...nodes) : null;
