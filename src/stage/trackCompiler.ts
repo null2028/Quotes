@@ -6,6 +6,7 @@ import { ThemePalette } from '../theme/palettes';
 import { levitateWeightless } from '../kit/SlowMotionVerbs';
 import type { TravelerPoseWeights } from '../kit/CloakedTraveler';
 import { TEMPO, MIN_RED_AREA_PX2 } from './stageConstants';
+import { isFreeModeStageScript } from './legacySceneIds';
 import {
   computePropRedStageArea,
   PX2_PER_STAGE_UNIT2,
@@ -787,11 +788,13 @@ export function evaluateStageScriptAtFrame(
     }
   );
   const isSemantic = Boolean(script.tags?.includes('semantic_v1'));
+  const isFreeMode = isFreeModeStageScript(script);
 
-  // T8-DNA-a #1: Gói Chén (`semantic_v1`) KHÔNG chịu ảnh hưởng từ Visual DNA Trục 4 (`pivotMechanic`);
-  // camera quanh cú lật do duy nhất `kieu_cu_lat` điều khiển ở cuối khối `if (isSemantic)`.
+  // T8-DNA-a #1 & TF5 #1: Gói Chén (`semantic_v1`) và Làn tự do (`che_do: "tu_do"`)
+  // KHÔNG chịu ảnh hưởng từ Visual DNA Trục 4 (`pivotMechanic`);
+  // với `tu_do`, camera chỉ chạy đúng theo `camera` / `timeline[]` kịch bản ghi (không tự zoom/pan/drift).
   const activePivotMechanic =
-    isSemantic
+    isSemantic || isFreeMode
       ? 'NONE'
       : visualDNA && !visualDNA.isLegacyLocked
         ? visualDNA.pivotMechanic
@@ -808,7 +811,7 @@ export function evaluateStageScriptAtFrame(
         (evaluatedZoom * (1.065 - 0.085 * pivotCurve)).toFixed(4)
       );
     }
-  } else if (isSemantic) {
+  } else if (isSemantic || isFreeMode) {
     evaluatedZoom = baseZoomInit;
   } else if (activePivotMechanic === 'PULLBACK_REVEAL') {
     const breathZoom = Math.sin(loopProgress * Math.PI * 2) * 0.003;
@@ -842,7 +845,7 @@ export function evaluateStageScriptAtFrame(
       basePanXInit,
       camPanXSegs
     ).value;
-  } else if (isSemantic) {
+  } else if (isSemantic || isFreeMode) {
     evaluatedPanX = basePanXInit;
   } else {
     evaluatedPanX = basePanXInit + Math.sin(loopProgress * Math.PI * 2) * 1.4;
@@ -886,7 +889,7 @@ export function evaluateStageScriptAtFrame(
       basePanYInit,
       camPanYSegs
     ).value;
-  } else if (isSemantic) {
+  } else if (isSemantic || isFreeMode) {
     evaluatedPanY = basePanYInit;
   } else {
     const autoLiftY = interpolate(
@@ -2188,6 +2191,19 @@ export function evaluateStageScriptAtFrame(
     const timeScale = visualDNA?.shotMode === 'BRUSH_DRAW' ? 1.12 : 1.0;
 
     props.forEach((p, propIdx) => {
+      // TF5 #2: Với làn tự do (`tu_do`), đạo cụ nào kịch bản đã tự định nhịp (có cue `drawProgress` trong timeline
+      // hoặc có `enterAt` kèm `fadeDuration`) → dùng đúng nhịp kịch bản, không min/không ép 1.55s V8.6.1.
+      if (isFreeMode) {
+        const hasScriptDrawCue = cues.some(
+          (c) => c.target === p.id && c.drawProgress !== undefined
+        );
+        const hasExplicitEnterAndFade =
+          p.spec.enterAt !== undefined && p.spec.fadeDuration !== undefined;
+        if (hasScriptDrawCue || hasExplicitEnterAndFade) {
+          return;
+        }
+      }
+
       const hasExplicitEnterAt = p.spec.enterAt !== undefined;
       const enterFrame = hasExplicitEnterAt
         ? resolveCueFrame(p.spec.enterAt, timeline)
@@ -2276,6 +2292,20 @@ export function evaluateStageScriptAtFrame(
 
     actors.forEach((actor, actorIdx) => {
       const actorSpec = (script.actors ?? [])[actorIdx];
+      // TF5 #2: Với làn tự do (`tu_do`), nhân vật nào kịch bản đã tự định nhịp (có cue `drawProgress` trong timeline
+      // hoặc có `enterAt` kèm `fadeDuration`) → dùng đúng nhịp kịch bản, không ép hiện nét 1.5s V8.6.1.
+      if (isFreeMode) {
+        const hasScriptDrawCue = cues.some(
+          (c) => c.target === actor.id && c.drawProgress !== undefined
+        );
+        const hasExplicitEnterAndFade =
+          actorSpec?.enterAt !== undefined &&
+          actorSpec?.fadeDuration !== undefined;
+        if (hasScriptDrawCue || hasExplicitEnterAndFade) {
+          return;
+        }
+      }
+
       const hasExplicitEnterAt = actorSpec?.enterAt !== undefined;
       const enterFrame = hasExplicitEnterAt
         ? resolveCueFrame(actorSpec?.enterAt, timeline)

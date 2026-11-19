@@ -5,6 +5,7 @@ import {
   ShotMode,
   VideoInputProps,
 } from '../schemas/videoSchema';
+import { isFreeModeStageScript } from '../stage/legacySceneIds';
 import { StageScript } from '../stage/stageScriptSchema';
 import { resolveXCoord } from '../stage/terrainSystem';
 import { LAYOUT_TOKENS, isDarkThemePalette } from '../theme/palettes';
@@ -238,6 +239,7 @@ export function resolveVisualDNA(
     arr[Math.floor(rnd() * arr.length) % arr.length];
 
   const isSemantic = Boolean(script?.tags?.includes('semantic_v1'));
+  const isFreeMode = isFreeModeStageScript(script);
 
   let shotMode: ShotMode;
   let layout: LayoutVariant;
@@ -276,6 +278,14 @@ export function resolveVisualDNA(
     layout = spec?.layout ?? layoutFromGoi;
     downgradedAsymmetricThird = false;
     lightingGobo = spec?.lightingGobo ?? goboFromGoi;
+    pivotMechanic = spec?.pivotMechanic ?? 'ACCENT_PUSH_IN';
+  } else if (isFreeMode) {
+    // TF5: Làn tự do (`che_do: "tu_do"`): kịch bản ghi gì theo đó; không ghi thì mặc định TĨNH, không ngẫu nhiên.
+    // Seed chỉ còn đổi chi tiết chống trùng (chân trời, bụi giấy, tâm vignette), giống Gói Chén.
+    shotMode = spec?.shotMode ?? 'SOLID_SCENE';
+    layout = spec?.layout ?? 'CLASSIC_TOP_STAGE';
+    downgradedAsymmetricThird = false;
+    lightingGobo = spec?.lightingGobo ?? 'NONE';
     pivotMechanic = spec?.pivotMechanic ?? 'ACCENT_PUSH_IN';
   } else {
     const shotCandidates: ShotMode[] = hasPropFocusTarget(script)
