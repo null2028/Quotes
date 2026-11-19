@@ -43,14 +43,12 @@
   "nhip": [
     {
       "moc": "dong_1",
-      "thoi_luong": 3.4,
       "nhan_vat": {
         "hero": { "di_toi": "giua_trai", "huong": "phai" }
       }
     },
     {
       "moc": "dong_3",
-      "thoi_luong": 1.3,
       "nhan_vat": {
         "em": { "di_vao": "phai" },
         "hero": { "khung_lai": true, "nhin_nhau": "em" }
@@ -58,16 +56,14 @@
     },
     {
       "moc": "cu_lat",
-      "sau": 0.1,
-      "thoi_luong": 0.45,
+      "sau": 0.5,
       "nhan_vat": {
         "hero": { "lui_buoc": "nua_buoc", "nhin_nhau": "em" }
       }
     },
     {
       "moc": "cu_lat",
-      "sau": 0.45,
-      "thoi_luong": 1.3,
+      "sau": 2.8,
       "nhan_vat": {
         "hero": { "quay_dau": true }
       }

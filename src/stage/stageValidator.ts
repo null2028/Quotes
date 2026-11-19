@@ -21,6 +21,7 @@ import {
   SEMANTIC_LAYERS,
   SEMANTIC_SLOTS,
   SemanticLayer,
+  TEMPO,
   TRAVELER_HAND_TEACUP_SPAN,
   TY_LE_CANH,
   VALIDATION_SAMPLE_STEP_SEC,
@@ -40,15 +41,18 @@ import {
   suggestClosestName,
 } from './stageGeometry';
 import {
+  classifySemanticBeatTempo,
   compileSemanticStageScript,
   isSemanticStageScript,
   SEMANTIC_ACTOR_ROLES,
+  SEMANTIC_LEANS,
   SEMANTIC_POSES,
   SEMANTIC_SOCKETS,
   SEMANTIC_TERRAINS,
   SemanticStageScript,
 } from './semanticStage';
 import { computeTerrainSegmentArcLength, getTerrainPoint } from './terrainSystem';
+import { resolveCueFrame } from './timeResolver';
 import { evaluateStageScriptAtFrame } from './trackCompiler';
 import type { CustomPropDefinition, StageScript } from './stageScriptSchema';
 
@@ -176,7 +180,9 @@ export interface StageValidationIssue {
     | 'EXCESSIVE_MOTION'
     | 'FLOATING_OBJECT'
     | 'OUT_OF_SAFE_TERRAIN'
-    | 'RED_OBJECT_RULE';
+    | 'RED_OBJECT_RULE'
+    | 'TEMPO_RULE_VIOLATION'
+    | 'PIVOT_ORDER_VIOLATION';
   message: string;
 }
 
@@ -642,6 +648,17 @@ export function validateSemanticSpecStructure(
         });
       }
 
+      if (
+        a.nghieng !== undefined &&
+        !(SEMANTIC_LEANS as readonly string[]).includes(String(a.nghieng))
+      ) {
+        const hint = suggestClosestName(String(a.nghieng), [...SEMANTIC_LEANS]);
+        issues.push({
+          code: 'UNKNOWN_NAME',
+          message: `${scope}: độ nghiêng "${a.nghieng}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ` (có: ${SEMANTIC_LEANS.join(', ')})`}`,
+        });
+      }
+
       if (a.tu_the === 'ngoi_tua' && !a.ngoi_tren) {
         issues.push({
           code: 'INVALID_SEATING',
@@ -770,6 +787,16 @@ export function validateSemanticSpecStructure(
                 message: `${scope}.nhan_vat.${aid}: tư thế "${ao.tu_the}" không có${hint ? `, ý bạn là "${hint}"?` : ''}`,
               });
             }
+            if (
+              ao.nghieng !== undefined &&
+              !(SEMANTIC_LEANS as readonly string[]).includes(String(ao.nghieng))
+            ) {
+              const hint = suggestClosestName(String(ao.nghieng), [...SEMANTIC_LEANS]);
+              issues.push({
+                code: 'UNKNOWN_NAME',
+                message: `${scope}.nhan_vat.${aid}: độ nghiêng "${ao.nghieng}" không hợp lệ${hint ? `, ý bạn là "${hint}"?` : ` (có: ${SEMANTIC_LEANS.join(', ')})`}`,
+              });
+            }
             if (ao.tu_the === 'ngoi_tua') {
               const actorSpec = (sem.nhan_vat as Array<Record<string, unknown>>).find((x) => x.id === aid);
               if (!actorSpec?.ngoi_tren) {
@@ -872,6 +899,43 @@ export function validateSemanticSpecStructure(
         }
       }
     });
+
+    // Kiểm luật Nhịp Trà Nguội (giới hạn số chuyển động lớn) & "Chữ dẫn, hình theo" tại cú lật
+    if (Array.isArray(sem.nhan_vat) && Array.isArray(sem.dao_cu)) {
+      const tempoInfo = classifySemanticBeatTempo(sem as unknown as SemanticStageScript);
+      if (tempoInfo.totalMajorMotions > TEMPO.MAX_MAJOR_MOTIONS_TOTAL) {
+        issues.push({
+          code: 'TEMPO_RULE_VIOLATION',
+          message: `Cả Chén có ${tempoInfo.totalMajorMotions} chuyển động lớn của nhân vật (tối đa ${TEMPO.MAX_MAJOR_MOTIONS_TOTAL} theo Nhịp Trà Nguội); hãy bỏ bớt để cảnh tĩnh và lắng hơn.`,
+        });
+      }
+      for (const [lineMoc, cnt] of Object.entries(tempoInfo.majorCountByLine)) {
+        if (cnt > TEMPO.MAX_MOTIONS_PER_LINE) {
+          issues.push({
+            code: 'TEMPO_RULE_VIOLATION',
+            message: `Mốc "${lineMoc}" có ${cnt} chuyển động lớn (mỗi dòng chữ tối đa ${TEMPO.MAX_MOTIONS_PER_LINE}); hãy bỏ bớt hoặc gộp nhịp.`,
+          });
+        }
+      }
+      if (tempoInfo.afterPivotMajorCount > TEMPO.MAX_MOTIONS_AFTER_PIVOT) {
+        issues.push({
+          code: 'TEMPO_RULE_VIOLATION',
+          message: `Sau cú lật ("cu_lat") có ${tempoInfo.afterPivotMajorCount} chuyển động lớn (tối đa ${TEMPO.MAX_MOTIONS_AFTER_PIVOT}); hãy bỏ bớt để giữ dư vị tĩnh.`,
+        });
+      }
+      for (const bInfo of tempoInfo.beats) {
+        if (
+          bInfo.moc === 'cu_lat' &&
+          bInfo.isMajorMotion &&
+          bInfo.sau < TEMPO.PIVOT_REACTION_MIN_DELAY_SEC - 0.005
+        ) {
+          issues.push({
+            code: 'PIVOT_ORDER_VIOLATION',
+            message: `nhip[${bInfo.beatIndex}] (cu_lat, sau=${bInfo.sau}s): vi phạm luật "Chữ dẫn, hình theo" — phản ứng lớn của nhân vật ở cú lật phải bắt đầu ≥ ${TEMPO.PIVOT_REACTION_MIN_DELAY_SEC}s sau khi chữ lật đổi đỏ (và không sớm hơn lúc vật đỏ bắt đầu đổi màu). Hãy đổi "sau" thành ≥ 0.45.`,
+          });
+        }
+      }
+    }
   }
 
   return issues;
@@ -1465,6 +1529,123 @@ export function validateStageScriptHard(
         code: 'RED_OBJECT_RULE',
         message: `Vật đỏ "${onlyRed.id}" (${onlyRed.typeName}) quá nhỏ trên màn hình (${Math.round(onlyRed.screenPx2)} px² < ngưỡng tối thiểu ${MIN_RED_AREA_PX2} px² ngay cả sau khi đẩy máy quay zoom=${onlyRed.zoom.toFixed(2)}). Tuyệt đối không phóng to riêng vật nhỏ; hãy đổi sang vật đỏ khác đủ diện tích như: ${suggestions}.`,
       });
+    }
+  }
+
+  // 4. Kiểm tra luật "Chữ dẫn, hình theo" & tỷ lệ tĩnh/động (≤ 40%) trên timeline đã biên dịch (chặn cả StageScript như Q096)
+  if (script.tags?.includes('semantic_v1')) {
+    const timelineCues = script.timeline ?? [];
+    const propIdsSet = new Set((script.props ?? []).map((p) => p.id));
+    const segIdsSet = new Set(
+      (typeof script.terrain === 'object' ? script.terrain.segments ?? [] : []).map((s) => s.id)
+    );
+
+    let redStartFrame = Infinity;
+    for (const cue of timelineCues) {
+      if (!propIdsSet.has(cue.target) && !segIdsSet.has(cue.target)) continue;
+      if (cue.colorRole === 'accent' || (cue.morphProgress !== undefined && cue.morphProgress > 0)) {
+        const sf = resolveCueFrame(cue.at ?? cue.when, timeline);
+        if (sf >= timeline.pivotFrame - 6 && sf < redStartFrame) {
+          redStartFrame = sf;
+        }
+      }
+    }
+    if (!Number.isFinite(redStartFrame)) {
+      redStartFrame =
+        timeline.pivotFrame + Math.round(TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC * fps);
+    }
+
+    const minReactionFrame = Math.max(
+      redStartFrame,
+      timeline.pivotFrame + Math.round(TEMPO.PIVOT_REACTION_MIN_DELAY_SEC * fps)
+    );
+    const pivotWindowStart =
+      timeline.pivotFrame - Math.round(TEMPO.PIVOT_WINDOW_BEFORE_SEC * fps);
+
+    for (const actor of script.actors ?? []) {
+      const aCues = timelineCues
+        .filter((c) => c.target === actor.id)
+        .map((c) => ({
+          cue: c,
+          startF: resolveCueFrame(c.at ?? c.when, timeline),
+        }))
+        .sort((a, b) => a.startF - b.startF);
+
+      let curX = typeof actor.x === 'number' ? actor.x : 270;
+      let curLean = actor.leanDeg ?? 0;
+      let curSit = actor.sitProgress ?? (actor.pose === 'sit_lean' ? 1 : 0);
+      let curPose = actor.pose ?? 'stand';
+      let curFacing = actor.facing ?? 'right';
+
+      const activeIntervals: Array<[number, number]> = [];
+      let flaggedPivotEarly = false;
+
+      for (const { cue, startF } of aCues) {
+        const nextX =
+          cue.toX !== undefined
+            ? typeof cue.toX === 'number'
+              ? cue.toX
+              : curX
+            : cue.x !== undefined && typeof cue.x === 'number'
+              ? cue.x
+              : curX;
+        const nextLean = cue.leanDeg !== undefined ? cue.leanDeg : curLean;
+        const nextSit = cue.sitProgress !== undefined ? cue.sitProgress : curSit;
+        const nextPose = cue.pose !== undefined ? cue.pose : curPose;
+        const nextFacing = cue.facing !== undefined ? cue.facing : curFacing;
+
+        const changed =
+          Math.abs(nextX - curX) > 0.5 ||
+          Math.abs(nextLean - curLean) > 0.5 ||
+          Math.abs(nextSit - curSit) > 0.05 ||
+          nextPose !== curPose ||
+          nextFacing !== curFacing;
+
+        curX = nextX;
+        curLean = nextLean;
+        curSit = nextSit;
+        curPose = nextPose;
+        curFacing = nextFacing;
+
+        if (!changed || startF <= 2) continue;
+
+        const durF = Math.max(1, Math.round((cue.duration ?? TEMPO.MIN_LOOK_TURN_SEC) * fps));
+        const endF = Math.min(timeline.durationInFrames, startF + durF);
+        activeIntervals.push([startF, endF]);
+
+        if (!flaggedPivotEarly && startF >= pivotWindowStart && startF < minReactionFrame) {
+          flaggedPivotEarly = true;
+          issues.push({
+            code: 'PIVOT_ORDER_VIOLATION',
+            message: `Nhân vật "${actor.id}" có chuyển động lớn bắt đầu tại ${cue.at ?? cue.when} (t=${(startF / fps).toFixed(2)}s), sớm hơn ngưỡng "Chữ dẫn, hình theo" (cần ≥ t=${(minReactionFrame / fps).toFixed(2)}s, tức ≥ pivot+${TEMPO.PIVOT_REACTION_MIN_DELAY_SEC}s và không trước lúc vật đỏ đổi màu).`,
+          });
+        }
+      }
+
+      // Hợp nhất các khoảng chuyển động để tính % thời lượng nhân vật đang động
+      if (activeIntervals.length > 0) {
+        activeIntervals.sort((a, b) => a[0] - b[0]);
+        let mergedFrames = 0;
+        let [mStart, mEnd] = activeIntervals[0];
+        for (let i = 1; i < activeIntervals.length; i++) {
+          const [s, e] = activeIntervals[i];
+          if (s <= mEnd) {
+            mEnd = Math.max(mEnd, e);
+          } else {
+            mergedFrames += Math.max(0, mEnd - mStart);
+            mStart = s;
+            mEnd = e;
+          }
+        }
+        mergedFrames += Math.max(0, mEnd - mStart);
+        const activeRatio = mergedFrames / Math.max(1, timeline.durationInFrames);
+        if (activeRatio > TEMPO.MAX_ACTIVE_MOTION_RATIO + 0.005) {
+          issues.push({
+            code: 'TEMPO_RULE_VIOLATION',
+            message: `Nhân vật "${actor.id}" chuyển động ${(activeRatio * 100).toFixed(0)}% thời lượng video (tối đa ${Math.round(TEMPO.MAX_ACTIVE_MOTION_RATIO * 100)}% theo Nhịp Trà Nguội); hãy bỏ bớt chuyển động để cảnh tĩnh hơn.`,
+          });
+        }
+      }
     }
   }
 

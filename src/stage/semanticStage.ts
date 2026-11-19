@@ -1,17 +1,17 @@
 import { BUILT_IN_PROP_CATALOG } from './propCatalog';
 import {
   AnchorKind,
-  AUTO_FRAME_MAX_HEIGHT_RATIO,
+  AUTO_FRAME_MIN_SHRINK_RATIO,
   AUTO_FRAME_MIN_TOP_MARGIN_RATIO,
-  AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO,
-  AUTO_FRAME_TARGET_WIDTH_RATIO,
-  DEFAULT_SCENE_SCALE,
+  LU_KHACH_HEIGHT_RATIO,
+  LU_KHACH_STANDING_UNITS,
   MIN_RED_AREA_PX2,
   PIVOT_CAMERA_PUSH_IN_ZOOM,
   SEMANTIC_SLOTS,
   SemanticLayer,
   SemanticSlot,
   SKY_MOUNT_Y,
+  TEMPO,
   WALL_MOUNT_Y_OFFSET,
 } from './stageConstants';
 import {
@@ -62,7 +62,8 @@ export const SEMANTIC_SOCKETS = {
   lung: 'back',
 } as const;
 
-export const SEMANTIC_LEANS = ['thang', 'nhe_truoc', 'guc', 'nga_lung'] as const;
+export const SEMANTIC_LEANS = ['thang', 'nhe_truoc', 'guc', 'guc_sau', 'nga_lung'] as const;
+export type SemanticLeanName = (typeof SEMANTIC_LEANS)[number];
 
 export const SEMANTIC_BEAT_ANCHORS = [
   'bat_dau',
@@ -137,7 +138,7 @@ export interface SemanticActorSpec {
   ngoi_vao?: string; // "<id_ban>" — tự động kê ghế sát bàn và quay mặt nhìn ngang vào bàn
   huong?: 'trai' | 'phai';
   tu_the?: SemanticPoseName;
-  nghieng?: 'nhe_truoc' | 'guc' | 'thang' | 'nga_lung';
+  nghieng?: SemanticLeanName;
   nhin_theo?: string; // "<id_vat_hoac_nhan_vat>"
   lop?: SemanticLayer;
   cam_chen_tra?: boolean;
@@ -164,7 +165,7 @@ export interface SemanticActorBeatAction {
   di_vao?: 'trai' | 'phai' | boolean;
   di_ra?: 'trai' | 'phai' | boolean;
   huong?: 'trai' | 'phai';
-  nghieng?: 'nhe_truoc' | 'guc' | 'thang' | 'nga_lung';
+  nghieng?: SemanticLeanName;
   nhin_theo?: string | null;
   nhin_nhau?: boolean | string;
   khung_lai?: boolean;
@@ -317,19 +318,295 @@ function estimateCatalogPropBaseRedPx2(
 }
 
 /**
- * Tỷ lệ mục tiêu của Tự căn khung: khung bao chung của mọi nhân vật và đạo cụ chiếm ~70% chiều ngang vùng hình,
- * đồng thời giới hạn chiều cao tối đa để đỉnh đầu nhân vật/đạo cụ không bao giờ chạm mép trên vùng hình.
+ * Cỡ nhân vật cố định (T7a): Lữ khách đứng luôn cao đúng LU_KHACH_HEIGHT_RATIO (28% vùng hình),
+ * Tự căn khung chỉ dịch ngang căn giữa và thu nhỏ tối thiểu 0.75× cỡ chuẩn nếu cảnh quá rộng.
  */
-export { AUTO_FRAME_TARGET_WIDTH_RATIO, AUTO_FRAME_MIN_TOP_MARGIN_RATIO };
-// Đường đất y = 352, đỉnh vùng hình STAGE_VB_Y0 = 126, cao STAGE_VB_H = 250 -> lề trên tối thiểu 12% = 30 đơn vị -> đỉnh cao nhất y = 156 -> chiều cao tối đa từ mặt đất = 352 - 156 = 196 đơn vị
+export { LU_KHACH_HEIGHT_RATIO, AUTO_FRAME_MIN_TOP_MARGIN_RATIO };
+// Đường đất y = 352, đỉnh vùng hình STAGE_VB_Y0 = 126, cao STAGE_VB_H = 250 -> lề trên tối thiểu 12% = 30 đơn vị -> chiều cao tối đa từ mặt đất = 196 đơn vị
 export const AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS =
   352 - (STAGE_VB_Y0 + STAGE_VB_H * AUTO_FRAME_MIN_TOP_MARGIN_RATIO);
-export const AUTO_FRAME_MAX_HEIGHT_UNITS = Math.min(
-  AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS,
-  STAGE_VB_H * AUTO_FRAME_MAX_HEIGHT_RATIO
-);
 export const STAGE_CENTER_X = 270;
 export const SEATED_AT_DESK_OFFSET_UNITS = 24.5;
+
+export function resolveLeanDeg(
+  nghieng: SemanticLeanName | undefined,
+  isSeated = false
+): number {
+  if (nghieng && nghieng in TEMPO.LEAN_DEG) {
+    return TEMPO.LEAN_DEG[nghieng];
+  }
+  return isSeated ? 2 : 0;
+}
+
+export interface SemanticBeatTempoInfo {
+  beatIndex: number;
+  moc: SemanticBeatSpec['moc'];
+  sau: number;
+  rawDuration?: number;
+  effectiveDuration: number;
+  minRequiredDuration: number;
+  majorActorIds: string[];
+  isMajorMotion: boolean;
+  isNoOpSetup: boolean;
+  categoryLabel: string;
+  durationWarning?: string;
+}
+
+export interface SemanticTempoAnalysis {
+  beats: SemanticBeatTempoInfo[];
+  byBeatRef: Map<SemanticBeatSpec, SemanticBeatTempoInfo>;
+  totalMajorMotions: number;
+  majorCountByLine: Record<string, number>;
+  afterPivotMajorCount: number;
+  warnings: string[];
+}
+
+/**
+ * Phân tích & chuẩn hoá thời lượng toàn bộ nhịp theo bộ hằng số TEMPO (Nhịp Trà Nguội).
+ * Dùng chung cho cả `compileSemanticStageScript`, `validateSemanticSpecStructure` và `parseGoiChen`.
+ */
+export function classifySemanticBeatTempo(
+  sem: SemanticStageScript
+): SemanticTempoAnalysis {
+  const actorState = new Map<
+    string,
+    {
+      pose: SemanticPoseName;
+      lean: SemanticLeanName;
+      facing: 'trai' | 'phai';
+      rawX: number;
+      lookAt: string | null;
+    }
+  >();
+
+  for (const a of sem.nhan_vat ?? []) {
+    const isSeated = Boolean(a.ngoi_tren);
+    const initPose: SemanticPoseName = a.tu_the ?? (isSeated ? 'ngoi_tua' : 'dung');
+    const initLean: SemanticLeanName = a.nghieng ?? 'thang';
+    const initFacing: 'trai' | 'phai' = a.huong === 'trai' ? 'trai' : 'phai';
+    const initRawX = a.vi_tri && a.vi_tri in SEMANTIC_SLOTS ? SEMANTIC_SLOTS[a.vi_tri] : 225;
+    actorState.set(a.id, {
+      pose: initPose,
+      lean: initLean,
+      facing: initFacing,
+      rawX: initRawX,
+      lookAt: a.nhin_theo ?? null,
+    });
+  }
+
+  const indexed = (sem.nhip ?? []).map((beat, beatIndex) => ({ beat, beatIndex }));
+  indexed.sort(
+    (a, b) =>
+      getMocSortKey(a.beat.moc, a.beat.sau) - getMocSortKey(b.beat.moc, b.beat.sau) ||
+      a.beatIndex - b.beatIndex
+  );
+
+  const beats: SemanticBeatTempoInfo[] = [];
+  const byBeatRef = new Map<SemanticBeatSpec, SemanticBeatTempoInfo>();
+  const majorCountByLine: Record<string, number> = {};
+  const warnings: string[] = [];
+  let totalMajorMotions = 0;
+  let afterPivotMajorCount = 0;
+
+  for (const { beat, beatIndex } of indexed) {
+    let minRequired = 0;
+    let category = '';
+    const majorActorIds: string[] = [];
+    let anyRealChange = false;
+
+    const raiseMin = (sec: number, label: string) => {
+      if (sec > minRequired) {
+        minRequired = sec;
+        category = label;
+      }
+    };
+
+    for (const [actorId, act] of Object.entries(beat.nhan_vat ?? {})) {
+      const prev = actorState.get(actorId);
+      let actorMajor = false;
+
+      if (act.di_vao !== undefined || act.di_ra !== undefined || act.di_toi !== undefined) {
+        actorMajor = true;
+        anyRealChange = true;
+        const targetRawX =
+          act.di_toi && act.di_toi in SEMANTIC_SLOTS
+            ? SEMANTIC_SLOTS[act.di_toi]
+            : act.di_vao !== undefined
+              ? prev?.rawX ?? 270
+              : act.di_ra === 'trai'
+                ? 96
+                : 444;
+        const startRawX =
+          act.di_vao !== undefined
+            ? act.di_vao === 'phai'
+              ? 444
+              : 96
+            : prev?.rawX ?? 225;
+        const rawDist =
+          act.di_vao !== undefined || act.di_ra !== undefined
+            ? Math.min(96, Math.abs(targetRawX - startRawX))
+            : Math.abs(targetRawX - startRawX);
+        const walkSec = Math.max(
+          TEMPO.MIN_WALK_SEC,
+          Number((rawDist / TEMPO.WALK_SPEED_UNITS_PER_SEC).toFixed(2))
+        );
+        raiseMin(walkSec, 'đi bộ');
+        if (prev) prev.rawX = targetRawX;
+      }
+
+      if (act.lui_buoc) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_STEP_BACK_SEC, 'lùi bước');
+      }
+
+      if (act.dung_day) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LEAN_SEC, 'đứng dậy');
+        if (prev) prev.pose = 'dung';
+      }
+
+      if (act.tu_the && (!prev || act.tu_the !== prev.pose)) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LEAN_SEC, 'đổi tư thế');
+        if (prev) prev.pose = act.tu_the;
+      }
+
+      if (act.nghieng && (!prev || act.nghieng !== prev.lean)) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LEAN_SEC, 'nghiêng/đổi dáng');
+        if (prev) prev.lean = act.nghieng;
+      }
+
+      if (act.khung_lai) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_FLINCH_SEC, 'khựng lại');
+      }
+
+      if (act.quay_dau) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LOOK_TURN_SEC, 'quay đầu');
+      }
+
+      if (act.tha_roi) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.DROP_GRAVITY_SEC, 'thả rơi');
+      }
+
+      if (act.huong && (!prev || act.huong !== prev.facing)) {
+        actorMajor = true;
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LOOK_TURN_SEC, 'đổi hướng');
+        if (prev) prev.facing = act.huong;
+      }
+
+      if (act.nhin_nhau !== undefined && act.nhin_nhau !== false) {
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LOOK_TURN_SEC, 'nhìn nhau');
+      }
+
+      if (act.nhin_theo !== undefined && (!prev || (act.nhin_theo ?? null) !== prev.lookAt)) {
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LOOK_TURN_SEC, 'nhìn theo');
+        if (prev) prev.lookAt = act.nhin_theo ?? null;
+      }
+
+      if (act.cam_chen_tra !== undefined) {
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LOOK_TURN_SEC, 'cầm chén trà');
+      }
+
+      if (actorMajor) {
+        majorActorIds.push(actorId);
+      }
+    }
+
+    for (const pact of Object.values(beat.dao_cu ?? {})) {
+      if (pact.tha_roi) {
+        anyRealChange = true;
+        raiseMin(TEMPO.DROP_GRAVITY_SEC, 'vật rơi');
+      }
+      if (pact.khoi !== undefined) {
+        anyRealChange = true;
+        raiseMin(TEMPO.EMITTER_TRANSITION_SEC, 'khói trà');
+      }
+      if (pact.di_toi || pact.bay_len || pact.tach_doi || pact.dat_tren || pact.cam_boi !== undefined) {
+        anyRealChange = true;
+        raiseMin(TEMPO.MIN_LOOK_TURN_SEC, 'đạo cụ');
+      }
+    }
+
+    for (const sact of Object.values(beat.doan_duong ?? {})) {
+      if (sact.doi_do) {
+        anyRealChange = true;
+        raiseMin(TEMPO.RED_TRANSITION_SEC, 'đoạn đường đổi đỏ');
+      }
+      if (sact.duong_mo) {
+        anyRealChange = true;
+        raiseMin(TEMPO.EMITTER_TRANSITION_SEC, 'đoạn đường mờ dần');
+      }
+    }
+
+    const isNoOpSetup = beat.moc === 'bat_dau' && !anyRealChange;
+    const isMajorMotion = majorActorIds.length > 0 && !isNoOpSetup;
+
+    let effectiveDuration: number;
+    let durationWarning: string | undefined;
+    if (isNoOpSetup) {
+      effectiveDuration = beat.thoi_luong ?? 0.4;
+    } else if (beat.thoi_luong !== undefined) {
+      if (minRequired > 0 && beat.thoi_luong < minRequired - 0.005) {
+        effectiveDuration = minRequired;
+        durationWarning = `Nhịp ${beatIndex + 1} (${beat.moc}): thoi_luong=${beat.thoi_luong}s nhỏ hơn nhịp Trà Nguội tối thiểu (${minRequired}s cho ${category || 'chuyển động'}), đã tự nâng lên ${minRequired}s.`;
+        warnings.push(durationWarning);
+      } else {
+        effectiveDuration = beat.thoi_luong;
+      }
+    } else {
+      effectiveDuration = minRequired > 0 ? minRequired : TEMPO.MIN_LOOK_TURN_SEC;
+    }
+
+    if (isMajorMotion) {
+      totalMajorMotions += 1;
+      if (beat.moc === 'cu_lat') {
+        afterPivotMajorCount += 1;
+      } else if (beat.moc.startsWith('dong_')) {
+        majorCountByLine[beat.moc] = (majorCountByLine[beat.moc] ?? 0) + 1;
+      }
+    }
+
+    const info: SemanticBeatTempoInfo = {
+      beatIndex,
+      moc: beat.moc,
+      sau: beat.sau ?? 0,
+      rawDuration: beat.thoi_luong,
+      effectiveDuration: Number(effectiveDuration.toFixed(2)),
+      minRequiredDuration: Number(minRequired.toFixed(2)),
+      majorActorIds,
+      isMajorMotion,
+      isNoOpSetup,
+      categoryLabel: category,
+      durationWarning,
+    };
+    beats.push(info);
+    byBeatRef.set(beat, info);
+  }
+
+  return {
+    beats,
+    byBeatRef,
+    totalMajorMotions,
+    majorCountByLine,
+    afterPivotMajorCount,
+    warnings,
+  };
+}
 
 /**
  * Biên dịch Kịch bản Ngữ nghĩa -> StageScript chuẩn cho DeclarativeStagePlayer:
@@ -558,26 +835,19 @@ export function compileSemanticStageScript(
   const rawSpanH = Math.max(24, Math.abs(rawMinY));
   const rawCenterX = (rawMinX + rawMaxX) * 0.5;
 
-  // Ràng buộc: Lữ khách cao tối thiểu 30% chiều cao vùng hình (50 * scale >= 0.30 * STAGE_VB_H),
-  // đồng thời giữ nguyên lề trên tối thiểu 12% chiều cao vùng hình (AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS).
-  const targetWidthUnits = STAGE_VB_W * AUTO_FRAME_TARGET_WIDTH_RATIO;
-  const scaleByWidth = targetWidthUnits / rawSpanW;
-  const scaleByHeight = AUTO_FRAME_MAX_HEIGHT_UNITS / rawSpanH;
-  const heroBaseHeight = sem.nhan_vat.some((a) => !a.ngoi_tren) ? 50 : 47.5;
-  const minHeroScale =
-    sem.nhan_vat.length > 0
-      ? (STAGE_VB_H * AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO) / heroBaseHeight
-      : DEFAULT_SCENE_SCALE;
+  // Cỡ nhân vật cố định (T7a): Lữ khách đứng luôn cao đúng LU_KHACH_HEIGHT_RATIO (28% chiều cao vùng hình).
+  // Tự căn khung chỉ dịch ngang căn giữa và THU NHỎ tối thiểu 0.75× cỡ chuẩn khi cảnh rộng/cao quá vùng hình (không bao giờ phóng to vượt cỡ chuẩn).
+  const standardScale =
+    (STAGE_VB_H * LU_KHACH_HEIGHT_RATIO) / LU_KHACH_STANDING_UNITS;
+  const minScale = standardScale * AUTO_FRAME_MIN_SHRINK_RATIO;
+  const maxSafeSpanScale = (STAGE_VB_W - 44) / rawSpanW;
+  const maxTopSafeScale = AUTO_FRAME_MAX_SAFE_HEIGHT_UNITS / rawSpanH;
+  const fitScale = Math.min(standardScale, maxSafeSpanScale, maxTopSafeScale);
   const autoScale = Number(
-    Math.min(
-      scaleByHeight,
-      4.65,
-      Math.max(DEFAULT_SCENE_SCALE, minHeroScale, scaleByWidth)
-    ).toFixed(3)
+    Math.max(minScale, Math.min(standardScale, fitScale)).toFixed(3)
   );
 
-  // Giữ vị trí ngang nằm trong vùng an toàn [84..456] kể cả khi tỷ lệ nhân vật được nâng lên mức tối thiểu
-  const maxSafeSpanScale = (STAGE_VB_W - 44) / rawSpanW;
+  // Giữ vị trí ngang nằm trong vùng an toàn [84..456] kể cả khi rawSpanW rất rộng
   const spreadScale = Math.min(autoScale, maxSafeSpanScale);
 
   const transformX = (rx: number) =>
@@ -653,6 +923,7 @@ export function compileSemanticStageScript(
     };
   });
 
+  const tempoAnalysis = classifySemanticBeatTempo(sem);
   const sortedBeats = [...sem.nhip].sort(
     (a, b) => getMocSortKey(a.moc, a.sau) - getMocSortKey(b.moc, b.sau)
   );
@@ -710,7 +981,10 @@ export function compileSemanticStageScript(
       (b) => b.nhan_vat?.[a.id]?.di_ra !== undefined
     );
     if (firstDiRaBeat && !initLeaveAt) {
-      const dur = firstDiRaBeat.thoi_luong ?? 1.2;
+      const dur =
+        tempoAnalysis.byBeatRef.get(firstDiRaBeat)?.effectiveDuration ??
+        firstDiRaBeat.thoi_luong ??
+        TEMPO.MIN_WALK_SEC;
       const atExpr = resolveMocToTimeExpr(firstDiRaBeat.moc, firstDiRaBeat.sau ?? 0);
       initLeaveAt = addSecToTimeExpr(atExpr, Math.max(0.25, dur - 0.35));
       needsEdgeFade = true;
@@ -720,18 +994,7 @@ export function compileSemanticStageScript(
       a.tu_the ?? (aInfo.isSeated ? 'ngoi_tua' : 'dung');
     const pose: StageTravelerPose = SEMANTIC_POSES[poseName] ?? 'stand';
     const isHandCupTwist = sem.vat_do_tren_tay === `${a.id}.chen_tra`;
-    const initLeanDeg =
-      a.nghieng === 'guc'
-        ? 22
-        : a.nghieng === 'nhe_truoc'
-          ? 11
-          : a.nghieng === 'thang'
-            ? 0
-            : a.nghieng === 'nga_lung'
-              ? -3
-              : aInfo.isSeated
-                ? 2
-                : 0;
+    const initLeanDeg = resolveLeanDeg(a.nghieng, aInfo.isSeated);
 
     return {
       id: a.id,
@@ -798,10 +1061,10 @@ export function compileSemanticStageScript(
         (activeVar?.altShapes && activeVar.altShapes.length > 0) ||
           (catDef?.altShapes && catDef.altShapes.length > 0)
       );
-      // Cú lật chỉ có vật đổi đỏ, tắt hoàn toàn vòng tròn mờ (pulseRing / glow) cho mọi Chén mới
+      // Cú lật chỉ có vật đổi đỏ dần theo Nhịp Trà Nguội (>= 0.8s), tắt hoàn toàn vòng tròn mờ (pulseRing / glow)
       timeline.push({
-        at: 'pivot+0.4s',
-        duration: 0.16,
+        at: `pivot+${TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC}s`,
+        duration: TEMPO.RED_TRANSITION_SEC,
         exactDuration: true,
         target: p.id,
         colorRole: 'accent',
@@ -912,7 +1175,8 @@ export function compileSemanticStageScript(
 
   for (const beat of sortedBeats) {
     const atExpr = resolveMocToTimeExpr(beat.moc, beat.sau ?? 0);
-    const dur = beat.thoi_luong ?? 1.1;
+    const beatTempo = tempoAnalysis.byBeatRef.get(beat);
+    const dur = beatTempo?.effectiveDuration ?? beat.thoi_luong ?? TEMPO.MIN_LOOK_TURN_SEC;
     const isPivotOrBefore =
       beat.moc !== 'cu_lat' || (beat.sau ?? 0) <= 0.15;
 
@@ -1015,24 +1279,19 @@ export function compileSemanticStageScript(
       }
 
       const targetLean =
-        act.nghieng === 'guc'
-          ? 22
-          : act.nghieng === 'nhe_truoc'
-            ? 11
-            : act.nghieng === 'thang'
-              ? 0
-              : act.nghieng === 'nga_lung'
-                ? -3
-                : undefined;
+        act.nghieng !== undefined ? resolveLeanDeg(act.nghieng) : undefined;
 
       if (act.khung_lai) {
         const settleLean = targetLean ?? st?.leanDeg ?? 0;
-        cue.leanDeg = -6;
-        cue.duration = 0.16;
+        const flinchTotal = Math.min(1.0, Math.max(TEMPO.MIN_FLINCH_SEC, dur));
+        const recoilDur = 0.24;
+        const settleDur = Number(Math.max(0.36, flinchTotal - recoilDur).toFixed(2));
+        cue.leanDeg = TEMPO.FLINCH_LEAN_DEG;
+        cue.duration = recoilDur;
         if (!cue.pose) cue.pose = 'stand';
         timeline.push({
-          at: addSecToTimeExpr(atExpr, 0.16),
-          duration: Math.max(0.24, Math.min(0.42, dur - 0.16)),
+          at: addSecToTimeExpr(atExpr, recoilDur),
+          duration: settleDur,
           exactDuration: true,
           target: actorId,
           leanDeg: settleLean,
@@ -1126,30 +1385,30 @@ export function compileSemanticStageScript(
               : returnFacing === 'right'
                 ? 'left'
                 : 'right';
-        const turnDelay = act.lui_buoc ? Math.min(0.26, dur * 0.28) : 0;
+        const turnDelay = act.lui_buoc ? Math.min(0.32, dur * 0.25) : 0;
         const turnAt = turnDelay > 0 ? addSecToTimeExpr(atExpr, turnDelay) : atExpr;
-        const glanceHold = Math.max(0.75, Math.min(1.45, dur * 0.66));
+        const glanceHold = Math.max(1.0, Math.min(1.8, Math.max(TEMPO.MIN_LOOK_TURN_SEC, dur) * 0.72));
         const returnAt = addSecToTimeExpr(turnAt, glanceHold);
 
         if (turnDelay === 0) {
           cue.facing = backFacing;
           cue.lookAtTarget = null;
-          cue.leanDeg = 7;
-          cue.duration = 0.28;
+          cue.leanDeg = 4;
+          cue.duration = 0.42;
         } else {
           timeline.push({
             at: turnAt,
-            duration: 0.25,
+            duration: 0.42,
             exactDuration: true,
             target: actorId,
             facing: backFacing,
             lookAtTarget: null,
-            leanDeg: 7,
+            leanDeg: 4,
           });
         }
         timeline.push({
           at: returnAt,
-          duration: 0.28,
+          duration: 0.45,
           exactDuration: true,
           target: actorId,
           facing: returnFacing,
@@ -1171,7 +1430,7 @@ export function compileSemanticStageScript(
           );
           timeline.push({
             at: atExpr,
-            duration: Math.min(dur, 0.52),
+            duration: Math.max(TEMPO.DROP_GRAVITY_SEC, Math.min(dur, 1.4)),
             exactDuration: true,
             target: dropPropId,
             follow: null,
@@ -1224,7 +1483,7 @@ export function compileSemanticStageScript(
         cue.toX = Number(Math.max(84, Math.min(456, baseX + dirSign * Math.max(20 * sc, 26))).toFixed(2));
         cue.toY = 0;
         cue.dropGravity = true;
-        cue.duration = Math.min(dur, 0.52);
+        cue.duration = Math.max(TEMPO.DROP_GRAVITY_SEC, Math.min(dur, 1.4));
         if (catDef?.variants?.cam && pact.trang_thai === undefined) {
           cue.variant = '';
         }
@@ -1254,6 +1513,7 @@ export function compileSemanticStageScript(
       }
       if (pact.khoi !== undefined) {
         cue.emitters = { ...(cue.emitters ?? {}), steam: pact.khoi ? 0.8 : 0 };
+        cue.duration = Math.max(TEMPO.EMITTER_TRANSITION_SEC, cue.duration ?? 0);
       }
       timeline.push(cue);
     }
@@ -1262,7 +1522,7 @@ export function compileSemanticStageScript(
       if (sact.doi_do) {
         timeline.push({
           at: atExpr,
-          duration: Math.min(dur, 0.28),
+          duration: Math.max(TEMPO.RED_TRANSITION_SEC, dur),
           exactDuration: true,
           target: segId,
           colorRole: 'accent',
@@ -1273,7 +1533,7 @@ export function compileSemanticStageScript(
       if (sact.duong_mo) {
         timeline.push({
           at: atExpr,
-          duration: Math.max(0.8, dur),
+          duration: Math.max(TEMPO.EMITTER_TRANSITION_SEC, dur),
           exactDuration: true,
           target: segId,
           opacity: 0,
@@ -1329,8 +1589,8 @@ export function compileSemanticStageScript(
 
     if (seg.vat_do) {
       timeline.push({
-        at: 'pivot+0.25s',
-        duration: 0.22,
+        at: `pivot+${TEMPO.RED_COLOR_DELAY_AFTER_PIVOT_SEC}s`,
+        duration: TEMPO.RED_TRANSITION_SEC,
         exactDuration: true,
         target: seg.id,
         colorRole: 'accent',

@@ -32,28 +32,28 @@
   ],
   "nhip": [
     {
-      "moc": "bat_dau", "thoi_luong": 0.4,
+      "moc": "bat_dau",
       "nhan_vat": { "hero": { "tu_the": "ngoi_tua", "nghieng": "thang", "nhin_theo": "laptop" } }
     },
     {
-      "moc": "dong_2", "thoi_luong": 0.8,
+      "moc": "dong_1",
       "nhan_vat": { "hero": { "nghieng": "nhe_truoc", "nhin_theo": "laptop" } }
     },
     {
-      "moc": "dong_3", "thoi_luong": 0.9,
-      "nhan_vat": { "hero": { "nghieng": "guc", "nhin_theo": null } }
+      "moc": "dong_3",
+      "nhan_vat": { "hero": { "nghieng": "guc_sau", "nhin_theo": null } }
     },
     {
-      "moc": "cu_lat", "sau": 0.4, "thoi_luong": 0.2,
-      "nhan_vat": { "hero": { "nghieng": "guc", "nhin_theo": "hoa_don" } }
+      "moc": "cu_lat", "sau": 0.45,
+      "nhan_vat": { "hero": { "nhin_theo": "hoa_don" } }
     },
     {
-      "moc": "cu_lat", "sau": 0.7, "thoi_luong": 0.45,
+      "moc": "cu_lat", "sau": 0.75,
       "nhan_vat": { "hero": { "nghieng": "thang", "nhin_theo": "hoa_don" } }
     },
     {
-      "moc": "cu_lat", "sau": 1.4, "thoi_luong": 0.5,
-      "nhan_vat": { "hero": { "nghieng": "thang", "nhin_theo": "laptop" } }
+      "moc": "cu_lat", "sau": 3.8,
+      "nhan_vat": { "hero": { "nhin_theo": "laptop" } }
     }
   ]
 }

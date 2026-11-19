@@ -3,31 +3,32 @@
 > Sinh tự động qua `npm run gen:skill` từ `propCatalog`, `semanticStage`, `HO-DAO-CU.md` và `BO-BOI-CANH.md`. Không tự vẽ đồ vật hay ghi toạ độ.
 
 ## 1. 9 Bộ Bối Cảnh Chuẩn (`BO-BOI-CANH`)
-- `pho_ngo` · **Phố, ngõ** · địa hình: phang/nga_re · đạo cụ gợi ý: nha_pho, den_duong, mai_hien, ghe_dai, bench, chiec_o, umbrella, xe_dap · khí quyển: rain, leaves, sun, hollow_sun
-- `thien_nhien_mo` · **Thiên nhiên mở** · địa hình: doi/doc/bo_nuoc/bac_thang/phang · đạo cụ gợi ý: cay_xanh, cay_tro_canh, bong_hoa, mam_cay, cum_co, den_long, cloud_wisp · khí quyển: wind, leaves, birds, sun, crescent
-- `phong_trong_nha` · **Phòng trong nhà** · địa hình: phang · đạo cụ gợi ý: cua_so, porch_window, cua_phong, giuong_ngu, chiec_goi, ban_quan, ghe_tua, std_chair · khí quyển: crescent, steam, wind
-- `khong_gian_ky_hieu` · **Không gian ký hiệu** · địa hình: phang · đạo cụ gợi ý: trai_tim, tim_net_dut, duong_ke, soi_chi, bong_bong_nghi, chat_bubble, cuon_sach, trang_giay · khí quyển: ring_pulse
-- `hien_tra` · **Hiên trà** · địa hình: phang · đạo cụ gợi ý: ban_tra, low_tea_table, don_go, ghe_dai, low_wood_stool, bench, am_tra, chen_tra · khí quyển: steam, leaves, sun, crescent
-- `van_phong` · **Văn phòng** · địa hình: phang · đạo cụ gợi ý: ban_lam_viec, std_work_desk, ghe_tua, ghe_van_phong, std_chair, laptop, may_tinh_ban, desk_laptop · khí quyển: crescent
-- `quan_nho` · **Quán** · địa hình: phang · đạo cụ gợi ý: ban_quan, ghe_tua, std_chair, ly_ca_phe, chen_tra, ly_ruou, dien_thoai, cuon_sach · khí quyển: steam, rain
-- `nha_que` · **Nhà quê, mâm cơm** · địa hình: phang · đạo cụ gợi ý: mam_com, bat_com, am_tra, don_go, ghe_tua, cua_nha, nha_nho · khí quyển: steam, sun, leaves
-- `ga_tau` · **Ga tàu** · địa hình: phang · đạo cụ gợi ý: toa_tau, vali, ghe_dai, bench, dong_ho_treo · khí quyển: wind, leaves
+> Khí quyển mặc định TẮT — không tự thêm mặt trời/lá/gió trang trí; chỉ khai báo `boi_canh.khi_quyen` khi câu chữ có hình ảnh/ý nghĩa tương ứng và đã giải thích ở Bước 2.
+- `pho_ngo` · **Phố, ngõ** · địa hình: phang/nga_re · đạo cụ gợi ý: nha_pho, den_duong, mai_hien, ghe_dai, bench, chiec_o, umbrella, xe_dap
+- `thien_nhien_mo` · **Thiên nhiên mở** · địa hình: doi/doc/bo_nuoc/bac_thang/phang · đạo cụ gợi ý: cay_xanh, cay_tro_canh, bong_hoa, mam_cay, cum_co, den_long, cloud_wisp
+- `phong_trong_nha` · **Phòng trong nhà** · địa hình: phang · đạo cụ gợi ý: cua_so, porch_window, cua_phong, giuong_ngu, chiec_goi, ban_quan, ghe_tua, std_chair
+- `khong_gian_ky_hieu` · **Không gian ký hiệu** · địa hình: phang · đạo cụ gợi ý: trai_tim, tim_net_dut, duong_ke, soi_chi, bong_bong_nghi, chat_bubble, cuon_sach, trang_giay
+- `hien_tra` · **Hiên trà** · địa hình: phang · đạo cụ gợi ý: ban_tra, low_tea_table, don_go, ghe_dai, low_wood_stool, bench, am_tra, chen_tra
+- `van_phong` · **Văn phòng** · địa hình: phang · đạo cụ gợi ý: ban_lam_viec, std_work_desk, ghe_tua, ghe_van_phong, std_chair, laptop, may_tinh_ban, desk_laptop
+- `quan_nho` · **Quán** · địa hình: phang · đạo cụ gợi ý: ban_quan, ghe_tua, std_chair, ly_ca_phe, chen_tra, ly_ruou, dien_thoai, cuon_sach
+- `nha_que` · **Nhà quê, mâm cơm** · địa hình: phang · đạo cụ gợi ý: mam_com, bat_com, am_tra, don_go, ghe_tua, cua_nha, nha_nho
+- `ga_tau` · **Ga tàu** · địa hình: phang · đạo cụ gợi ý: toa_tau, vali, ghe_dai, bench, dong_ho_treo
 
 ## 2. Địa Hình, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ
 - Địa hình (`boi_canh.dia_hinh`): `phang`, `doc`, `doi`, `nga_re`, `bo_nuoc`, `bac_thang`.
 - Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.
-- Khí quyển (`boi_canh.khi_quyen[].loai`): `rain`, `wind`, `leaves`, `steam`, `birds`, `sun`, `hollow_sun`, `crescent`, `ring_pulse` (kèm `vi_tri`, `huong`: `trai`/`phai`, `mat_do`).
+- Khí quyển (`boi_canh.khi_quyen[].loai`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): `rain`, `wind`, `leaves`, `steam`, `birds`, `sun`, `hollow_sun`, `crescent`, `ring_pulse` (kèm `vi_tri`, `huong`: `trai`/`phai`, `mat_do`).
 - Lớp sâu (`lop`): `nen`, `giua`, `truoc` · Loại neo (`loai_neo`): `dat`, `tuong`, `troi`, `tren`, `cam` · Khe vị trí (`vi_tri`/`di_toi`): `xa_trai`, `trai`, `giua_trai`, `giua`, `giua_phai`, `phai`, `xa_phai`.
 - Nhân vật (`nhan_vat[].vai`): `lu_khach`, `nguoi_b` (`lu_khach` bóng mực đậm mặc định; `nguoi_b` bóng mực nhạt hơn, tuỳ chọn `toc_duoi_ngua: true`, đủ `vi_tri`, `huong`, `tu_the`, va chạm như Lữ khách).
-- Tư thế (`tu_the`): `dung`, `di_bo`, `day`, `ngoi_tua`, `nguoc_nhin`, `vuon_tay`, `gio_cao`, `trao` · Nghiêng (`nghieng`): `thang`, `nhe_truoc`, `guc`, `nga_lung` · Hướng (`huong`): `trai`, `phai` · Điểm cầm (`cam_boi`): `tay`, `dau`, `lung`.
+- Tư thế (`tu_the`): `dung`, `di_bo`, `day`, `ngoi_tua`, `nguoc_nhin`, `vuon_tay`, `gio_cao`, `trao` · Nghiêng (`nghieng`): `thang`, `nhe_truoc`, `guc`, `guc_sau`, `nga_lung` (`guc` = cúi đầu vai chùng — thờ ơ, mệt nhẹ, không gập xuống bàn; `guc_sau` = gục sâu xuống bàn — kiệt sức) · Hướng (`huong`): `trai`, `phai` · Điểm cầm (`cam_boi`): `tay`, `dau`, `lung`.
 - Ngồi ghế bàn: bắt buộc `ngoi_tren: "<id_ghe>.mat_ghe"`, thêm `ngoi_vao: "<id_ban>"` để kê sát bàn. Chén trà cầm tay (`cam_chen_tra: true`) mặc định nét mực wash; chỉ đổi đỏ khi có `vat_do_tren_tay: "<id>.chen_tra"`.
-- Mốc nhịp (`nhip[].moc`): `bat_dau`, `dong_1`, `dong_2`, `dong_3`, `dong_4`, `cu_lat` (kèm `sau`, `thoi_luong` tính bằng giây).
+- Mốc nhịp (`nhip[].moc`): `bat_dau`, `dong_1`, `dong_2`, `dong_3`, `dong_4`, `cu_lat` (kèm `sau` tính bằng giây; **không cần ghi `thoi_luong`** — engine tự tính chậm rãi theo Nhịp Trà Nguội; phản ứng lớn tại `cu_lat` phải có `sau` ≥ 0.45).
 - Động từ nhân vật (`nhip[].nhan_vat.<id>`): `tu_the`, `di_toi`, `di_vao`, `di_ra`, `huong`, `nghieng`, `nhin_theo`, `nhin_nhau`, `khung_lai`, `lui_buoc`, `quay_dau`, `tha_roi`, `cam_chen_tra`, `dung_day` (`di_vao`/`di_ra`: từ/ra mép khung; `khung_lai`: giật nhẹ dừng; `lui_buoc`: lùi vẫn giữ hướng; `quay_dau`: ngoái sau rồi quay lại; `nhin_nhau`: hai nhân vật xoay mặt nhìn nhau; `tha_roi`: thả vật cầm rơi xuống đất).
 - Động từ đạo cụ (`nhip[].dao_cu.<id>`): `trang_thai`, `cam_boi`, `dat_tren`, `di_toi`, `bay_len`, `tach_doi`, `khoi`, `tha_roi`.
 - Động từ địa hình / đoạn đường (`nhip[].doan_duong.<id>`): `duong_mo`, `doi_do` (`doi_do`: đổi đỏ đậm; `duong_mo`: mờ dần ở hậu vị).
 - Tỷ lệ thật: vật dưới 30 cm nhân `HE_SO_PHONG_DAI = 2`, từ 30 cm trở lên nhân `1` (`TY_LE_CANH = 0.32`).
 
-## 3. TẦNG A — Dùng ngay (28 món đã duyệt `duyet`, gồm alias)
+## 3. TẦNG A — Dùng ngay (33 món đã duyệt `duyet`, gồm alias)
 > Ưu tiên chọn trong tầng này để xuất Gói Chén dựng ngay không cảnh báo.
 - `envelope` · Cánh thư giấy cổ phong · bối cảnh: phong_trong_nha, van_phong, hien_tra · neo: cam/tren/dat · vật đỏ: Có
 - `wine_jar` · Vò rượu gốm Mai Bình · bối cảnh: hien_tra, quan_nho, nha_que · neo: tren/dat · vật đỏ: Có
@@ -53,12 +54,17 @@
 - `ly_ruou` · Ly rượu chân cao · bối cảnh: quan_nho, hien_tra · neo: tren/cam/dat · vật đỏ: Có
 - `hop_com` · Hộp cơm trưa · bối cảnh: van_phong, nha_que · neo: tren/cam/dat · vật đỏ: Có
 - `mam_com` · Mâm cơm tròn dẹt · bối cảnh: nha_que · neo: tren/dat [điểm neo: trai_mam, giua_mam, phai_mam] · vật đỏ: Không
+- `ban_quan` · Bàn quán cỡ vừa · bối cảnh: quan_nho, phong_trong_nha, hien_tra · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
+- `ban_hop` · Bàn dài văn phòng · bối cảnh: van_phong · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
+- `giuong_ngu` · Giường ngủ khung thấp · bối cảnh: phong_trong_nha · neo: dat [điểm neo: dau_goi, mat_giuong, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
+- `chiec_goi` · Chiếc gối vải mềm · bối cảnh: phong_trong_nha · neo: tren/cam/dat · vật đỏ: Có
+- `tu_kinh` · Tủ kính trưng bày · bối cảnh: phong_trong_nha, quan_nho, hien_tra · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, ngan_tren, ngan_duoi] · vật đỏ: Không
 - `chen_tra` · Chén trà gốm nhỏ (alias `small_cup`) · bối cảnh: hien_tra, quan_nho, phong_trong_nha · neo: tren/cam/dat · vật đỏ: Có
 - `vo_ruou` · Vò rượu gốm Mai Bình (alias `wine_jar`) · bối cảnh: hien_tra, quan_nho, nha_que · neo: tren/dat · vật đỏ: Có
 - `ban_lam_viec` · Bàn làm việc công sở (alias `std_work_desk`) · bối cảnh: van_phong, phong_trong_nha · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
 - `ban_tra` · Bàn trà gỗ thấp (alias `low_tea_table`) · bối cảnh: hien_tra, nha_que · neo: dat [điểm neo: mat_ban_trai, mat_ban_giua, mat_ban_phai, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
 
-## 4. TẦNG B — Có sẵn, chưa chuẩn hoá nét (24 món `nhap`)
+## 4. TẦNG B — Có sẵn, chưa chuẩn hoá nét (19 món `nhap`)
 > Đã có code trong kho, dùng được trong Gói Chén nếu đúng nghĩa; ô nhập tool web sẽ hiện cảnh báo vàng để chủ kênh biết chưa chuẩn hoá nét.
 - `bridal_veil` · Khăn voan lụa · bối cảnh: phong_trong_nha, khong_gian_ky_hieu · neo: cam/dat · vật đỏ: Có
 - `dashed_heart` · Tim nét đứt · bối cảnh: khong_gian_ky_hieu · neo: troi/cam/dat · vật đỏ: Có
@@ -79,11 +85,6 @@
 - `seesaw` · Bập bênh gỗ · bối cảnh: khong_gian_ky_hieu, thien_nhien_mo · neo: dat · vật đỏ: Có
 - `hourglass` · Đồng hồ cát · bối cảnh: khong_gian_ky_hieu, van_phong, phong_trong_nha · neo: tren/dat · vật đỏ: Có
 - `chat_bubble` · Khung tin nhắn · bối cảnh: khong_gian_ky_hieu, phong_trong_nha · neo: troi · vật đỏ: Có
-- `ban_quan` · Bàn quán cỡ vừa · bối cảnh: quan_nho, phong_trong_nha, hien_tra · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
-- `ban_hop` · Bàn dài văn phòng · bối cảnh: van_phong · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, mat_ban_trai, mat_ban_giua, mat_ban_phai] · vật đỏ: Không
-- `giuong_ngu` · Giường ngủ khung thấp · bối cảnh: phong_trong_nha · neo: dat [điểm neo: dau_goi, mat_giuong, mat_trai, mat_giua, mat_phai] · vật đỏ: Không
-- `chiec_goi` · Chiếc gối vải mềm · bối cảnh: phong_trong_nha · neo: tren/cam/dat · vật đỏ: Có
-- `tu_kinh` · Tủ kính trưng bày · bối cảnh: phong_trong_nha, quan_nho, hien_tra · neo: dat [điểm neo: mat_trai, mat_giua, mat_phai, ngan_tren, ngan_duoi] · vật đỏ: Không
 
 ## 5. TẦNG C — Đang lên kế hoạch (49 preset theo 12 họ · CHỈ LÊN Ý TƯỞNG, KHÔNG XUẤT JSON)
 > Các preset này chưa có code trong `propCatalog`. Nếu phương án Bước 2 cần món tầng C, ghi rõ `Cần bổ sung: <mã preset>` và kèm phương án thay thế dựng được ngay bằng tầng A/B. Tuyệt đối KHÔNG xuất mã tầng C trong JSON Bước 3.

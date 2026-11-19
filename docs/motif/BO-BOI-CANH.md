@@ -2,7 +2,8 @@
 
 > Phân tích từ toàn bộ **262 quote** tại `docs/motif/quote-motif-map.csv`.  
 > **6 bộ bối cảnh chính** chiếm **89.7%** (`235/262` quote); **3 bộ bối cảnh phụ** chiếm **10.3%** (`27/262` quote) — tổng cộng phủ **100% kho nội dung**.  
-> Tên đạo cụ mặc định sử dụng chuẩn preset tiếng Việt không dấu trong `docs/motif/HO-DAO-CU.md` (kèm mã alias hiện hành trong `propCatalog.tsx` nếu đã duyệt).
+> Tên đạo cụ mặc định sử dụng chuẩn preset tiếng Việt không dấu trong `docs/motif/HO-DAO-CU.md` (kèm mã alias hiện hành trong `propCatalog.tsx` nếu đã duyệt).  
+> **LUẬT KHÍ QUYỂN (T7a): Khí quyển mặc định TẮT.** Bộ bối cảnh **không** tự thêm mặt trời (`sun`/`hollow_sun`), lá rơi (`leaves`), gió (`wind`), mưa (`rain`) chỉ để trang trí. Chỉ khai báo `boi_canh.khi_quyen` khi Gói Chén thật sự cần và Bước 2 đã nêu rõ yếu tố khí quyển đó mang nghĩa gì với câu chữ.
 
 ---
 
@@ -36,7 +37,7 @@
   5. `chiec_o` *(alias `umbrella`, neo `cam` — cầm tay khi mưa phố)*
   6. `xe_dap` / `xe_may` *(lớp `giua`, neo `dat` — phương tiện tan tầm)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: `rain` (mưa phố chiều), `leaves` (lá bay qua ngõ), `sun` / `hollow_sun` (nắng chiều muộn).
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật khi câu chữ thật sự có mưa/lá/nắng mang nghĩa: `rain` (mưa phố), `leaves` (lá bay qua ngõ), `sun` (nắng chiều muộn).
   - Bảng màu: `MINIMAL_LIGHT` (nắng chiều ấm) hoặc `MINIMAL_DARK` / `WARM_NOIR` (phố lên đèn).
 
 ### 2. Thiên nhiên mở (`thien_nhien_mo`) — **38 quote (`14.5%`)**
@@ -50,7 +51,7 @@
   4. `den_long` *(neo `cam` — Lữ khách cầm đi đêm trong Q064, Q147)*
   5. `cloud_wisp` *(lớp `nen`, neo `troi` — làn mây thuỷ mặc)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: `wind`, `leaves`, `birds`, `sun`, `crescent` (đêm sao/trăng).
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật khi câu chữ có hình ảnh tương ứng: `wind`, `leaves`, `birds`, `sun`, `crescent` (đêm sao/trăng).
   - Bảng màu: `MINIMAL_LIGHT` (ban ngày khoáng đạt) hoặc `WARM_NOIR` (đêm hành trình cầm đèn lồng).
 
 ### 3. Phòng trong nhà (`phong_trong_nha`) — **38 quote (`14.5%`)**
@@ -65,7 +66,7 @@
   5. `den_ban` *(lớp `giua`, neo `tren` — quầng sáng ấm góc phòng)*
   6. `guong_soi` / `khung_tranh` *(lớp `nen`, neo `tuong` — đối diện bản thân M7)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: `crescent` (trăng ngoài song cửa), `steam` (khói trà nhẹ), `wind` (gió lùa khe cửa).
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật khi câu chữ có hình ảnh tương ứng: `crescent` (trăng ngoài song cửa), `steam` (khói trà nhẹ), `wind` (gió lùa khe cửa).
   - Bảng màu: `MINIMAL_DARK` (chiều muộn trầm lắng) và `WARM_NOIR` (đêm mất ngủ).
 
 ### 4. Không gian ký hiệu (`khong_gian_ky_hieu`) — **38 quote (`14.5%`)**
@@ -79,7 +80,7 @@
   4. `cuon_sach` / `trang_giay` / `ban_do` *(neo `dat` / `cam` — ẩn dụ tri thức & hành trình)*
   5. `hanh_tinh` / `qua_dia_cau` *(neo `troi` / `dat` — đối chiếu quy mô M6)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: tiết chế tối đa (`ring_pulse` nhẹ tại cú lật hoặc để trống hoàn toàn).
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật `ring_pulse` khi câu chữ cần tín hiệu sóng/rung.
   - Bảng màu: `MINIMAL_LIGHT` (Giấy Trà Ấm làm nổi bật đường mực và điểm Đỏ Chu Sa).
 
 ### 5. Hiên trà (`hien_tra`) — **36 quote (`13.7%`)**
@@ -94,7 +95,7 @@
   5. `mai_hien` *(lớp `nen`, neo `tuong` — gợi hiên nhà yên tĩnh)*
   6. `bep_than` / `quat_tay` *(tuỳ chọn khi dựng cảnh nhóm lò pha trà W029, W035)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: `steam` (làn khói trà mảnh), `leaves` (lá thu bay ngang hiên), `sun` / `crescent`.
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật khi câu chữ có hình ảnh tương ứng: `steam` (khói trà), `leaves` (lá thu), `crescent`.
   - Bảng màu: `MINIMAL_LIGHT` (sớm mai / chiều tà) hoặc `MINIMAL_DARK` (khói trà chiều).
 
 ### 6. Văn phòng (`van_phong`) — **36 quote (`13.7%`)**
@@ -109,7 +110,7 @@
   5. `hoa_don` / `vi_tien` *(neo `tren` tại `mat_ban_giua` hoặc `cam` — vật đỏ lương/chi phí)*
   6. `chong_ho_so` *(alias `box_stack`, neo `dat` / `tren` — áp lực công việc)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: thường để tĩnh (không gió mưa), hoặc `crescent` ngoài ô cửa sổ khi tăng ca đêm (W053, W083).
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật `crescent` ngoài ô cửa sổ khi tăng ca đêm (W053, W083).
   - Bảng màu: `MINIMAL_LIGHT` (giờ hành chính) hoặc `WARM_NOIR` (tăng ca khuya, đèn bàn bật sáng).
 
 ---
@@ -126,7 +127,7 @@
   4. `dien_thoai` / `cuon_sach` *(neo `tren` hoặc `cam`)*
   5. `den_ban` *(neo `tren` — tạo điểm ấm cho cảnh quán tối Q161)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: `steam` (hơi cà phê/trà/phở nóng), `rain` (nhìn mưa qua ô cửa quán), `not_nhac` nhẹ.
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật khi câu chữ có hình ảnh tương ứng: `steam` (hơi cà phê/trà nóng), `rain` (mưa qua ô cửa quán).
   - Bảng màu: `MINIMAL_LIGHT` (quán chiều) và `WARM_NOIR` (quán đêm).
 
 ### 8. Nhà quê, mâm cơm (`nha_que`) — **7 quote (`2.7%`)**
@@ -138,7 +139,7 @@
   3. `don_go` / `ghe_tua` *(đặt quanh mâm; để trống 1 ghế khi diễn motif M3 người đi xa)*
   4. `cua_nha` / `nha_nho` *(lớp `nen`, neo `dat` — ngưỡng cửa ngóng về)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: `steam` (khói cơm chiều), `sun` (nắng trưa hè), `leaves`.
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật khi câu chữ có hình ảnh tương ứng: `steam` (khói cơm chiều), `sun` (nắng trưa hè), `leaves`.
   - Bảng màu: `MINIMAL_LIGHT` (Giấy Trà Ấm gợi màu rơm nắng & ký ức).
 
 ### 9. Ga tàu (`ga_tau`) — **2 quote (`0.8%` · Q012, Q137)**
@@ -150,5 +151,5 @@
   3. `ghe_dai` *(alias `bench`, lớp `giua`, neo `dat` — ghế chờ sân ga)*
   4. `dong_ho_treo` *(lớp `nen`, neo `tuong` — đồng hồ giờ tàu chạy)*
 - **Khí quyển & Bảng màu phù hợp**:
-  - `Atmosphere`: `wind` hoặc `leaves` bay dọc sân ga lúc tàu rời bến.
+  - `Atmosphere`: **Mặc định tắt (để trống)**; chỉ bật `wind` hoặc `leaves` khi câu chữ nhắc tới gió/lá sân ga lúc tàu rời bến.
   - Bảng màu: `MINIMAL_DARK` (chiều xám chia xa).

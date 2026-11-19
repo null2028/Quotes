@@ -5,6 +5,7 @@ import { ResolvedVisualDNA } from '../engine/visualDnaResolver';
 import { ThemePalette } from '../theme/palettes';
 import { levitateWeightless } from '../kit/SlowMotionVerbs';
 import type { TravelerPoseWeights } from '../kit/CloakedTraveler';
+import { TEMPO } from './stageConstants';
 import {
   ColorRole,
   FocusRole,
@@ -33,7 +34,60 @@ export interface NumericSegment {
   arcY?: number;
 }
 
-const CINEMAGRAPH_EASING = Easing.bezier(0.42, 0.0, 0.25, 1.0);
+// Easing chậm hai đầu đối xứng (Nhịp Trà Nguội — không tuyến tính, không bật nảy)
+const CINEMAGRAPH_EASING = Easing.inOut(Easing.cubic);
+
+/**
+ * Đảm bảo khoảng lặng giữ tư thế tối thiểu (`holdFrames` ≥ 1.0s) giữa 2 chuyển động kế tiếp của cùng nhân vật.
+ * - Bỏ qua các đoạn không đổi giá trị (vd cue khởi tạo `bat_dau`).
+ * - Giữ nguyên cặp nửa nhịp nội bộ của một cử chỉ đơn (vd `khung_lai` recoil 0.24s nối liền settle).
+ * - Không đẩy một chuyển động trước cú lật vượt sang sau `pivotFrame`.
+ */
+function enforcePostMotionHold(
+  rawSegments: NumericSegment[],
+  initialValue: number,
+  holdFrames: number,
+  pivotFrame: number,
+  fps: number
+): NumericSegment[] {
+  if (rawSegments.length <= 1 || holdFrames <= 0) return rawSegments;
+  const sorted = [...rawSegments]
+    .sort((a, b) => a.startFrame - b.startFrame)
+    .map((s) => ({ ...s }));
+  const flinchPairMaxFrames = Math.round(0.45 * fps);
+
+  let runningVal = initialValue;
+  let lastRealEndFrame = -Infinity;
+  let lastRealSpan = 0;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const seg = sorted[i];
+    const isRealChange = Math.abs(seg.toValue - runningVal) > 1e-3;
+    const span = Math.max(1, seg.endFrame - seg.startFrame);
+
+    if (isRealChange && lastRealEndFrame > -Infinity) {
+      const isInternalPair =
+        lastRealSpan <= flinchPairMaxFrames &&
+        Math.abs(seg.startFrame - lastRealEndFrame) <= 2;
+      if (!isInternalPair && seg.startFrame < lastRealEndFrame + holdFrames) {
+        const desiredStart = lastRealEndFrame + holdFrames;
+        const wasPrePivot = seg.startFrame < pivotFrame;
+        const clampedStart = wasPrePivot
+          ? Math.max(seg.startFrame, Math.min(desiredStart, pivotFrame - span))
+          : desiredStart;
+        seg.startFrame = clampedStart;
+        seg.endFrame = clampedStart + span;
+      }
+    }
+
+    if (isRealChange) {
+      lastRealEndFrame = seg.endFrame;
+      lastRealSpan = span;
+      runningVal = seg.toValue;
+    }
+  }
+  return sorted;
+}
 
 function resolveCinemagraphDurationFrames(
   rawDurationSec: number | undefined,
@@ -836,6 +890,16 @@ export function evaluateStageScriptAtFrame(
     panY: evaluatedPanY,
   };
 
+  const isSemantic = Boolean(script.tags?.includes('semantic_v1'));
+  const holdFrames = Math.round(TEMPO.POST_MOTION_HOLD_SEC * fps);
+  const actorLookAtTransitions = new Map<
+    string,
+    {
+      initial: string | null;
+      events: Array<{ startFrame: number; endFrame: number; value: string | null }>;
+    }
+  >();
+
   const actorMap: Record<string, EvaluatedActorState> = {};
   const actors: EvaluatedActorState[] = (script.actors ?? []).map(
     (actor, actorIdx) => {
@@ -851,7 +915,11 @@ export function evaluateStageScriptAtFrame(
       const dissolveSegs: NumericSegment[] = [];
       const facingEvents: Array<{ frame: number; value: 'left' | 'right' }> = [];
       const poseEvents: Array<{ frame: number; value: StageTravelerPose }> = [];
-      const lookAtEvents: Array<{ frame: number; value: string | null }> = [];
+      const lookAtEvents: Array<{
+        startFrame: number;
+        endFrame: number;
+        value: string | null;
+      }> = [];
       const poseRampFrames = Math.max(8, Math.round(0.45 * fps));
       const poseWeightChannels: Array<{
         poseName: StageTravelerPose;
@@ -962,7 +1030,14 @@ export function evaluateStageScriptAtFrame(
           facingEvents.push({ frame: startF, value: cue.facing });
         }
         if (cue.lookAtTarget !== undefined) {
-          lookAtEvents.push({ frame: startF, value: cue.lookAtTarget || null });
+          const minLookFrames = isSemantic
+            ? Math.round(TEMPO.MIN_LOOK_TURN_SEC * fps)
+            : 1;
+          lookAtEvents.push({
+            startFrame: startF,
+            endFrame: startF + Math.max(durF, minLookFrames),
+            value: cue.lookAtTarget || null,
+          });
         }
         if (cue.pose !== undefined) {
           poseEvents.push({ frame: startF, value: cue.pose });
@@ -984,14 +1059,27 @@ export function evaluateStageScriptAtFrame(
       }
 
       const initX = resolveXCoord(actor.x, 270);
-      const curWalk = evaluateActorWalkXChannel(frame, initX, xSegs, fps);
+      const effectiveXSegs = isSemantic
+        ? enforcePostMotionHold(xSegs, initX, holdFrames, timeline.pivotFrame, fps)
+        : xSegs;
+      const effectiveLeanSegs = isSemantic
+        ? enforcePostMotionHold(
+            leanSegs,
+            actor.leanDeg ?? 0,
+            holdFrames,
+            timeline.pivotFrame,
+            fps
+          )
+        : leanSegs;
+
+      const curWalk = evaluateActorWalkXChannel(frame, initX, effectiveXSegs, fps);
       const prevWalk = evaluateActorWalkXChannel(
         Math.max(0, frame - 1),
         initX,
-        xSegs,
+        effectiveXSegs,
         fps
       );
-      const nextWalk = evaluateActorWalkXChannel(frame + 1, initX, xSegs, fps);
+      const nextWalk = evaluateActorWalkXChannel(frame + 1, initX, effectiveXSegs, fps);
       const curX = curWalk.x;
 
       const yOffEval = evaluateNumericChannel(
@@ -1010,15 +1098,19 @@ export function evaluateStageScriptAtFrame(
         speedPxPerFrame <= 0.012
           ? 0
           : Math.min(1, (speedPxPerFrame - 0.012) / 0.36);
-      const stridePx = 8.8 * Math.max(0.6, scale);
+      const stridePx =
+        (isSemantic ? 8.8 * TEMPO.WALK_STRIDE_MULT : 8.8) * Math.max(0.6, scale);
       const walkPhase =
-        xSegs.length > 0
+        effectiveXSegs.length > 0
           ? (curWalk.cumDist / stridePx) * Math.PI
           : loopProgress * Math.PI * 2 * 6;
 
-      // Số nguyên chẵn 4 để cả sin(breathPhase) lẫn cos(breathPhase * 0.5) khép vòng 100% (~3.75s/nhịp thở tĩnh)
+      // Số chu kỳ nguyên chẵn theo TEMPO.BREATH_CYCLE_SEC (~4.5s/nhịp thở tĩnh) để khép vòng 100%
+      const breathCycles = isSemantic
+        ? Math.max(2, Math.round(safeTotalFrames / fps / TEMPO.BREATH_CYCLE_SEC)) * 2
+        : 4;
       const breathPhase =
-        loopProgress * Math.PI * 2 * 4 + actorIdx * 1.15;
+        loopProgress * Math.PI * 2 * breathCycles + actorIdx * 1.15;
 
       const baseOpacity = evaluateNumericChannel(
         frame,
@@ -1032,11 +1124,19 @@ export function evaluateStageScriptAtFrame(
         actor.leaveAt,
         actor.fadeDuration ?? 1.2
       );
-      const leanDeg = evaluateNumericChannel(
+      const rawLeanDeg = evaluateNumericChannel(
         frame,
         actor.leanDeg ?? 0,
-        leanSegs
+        effectiveLeanSegs
       ).value;
+      const isMidLean =
+        isSemantic &&
+        effectiveLeanSegs.some((s) => frame >= s.startFrame && frame < s.endFrame);
+      const stillBreathLean =
+        isSemantic && walkActivity < 0.05 && !isMidLean
+          ? Math.sin(breathPhase) * TEMPO.STILL_LEAN_BREATH_AMP_DEG
+          : 0;
+      const leanDeg = rawLeanDeg + stillBreathLean;
       const sitProgress = evaluateNumericChannel(
         frame,
         actor.sitProgress ?? (actor.pose === 'sit_lean' ? 1 : 0),
@@ -1060,10 +1160,14 @@ export function evaluateStageScriptAtFrame(
         actor.facing ?? 'right',
         facingEvents
       );
+      actorLookAtTransitions.set(actor.id, {
+        initial: actor.lookAtTarget ?? null,
+        events: [...lookAtEvents].sort((a, b) => a.startFrame - b.startFrame),
+      });
       const lookAtTarget = evaluateDiscreteChannel<string | null>(
         frame,
         actor.lookAtTarget ?? null,
-        lookAtEvents
+        lookAtEvents.map((e) => ({ frame: e.startFrame, value: e.value }))
       );
       const initialPose = actor.pose ?? 'stand';
       let pose = evaluateDiscreteChannel(frame, initialPose, poseEvents);
@@ -1312,8 +1416,8 @@ export function evaluateStageScriptAtFrame(
       const rawP = Math.max(0, Math.min(1, (frame - seg.startFrame) / span));
       if (seg.dropGravity) {
         isDropping = true;
-        const px = Math.min(1, rawP * 1.35);
-        const py = Math.min(1, rawP * rawP * 1.05);
+        const px = Easing.inOut(Easing.sin)(Math.min(1, rawP));
+        const py = Easing.inOut(Easing.quad)(Math.min(1, rawP));
         worldPos = {
           x: fromW.x + (toW.x - fromW.x) * px,
           y: fromW.y + (toW.y - fromW.y) * py,
@@ -1621,16 +1725,20 @@ export function evaluateStageScriptAtFrame(
     };
   });
 
-  // Tự động tính hướng mắt (gazeX, gazeY) từ đầu nhân vật tới vật thể trong nhin_theo (lookAtTarget)
-  for (const actor of actors) {
-    if (!actor.lookAtTarget) {
-      actor.gazeX = 0.35;
-      actor.gazeY = actor.leanDeg >= 16 ? 0.55 : 0.05;
-      actor.hasLookTarget = false;
-      continue;
+  // Tự động tính hướng mắt (gazeX, gazeY) từ đầu nhân vật tới vật thể trong nhin_theo (nội suy mượt ≥ 1.2s cho semantic_v1)
+  const computeTargetGaze = (
+    actor: EvaluatedActorState,
+    targetId: string | null
+  ): { gazeX: number; gazeY: number; hasLookTarget: boolean } => {
+    if (!targetId) {
+      return {
+        gazeX: 0.35,
+        gazeY: actor.leanDeg >= 16 ? 0.55 : 0.05,
+        hasLookTarget: false,
+      };
     }
-    const targetProp = props.find((p) => p.id === actor.lookAtTarget);
-    const targetActor = actorMap[actor.lookAtTarget];
+    const targetProp = props.find((p) => p.id === targetId);
+    const targetActor = actorMap[targetId];
     let tx: number | undefined;
     let ty: number | undefined;
     if (targetProp) {
@@ -1653,13 +1761,54 @@ export function evaluateStageScriptAtFrame(
       const dxLocal = (tx - hx) * dir;
       const dyLocal = ty - hy;
       const dist = Math.max(1, Math.hypot(dxLocal, dyLocal));
-      // Phân biệt rõ góc nhìn gần (laptop ngay trước mặt) và góc liếc xa hơn (hoa_don ở giữa bàn)
       const horizReach = Math.min(1.5, Math.max(-1.1, (dxLocal / dist) * 1.15 + (dxLocal - 24) * 0.018));
       const vertReach = Math.min(1.25, Math.max(-1.0, (dyLocal / dist) * 1.1));
-      actor.gazeX = Number(horizReach.toFixed(3));
-      actor.gazeY = Number(vertReach.toFixed(3));
-      actor.hasLookTarget = true;
+      return {
+        gazeX: Number(horizReach.toFixed(3)),
+        gazeY: Number(vertReach.toFixed(3)),
+        hasLookTarget: true,
+      };
     }
+    return {
+      gazeX: 0.35,
+      gazeY: actor.leanDeg >= 16 ? 0.55 : 0.05,
+      hasLookTarget: false,
+    };
+  };
+
+  for (const actor of actors) {
+    const trans = actorLookAtTransitions.get(actor.id);
+    if (!isSemantic || !trans || trans.events.length === 0) {
+      const g = computeTargetGaze(actor, actor.lookAtTarget ?? null);
+      actor.gazeX = g.gazeX;
+      actor.gazeY = g.gazeY;
+      actor.hasLookTarget = g.hasLookTarget;
+      continue;
+    }
+    let prevTarget = trans.initial;
+    let curGaze = computeTargetGaze(actor, prevTarget);
+    for (const ev of trans.events) {
+      if (frame < ev.startFrame) break;
+      const nextGaze = computeTargetGaze(actor, ev.value);
+      if (frame >= ev.endFrame || ev.value === prevTarget) {
+        curGaze = nextGaze;
+        prevTarget = ev.value;
+        continue;
+      }
+      const span = Math.max(1, ev.endFrame - ev.startFrame);
+      const p = CINEMAGRAPH_EASING(
+        Math.max(0, Math.min(1, (frame - ev.startFrame) / span))
+      );
+      curGaze = {
+        gazeX: Number((curGaze.gazeX + (nextGaze.gazeX - curGaze.gazeX) * p).toFixed(3)),
+        gazeY: Number((curGaze.gazeY + (nextGaze.gazeY - curGaze.gazeY) * p).toFixed(3)),
+        hasLookTarget: curGaze.hasLookTarget || nextGaze.hasLookTarget,
+      };
+      break;
+    }
+    actor.gazeX = curGaze.gazeX;
+    actor.gazeY = curGaze.gazeY;
+    actor.hasLookTarget = curGaze.hasLookTarget;
   }
 
   // Kiến trúc Khai bút Mở màn 4 Pha V8.6.1 (Hướng C — Slow Calligraphic Layered Choreography):

@@ -387,7 +387,7 @@ const MAT_PHANG_LINEUP_GOI_A = {
   nhan_vat: [{ id: 'hero', vi_tri: 'xa_trai', tu_the: 'dung', huong: 'phai' }],
   dao_cu: [
     { id: 'p_ban_tra', type: 'ban_tra', loai_neo: 'dat', vi_tri: 'trai', lop: 'giua' },
-    { id: 'p_chen_ref', type: 'chen_tra', loai_neo: 'tren', dat_tren: 'p_ban_tra.mat_giua', lop: 'giua', vat_do: true },
+    { id: 'p_am_ref', type: 'am_tra', loai_neo: 'tren', dat_tren: 'p_ban_tra.mat_giua', lop: 'giua', vat_do: true },
     { id: 'p_ban_quan', type: 'ban_quan', loai_neo: 'dat', vi_tri: 'giua_trai', lop: 'giua' },
     { id: 'p_ban_lv', type: 'ban_lam_viec', loai_neo: 'dat', vi_tri: 'giua_phai', lop: 'giua' },
     { id: 'p_ban_hop', type: 'ban_hop', loai_neo: 'dat', vi_tri: 'xa_phai', lop: 'giua' },

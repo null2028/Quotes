@@ -263,12 +263,12 @@ function buildThuVienMd() {
     '> Sinh tự động qua `npm run gen:skill` từ `propCatalog`, `semanticStage`, `HO-DAO-CU.md` và `BO-BOI-CANH.md`. Không tự vẽ đồ vật hay ghi toạ độ.',
     '',
     '## 1. 9 Bộ Bối Cảnh Chuẩn (`BO-BOI-CANH`)',
+    '> Khí quyển mặc định TẮT — không tự thêm mặt trời/lá/gió trang trí; chỉ khai báo `boi_canh.khi_quyen` khi câu chữ có hình ảnh/ý nghĩa tương ứng và đã giải thích ở Bước 2.',
   ];
 
   for (const bc of boiCanhList) {
-    const atmoText = bc.atmo.length > 0 ? ` · khí quyển: ${bc.atmo.join(', ')}` : '';
     lines.push(
-      `- \`${bc.code}\` · **${bc.name}** · địa hình: ${bc.terrains.join('/')} · đạo cụ gợi ý: ${bc.props.join(', ')}${atmoText}`
+      `- \`${bc.code}\` · **${bc.name}** · địa hình: ${bc.terrains.join('/')} · đạo cụ gợi ý: ${bc.props.join(', ')}`
     );
   }
 
@@ -277,12 +277,12 @@ function buildThuVienMd() {
     '## 2. Địa Hình, Khí Quyển, Nhân Vật & Toàn Bộ Động Từ',
     `- Địa hình (\`boi_canh.dia_hinh\`): ${fmtList(Object.keys(SEMANTIC_TERRAINS))}.`,
     '- Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.',
-    `- Khí quyển (\`boi_canh.khi_quyen[].loai\`): ${fmtList(atmosphereTypes)} (kèm \`vi_tri\`, \`huong\`: \`trai\`/\`phai\`, \`mat_do\`).`,
+    `- Khí quyển (\`boi_canh.khi_quyen[].loai\`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): ${fmtList(atmosphereTypes)} (kèm \`vi_tri\`, \`huong\`: \`trai\`/\`phai\`, \`mat_do\`).`,
     `- Lớp sâu (\`lop\`): ${fmtList(SEMANTIC_LAYERS)} · Loại neo (\`loai_neo\`): ${fmtList(ANCHOR_KINDS)} · Khe vị trí (\`vi_tri\`/\`di_toi\`): ${fmtList(Object.keys(SEMANTIC_SLOTS))}.`,
     `- Nhân vật (\`nhan_vat[].vai\`): ${fmtList(SEMANTIC_ACTOR_ROLES)} (\`lu_khach\` bóng mực đậm mặc định; \`nguoi_b\` bóng mực nhạt hơn, tuỳ chọn \`toc_duoi_ngua: true\`, đủ \`vi_tri\`, \`huong\`, \`tu_the\`, va chạm như Lữ khách).`,
-    `- Tư thế (\`tu_the\`): ${fmtList(Object.keys(SEMANTIC_POSES))} · Nghiêng (\`nghieng\`): ${fmtList(SEMANTIC_LEANS)} · Hướng (\`huong\`): \`trai\`, \`phai\` · Điểm cầm (\`cam_boi\`): ${fmtList(Object.keys(SEMANTIC_SOCKETS))}.`,
+    `- Tư thế (\`tu_the\`): ${fmtList(Object.keys(SEMANTIC_POSES))} · Nghiêng (\`nghieng\`): ${fmtList(SEMANTIC_LEANS)} (\`guc\` = cúi đầu vai chùng — thờ ơ, mệt nhẹ, không gập xuống bàn; \`guc_sau\` = gục sâu xuống bàn — kiệt sức) · Hướng (\`huong\`): \`trai\`, \`phai\` · Điểm cầm (\`cam_boi\`): ${fmtList(Object.keys(SEMANTIC_SOCKETS))}.`,
     '- Ngồi ghế bàn: bắt buộc `ngoi_tren: "<id_ghe>.mat_ghe"`, thêm `ngoi_vao: "<id_ban>"` để kê sát bàn. Chén trà cầm tay (`cam_chen_tra: true`) mặc định nét mực wash; chỉ đổi đỏ khi có `vat_do_tren_tay: "<id>.chen_tra"`.',
-    `- Mốc nhịp (\`nhip[].moc\`): ${fmtList(SEMANTIC_BEAT_ANCHORS)} (kèm \`sau\`, \`thoi_luong\` tính bằng giây).`,
+    `- Mốc nhịp (\`nhip[].moc\`): ${fmtList(SEMANTIC_BEAT_ANCHORS)} (kèm \`sau\` tính bằng giây; **không cần ghi \`thoi_luong\`** — engine tự tính chậm rãi theo Nhịp Trà Nguội; phản ứng lớn tại \`cu_lat\` phải có \`sau\` ≥ 0.45).`,
     `- Động từ nhân vật (\`nhip[].nhan_vat.<id>\`): ${fmtList(SEMANTIC_ACTOR_BEAT_VERBS)} (\`di_vao\`/\`di_ra\`: từ/ra mép khung; \`khung_lai\`: giật nhẹ dừng; \`lui_buoc\`: lùi vẫn giữ hướng; \`quay_dau\`: ngoái sau rồi quay lại; \`nhin_nhau\`: hai nhân vật xoay mặt nhìn nhau; \`tha_roi\`: thả vật cầm rơi xuống đất).`,
     `- Động từ đạo cụ (\`nhip[].dao_cu.<id>\`): ${fmtList(SEMANTIC_PROP_BEAT_VERBS)}.`,
     `- Động từ địa hình / đoạn đường (\`nhip[].doan_duong.<id>\`): ${fmtList(SEMANTIC_TERRAIN_SEGMENT_VERBS)} (\`doi_do\`: đổi đỏ đậm; \`duong_mo\`: mờ dần ở hậu vị).`,
@@ -354,9 +354,10 @@ Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 d�
 2. Trước cú lật: hình dựng thế giới của A (bối cảnh quen, Lữ khách sống bình thường), KHÔNG lộ B.
 3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd câu Chén 18 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Không chọn được vật cụ thể → dùng chính địa hình/khí quyển (vd một đoạn đường) hoặc ghi 'Cần bổ sung'. Gán nghĩa vòng vo (laptop vì 'tính nhanh') là SAI.
 4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
-5. Đồ trên sân khấu: mọi đạo cụ phải được dùng hoặc mang nghĩa; đồ chỉ để trang trí thì bỏ (tối đa 3 vật).
+5. Đồ trên sân khấu: mọi đạo cụ và yếu tố trên sân khấu (kể cả khí quyển như nắng, lá, mưa, gió) phải được dùng hoặc mang nghĩa rõ; thứ chỉ để trang trí thì bỏ (tối đa 3 đạo cụ; khí quyển mặc định TẮT).
 6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong \`references/thu-vien.md\`). Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
 7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại.
+8. Nhịp Trà Nguội: Lữ khách làm mọi thứ chậm rãi như người đang uống trà; ít cử chỉ, mỗi dòng tối đa 1 cử chỉ nhỏ, phần lớn thời gian là lặng.
 TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa.
 
 ## Bước 3 — Xuất Gói Chén JSON
@@ -364,6 +365,7 @@ Sau khi chủ kênh chốt phương án ở Bước 2, xuất **đúng 1 khối 
 - Đủ trường gốc: \`phien_ban_goi: 1\`, \`tieu_de\`, \`cau\`, \`cu_lat\`, \`boi_canh\`, \`nhan_vat\`, \`dao_cu\`, \`nhip\`.
 - Chỉ dùng mã đạo cụ Tầng A hoặc Tầng B trong \`references/thu-vien.md\` (tuyệt đối KHÔNG xuất mã Tầng C vào JSON), cùng điểm neo, trạng thái, tư thế, động từ và khe vị trí hợp lệ.
 - Nhân vật ngồi ghế bắt buộc có \`ngoi_tren: "<id_ghe>.mat_ghe"\` (thêm \`ngoi_vao: "<id_ban>"\` khi ngồi vào bàn); đạo cụ trên bàn dùng \`loai_neo: "tren"\` + \`dat_tren: "<id_ban>.<diem_neo>"\`.
+- Không cần ghi \`thoi_luong\` (engine tự tính chậm rãi theo Nhịp Trà Nguội); phản ứng lớn ở \`cu_lat\` phải có \`sau\` ≥ 0.45 (chữ dẫn, hình theo); \`boi_canh.khi_quyen\` để trống trừ khi Bước 2 đã giải thích nghĩa.
 - Tuyệt đối không có \`x\`, \`y\`, \`scale\`, \`shapes\`, \`altShapes\`.
 
 ## Khi nhận thông báo lỗi từ tool

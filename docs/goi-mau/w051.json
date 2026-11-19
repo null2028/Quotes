@@ -31,23 +31,15 @@
   ],
   "nhip": [
     {
-      "moc": "bat_dau", "thoi_luong": 0.5,
+      "moc": "bat_dau",
       "nhan_vat": { "hero": { "tu_the": "ngoi_tua", "nghieng": "thang", "nhin_theo": "laptop" } }
     },
     {
-      "moc": "dong_2", "thoi_luong": 0.6,
-      "nhan_vat": { "hero": { "nghieng": "nhe_truoc", "nhin_theo": "laptop" } }
-    },
-    {
-      "moc": "dong_3", "thoi_luong": 0.5,
+      "moc": "dong_2",
       "nhan_vat": { "hero": { "nghieng": "guc", "nhin_theo": null } }
     },
     {
-      "moc": "cu_lat", "sau": 0.3, "thoi_luong": 0.4,
-      "nhan_vat": { "hero": { "nghieng": "thang", "nhin_theo": "lich" } }
-    },
-    {
-      "moc": "cu_lat", "sau": 1.0, "thoi_luong": 0.5,
+      "moc": "cu_lat", "sau": 0.5,
       "nhan_vat": { "hero": { "nghieng": "nga_lung", "nhin_theo": "lich" } }
     }
   ]

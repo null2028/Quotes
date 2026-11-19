@@ -27,7 +27,8 @@ import {
 const f2 = (n: number): string => Number(n.toFixed(2)).toString();
 
 /**
- * Hàm đường cong có tham số cho gối vải bo mềm đặt phẳng trên mặt giường/đất (`y = 0`).
+ * Hàm đường cong có tham số cho gối vải dẹt đặt phẳng trên mặt giường/đất (`y = 0`),
+ * có 2 góc bo hơi nhọn (pinched corners) đặc trưng của gối vải thay vì bầu tròn như đá.
  */
 function parametricPillowBody(
   width: number,
@@ -37,16 +38,18 @@ function parametricPillowBody(
   fillOpacity: number
 ): InlineShape {
   const hw = width / 2;
-  const endY = -height * Math.max(0.28, Math.min(0.62, 0.45 - pinchRatio * 0.25));
+  const cornerY = -height * Math.max(0.18, Math.min(0.32, 0.26 - pinchRatio * 0.1));
   const topY = -height;
-  const ctrlX = hw * 0.62;
-  const sideCtrlX = hw * (1.03 - pinchRatio * 0.12);
+  const topCtrlX = hw * 0.44;
+  const shoulderCtrlX = hw * (0.82 - pinchRatio * 0.14);
+  const baseCtrlX = hw * 0.56;
+  const cornerBaseX = hw * 0.86;
   const d = [
-    `M ${f2(-hw)} ${f2(endY)}`,
-    `C ${f2(-sideCtrlX)} ${f2(topY * 0.92)} ${f2(-ctrlX)} ${f2(topY)} 0 ${f2(topY)}`,
-    `C ${f2(ctrlX)} ${f2(topY)} ${f2(sideCtrlX)} ${f2(topY * 0.92)} ${f2(hw)} ${f2(endY)}`,
-    `C ${f2(sideCtrlX)} ${f2(-height * 0.08)} ${f2(ctrlX)} 0 0 0`,
-    `C ${f2(-ctrlX)} 0 ${f2(-sideCtrlX)} ${f2(-height * 0.08)} ${f2(-hw)} ${f2(endY)}`,
+    `M ${f2(-hw)} ${f2(cornerY)}`,
+    `C ${f2(-shoulderCtrlX)} ${f2(topY * 0.82)} ${f2(-topCtrlX)} ${f2(topY)} 0 ${f2(topY)}`,
+    `C ${f2(topCtrlX)} ${f2(topY)} ${f2(shoulderCtrlX)} ${f2(topY * 0.82)} ${f2(hw)} ${f2(cornerY)}`,
+    `C ${f2(cornerBaseX)} ${f2(-height * 0.04)} ${f2(baseCtrlX)} 0 0 0`,
+    `C ${f2(-baseCtrlX)} 0 ${f2(-cornerBaseX)} ${f2(-height * 0.04)} ${f2(-hw)} ${f2(cornerY)}`,
     'Z',
   ].join(' ');
   return {
@@ -62,16 +65,16 @@ function parametricPillowBody(
  * Nét gấp mềm bên trong thân gối vải (tối đa 1 nét mảnh phụ).
  */
 function parametricPillowCrease(width: number, height: number): InlineShape {
-  const x0 = -width * 0.28;
+  const x0 = -width * 0.26;
   const x1 = width * 0.26;
-  const y0 = -height * 0.56;
+  const y0 = -height * 0.54;
   const yMid = -height * 0.44;
   return {
-    d: `M ${f2(x0)} ${f2(y0)} Q 0 ${f2(yMid)} ${f2(x1)} ${f2(y0 + 0.15)}`,
+    d: `M ${f2(x0)} ${f2(y0)} Q 0 ${f2(yMid)} ${f2(x1)} ${f2(y0)}`,
     fill: 'none',
     role: 'secondary',
-    strokeScale: FAMILY_DETAIL_STROKE_SCALE,
-    opacity: 0.68,
+    strokeScale: 0.42,
+    opacity: 0.5,
   };
 }
 
@@ -478,23 +481,24 @@ export const MAT_PHANG_NEW_PRESETS: Record<string, CustomPropDefinition> = {
   }),
 
   chiec_goi: buildMatPhangProp({
-    status: 'nhap',
+    status: 'duyet',
     labelVi: 'Chiếc gối vải mềm',
     kichThuocThatCm: 46,
     description5: {
       nghia: 'Chiếc gối êm nằm đầu giường gợi giấc ngủ, nỗi nhớ một bên giường trống hoặc sự nâng đỡ thầm lặng.',
-      cau_truc: 'Gồm 3 đặc điểm nhận diện là thân gối bầu ngang đặt phẳng đáy, hai góc mép bo túm mềm mại và đúng 1 đường nếp vải cong nhẹ ở giữa.',
-      bong_dang: 'Khối bầu ngang thấp gọn, kích thước vừa bằng một phần tư chiều dài giường khi đặt tại điểm neo dau_goi.',
-      the_gioi: 'Nét viền mảnh kết hợp wash nhạt, bản đỏ cú lật giữ nguyên 100% dáng gối và đường nếp giữa.',
-      nguoi_la: 'Đặt trên đầu giường ngủ hoặc cầm trên tay, người lạ nhìn dáng bầu ngang bo góc là nhận ra ngay chiếc gối.',
+      cau_truc: 'Gồm 3 đặc điểm nhận diện là thân gối vải dẹt đặt phẳng đáy, hai góc mép bo hơi nhọn đặc trưng gối vải và đúng 1 đường nếp vải cong mảnh ở giữa.',
+      bong_dang: 'Khối gối ngang dẹt nhẹ nhàng, kích thước vừa bằng một phần tư chiều dài giường khi đặt tại điểm neo dau_goi.',
+      the_gioi: 'Nét viền mảnh đồng điệu các đạo cụ khác kết hợp wash nhạt, bản đỏ cú lật giữ nguyên 100% dáng gối và đường nếp giữa.',
+      nguoi_la: 'Đặt trên đầu giường ngủ, trên đất hoặc cầm tay, người lạ nhìn dáng dẹt hai góc bo hơi nhọn là nhận ra ngay chiếc gối.',
     },
     anchorKind: 'tren',
     allowedAnchorKinds: ['tren', 'cam', 'dat'],
     anchors: {},
     canBeRed: true,
-    bodyStrokeScale: FAMILY_BODY_STROKE_SCALE,
-    rong: 14.6,
-    cao: 5.4,
+    bodyStrokeScale: 0.52,
+    fillOpacity: 0.09,
+    rong: 15.2,
+    cao: 4.4,
     kieu_chan: 'khong',
     thanh_dau: 'khong',
     so_ngan: 0,

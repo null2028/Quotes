@@ -4,8 +4,10 @@
  * Luồng: Gói Chén → chuyển sang SemanticStageScript → compileSemanticStageScript → validateStageScriptHard
  * Lỗi trả về là câu tiếng Việt có gợi ý tên đúng, dùng cho T4 (copy gửi lại Gemini web).
  */
+import { computeTimelineSync, TimelineSyncResult } from '../engine/timelineSync';
 import { BUILT_IN_PROP_CATALOG, BUILT_IN_PROP_NAMES } from './propCatalog';
 import {
+  classifySemanticBeatTempo,
   compileSemanticStageScript,
   isSemanticStageScript,
   SemanticStageScript,
@@ -207,6 +209,12 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
   const warnings = Array.from(draftPropTypes).map(
     (t) => `Dùng đạo cụ chưa chuẩn hoá nét: ${t}`
   );
+  if (isSemanticStageScript(semInput) && Array.isArray(semInput.nhip)) {
+    const tempoAnalysis = classifySemanticBeatTempo(semInput as SemanticStageScript);
+    for (const tw of tempoAnalysis.warnings) {
+      warnings.push(tw);
+    }
+  }
 
   const structIssues = validateSemanticSpecStructure(semInput);
   for (const issue of structIssues) {
@@ -215,7 +223,11 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
         issue.code === 'CUSTOM_PROP_FORBIDDEN' || issue.code === 'MISSING_CATALOG_METADATA' ||
         issue.code === 'INVALID_ANCHOR' || issue.code === 'INVALID_SEATING') {
       formatErrors.push(issue.message);
-    } else if (issue.code === 'RED_OBJECT_RULE') {
+    } else if (
+      issue.code === 'RED_OBJECT_RULE' ||
+      issue.code === 'TEMPO_RULE_VIOLATION' ||
+      issue.code === 'PIVOT_ORDER_VIOLATION'
+    ) {
       ruleErrors.push(issue.message);
     } else {
       geomErrors.push(issue.message);
@@ -240,8 +252,36 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
       };
     }
 
-    // ── 9. Validate runtime (đè nhau, lơ lửng, v.v.) ──
-    const runtimeRes = validateStageScriptHard(compiled);
+    // ── 9. Validate runtime (đè nhau, lơ lửng, tỷ lệ 40%, Chữ dẫn Hình theo trên timeline thật) ──
+    let realTimeline: TimelineSyncResult | undefined;
+    if (Array.isArray(cau) && cau.length >= 2 && typeof cuLat === 'string' && cuLat.trim()) {
+      try {
+        realTimeline = computeTimelineSync({
+          id: compiled.sceneId || 'goichen-validate',
+          textFormat: 'POEM',
+          segments: cau.map((c) => String(c)),
+          pivotWord: cuLat.replace(/[!?.…]+$/u, ''),
+          highlightStyle: 'BOTH',
+          targetDurationSeconds: 15,
+          durationMode: 'FIXED',
+          typingSpeedMsPerChar: 55,
+          holdAfterFinishSeconds: 5.5,
+          themeId: 'MINIMAL_LIGHT',
+          motion: {
+            archetype: 'BOULDER_TO_BENCH',
+            pacingMode: 'CONTEMPLATIVE',
+            stateA: { intensity: 0.8, spread: 0.2, tiltDeg: -16 },
+            stateB: { intensity: 0.1, spread: 0.75, tiltDeg: 0 },
+          },
+          bgm: { audioMode: 'PIVOT_ACCENT', foleyPivotStyle: 'AUTO' },
+          brandText: 'TRÀ NGUỘI',
+        });
+      } catch {
+        realTimeline = undefined;
+      }
+    }
+
+    const runtimeRes = validateStageScriptHard(compiled, realTimeline);
     for (const issue of runtimeRes.issues) {
       // Bỏ lỗi dây chuyền: nếu vật đã lỗi tên/neo → bỏ collision/floating/oob cho vật đó
       if (isCascadeError(issue, badPropIds)) continue;
@@ -249,7 +289,12 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
       // Phân loại + làm sạch message
       const cleanMsg = cleanGeomMessage(issue.message);
 
-      if (issue.code === 'RED_OBJECT_RULE' || issue.code === 'RED_SILHOUETTE_MISMATCH') {
+      if (
+        issue.code === 'RED_OBJECT_RULE' ||
+        issue.code === 'RED_SILHOUETTE_MISMATCH' ||
+        issue.code === 'TEMPO_RULE_VIOLATION' ||
+        issue.code === 'PIVOT_ORDER_VIOLATION'
+      ) {
         ruleErrors.push(cleanMsg);
       } else {
         geomErrors.push(cleanMsg);

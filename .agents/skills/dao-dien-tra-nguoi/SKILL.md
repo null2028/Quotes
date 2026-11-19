@@ -24,9 +24,10 @@ Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 d�
 2. Trước cú lật: hình dựng thế giới của A (bối cảnh quen, Lữ khách sống bình thường), KHÔNG lộ B.
 3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd câu Chén 18 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Không chọn được vật cụ thể → dùng chính địa hình/khí quyển (vd một đoạn đường) hoặc ghi 'Cần bổ sung'. Gán nghĩa vòng vo (laptop vì 'tính nhanh') là SAI.
 4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
-5. Đồ trên sân khấu: mọi đạo cụ phải được dùng hoặc mang nghĩa; đồ chỉ để trang trí thì bỏ (tối đa 3 vật).
+5. Đồ trên sân khấu: mọi đạo cụ và yếu tố trên sân khấu (kể cả khí quyển như nắng, lá, mưa, gió) phải được dùng hoặc mang nghĩa rõ; thứ chỉ để trang trí thì bỏ (tối đa 3 đạo cụ; khí quyển mặc định TẮT).
 6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong `references/thu-vien.md`). Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
 7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại.
+8. Nhịp Trà Nguội: Lữ khách làm mọi thứ chậm rãi như người đang uống trà; ít cử chỉ, mỗi dòng tối đa 1 cử chỉ nhỏ, phần lớn thời gian là lặng.
 TỰ KIỂM trước khi đưa: Liệt kê 3 hình ảnh mạnh nhất trong câu (danh từ/động từ cụ thể). Phương án số 1 phải dùng ít nhất 2 trong 3, và hình ảnh của chữ lật phải là thứ thay đổi ở cú lật. Bỏ hình đi chữ vẫn đứng được; có hình thì cú lật mạnh hơn; hình không lộ đáp án trước chữ lật; đọc lại câu, từng hình ảnh then chốt trong câu (người, vật, hành động) có mặt trên sân khấu chưa.
 
 ## Bước 3 — Xuất Gói Chén JSON
@@ -34,6 +35,7 @@ Sau khi chủ kênh chốt phương án ở Bước 2, xuất **đúng 1 khối 
 - Đủ trường gốc: `phien_ban_goi: 1`, `tieu_de`, `cau`, `cu_lat`, `boi_canh`, `nhan_vat`, `dao_cu`, `nhip`.
 - Chỉ dùng mã đạo cụ Tầng A hoặc Tầng B trong `references/thu-vien.md` (tuyệt đối KHÔNG xuất mã Tầng C vào JSON), cùng điểm neo, trạng thái, tư thế, động từ và khe vị trí hợp lệ.
 - Nhân vật ngồi ghế bắt buộc có `ngoi_tren: "<id_ghe>.mat_ghe"` (thêm `ngoi_vao: "<id_ban>"` khi ngồi vào bàn); đạo cụ trên bàn dùng `loai_neo: "tren"` + `dat_tren: "<id_ban>.<diem_neo>"`.
+- Không cần ghi `thoi_luong` (engine tự tính chậm rãi theo Nhịp Trà Nguội); phản ứng lớn ở `cu_lat` phải có `sau` ≥ 0.45 (chữ dẫn, hình theo); `boi_canh.khi_quyen` để trống trừ khi Bước 2 đã giải thích nghĩa.
 - Tuyệt đối không có `x`, `y`, `scale`, `shapes`, `altShapes`.
 
 ## Khi nhận thông báo lỗi từ tool

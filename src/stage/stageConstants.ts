@@ -73,14 +73,48 @@ export function computeExpectedCatalogSpanFromCm(kichThuocThatCm: number): numbe
 }
 
 /**
- * Hằng số Tự căn khung chung cho mọi Chén:
- * - Khung bao chung của nhân vật + đạo cụ + vật đỏ chiếm 58% chiều ngang vùng hình (đã duyệt).
- * - Khung bao cảnh không cao quá 60% chiều cao vùng hình; Lữ khách cao tối thiểu 30% làm mức sàn, vẫn chừa lề trên tối thiểu 12%.
+ * Hằng số Cỡ Nhân Vật Cố Định & Tự căn khung (T7a):
+ * - Lữ khách đứng luôn cao đúng LU_KHACH_HEIGHT_RATIO (28% chiều cao vùng hình STAGE_VB_H = 250 → scale chuẩn 1.40).
+ * - Tự căn khung chỉ dịch ngang căn giữa cụm cảnh và THU NHỎ tối thiểu 0.75× cỡ chuẩn nếu cảnh rộng quá vùng hình (không bao giờ phóng to vượt cỡ chuẩn).
  */
-export const AUTO_FRAME_TARGET_WIDTH_RATIO = 0.58;
+export const LU_KHACH_HEIGHT_RATIO = 0.28;
+export const LU_KHACH_STANDING_UNITS = 50;
+export const AUTO_FRAME_MIN_SHRINK_RATIO = 0.75;
 export const AUTO_FRAME_MIN_TOP_MARGIN_RATIO = 0.12;
-export const AUTO_FRAME_MIN_TRAVELER_HEIGHT_RATIO = 0.3;
-export const AUTO_FRAME_MAX_HEIGHT_RATIO = 0.6;
+
+/**
+ * Bộ hằng số Nhịp Trà Nguội — một chỗ duy nhất điều chỉnh nhịp toàn kênh.
+ */
+export const TEMPO = {
+  MIN_LEAN_SEC: 2.0,
+  MIN_LOOK_TURN_SEC: 1.2,
+  MIN_FLINCH_SEC: 0.6,
+  FLINCH_LEAN_DEG: -3.5,
+  WALK_SPEED_UNITS_PER_SEC: 32,
+  MIN_WALK_SEC: 2.0,
+  MIN_STEP_BACK_SEC: 1.2,
+  WALK_STRIDE_MULT: 1.22,
+  RED_TRANSITION_SEC: 0.85,
+  EMITTER_TRANSITION_SEC: 1.6,
+  DROP_GRAVITY_SEC: 0.95,
+  POST_MOTION_HOLD_SEC: 1.0,
+  MAX_ACTIVE_MOTION_RATIO: 0.4,
+  MAX_MAJOR_MOTIONS_TOTAL: 4,
+  MAX_MOTIONS_PER_LINE: 1,
+  MAX_MOTIONS_AFTER_PIVOT: 2,
+  RED_COLOR_DELAY_AFTER_PIVOT_SEC: 0.4,
+  PIVOT_REACTION_MIN_DELAY_SEC: 0.4,
+  PIVOT_WINDOW_BEFORE_SEC: 0.35,
+  LEAN_DEG: {
+    thang: 0,
+    nhe_truoc: 8,
+    guc: 13,      // cúi đầu vai chùng (wSitSlump ≈ 0.71, deepSlump = 0 — không gập xuống bàn)
+    guc_sau: 22,  // gục sâu xuống bàn (deepSlump = 1 — kiệt sức)
+    nga_lung: -3,
+  },
+  BREATH_CYCLE_SEC: 4.5,
+  STILL_LEAN_BREATH_AMP_DEG: 0.55,
+} as const;
 
 // =====================================================================
 // === HẰNG SỐ NÉT MỰC LỮ KHÁCH & ĐẠO CỤ (trích từ engine cũ 7c1fe76) ===
