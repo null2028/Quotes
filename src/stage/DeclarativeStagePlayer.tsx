@@ -85,10 +85,10 @@ export const DeclarativeStagePlayer: React.FC<{
   const svgHeight = stageBox?.height ?? LAYOUT_TOKENS.swissGrid.stageHeight;
   const isLegacy = isLegacyStageScript(script, script.sceneId);
 
-  // Bước 2: Validator chặn cứng trước mọi lần render cho kịch bản mới (trong cả Studio lẫn CLI)
+  // Bước 2: Validator chặn cứng trước mọi lần render cho kịch bản mới (truyền đúng visualDNA để khớp chân trời #4)
   const validation = React.useMemo(
-    () => (isLegacy ? null : validateStageScriptHard(script, timeline)),
-    [isLegacy, script, timeline]
+    () => (isLegacy ? null : validateStageScriptHard(script, timeline, visualDNA)),
+    [isLegacy, script, timeline, visualDNA]
   );
 
   if (validation && !validation.valid) {
@@ -980,6 +980,10 @@ export const DeclarativeStagePlayer: React.FC<{
   const hasBackdropSet = Boolean(
     script.tags?.some((t) => t.startsWith('boi_canh_bo:'))
   );
+  const explicitWindowArch = Boolean(
+    script.tags?.includes('bo_cuc:khung_cua')
+  );
+  const stageClipId = `stage-clip-${(script.sceneId || 'cup').replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
   return (
     <svg
@@ -987,10 +991,13 @@ export const DeclarativeStagePlayer: React.FC<{
       height={svgHeight}
       viewBox={STAGE_VIEWBOX}
       preserveAspectRatio="xMidYMid meet"
-      style={{ overflow: 'visible', background: 'transparent' }}
+      style={{ overflow: 'hidden', background: 'transparent' }}
     >
-      {spotlight.strength > 0.005 && (
-        <defs>
+      <defs>
+        <clipPath id={stageClipId}>
+          <rect x="0" y="126" width="540" height="250" />
+        </clipPath>
+        {spotlight.strength > 0.005 && (
           <radialGradient
             id={spotGradId}
             cx={spotlight.focusX.toFixed(1)}
@@ -1016,8 +1023,9 @@ export const DeclarativeStagePlayer: React.FC<{
               stopOpacity="0"
             />
           </radialGradient>
-        </defs>
-      )}
+        )}
+      </defs>
+      <g clipPath={`url(#${stageClipId})`}>
       <g transform={cameraTransform} opacity={stageOutroOpacity.toFixed(4)}>
         <g
           opacity={postPivotFade * peripheryDim}
@@ -1085,8 +1093,9 @@ export const DeclarativeStagePlayer: React.FC<{
 
         {renderDebugBBoxOverlay()}
       </g>
+      </g>
 
-      {frameMode === 'WINDOW_ARCH' && !hasBackdropSet && (
+      {frameMode === 'WINDOW_ARCH' && (explicitWindowArch || !hasBackdropSet) && (
         <path
           d="M 122 362 L 122 246 A 148 114 0 0 1 418 246 L 418 362"
           fill="none"

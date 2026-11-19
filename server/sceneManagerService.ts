@@ -740,6 +740,11 @@ export function importDirectorBundle(
       : prevCup?.goiChenGoc
         ? { goiChenGoc: prevCup.goiChenGoc }
         : {}),
+    ...(bundle.scriptGoc
+      ? { scriptGoc: bundle.scriptGoc }
+      : prevCup?.scriptGoc
+        ? { scriptGoc: prevCup.scriptGoc }
+        : {}),
     props: fullProps,
   };
 

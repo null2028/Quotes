@@ -948,8 +948,10 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
   let cupProps = null;
   let scriptInput = null;
   let baseName = path.basename(targetArg, '.json');
+  let isGoiChenInput = false;
 
   if (isGoiChen(rawJson)) {
+    isGoiChenInput = true;
     const parsed = parseGoiChen(rawJson);
     if (!parsed.ok && !allowInvalid) {
       console.error(`❌ CHẶN RENDER GÓI CHÉN [${baseName}] — ${parsed.errors.length} lỗi:`);
@@ -960,12 +962,13 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
     }
     scriptInput = parsed.compiled;
     cupProps = {
-      id: baseName,
+      id: parsed.compiled?.sceneId || baseName,
       title: parsed.tieuDe || baseName,
       segments: parsed.cau || [],
       pivotWord: parsed.cuLat || '',
       themeId: 'MINIMAL_LIGHT',
       targetDurationSeconds: 15,
+      durationMode: 'AUTO_SEED',
       textFormat: 'POEM',
     };
   } else if (rawJson.props && rawJson.cupNumber) {
@@ -983,7 +986,10 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
     throw new Error(`Không tìm thấy kịch bản sân khấu cho: ${targetArg}`);
   }
 
-  const timeline = computeTimelineSync({
+  const effectiveDurationMode =
+    cupProps?.durationMode || (isGoiChenInput ? 'AUTO_SEED' : 'FIXED');
+
+  const resolvedCupProps = {
     id: cupProps?.id || baseName,
     textFormat: cupProps?.textFormat || 'POEM',
     segments: cupProps?.segments || [
@@ -995,7 +1001,7 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
     pivotWord: (cupProps?.pivotWord || 'lại khỏe tưng').replace(/[!?.…]+$/u, ''),
     highlightStyle: 'BOTH',
     targetDurationSeconds: cupProps?.targetDurationSeconds || 15,
-    durationMode: 'FIXED',
+    durationMode: effectiveDurationMode,
     typingSpeedMsPerChar: 55,
     holdAfterFinishSeconds: 5.5,
     themeId: cupProps?.themeId || 'MINIMAL_LIGHT',
@@ -1007,9 +1013,12 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
     },
     bgm: { audioMode: 'PIVOT_ACCENT', foleyPivotStyle: 'AUTO' },
     brandText: 'TRÀ NGUỘI',
-  });
+  };
 
-  const valRes = validateAndCompileStageInput(scriptInput, timeline);
+  const timeline = computeTimelineSync(resolvedCupProps);
+  const preVdna = cupProps ? resolveVisualDNA(resolvedCupProps, scriptInput) : undefined;
+
+  const valRes = validateAndCompileStageInput(scriptInput, timeline, preVdna);
   if (!valRes.valid && !allowInvalid) {
     console.error(`❌ CHẶN RENDER PREVIEW [${baseName}] — ${valRes.issues.length} lỗi:`);
     for (const iss of valRes.issues) {
@@ -1021,7 +1030,7 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
   const script = valRes.compiledScript;
   const themeId = cupProps?.themeId || 'MINIMAL_LIGHT';
   const palette = THEME_PALETTES[themeId] || THEME_PALETTES.MINIMAL_LIGHT;
-  const vdna = cupProps ? resolveVisualDNA(cupProps, script) : undefined;
+  const vdna = cupProps ? resolveVisualDNA(resolvedCupProps, script) : undefined;
   const fps = timeline.fps;
 
   const segs = timeline.segmentTimings || [];
@@ -1110,7 +1119,10 @@ function renderSixFramePreview(targetArg, showBBox, outOverride, allowInvalid) {
     outOverride ||
     path.join(OUT_DIR, `${baseName}${showBBox ? '-bbox' : ''}-preview.png`);
   rasterizeWithCoreSVG({ mode: 'strip6', svgs, out: outFile });
-  console.log(`✅ Đã xuất ảnh 6 khung: ${path.relative(ROOT, outFile)}`);
+  const durSec = (timeline.durationInFrames / fps).toFixed(1);
+  console.log(
+    `✅ Đã xuất ảnh 6 khung: ${path.relative(ROOT, outFile)} (thời lượng: ${durSec}s · ${timeline.durationInFrames}f · ${effectiveDurationMode})`
+  );
 }
 
 

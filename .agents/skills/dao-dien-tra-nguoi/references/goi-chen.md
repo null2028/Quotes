@@ -24,6 +24,9 @@ Mọi vị trí dùng khe ngữ nghĩa (`trai`, `giua`, `phai`…); kích thư�
 | `tac_gia` | string | | Tên tác giả (tuỳ chọn, bỏ qua nếu tự sáng tác). |
 | `ma_quote` | string | | Mã định danh, VD: `"Q001"`. Dùng để quản lý nội bộ. |
 | `boi_canh` | object | | Bối cảnh sân khấu. Nếu bỏ trống → mặc định địa hình phẳng. |
+| `kieu_cu_lat` | string | | Kiểu cú lật camera: `day_may` (mặc định), `xuat_hien`, `keo_rong`, `dung_lang`. |
+| `bo_cuc` | string | | Bố cục khung video (tuỳ chọn, mặc định `co_dien`): `co_dien` (sân khấu trên, chữ dưới), `chan_may` (chữ trên nền trời, sân khấu dưới), `khung_cua` (vòm cửa sổ Á Đông — chỉ dùng khi có chủ đích). |
+| `anh_sang` | string | | Ánh sáng bóng đổ gobo (tuỳ chọn, **mặc định TẮT** — chỉ chọn khi mang nghĩa rõ đã giải thích ở Bước 2): `bong_la`, `nan_cua`, `den_long`, `suong_hien`. |
 | `vat_do_tren_tay` | string | | Dạng `"<id>.chen_tra"` nếu chính chén trà trên tay nhân vật là vật đỏ duy nhất ở cú lật (mặc định chén cầm tay vẽ nét mực). |
 | `nhan_vat` | object[] | ✅ | Mảng nhân vật (Lữ khách chính và tuỳ chọn nhân vật thứ hai `vai: "nguoi_b"`). |
 | `dao_cu` | object[] | ✅ | Mảng đạo cụ trên sân khấu. |
@@ -33,6 +36,7 @@ Mọi vị trí dùng khe ngữ nghĩa (`trai`, `giua`, `phai`…); kích thư�
 
 | Trường | Kiểu | Mô tả |
 |---|---|---|
+| `bo` | string | 1 trong 9 bộ bối cảnh chuẩn (`hien_tra`, `van_phong`, `phong_trong_nha`, `quan_nho`, `pho_ngo`, `nha_que`, `ga_tau`, `thien_nhien_mo`, `khong_gian_ky_hieu`). Engine tự dựng lớp nền tối giản. |
 | `dia_hinh` | string | Địa hình: `phang`, `doc`, `doi`, `nga_re`, `bo_nuoc`, `bac_thang`. Mặc định `phang`. |
 | `khi_quyen` | object[] | **Mặc định TẮT (bỏ trống)** — chỉ khai báo khi câu chữ có hình ảnh/ý nghĩa tương ứng đã giải thích ở Bước 2: `{ loai, vi_tri?, huong?, mat_do? }`. |
 | `doan_duong` | object[] | Đoạn đường làm đối tượng sân khấu (thường làm vật đỏ): `{ id, vi_tri?: "sau_lung" \| "truoc_mat" \| "tu_trai" \| "giua" \| "tu_phai", nhan_vat?, tu?, den?, vat_do? }`. |

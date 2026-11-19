@@ -47,6 +47,14 @@ export const MotionStageRouter: React.FC<{
     strokeScale: 1,
   };
 
+  const isSemanticScript = Boolean(
+    resolvedScript?.tags?.includes('semantic_v1')
+  );
+  // T8-DNA-b #5: Chén từ Gói Chén khoá scale/offset (cỡ & vị trí do engine quyết), giữ nguyên strokeScale
+  const effOffsetX = isSemanticScript ? 0 : tuning.offsetX;
+  const effOffsetY = isSemanticScript ? 0 : tuning.offsetY;
+  const effScale = isSemanticScript ? 1 : tuning.scale;
+
   const tunedStrokeWidth = Number(
     (LAYOUT_TOKENS.strokeWidth * (tuning.strokeScale ?? 1)).toFixed(2)
   );
@@ -71,17 +79,17 @@ export const MotionStageRouter: React.FC<{
         alignItems: 'center',
         justifyContent: 'center',
         background: 'transparent',
-        overflow: 'visible',
+        overflow: 'hidden',
         border: 'none',
         boxShadow: 'none',
         boxSizing: 'border-box',
       }}
     >
       {resolvedScript ? (
-        /* V7.0 Universal Stage Script Engine: Không chồng cameraScale cũ, chỉ áp dụng 4 thanh trượt stageTuning */
+        /* V7.0 Universal Stage Script Engine: Không chồng cameraScale cũ; Gói Chén khoá scale/offset, chỉ giữ strokeScale */
         <div
           style={{
-            transform: `translate(${tuning.offsetX}px, ${tuning.offsetY}px) scale(${tuning.scale})`,
+            transform: `translate(${effOffsetX}px, ${effOffsetY}px) scale(${effScale})`,
             transformOrigin: '50% 62.5%',
             willChange: 'transform',
           }}

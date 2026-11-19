@@ -22,3 +22,4 @@ Tr*Ngu*i.app/
 *.zip
 tn-core/out/
 qa-artifacts-ci/
+.tmp_frames*/

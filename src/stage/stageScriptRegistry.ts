@@ -65,6 +65,6 @@ export function resolveStageScript(
           ...CUSTOM_PROPS_MAP,
           ...(parsed.data.customPropsResolved ?? {}),
         }
-      : undefined,
+      : parsed.data.customPropsResolved,
   };
 }

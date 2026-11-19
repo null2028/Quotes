@@ -1,17 +1,19 @@
 import rawCustomProps from '../../data/custom-props.json';
 import { computeTimelineSync, TimelineSyncResult } from '../engine/timelineSync';
+import type { ResolvedVisualDNA } from '../engine/visualDnaResolver';
 import { THEME_PALETTES } from '../theme/palettes';
 import {
   APPROVAL_BATCH_PROP_NAMES,
   BUILT_IN_PROP_CATALOG,
   BUILT_IN_PROP_NAMES,
 } from './propCatalog';
-import { isLegacyStageScript } from './legacySceneIds';
+import { isFreeModeStageScript, isLegacyStageScript } from './legacySceneIds';
 import {
   ANCHOR_KINDS,
   computeExpectedCatalogSpanFromCm,
   DEFAULT_SCENE_SCALE,
   HE_SO_PHONG_DAI,
+  LU_KHACH_HEIGHT_RATIO,
   MAX_REAL_SIZE_DEVIATION,
   MAX_RED_BBOX_DELTA,
   MIN_RED_AREA_PX2,
@@ -47,15 +49,17 @@ import {
   resolveSemanticBackdropName,
   SEMANTIC_ACTOR_ROLES,
   SEMANTIC_BACKDROPS,
+  SEMANTIC_LAYOUTS,
   SEMANTIC_LEANS,
+  SEMANTIC_LIGHTINGS,
   SEMANTIC_PIVOT_STYLES,
   SEMANTIC_POSES,
   SEMANTIC_SOCKETS,
   SEMANTIC_TERRAINS,
   SemanticStageScript,
 } from './semanticStage';
-import { computeTerrainSegmentArcLength, getTerrainPoint } from './terrainSystem';
-import { resolveCueFrame } from './timeResolver';
+import { computeTerrainSegmentArcLength, getTerrainPoint, resolveXCoord } from './terrainSystem';
+import { evaluateEnterLeaveMultiplier, resolveCueFrame } from './timeResolver';
 import { evaluateStageScriptAtFrame } from './trackCompiler';
 import type { CustomPropDefinition, StageScript } from './stageScriptSchema';
 
@@ -85,6 +89,8 @@ const ALLOWED_SEMANTIC_ROOT_KEYS = new Set([
   'mo_ta',
   'boi_canh',
   'kieu_cu_lat',
+  'bo_cuc',
+  'anh_sang',
   'vat_do_tren_tay',
   'nhan_vat',
   'dao_cu',
@@ -184,16 +190,25 @@ export interface StageValidationIssue {
     | 'EXCESSIVE_MOTION'
     | 'FLOATING_OBJECT'
     | 'OUT_OF_SAFE_TERRAIN'
+    | 'STAGE_OVERFLOW'
+    | 'TRAVELER_SCALE_DEVIATION'
     | 'RED_OBJECT_RULE'
     | 'TEMPO_RULE_VIOLATION'
     | 'PIVOT_ORDER_VIOLATION';
+  /** 'error' = chặn cứng; 'warn' = cảnh báo vàng (làn tự do TF1, không chặn nhập/render) */
+  severity?: 'error' | 'warn';
+  /** Thời điểm xảy ra tính bằng giây (dùng cho TF2 chụp đúng khung cảnh báo/lỗi) */
+  timeSec?: number;
   message: string;
 }
 
 export interface StageValidationResult {
   valid: boolean;
   isLegacy: boolean;
+  isFreeMode?: boolean;
   issues: StageValidationIssue[];
+  /** Danh sách cảnh báo vàng (kèm timeSec) — chỉ xuất hiện khi có cảnh báo không chặn */
+  warnings?: StageValidationIssue[];
   compiledScript?: StageScript;
 }
 
@@ -436,6 +451,24 @@ export function validateSemanticSpecStructure(
     issues.push({
       code: 'UNKNOWN_NAME',
       message: `kieu_cu_lat: "${sem.kieu_cu_lat}" không hợp lệ (chỉ có: ${validStyles.join(', ')})${hint ? `, ý bạn là "${hint}"?` : ''}`,
+    });
+  }
+
+  if (sem.bo_cuc !== undefined && !(String(sem.bo_cuc) in SEMANTIC_LAYOUTS)) {
+    const validLayouts = Object.keys(SEMANTIC_LAYOUTS);
+    const hint = suggestClosestName(String(sem.bo_cuc), validLayouts);
+    issues.push({
+      code: 'UNKNOWN_NAME',
+      message: `bo_cuc: "${sem.bo_cuc}" không hợp lệ (chỉ có: ${validLayouts.join(', ')})${hint ? `, ý bạn là "${hint}"?` : ''}`,
+    });
+  }
+
+  if (sem.anh_sang !== undefined && !(String(sem.anh_sang) in SEMANTIC_LIGHTINGS)) {
+    const validLights = Object.keys(SEMANTIC_LIGHTINGS);
+    const hint = suggestClosestName(String(sem.anh_sang), validLights);
+    issues.push({
+      code: 'UNKNOWN_NAME',
+      message: `anh_sang: "${sem.anh_sang}" không hợp lệ (chỉ có: ${validLights.join(', ')})${hint ? `, ý bạn là "${hint}"?` : ''}`,
     });
   }
 
@@ -1004,14 +1037,657 @@ export function validateSemanticSpecStructure(
 }
 
 /**
+ * TF1: Validator làn tự do (`che_do: "tu_do"`).
+ * - KHÔNG chặn TEMPO, KHÔNG đếm cử chỉ, KHÔNG giới hạn đồ trong kho, cho phép `shapes`/`altShapes`/`drawProgress`/toạ độ tự do.
+ * - CHỈ kiểm VỠ HÌNH đo bằng máy mỗi 0.25s suốt video:
+ *   + CHẶN CỨNG (`issues`): (1) không đúng 1 vật đỏ (đếm CẢ nguồn đỏ ngầm: `teaCupRed`, `atmosphere`/`props` accent, khói/emitter đỏ, đoạn đường đỏ…);
+ *                           (2) hình tràn lên tiêu đề (`y0 < STAGE_VB_Y0`) hoặc xuống khối chữ (`y1 > STAGE_VB_Y1`).
+ *   + CẢNH BÁO VÀNG (`warnings`, đều gắn `timeSec`):
+ *     (1) đè/xuyên giữa vật cùng lớp hoặc nhân vật với vật;
+ *     (2) vật/nhân vật lơ lửng > 3px không có mặt đỡ;
+ *     (3) tư thế ngồi không có mặt ngồi;
+ *     (4) cỡ Lữ khách lệch > 25% so với `LU_KHACH_HEIGHT_RATIO`;
+ *     (5) vật đỏ < `MIN_RED_AREA_PX2` ở khung cuối.
+ */
+export function validateFreeModeStageScript(
+  script: StageScript,
+  timelineInput?: TimelineSyncResult,
+  visualDNA?: ResolvedVisualDNA
+): StageValidationResult {
+  const errors: StageValidationIssue[] = [];
+  const warnings: StageValidationIssue[] = [];
+
+  const timeline = timelineInput ?? buildFallbackTimeline();
+  const palette = THEME_PALETTES.MINIMAL_LIGHT;
+  const accentHex = palette.accentProp || palette.accent;
+  const fps = timeline.fps;
+  const stepFrames = Math.max(1, Math.round(VALIDATION_SAMPLE_STEP_SEC * fps));
+  const stageH = STAGE_VB_Y1 - STAGE_VB_Y0;
+  const customPropsMap = script.customPropsResolved;
+
+  const actorSpecMap = new Map((script.actors ?? []).map((a) => [a.id, a]));
+  const actorSeatHost = new Map<string, string>();
+  const actorDeskHost = new Map<string, string>();
+  for (const a of script.actors ?? []) {
+    if (a.seatedOn) {
+      const [seatId] = a.seatedOn.split('.');
+      if (seatId) actorSeatHost.set(a.id, seatId);
+    }
+    if (a.seatedAtDesk) {
+      actorDeskHost.set(a.id, a.seatedAtDesk);
+    }
+  }
+
+  interface FreeEntity {
+    kind: 'prop' | 'actor';
+    id: string;
+    type: string;
+    layer: string;
+    semLayer: SemanticLayer;
+    anchorKind?: string;
+    anchorType?: string;
+    placedOnHost?: string;
+    activeFollowActor?: string;
+    isDropping?: boolean;
+    focusRole?: string;
+    worldX: number;
+    worldY: number;
+    scale: number;
+    sitProgress?: number;
+    pose?: string;
+    box: { x0: number; y0: number; x1: number; y1: number };
+  }
+
+  const collectFreeEntities = (
+    compiled: ReturnType<typeof evaluateStageScriptAtFrame>,
+    isAfterPivot: boolean
+  ): FreeEntity[] => {
+    const out: FreeEntity[] = [];
+    for (const p of compiled.props) {
+      if (p.opacity <= 0.15 || p.drawProgress <= 0.05 || p.floatAwayProgress >= 0.85) {
+        continue;
+      }
+      const box = getPropWorldBBox(p, customPropsMap, isAfterPivot);
+      if (!box) continue;
+      const catDef = customPropsMap?.[p.type] ?? BUILT_IN_PROP_CATALOG[p.type];
+      const semLayer = resolveEffectiveSemanticLayer(
+        p.spec.semanticLayer ?? catDef?.defaultLayer,
+        p.layer,
+        `${p.id} ${p.type}`
+      );
+      const activeFollowActor = p.activeFollow ? p.activeFollow.split(':')[0] : undefined;
+      const anchorType = p.spec.anchorType ?? catDef?.anchorType;
+      const anchorKind = activeFollowActor
+        ? 'cam'
+        : p.isDropping
+          ? 'dat'
+          : p.spec.anchorKind ??
+            (p.spec.placedOn
+              ? 'tren'
+              : p.spec.follow
+                ? 'cam'
+                : p.layer === 'sky'
+                  ? 'troi'
+                  : catDef?.anchorKind ?? (anchorType === 'center' ? 'troi' : anchorType === 'hand' ? 'cam' : 'dat'));
+
+      out.push({
+        kind: 'prop',
+        id: p.id,
+        type: p.type,
+        layer: p.layer,
+        semLayer,
+        anchorKind,
+        anchorType,
+        placedOnHost: p.spec.placedOn?.split('.')[0],
+        activeFollowActor,
+        isDropping: Boolean(p.isDropping),
+        focusRole: p.spec.focusRole,
+        worldX: p.x,
+        worldY: p.y,
+        scale: p.scale,
+        box,
+      });
+    }
+
+    for (const a of compiled.actors) {
+      if (a.opacity <= 0.15 || a.dissolveToCloud >= 0.75) continue;
+      const aSpec = actorSpecMap.get(a.id);
+      const box = getActorWorldBBox(a, customPropsMap, isAfterPivot);
+      if (!box) continue;
+      const semLayer = resolveEffectiveSemanticLayer(
+        aSpec?.semanticLayer,
+        a.layer,
+        `${a.id} ${a.rig || 'human'}`
+      );
+      out.push({
+        kind: 'actor',
+        id: a.id,
+        type: a.rig || 'human',
+        layer: a.layer,
+        semLayer,
+        focusRole: a.focusRole,
+        worldX: a.x,
+        worldY: a.y,
+        scale: a.scale,
+        sitProgress: a.sitProgress,
+        pose: a.pose,
+        box,
+      });
+    }
+    return out;
+  };
+
+  interface RedSource {
+    id: string;
+    kind: string;
+    screenPx2: number;
+    zoom: number;
+  }
+
+  const collectRedSources = (
+    compiled: ReturnType<typeof evaluateStageScriptAtFrame>,
+    frame: number,
+    isAfterPivot: boolean
+  ): RedSource[] => {
+    const reds: RedSource[] = [];
+    const zoom2 = compiled.camera.zoom * compiled.camera.zoom;
+
+    // 1. Props & red emitters (khói đỏ / pulseRing đỏ / glow đỏ / spill đỏ)
+    for (const p of compiled.props) {
+      if (p.opacity <= 0.15 || p.drawProgress <= 0.05 || p.floatAwayProgress >= 0.85) {
+        continue;
+      }
+      const areaUnits2 = computePropRedStageArea(p, customPropsMap);
+      const propIsRed =
+        areaUnits2 > 0.05 ||
+        p.isAccentActive ||
+        p.color === accentHex;
+
+      if (propIsRed) {
+        let px2 = areaUnits2 * PX2_PER_STAGE_UNIT2 * zoom2;
+        if (px2 <= 0) {
+          const box = getPropWorldBBox(p, customPropsMap, isAfterPivot);
+          if (box) {
+            px2 =
+              Math.max(1, (box.x1 - box.x0) * (box.y1 - box.y0)) *
+              0.5 *
+              PX2_PER_STAGE_UNIT2 *
+              zoom2;
+          }
+        }
+        reds.push({
+          id: p.id,
+          kind: p.type,
+          screenPx2: px2,
+          zoom: compiled.camera.zoom,
+        });
+      } else {
+        // Nguồn đỏ ngầm trên prop không đỏ: khói đỏ / vòng sóng đỏ / quầng đỏ
+        const hasRedSteam =
+          p.emitters.steam > 0.05 && p.emitters.steamColor === accentHex;
+        const hasRedOtherEmitter =
+          (p.emitters.pulseRing > 0.05 ||
+            p.emitters.glow > 0.05 ||
+            p.emitters.spill > 0.05) &&
+          p.emitters.color === accentHex;
+        if (hasRedSteam || hasRedOtherEmitter) {
+          reds.push({
+            id: `${p.id}.khoi_do`,
+            kind: 'emitter_do',
+            screenPx2: 180 * p.scale * p.scale * PX2_PER_STAGE_UNIT2 * zoom2,
+            zoom: compiled.camera.zoom,
+          });
+        }
+      }
+    }
+
+    // 2. Actors: nhân vật đỏ, chén trà cầm tay đỏ (`teaCupRed`), khói đỏ từ custom rig
+    for (const a of compiled.actors) {
+      if (a.opacity <= 0.15 || a.dissolveToCloud >= 0.75) continue;
+      const aSpec = actorSpecMap.get(a.id);
+      const rigName = a.rig?.trim();
+      const isCustomRig =
+        Boolean(rigName) &&
+        rigName !== 'traveler' &&
+        rigName !== 'cloaked_traveler' &&
+        rigName !== 'human';
+
+      if (a.color === accentHex) {
+        reds.push({
+          id: a.id,
+          kind: 'human',
+          screenPx2: 320 * a.scale * a.scale * PX2_PER_STAGE_UNIT2 * zoom2,
+          zoom: compiled.camera.zoom,
+        });
+      } else if (isAfterPivot && a.showTeaCup > 0.1 && aSpec?.teaCupRed === true) {
+        reds.push({
+          id: `${a.id}.chen_tra`,
+          kind: 'teaCupRed',
+          screenPx2: 7 * 5 * 0.88 * a.scale * a.scale * PX2_PER_STAGE_UNIT2 * zoom2,
+          zoom: compiled.camera.zoom,
+        });
+      } else if (isAfterPivot && isCustomRig && a.showTeaCup > 0.1) {
+        reds.push({
+          id: `${a.id}.khoi_do`,
+          kind: 'custom_rig_steam',
+          screenPx2: 120 * a.scale * a.scale * PX2_PER_STAGE_UNIT2 * zoom2,
+          zoom: compiled.camera.zoom,
+        });
+      }
+    }
+
+    // 3. Terrain segments đỏ (`doan_duong`)
+    for (const ts of compiled.terrainSegments ?? []) {
+      if (ts.opacity <= 0.15 || !ts.isAccentActive) continue;
+      const segLenUnits = computeTerrainSegmentArcLength(compiled.terrain, ts.startX, ts.endX);
+      if (segLenUnits <= 0.5) continue;
+      const areaUnits2 = segLenUnits * Math.max(ts.strokeWidth, 5.8);
+      reds.push({
+        id: ts.id,
+        kind: 'doan_duong',
+        screenPx2: areaUnits2 * PX2_PER_STAGE_UNIT2 * zoom2,
+        zoom: compiled.camera.zoom,
+      });
+    }
+
+    // 4. Atmosphere đỏ (`colorRole === 'accent'` hoặc `leaves` có lá accent sau pivot)
+    for (let idx = 0; idx < (script.atmosphere ?? []).length; idx++) {
+      const item = script.atmosphere![idx];
+      const baseOp = item.opacity ?? 1;
+      if (baseOp <= 0.15) continue;
+      const mult = evaluateEnterLeaveMultiplier(
+        frame,
+        timeline,
+        item.enterAt,
+        item.leaveAt,
+        item.fadeDuration ?? 0.9
+      );
+      if (baseOp * mult <= 0.15) continue;
+      const isAtmoRed =
+        isAfterPivot && (item.colorRole === 'accent' || item.type === 'leaves');
+      if (isAtmoRed) {
+        const r = item.radius ?? 18;
+        reds.push({
+          id: `atmosphere:${item.id || `${item.type}#${idx + 1}`}`,
+          kind: `atmosphere_${item.type}`,
+          screenPx2: Math.PI * r * r * 0.45 * PX2_PER_STAGE_UNIT2 * zoom2,
+          zoom: compiled.camera.zoom,
+        });
+      }
+    }
+
+    return reds;
+  };
+
+  const seenOverflow = new Set<string>();
+  const seenOverlaps = new Set<string>();
+  const seenFloating = new Set<string>();
+  const seenSeating = new Set<string>();
+  const seenScaleDev = new Set<string>();
+  let multiRedErrorAdded = false;
+
+  const fFinal = Math.max(
+    Math.min(timeline.durationInFrames - 2, timeline.pivotFrame + Math.round(1.0 * fps)),
+    timeline.durationInFrames - Math.round(1.0 * fps)
+  );
+  const postPivotStartF = Math.min(
+    fFinal,
+    timeline.pivotFrame + Math.round(0.35 * fps)
+  );
+
+  // Tạo tập frame quét mỗi 0.25s + chắc chắn có fFinal
+  const sampleFramesSet = new Set<number>();
+  for (let f = 0; f < timeline.durationInFrames; f += stepFrames) {
+    sampleFramesSet.add(f);
+  }
+  sampleFramesSet.add(Math.max(0, Math.min(timeline.durationInFrames - 1, fFinal)));
+  const sampleFrames = Array.from(sampleFramesSet).sort((a, b) => a - b);
+
+  const checkFreeCollisions = (
+    entities: FreeEntity[],
+    tSec: number,
+    viaSweep: boolean
+  ): void => {
+    for (let i = 0; i < entities.length; i++) {
+      for (let j = i + 1; j < entities.length; j++) {
+        const A = entities[i];
+        const B = entities[j];
+        if (A.semLayer !== B.semLayer) continue;
+
+        const pairKey = [A.id, B.id].sort().join('::');
+        if (seenOverlaps.has(pairKey)) continue;
+
+        if (A.placedOnHost === B.id || B.placedOnHost === A.id) continue;
+        if (A.isDropping || B.isDropping) continue;
+        if (A.activeFollowActor === B.id || B.activeFollowActor === A.id) continue;
+        if (
+          (A.kind === 'actor' && actorSeatHost.get(A.id) === B.id) ||
+          (B.kind === 'actor' && actorSeatHost.get(B.id) === A.id) ||
+          (A.kind === 'actor' && actorDeskHost.get(A.id) === B.id) ||
+          (B.kind === 'actor' && actorDeskHost.get(B.id) === A.id)
+        ) {
+          continue;
+        }
+        // Trong làn tự do, vật đặt trực tiếp lên mặt trên của vật khác (tiếp xúc mép ≤ 4.5px) không tính là đè/xuyên
+        if (A.kind === 'prop' && B.kind === 'prop') {
+          const aOnB = Math.abs(A.box.y1 - B.box.y0) <= 4.5;
+          const bOnA = Math.abs(B.box.y1 - A.box.y0) <= 4.5;
+          if (aOnB || bOnA) continue;
+        }
+
+        const ix = Math.min(A.box.x1, B.box.x1) - Math.max(A.box.x0, B.box.x0);
+        const iy = Math.min(A.box.y1, B.box.y1) - Math.max(A.box.y0, B.box.y0);
+        if (ix > 2.5 && iy > 2.5 && ix * iy > 10) {
+          seenOverlaps.add(pairKey);
+          const first = B.kind === 'actor' && A.kind === 'prop' ? B : A;
+          const second = first === A ? B : A;
+          warnings.push({
+            code: 'OVERLAP_COLLISION',
+            severity: 'warn',
+            timeSec: tSec,
+            message: viaSweep
+              ? `[t=${tSec.toFixed(2)}s] "${first.id}" đi xuyên "${second.id}" cùng lớp "${A.semLayer}" (${ix.toFixed(1)}×${iy.toFixed(1)}px).`
+              : `[t=${tSec.toFixed(2)}s] "${first.id}" đè lên "${second.id}" cùng lớp "${A.semLayer}" (${ix.toFixed(1)}×${iy.toFixed(1)}px).`,
+          });
+        }
+      }
+    }
+  };
+
+  let peakPostPivotReds: RedSource[] = [];
+  let finalReds: RedSource[] = [];
+  let prevFrame: number | undefined;
+  let prevEntitiesById = new Map<string, FreeEntity>();
+
+  for (const frame of sampleFrames) {
+    const isAfterPivot = frame >= timeline.pivotFrame - 6;
+    const compiled = evaluateStageScriptAtFrame(script, frame, timeline, palette, visualDNA);
+    const terrain = compiled.terrain;
+    const phase =
+      ((frame % timeline.durationInFrames) / timeline.durationInFrames) *
+      Math.PI *
+      2 *
+      8;
+    const tSec = Number((frame / fps).toFixed(2));
+    const entities = collectFreeEntities(compiled, isAfterPivot);
+
+    // ── CHẶN CỨNG 1: Đếm nguồn đỏ (kể cả nguồn đỏ ngầm) ──
+    const reds = collectRedSources(compiled, frame, isAfterPivot);
+    if (reds.length > 1 && !multiRedErrorAdded) {
+      multiRedErrorAdded = true;
+      errors.push({
+        code: 'RED_OBJECT_RULE',
+        severity: 'error',
+        timeSec: tSec,
+        message: `[t=${tSec.toFixed(2)}s] Có ${reds.length} nguồn đỏ cùng lúc (${reds.map((r) => r.id).join(', ')}) — bắt buộc đúng 1 vật đỏ.`,
+      });
+    }
+    if (frame >= postPivotStartF && frame <= fFinal) {
+      if (reds.length > peakPostPivotReds.length) {
+        peakPostPivotReds = reds;
+      } else if (
+        reds.length === 1 &&
+        peakPostPivotReds.length === 1 &&
+        reds[0].screenPx2 > peakPostPivotReds[0].screenPx2
+      ) {
+        peakPostPivotReds = reds;
+      }
+    }
+    if (frame === fFinal) {
+      finalReds = reds;
+    }
+
+    // ── CHẶN CỨNG 2: Hình tràn lên tiêu đề hoặc xuống khối chữ ──
+    for (const ent of entities) {
+      if (seenOverflow.has(ent.id)) continue;
+      if (ent.box.y0 < STAGE_VB_Y0 - 2) {
+        seenOverflow.add(ent.id);
+        errors.push({
+          code: 'STAGE_OVERFLOW',
+          severity: 'error',
+          timeSec: tSec,
+          message: `[t=${tSec.toFixed(2)}s] "${ent.id}" tràn lên vùng tiêu đề (đỉnh y=${ent.box.y0.toFixed(1)} < mép trên ${STAGE_VB_Y0}).`,
+        });
+      } else if (ent.box.y1 > STAGE_VB_Y1 + 2) {
+        seenOverflow.add(ent.id);
+        errors.push({
+          code: 'STAGE_OVERFLOW',
+          severity: 'error',
+          timeSec: tSec,
+          message: `[t=${tSec.toFixed(2)}s] "${ent.id}" tràn xuống khối chữ (đáy y=${ent.box.y1.toFixed(1)} > mép dưới ${STAGE_VB_Y1}).`,
+        });
+      }
+    }
+    for (let idx = 0; idx < (script.atmosphere ?? []).length; idx++) {
+      const item = script.atmosphere![idx];
+      if (item.y === undefined) continue;
+      const isCelestial =
+        item.type === 'sun' || item.type === 'hollow_sun' || item.type === 'crescent';
+      if (isCelestial) continue; // DeclarativeStagePlayer tự kẹp celestial vào [138..250]
+      const atmoKey = `atmosphere:${item.id || `${item.type}#${idx + 1}`}`;
+      if (seenOverflow.has(atmoKey)) continue;
+      const mult = evaluateEnterLeaveMultiplier(
+        frame,
+        timeline,
+        item.enterAt,
+        item.leaveAt,
+        item.fadeDuration ?? 0.9
+      );
+      if ((item.opacity ?? 1) * mult <= 0.15) continue;
+      const r = item.type === 'ring_pulse' ? item.radius ?? 24 : 0;
+      const x = resolveXCoord(item.x, 270);
+      if (Number.isFinite(x)) {
+        if (item.y - r < STAGE_VB_Y0 - 2) {
+          seenOverflow.add(atmoKey);
+          errors.push({
+            code: 'STAGE_OVERFLOW',
+            severity: 'error',
+            timeSec: tSec,
+            message: `[t=${tSec.toFixed(2)}s] "${atmoKey}" tràn lên vùng tiêu đề (đỉnh y=${(item.y - r).toFixed(1)} < ${STAGE_VB_Y0}).`,
+          });
+        } else if (item.y + r > STAGE_VB_Y1 + 2) {
+          seenOverflow.add(atmoKey);
+          errors.push({
+            code: 'STAGE_OVERFLOW',
+            severity: 'error',
+            timeSec: tSec,
+            message: `[t=${tSec.toFixed(2)}s] "${atmoKey}" tràn xuống khối chữ (đáy y=${(item.y + r).toFixed(1)} > ${STAGE_VB_Y1}).`,
+          });
+        }
+      }
+    }
+
+    // ── CẢNH BÁO VÀNG 1: Đè/xuyên (tại khung mẫu + quét quỹ đạo giữa 2 nhịp 0.25s) ──
+    if (prevFrame !== undefined) {
+      let maxMovedDist = 0;
+      for (const ent of entities) {
+        const prevEnt = prevEntitiesById.get(`${ent.kind}:${ent.id}`);
+        if (!prevEnt) continue;
+        const dist = Math.hypot(ent.worldX - prevEnt.worldX, ent.worldY - prevEnt.worldY);
+        if (dist > maxMovedDist) maxMovedDist = dist;
+      }
+      if (maxMovedDist > 4 && frame - prevFrame > 2) {
+        const subSteps = Math.min(20, Math.max(4, Math.ceil(maxMovedDist / 8)));
+        for (let s = 1; s < subSteps; s++) {
+          const sf = Math.round(prevFrame + ((frame - prevFrame) * s) / subSteps);
+          const subCompiled = evaluateStageScriptAtFrame(script, sf, timeline, palette, visualDNA);
+          const subEntities = collectFreeEntities(subCompiled, sf >= timeline.pivotFrame - 6);
+          checkFreeCollisions(subEntities, Number((sf / fps).toFixed(2)), true);
+        }
+      }
+    }
+    checkFreeCollisions(entities, tSec, false);
+
+    // ── CẢNH BÁO VÀNG 2: Vật / nhân vật lơ lửng > 3px không có mặt đỡ ──
+    for (const ent of entities) {
+      if (seenFloating.has(ent.id)) continue;
+      if (ent.kind === 'prop') {
+        if (
+          ent.layer === 'sky' ||
+          ent.anchorKind === 'troi' ||
+          ent.anchorKind === 'cam' ||
+          ent.anchorKind === 'tuong' ||
+          ent.anchorType === 'center' ||
+          ent.anchorType === 'hand' ||
+          ent.activeFollowActor ||
+          ent.isDropping
+        ) {
+          continue;
+        }
+        const cx = (ent.box.x0 + ent.box.x1) * 0.5;
+        const groundY = getTerrainPoint(terrain, cx, phase).y;
+        const gap = groundY - ent.box.y1;
+        if (Math.abs(gap) > 3.0) {
+          // Kiểm tra có mặt đỡ là đạo cụ khác bên dưới không
+          const hasSupportProp = entities.some((other) => {
+            if (other.kind !== 'prop' || other.id === ent.id) return false;
+            const horizOverlap =
+              Math.min(ent.box.x1, other.box.x1) - Math.max(ent.box.x0, other.box.x0);
+            if (horizOverlap <= 1.5) return false;
+            return (
+              Math.abs(ent.box.y1 - other.box.y0) <= 4.5 ||
+              (ent.placedOnHost === other.id &&
+                ent.box.y1 >= other.box.y0 - 4.5 &&
+                ent.box.y1 <= other.box.y1 + 4.5)
+            );
+          });
+          if (!hasSupportProp) {
+            seenFloating.add(ent.id);
+            warnings.push({
+              code: 'FLOATING_OBJECT',
+              severity: 'warn',
+              timeSec: tSec,
+              message: `[t=${tSec.toFixed(2)}s] Đạo cụ "${ent.id}" lơ lửng/lệch mặt đất ${gap.toFixed(1)}px (> 3px) không có mặt đỡ (đáy y=${ent.box.y1.toFixed(1)}, đất y=${groundY.toFixed(1)}).`,
+            });
+          }
+        }
+      } else if (ent.kind === 'actor') {
+        const isSitting = (ent.sitProgress ?? 0) >= 0.5 || ent.pose === 'sit_lean';
+        const hasSeatSupport =
+          isSitting &&
+          (actorSeatHost.has(ent.id) ||
+            entities.some(
+              (o) =>
+                o.kind === 'prop' &&
+                Math.min(ent.box.x1, o.box.x1) - Math.max(ent.box.x0, o.box.x0) > 2 &&
+                o.box.y0 <= ent.box.y1 + 4 &&
+                o.box.y1 >= ent.box.y0 + 10
+            ));
+        if (hasSeatSupport) continue;
+        const groundY = getTerrainPoint(
+          terrain,
+          (ent.box.x0 + ent.box.x1) * 0.5,
+          phase
+        ).y;
+        const gap = groundY - ent.box.y1;
+        if (Math.abs(gap) > 3.0) {
+          seenFloating.add(ent.id);
+          warnings.push({
+            code: 'FLOATING_OBJECT',
+            severity: 'warn',
+            timeSec: tSec,
+            message: `[t=${tSec.toFixed(2)}s] Nhân vật "${ent.id}" lơ lửng cách mặt đất ${gap.toFixed(1)}px (> 3px) không có mặt đỡ.`,
+          });
+        }
+      }
+    }
+
+    // ── CẢNH BÁO VÀNG 3: Tư thế ngồi không có mặt ngồi ──
+    for (const ent of entities) {
+      if (ent.kind !== 'actor' || seenSeating.has(ent.id)) continue;
+      const isSitting = (ent.sitProgress ?? 0) >= 0.5 || ent.pose === 'sit_lean';
+      if (!isSitting) continue;
+      const hasSeat =
+        actorSeatHost.has(ent.id) ||
+        entities.some(
+          (o) =>
+            o.kind === 'prop' &&
+            Math.min(ent.box.x1, o.box.x1) - Math.max(ent.box.x0, o.box.x0) > 2 &&
+            o.box.y0 <= ent.box.y1 + 4 &&
+            o.box.y1 >= ent.box.y0 + 10
+        );
+      if (!hasSeat) {
+        seenSeating.add(ent.id);
+        warnings.push({
+          code: 'INVALID_SEATING',
+          severity: 'warn',
+          timeSec: tSec,
+          message: `[t=${tSec.toFixed(2)}s] Nhân vật "${ent.id}" đang ở tư thế ngồi nhưng không có mặt ngồi bên dưới.`,
+        });
+      }
+    }
+
+    // ── CẢNH BÁO VÀNG 4: Cỡ Lữ khách lệch > 25% so với chuẩn LU_KHACH_HEIGHT_RATIO ──
+    for (const ent of entities) {
+      if (ent.kind !== 'actor' || seenScaleDev.has(ent.id)) continue;
+      const isHumanRig =
+        !ent.type ||
+        ent.type === 'human' ||
+        ent.type === 'traveler' ||
+        ent.type === 'cloaked_traveler';
+      if (!isHumanRig) continue;
+      if (ent.layer === 'far' || ent.focusRole === 'ambient') continue;
+      const standingRatio = (48.5 * ent.scale) / stageH;
+      const dev = Math.abs(standingRatio - LU_KHACH_HEIGHT_RATIO) / LU_KHACH_HEIGHT_RATIO;
+      if (dev > 0.25) {
+        seenScaleDev.add(ent.id);
+        warnings.push({
+          code: 'TRAVELER_SCALE_DEVIATION',
+          severity: 'warn',
+          timeSec: tSec,
+          message: `[t=${tSec.toFixed(2)}s] Cỡ Lữ khách "${ent.id}" (${(standingRatio * 100).toFixed(1)}% khung, scale=${ent.scale.toFixed(2)}) lệch ${(dev * 100).toFixed(0)}% (> 25%) so với chuẩn ${(LU_KHACH_HEIGHT_RATIO * 100).toFixed(0)}%.`,
+        });
+      }
+    }
+
+    prevFrame = frame;
+    prevEntitiesById = new Map(entities.map((e) => [`${e.kind}:${e.id}`, e]));
+  }
+
+  const finalTimeSec = Number((fFinal / fps).toFixed(2));
+  if (!multiRedErrorAdded && peakPostPivotReds.length === 0) {
+    errors.push({
+      code: 'RED_OBJECT_RULE',
+      severity: 'error',
+      timeSec: finalTimeSec,
+      message: `[t=${finalTimeSec.toFixed(2)}s] Phải có đúng 1 vật đỏ sau cú lật, hiện đang có 0 vật đỏ.`,
+    });
+  }
+
+  // ── CẢNH BÁO VÀNG 5: Vật đỏ < MIN_RED_AREA_PX2 ở khung cuối ──
+  if (finalReds.length === 1 && finalReds[0].screenPx2 < MIN_RED_AREA_PX2) {
+    const r = finalReds[0];
+    warnings.push({
+      code: 'RED_OBJECT_RULE',
+      severity: 'warn',
+      timeSec: finalTimeSec,
+      message: `[t=${finalTimeSec.toFixed(2)}s] Vật đỏ "${r.id}" nhỏ ở khung cuối (${Math.round(r.screenPx2)} px² < ${MIN_RED_AREA_PX2} px², zoom=${r.zoom.toFixed(2)}).`,
+    });
+  }
+
+  return {
+    valid: errors.length === 0,
+    isLegacy: false,
+    isFreeMode: true,
+    issues: errors,
+    warnings,
+    compiledScript: script,
+  };
+}
+
+/**
  * Validator chặn cứng trên StageScript trước khi render (chạy trong cả Studio lẫn CLI).
  */
 export function validateStageScriptHard(
   script: StageScript,
-  timelineInput?: TimelineSyncResult
+  timelineInput?: TimelineSyncResult,
+  visualDNA?: ResolvedVisualDNA
 ): StageValidationResult {
   if (isLegacyStageScript(script, script.sceneId)) {
     return { valid: true, isLegacy: true, issues: [], compiledScript: script };
+  }
+  if (isFreeModeStageScript(script)) {
+    return validateFreeModeStageScript(script, timelineInput, visualDNA);
   }
 
   const issues: StageValidationIssue[] = [];
@@ -1180,7 +1856,7 @@ export function validateStageScriptHard(
   const fps = timeline.fps;
   const stepFrames = Math.max(1, Math.round(VALIDATION_SAMPLE_STEP_SEC * fps));
 
-  const f0 = evaluateStageScriptAtFrame(script, 0, timeline, palette);
+  const f0 = evaluateStageScriptAtFrame(script, 0, timeline, palette, visualDNA);
   if (f0.terrain.startX < STAGE_VB_X0 || f0.terrain.endX > STAGE_VB_X1 || f0.terrain.endX - f0.terrain.startX < 120) {
     issues.push({
       code: 'OUT_OF_SAFE_TERRAIN',
@@ -1349,7 +2025,7 @@ export function validateStageScriptHard(
   // 2. Lấy mẫu nhiều khung dọc cả video (mỗi 0.25s) + quét đường đi (chặn đi xuyên vật / chuyển động lớn)
   for (let frame = 0; frame <= maxSampleFrame; frame += stepFrames) {
     const isAfterPivot = frame >= timeline.pivotFrame - 6;
-    const compiled = evaluateStageScriptAtFrame(script, frame, timeline, palette);
+    const compiled = evaluateStageScriptAtFrame(script, frame, timeline, palette, visualDNA);
     const terrain = compiled.terrain;
     const phase =
       ((frame % timeline.durationInFrames) / timeline.durationInFrames) *
@@ -1403,7 +2079,7 @@ export function validateStageScriptHard(
         const subSteps = Math.min(20, Math.max(4, Math.ceil(maxMovedDist / 8)));
         for (let s = 1; s < subSteps; s++) {
           const sf = Math.round(prevFrame + ((frame - prevFrame) * s) / subSteps);
-          const subCompiled = evaluateStageScriptAtFrame(script, sf, timeline, palette);
+          const subCompiled = evaluateStageScriptAtFrame(script, sf, timeline, palette, visualDNA);
           const subEntities = collectEntitiesFromCompiled(
             subCompiled,
             sf >= timeline.pivotFrame - 6
@@ -1521,7 +2197,8 @@ export function validateStageScriptHard(
       script,
       fFinalAfterPush,
       timeline,
-      palette
+      palette,
+      visualDNA
     );
     const finalEntities = collectEntitiesFromCompiled(compFinal, true);
     const finalTimeSec = (fFinalAfterPush / fps).toFixed(2);
@@ -1575,7 +2252,7 @@ export function validateStageScriptHard(
 
   let maxRedSnapshot: Array<{ id: string; typeName: string; screenPx2: number; zoom: number }> = [];
   for (const pf of redSampleFrames) {
-    const compiled = evaluateStageScriptAtFrame(script, pf, timeline, palette);
+    const compiled = evaluateStageScriptAtFrame(script, pf, timeline, palette, visualDNA);
     const zoom2 = compiled.camera.zoom * compiled.camera.zoom;
     const reds: Array<{ id: string; typeName: string; screenPx2: number; zoom: number }> = [];
 
@@ -1670,7 +2347,7 @@ export function validateStageScriptHard(
         ])
       );
       for (const sf of persistSamples) {
-        const compS = evaluateStageScriptAtFrame(script, sf, timeline, palette);
+        const compS = evaluateStageScriptAtFrame(script, sf, timeline, palette, visualDNA);
         let stillVisibleAndRed = false;
         if (onlyRed.typeName === 'doan_duong') {
           const ts = (compS.terrainSegments ?? []).find((s) => s.id === onlyRed.id);
@@ -1708,7 +2385,7 @@ export function validateStageScriptHard(
         onlyRed.typeName !== 'human' &&
         !onlyRed.id.endsWith('.chen_tra')
       ) {
-        const compRed = evaluateStageScriptAtFrame(script, fPost1, timeline, palette);
+        const compRed = evaluateStageScriptAtFrame(script, fPost1, timeline, palette, visualDNA);
         const redProp = compRed.props.find((p) => p.id === onlyRed.id);
         const redBox = redProp ? getPropWorldBBox(redProp, undefined, true) : null;
         if (redProp && redBox) {
@@ -1877,12 +2554,13 @@ export function validateStageScriptHard(
 
 export function validateAndCompileStageInput(
   input: unknown,
-  timelineInput?: TimelineSyncResult
+  timelineInput?: TimelineSyncResult,
+  visualDNA?: ResolvedVisualDNA
 ): StageValidationResult {
   if (isSemanticStageScript(input)) {
     const structIssues = validateSemanticSpecStructure(input);
     const compiled = compileSemanticStageScript(input as SemanticStageScript);
-    const runtimeRes = validateStageScriptHard(compiled, timelineInput);
+    const runtimeRes = validateStageScriptHard(compiled, timelineInput, visualDNA);
     const merged: StageValidationIssue[] = [...structIssues];
     const seenMsg = new Set(merged.map((i) => i.message));
     for (const ri of runtimeRes.issues) {
@@ -1900,5 +2578,5 @@ export function validateAndCompileStageInput(
   }
 
   const script = input as StageScript;
-  return validateStageScriptHard(script, timelineInput);
+  return validateStageScriptHard(script, timelineInput, visualDNA);
 }

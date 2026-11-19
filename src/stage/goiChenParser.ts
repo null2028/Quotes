@@ -5,6 +5,8 @@
  * Lỗi trả về là câu tiếng Việt có gợi ý tên đúng, dùng cho T4 (copy gửi lại Gemini web).
  */
 import { computeTimelineSync, TimelineSyncResult } from '../engine/timelineSync';
+import { resolveVisualDNA, ResolvedVisualDNA } from '../engine/visualDnaResolver';
+import type { VideoInputProps } from '../schemas/videoSchema';
 import { BUILT_IN_PROP_CATALOG, BUILT_IN_PROP_NAMES } from './propCatalog';
 import {
   classifySemanticBeatTempo,
@@ -32,6 +34,11 @@ export interface GoiChenResult {
   errors: string[];
   /** Cảnh báo vàng (không chặn nhập, vd đạo cụ tầng B `nhap` chưa chuẩn hoá nét). */
   warnings?: string[];
+  /** Thời lượng thực tính theo AUTO_SEED (đồng bộ với Studio & stage-preview). */
+  durationSeconds?: number;
+  durationInFrames?: number;
+  /** Độ lệch chân trời chống trùng (px) từ Visual DNA theo cùng seed. */
+  horizonOffsetPx?: number;
 }
 
 const GOI_CHEN_VERSION = 1;
@@ -39,8 +46,12 @@ const GOI_CHEN_VERSION = 1;
 /**
  * Parse JSON Gói Chén → { ok, compiled, errors[] }.
  * @param raw — object JSON đã parse hoặc string chưa parse.
+ * @param options — tuỳ chọn truyền `cupId` để seed timeline & Visual DNA khớp 100% với Studio.
  */
-export function parseGoiChen(raw: unknown): GoiChenResult {
+export function parseGoiChen(
+  raw: unknown,
+  options?: { cupId?: string }
+): GoiChenResult {
   // ── 1. Parse JSON nếu đầu vào là string ──
   let obj: Record<string, unknown>;
   if (typeof raw === 'string') {
@@ -183,6 +194,12 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
   if (obj.kieu_cu_lat !== undefined) {
     semInput.kieu_cu_lat = obj.kieu_cu_lat;
   }
+  if (obj.bo_cuc !== undefined) {
+    semInput.bo_cuc = obj.bo_cuc;
+  }
+  if (obj.anh_sang !== undefined) {
+    semInput.anh_sang = obj.anh_sang;
+  }
 
   // ── 7. Validate cấu trúc ngữ nghĩa ──
   // Thu thập id các vật bị lỗi tên/neo → không kiểm hình học cho chúng
@@ -262,18 +279,20 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
       };
     }
 
-    // ── 9. Validate runtime (đè nhau, lơ lửng, tỷ lệ 40%, Chữ dẫn Hình theo trên timeline thật) ──
+    // ── 9. Validate runtime (đè nhau, lơ lửng, tỷ lệ 40%, Chữ dẫn Hình theo trên timeline & Visual DNA thật) ──
     let realTimeline: TimelineSyncResult | undefined;
+    let resolvedVdna: ResolvedVisualDNA | undefined;
     if (Array.isArray(cau) && cau.length >= 2 && typeof cuLat === 'string' && cuLat.trim()) {
       try {
-        realTimeline = computeTimelineSync({
-          id: compiled.sceneId || 'goichen-validate',
+        const seedId = options?.cupId || compiled.sceneId || 'goichen-validate';
+        const tlProps: VideoInputProps = {
+          id: seedId,
           textFormat: 'POEM',
           segments: cau.map((c) => String(c)),
           pivotWord: cuLat.replace(/[!?.…]+$/u, ''),
           highlightStyle: 'BOTH',
           targetDurationSeconds: 15,
-          durationMode: 'FIXED',
+          durationMode: 'AUTO_SEED',
           typingSpeedMsPerChar: 55,
           holdAfterFinishSeconds: 5.5,
           themeId: 'MINIMAL_LIGHT',
@@ -285,13 +304,16 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
           },
           bgm: { audioMode: 'PIVOT_ACCENT', foleyPivotStyle: 'AUTO' },
           brandText: 'TRÀ NGUỘI',
-        });
+        };
+        realTimeline = computeTimelineSync(tlProps);
+        resolvedVdna = resolveVisualDNA(tlProps, compiled);
       } catch {
         realTimeline = undefined;
+        resolvedVdna = undefined;
       }
     }
 
-    const runtimeRes = validateStageScriptHard(compiled, realTimeline);
+    const runtimeRes = validateStageScriptHard(compiled, realTimeline, resolvedVdna);
     for (const issue of runtimeRes.issues) {
       // Bỏ lỗi dây chuyền: nếu vật đã lỗi tên/neo → bỏ collision/floating/oob cho vật đó
       if (isCascadeError(issue, badPropIds)) continue;
@@ -310,6 +332,31 @@ export function parseGoiChen(raw: unknown): GoiChenResult {
         geomErrors.push(cleanMsg);
       }
     }
+
+    // Lưu thông tin thời lượng & horizon để CLI in ra
+    const durationInFrames = realTimeline?.durationInFrames;
+    const durationSeconds =
+      realTimeline !== undefined
+        ? Number((realTimeline.durationInFrames / realTimeline.fps).toFixed(2))
+        : undefined;
+    const horizonOffsetPx = resolvedVdna?.horizonOffsetPx;
+
+    // ── 10. Gộp, dedup, sắp thứ tự: format → rule → geom ──
+    const allErrors = dedup([...formatErrors, ...ruleErrors, ...geomErrors]);
+
+    return {
+      ok: allErrors.length === 0,
+      compiled,
+      tieuDe: typeof obj.tieu_de === 'string' ? obj.tieu_de : undefined,
+      cau: Array.isArray(obj.cau) ? obj.cau.map(String) : undefined,
+      cuLat: typeof obj.cu_lat === 'string' ? obj.cu_lat : undefined,
+      tacGia: typeof obj.tac_gia === 'string' ? obj.tac_gia : undefined,
+      errors: allErrors,
+      warnings,
+      durationSeconds,
+      durationInFrames,
+      horizonOffsetPx,
+    };
   }
 
   // ── 10. Gộp, dedup, sắp thứ tự: format → rule → geom ──

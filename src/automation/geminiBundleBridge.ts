@@ -26,13 +26,21 @@ import {
   stripBannedHashtags,
 } from './captionBuilder';
 import { ensureValidPivotSubstring } from './validator';
-import { auditVietnameseSyllables } from '../engine/timelineSync';
+import { auditVietnameseSyllables, computeTimelineSync } from '../engine/timelineSync';
+import { resolveVisualDNA } from '../engine/visualDnaResolver';
 import { isGoiChen, parseGoiChen, GoiChenResult } from '../stage/goiChenParser';
+import { validateStageScriptHard } from '../stage/stageValidator';
 
 export interface StageLayoutWarning {
-  code: 'HEADROOM_OVERLAP' | 'EDGE_SAFETY' | 'POST_COLLISION' | 'DRAFT_PROP';
+  code:
+    | 'HEADROOM_OVERLAP'
+    | 'EDGE_SAFETY'
+    | 'POST_COLLISION'
+    | 'DRAFT_PROP'
+    | 'FREE_MODE_WARN';
   severity: 'warn' | 'info';
   targetId: string;
+  timeSec?: number;
   message: string;
   suggestedLiftY?: number;
 }
@@ -44,6 +52,10 @@ export interface SanitizedCupBundle {
   cupId?: string;
   /** Nguyên văn JSON Gói Chén người dùng đã dán khi nhập (để đối chiếu kịch bản ↔ output) */
   goiChenGoc?: Record<string, unknown>;
+  /** Nguyên văn JSON kịch bản Làn tự do (`che_do: "tu_do"`) người dùng đã dán khi nhập */
+  scriptGoc?: Record<string, unknown>;
+  /** true nếu đây là kịch bản Làn tự do chính thức (`che_do: "tu_do"`) */
+  isFreeMode?: boolean;
   title: string;
   author: string;
   textFormat: 'POEM' | 'PROSE';
@@ -776,6 +788,10 @@ export function sanitizeStageScriptObject(
     });
   }
 
+  if (clone.che_do === 'tu_do') {
+    delete clone.legacy;
+  }
+
   const parsed = StageScriptSchema.safeParse(clone);
   if (!parsed.success) {
     throw new Error(
@@ -1173,7 +1189,7 @@ function convertGoiChenToBundle(
     };
   }
 ): SanitizedCupBundle {
-  const result = parseGoiChen(obj);
+  const result = parseGoiChen(obj, { cupId: options?.targetCupId });
   if (!result.ok || !result.compiled) {
     throw new GoiChenValidationError(result.errors);
   }
@@ -1576,17 +1592,73 @@ export function sanitizeAndNormalizeCupBundle(
       publishMood
     );
 
-  const layoutWarnings = auditStageVisualLayout(stageScript, customProps);
+  const isFreeMode = stageScript?.che_do === 'tu_do';
+  let layoutWarnings: StageLayoutWarning[];
+
+  if (isFreeMode && stageScript) {
+    // TF1: Chạy validator vỡ hình làn tự do; chỉ chặn cứng (throw) khi có lỗi chặn, cảnh báo vàng cho qua
+    const scriptWithResolvedCustom: StageScript =
+      Object.keys(customProps).length > 0
+        ? {
+            ...stageScript,
+            customPropsResolved: {
+              ...(stageScript.customPropsResolved ?? {}),
+              ...customProps,
+            },
+          }
+        : stageScript;
+    const tlProps = {
+      id:
+        options?.targetCupId ||
+        (src.cupId ? String(src.cupId).trim() : '') ||
+        stageScript.sceneId ||
+        'tudo-validate',
+      textFormat,
+      segments: rawSegments,
+      pivotWord,
+      highlightStyle: 'BOTH' as const,
+      targetDurationSeconds,
+      durationMode,
+      typingSpeedMsPerChar: 55,
+      holdAfterFinishSeconds: 5.5,
+      themeId,
+      ...(visualDNA ? { visualDNA } : {}),
+      motion: {
+        archetype: 'BOULDER_TO_BENCH',
+        pacingMode,
+        stateA: { intensity: 0.8, spread: 0.2, tiltDeg: -16 },
+        stateB: { intensity: 0.1, spread: 0.75, tiltDeg: 0 },
+      },
+      bgm: { audioMode, foleyPivotStyle },
+      brandText: 'TRÀ NGUỘI',
+    };
+    const tl = computeTimelineSync(tlProps);
+    const vdna = resolveVisualDNA(tlProps, scriptWithResolvedCustom);
+    const freeVal = validateStageScriptHard(scriptWithResolvedCustom, tl, vdna);
+    if (!freeVal.valid) {
+      throw new GoiChenValidationError(freeVal.issues.map((i) => i.message));
+    }
+    layoutWarnings = (freeVal.warnings ?? []).map((w, idx) => ({
+      code: 'FREE_MODE_WARN' as const,
+      severity: 'warn' as const,
+      targetId: `${w.code}_${idx + 1}`,
+      timeSec: w.timeSec,
+      message: w.message,
+    }));
+  } else {
+    layoutWarnings = auditStageVisualLayout(stageScript, customProps);
+  }
 
   const requestedMode =
     options?.defaultMode ??
     (src.mode === 'overwrite_cup' ? 'overwrite_cup' : 'create_new');
 
   return {
-    bundleVersion: String(src.bundleVersion ?? '8.5'),
+    bundleVersion: isFreeMode ? 'tudo_1' : String(src.bundleVersion ?? '8.5'),
     mode: isStandaloneStageScript ? 'overwrite_cup' : requestedMode,
     targetCupId: options?.targetCupId,
     cupId: src.cupId ? String(src.cupId).trim() : undefined,
+    ...(isFreeMode ? { scriptGoc: parsedRoot, isFreeMode: true } : {}),
     title,
     author,
     textFormat,

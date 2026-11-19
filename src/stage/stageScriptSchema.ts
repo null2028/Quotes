@@ -375,6 +375,7 @@ export const StageScriptSchema = z.object({
   act3Afterimage: z.string().optional(),
   redProp: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  che_do: z.enum(['tu_do', 'goi_chen']).optional(),
   legacy: z.boolean().optional(),
   strictValidation: z.boolean().optional(),
   terrain: TerrainConfigSchema.optional(),

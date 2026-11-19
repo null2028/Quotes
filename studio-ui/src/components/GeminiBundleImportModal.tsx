@@ -82,11 +82,11 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
             }
           : undefined,
       });
-      // Detect if this was legacy JSON (not Gói Chén)
+      // Detect if this was legacy JSON (not Gói Chén and not Làn tự do `che_do: "tu_do"`)
       let isLegacy = false;
       try {
         const rawObj = JSON.parse(rawPaste.trim().replace(/^```json\s*/, '').replace(/```\s*$/, ''));
-        if (rawObj && typeof rawObj === 'object' && !isGoiChen(rawObj)) {
+        if (rawObj && typeof rawObj === 'object' && !isGoiChen(rawObj) && !parsed.isFreeMode) {
           isLegacy = true;
         }
       } catch { /* ignore */ }
@@ -385,6 +385,11 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                           </span>
                         </div>
                       )}
+                      {livePreviewCheck.data.isFreeMode && (
+                        <div className="p-2 rounded-lg bg-sky-500/10 border border-sky-600/25 text-[11px] text-sky-950 font-semibold">
+                          🎨 Làn tự do (<code>che_do: &ldquo;tu_do&rdquo;</code>) — đã kiểm vỡ hình, giữ nguyên bản gốc <code>scriptGoc</code>.
+                        </div>
+                      )}
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="font-bold text-emerald-900 flex items-center gap-1.5">
                           <CheckCircle2 className="w-4 h-4 text-emerald-700" />
@@ -492,7 +497,7 @@ export const GeminiBundleImportModal: React.FC<Props> = ({
                     <>
                       <div className="font-bold text-red-900 flex items-center gap-1.5">
                         <X className="w-4 h-4 text-red-700" />
-                        ❌ Gói Chén có {livePreviewCheck.goiChenErrors.length} lỗi
+                        ❌ Có {livePreviewCheck.goiChenErrors.length} lỗi chặn nhập
                       </div>
                       <ul className="list-none space-y-1 text-[11px] font-mono">
                         {livePreviewCheck.goiChenErrors.map((e, i) => (

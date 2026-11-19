@@ -142,6 +142,12 @@ export const StoryDirectorDesk: React.FC<Props> = ({
     activeSceneMeta?.origin === 'script' ||
     activeSceneId.startsWith('CUSTOM_') ||
     activeSceneId.startsWith('SCRIPT_');
+  const isGoiChenCup = Boolean(
+    (cup as { goiChenGoc?: unknown }).goiChenGoc ||
+      props.motion?.stageScript?.tags?.includes('semantic_v1') ||
+      activeSceneId.startsWith('SCRIPT_GOICHEN_') ||
+      activeSceneId.startsWith('GOICHEN_')
+  );
 
   const tuning: StageTuning = props.stageTuning ?? {
     offsetX: 0,
@@ -727,11 +733,21 @@ export const StoryDirectorDesk: React.FC<Props> = ({
   }
 
   const updateTuning = (partial: Partial<StageTuning>) => {
+    const safePartial: Partial<StageTuning> = isGoiChenCup
+      ? {
+          offsetX: 0,
+          offsetY: 0,
+          scale: 1.0,
+          ...(partial.strokeScale !== undefined
+            ? { strokeScale: partial.strokeScale }
+            : {}),
+        }
+      : partial;
     onUpdateProps({
       ...props,
       stageTuning: {
         ...tuning,
-        ...partial,
+        ...safePartial,
       },
     });
   };
@@ -1923,21 +1939,30 @@ export const StoryDirectorDesk: React.FC<Props> = ({
             </button>
           </div>
 
+          {isGoiChenCup && (
+            <div className="text-[11px] text-tea-muted bg-tea-edge/40 border border-tea-border/70 rounded-lg px-2.5 py-1.5">
+              🔒 Gói Chén: <strong>cỡ do engine quyết</strong> — khoá Offset X, Offset Y, Scale để không đè lên tỷ lệ thật và cú lật. Thanh <strong>Độ Đậm Nét (Stroke)</strong> vẫn chỉnh bình thường.
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div className="p-3 rounded-xl bg-white border border-tea-border/80 space-y-1.5">
+            <div className={`p-3 rounded-xl bg-white border border-tea-border/80 space-y-1.5 ${isGoiChenCup ? 'opacity-55' : ''}`}>
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-tea-muted">
                   Dịch Ngang (Offset X):
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono font-bold text-tea-ink">
-                    {tuning.offsetX > 0 ? `+${tuning.offsetX}` : tuning.offsetX}px
+                    {isGoiChenCup
+                      ? '0px (cỡ do engine quyết)'
+                      : `${tuning.offsetX > 0 ? `+${tuning.offsetX}` : tuning.offsetX}px`}
                   </span>
                   <button
                     type="button"
+                    disabled={isGoiChenCup}
                     onClick={() => updateTuning({ offsetX: 0 })}
-                    className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink"
-                    title="Reset về 0px"
+                    className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink disabled:cursor-not-allowed"
+                    title={isGoiChenCup ? 'Khoá với Gói Chén (cỡ do engine quyết)' : 'Reset về 0px'}
                   >
                     0
                   </button>
@@ -1948,28 +1973,32 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                 min={-120}
                 max={120}
                 step={1}
-                value={tuning.offsetX}
+                disabled={isGoiChenCup}
+                value={isGoiChenCup ? 0 : tuning.offsetX}
                 onChange={(e) =>
                   updateTuning({ offsetX: Number(e.target.value) })
                 }
-                className="w-full accent-tea-accent"
+                className="w-full accent-tea-accent disabled:cursor-not-allowed"
               />
             </div>
 
-            <div className="p-3 rounded-xl bg-white border border-tea-border/80 space-y-1.5">
+            <div className={`p-3 rounded-xl bg-white border border-tea-border/80 space-y-1.5 ${isGoiChenCup ? 'opacity-55' : ''}`}>
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-tea-muted">
                   Dịch Dọc (Offset Y):
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono font-bold text-tea-ink">
-                    {tuning.offsetY > 0 ? `+${tuning.offsetY}` : tuning.offsetY}px
+                    {isGoiChenCup
+                      ? '0px (cỡ do engine quyết)'
+                      : `${tuning.offsetY > 0 ? `+${tuning.offsetY}` : tuning.offsetY}px`}
                   </span>
                   <button
                     type="button"
+                    disabled={isGoiChenCup}
                     onClick={() => updateTuning({ offsetY: 0 })}
-                    className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink"
-                    title="Reset về 0px"
+                    className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink disabled:cursor-not-allowed"
+                    title={isGoiChenCup ? 'Khoá với Gói Chén (cỡ do engine quyết)' : 'Reset về 0px'}
                   >
                     0
                   </button>
@@ -1980,28 +2009,30 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                 min={-80}
                 max={80}
                 step={1}
-                value={tuning.offsetY}
+                disabled={isGoiChenCup}
+                value={isGoiChenCup ? 0 : tuning.offsetY}
                 onChange={(e) =>
                   updateTuning({ offsetY: Number(e.target.value) })
                 }
-                className="w-full accent-tea-accent"
+                className="w-full accent-tea-accent disabled:cursor-not-allowed"
               />
             </div>
 
-            <div className="p-3 rounded-xl bg-white border border-tea-border/80 space-y-1.5">
+            <div className={`p-3 rounded-xl bg-white border border-tea-border/80 space-y-1.5 ${isGoiChenCup ? 'opacity-55' : ''}`}>
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-tea-muted">
                   Thu Phóng Cảnh (Scale):
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono font-bold text-tea-accent">
-                    {tuning.scale.toFixed(2)}x
+                    {isGoiChenCup ? '1.00x (cỡ do engine quyết)' : `${tuning.scale.toFixed(2)}x`}
                   </span>
                   <button
                     type="button"
+                    disabled={isGoiChenCup}
                     onClick={() => updateTuning({ scale: 1.0 })}
-                    className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink"
-                    title="Reset về 1.00x"
+                    className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink disabled:cursor-not-allowed"
+                    title={isGoiChenCup ? 'Khoá với Gói Chén (cỡ do engine quyết)' : 'Reset về 1.00x'}
                   >
                     1.0x
                   </button>
@@ -2012,11 +2043,12 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                 min={0.65}
                 max={1.5}
                 step={0.02}
-                value={tuning.scale}
+                disabled={isGoiChenCup}
+                value={isGoiChenCup ? 1.0 : tuning.scale}
                 onChange={(e) =>
                   updateTuning({ scale: Number(e.target.value) })
                 }
-                className="w-full accent-tea-accent"
+                className="w-full accent-tea-accent disabled:cursor-not-allowed"
               />
             </div>
 

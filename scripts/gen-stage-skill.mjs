@@ -20,7 +20,9 @@ import {
   SEMANTIC_ACTOR_ROLES,
   SEMANTIC_BACKDROPS,
   SEMANTIC_BEAT_ANCHORS,
+  SEMANTIC_LAYOUTS,
   SEMANTIC_LEANS,
+  SEMANTIC_LIGHTINGS,
   SEMANTIC_PIVOT_STYLES,
   SEMANTIC_POSES,
   SEMANTIC_PROP_BEAT_VERBS,
@@ -283,6 +285,8 @@ function buildThuVienMd() {
     `- Địa hình (\`boi_canh.dia_hinh\`): ${fmtList(Object.keys(SEMANTIC_TERRAINS))}.`,
     '- Kiểu cú lật (`kieu_cu_lat` — mặc định `day_may`, điều khiển duy nhất camera quanh cú lật):',
     ...Object.entries(SEMANTIC_PIVOT_STYLES).map(([k, desc]) => `  - \`${k}\`: ${desc}.`),
+    `- Bố cục khung video (\`bo_cuc\` — tuỳ chọn, mặc định \`co_dien\`, seed không tự đổi): ${fmtList(Object.keys(SEMANTIC_LAYOUTS))} (\`co_dien\`: sân khấu trên, chữ dưới; \`chan_may\`: chữ trên nền trời, sân khấu dưới; \`khung_cua\`: khung vòm Cửa sổ Á Đông — chỉ chọn khi có chủ đích).`,
+    `- Ánh sáng bóng đổ (\`anh_sang\` — tuỳ chọn, **mặc định TẮT**, chỉ chọn khi mang nghĩa rõ và đã giải thích lý do ở Bước 2 như khí quyển): ${fmtList(Object.keys(SEMANTIC_LIGHTINGS))} (\`bong_la\`: bóng lá nắng sớm; \`nan_cua\`: nan cửa sổ; \`den_long\`: quầng đèn lồng ấm; \`suong_hien\`: sương mờ hiên nhà).`,
     '- Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.',
     `- Khí quyển (\`boi_canh.khi_quyen[].loai\`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): ${fmtList(atmosphereTypes)} (kèm \`vi_tri\`, \`huong\`: \`trai\`/\`phai\`, \`mat_do\`).`,
     `- Lớp sâu (\`lop\`): ${fmtList(SEMANTIC_LAYERS)} · Loại neo (\`loai_neo\`): ${fmtList(ANCHOR_KINDS)} · Khe vị trí (\`vi_tri\`/\`di_toi\`): ${fmtList(Object.keys(SEMANTIC_SLOTS))}.`,
@@ -361,7 +365,7 @@ Mỗi phương án (đưa 3, xếp mạnh → yếu) ghi đủ, mỗi mục 1 d�
 2. Trước cú lật: hình dựng thế giới của A (bối cảnh quen, Lữ khách sống bình thường), KHÔNG lộ B.
 3. Vật đỏ: Vật đỏ phải là hình ảnh nằm TRONG CỤM CHỮ LẬT hoặc DÒNG CUỐI (vd câu Chén 18 'Tính đường lui… chẳng được' → vật đỏ gắn với 'đường lui'). Chỉ khi cụm đó không có hình ảnh cụ thể mới lấy từ dòng khác. Chữ lật trừu tượng (kỳ diệu, hạnh phúc, cô đơn, thời gian…) → CỤ THỂ HOÁ thành một vật đời thường nhìn thấy được đang mang khái niệm đó (vd 'kỳ diệu' → chén trà bỗng bốc khói ấm; 'cô đơn' → chiếc ghế thứ hai trống). Chỉ dùng địa hình khi chính chữ lật nói về đường/lối. Gán nghĩa vòng vo (laptop vì 'tính nhanh') là SAI.
 4. Nhân vật: câu ngôi thứ nhất → Lữ khách là "ta"; câu có người thứ hai ("em", "anh", "người ấy") → PHẢI có nhân vật thứ hai trên sân khấu. Phản ứng nhỏ, thật, hơi vụng; ghi theo từng dòng.
-5. Đồ trên sân khấu: mỗi đồ (kể cả khí quyển như nắng, lá, mưa, gió) phải được nhân vật dùng, nhìn, hoặc mang nghĩa trong câu; ghế/đồ chỉ để lấp chỗ trống hay trang trí là SAI (tối đa 3 đạo cụ; khí quyển mặc định TẮT).
+5. Đồ trên sân khấu: mỗi đồ (kể cả khí quyển như nắng, lá, mưa, gió và ánh sáng \`anh_sang\`) phải được nhân vật dùng, nhìn, hoặc mang nghĩa trong câu; ghế/đồ/ánh sáng chỉ để lấp chỗ trống hay trang trí là SAI (tối đa 3 đạo cụ; khí quyển & \`anh_sang\` mặc định TẮT).
 6. Bối cảnh nhất quán: mọi đồ vật phải thuộc cùng một bộ bối cảnh (xem 9 bộ trong \`references/thu-vien.md\`). Chỉ mô tả những gì Gói Chén thể hiện được; bối cảnh phải ghi bằng \`boi_canh.bo\`. Không đặt bàn làm việc giữa ngã rẽ, không đặt lịch bàn lên ghế đá.
 7. Dư vị: chi tiết nhỏ ở khung cuối khiến muốn xem lại. Vật đỏ phải còn đỏ đến khung cuối; không cho vật đỏ mờ/biến mất.
 8. Nhịp Trà Nguội: Lữ khách làm mọi thứ chậm rãi như người đang uống trà; ít cử chỉ, mỗi dòng tối đa 1 cử chỉ nhỏ, phần lớn thời gian là lặng.

@@ -1,0 +1,54 @@
+{
+  "id": "quote-019",
+  "cupNumber": "19",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Đôi dòng ngẫm về \"điều kỳ diệu\" cho những ngày muốn sống chậm lại một nhịp.\nCâu chữ nào hôm nay chạm đúng tâm trạng của bạn nhất?\n\n#tranguoi #dieukydieu #chiemnghiem #thohay #chualanh",
+  "props": {
+    "id": "quote-019",
+    "textFormat": "POEM",
+    "title": "Điều kỳ diệu",
+    "author": "",
+    "publishSlot": "Anytime",
+    "fontSizeScale": 0.84,
+    "segments": [
+      "Chỉ có hai cách để sống một cuộc đời:",
+      "Một là chẳng có gì là kỳ diệu.",
+      "Hai là xem mọi thứ đều là điều kỳ diệu."
+    ],
+    "pivotWord": "điều kỳ diệu",
+    "highlightStyle": "BOTH",
+    "durationMode": "AUTO_SEED",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_C19_NET_DAT_NAY_MAM",
+      "archetype": "SCRIPT_C19_NET_DAT_NAY_MAM",
+      "pacingMode": "WRY_BATHOS",
+      "stateA": {
+        "intensity": 0.78,
+        "spread": 0.22,
+        "tiltDeg": -12
+      },
+      "stateB": {
+        "intensity": 0.08,
+        "spread": 0.72,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-019/Ch%C3%A9n%2019%20-%20%C4%90i%E1%BB%81u%20k%E1%BB%B3%20di%E1%BB%87u.mp4?v=1795061655401"
+}

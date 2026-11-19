@@ -22,6 +22,8 @@
   - `xuat_hien`: Vật đỏ chưa có từ đầu, tự vẽ nét + loang xuất hiện ở cú lật rồi đẩy máy nhẹ (hợp vật bất ngờ xuất hiện).
   - `keo_rong`: Mở màn ở cận cảnh, cú lật kéo máy lùi ra lộ bối cảnh lớn hơn làm đổi nghĩa (hợp cú lật mở rộng tầm nhìn).
   - `dung_lang`: Không chuyển động máy, chỉ vật đổi đỏ (hợp cảnh tĩnh tuyệt đối, chiêm nghiệm).
+- Bố cục khung video (`bo_cuc` — tuỳ chọn, mặc định `co_dien`, seed không tự đổi): `co_dien`, `chan_may`, `khung_cua` (`co_dien`: sân khấu trên, chữ dưới; `chan_may`: chữ trên nền trời, sân khấu dưới; `khung_cua`: khung vòm Cửa sổ Á Đông — chỉ chọn khi có chủ đích).
+- Ánh sáng bóng đổ (`anh_sang` — tuỳ chọn, **mặc định TẮT**, chỉ chọn khi mang nghĩa rõ và đã giải thích lý do ở Bước 2 như khí quyển): `bong_la`, `nan_cua`, `den_long`, `suong_hien` (`bong_la`: bóng lá nắng sớm; `nan_cua`: nan cửa sổ; `den_long`: quầng đèn lồng ấm; `suong_hien`: sương mờ hiên nhà).
 - Đoạn đường làm vật đỏ (`boi_canh.doan_duong[]`): `{ "id": "duong_lui", "vi_tri": "sau_lung" | "truoc_mat" | "tu_trai" | "giua" | "tu_phai", "nhan_vat": "<id>", "vat_do": true }` (hoặc dùng `tu`/`den` theo khe vị trí). Tự đổi nét đỏ đậm hơn ở cú lật.
 - Khí quyển (`boi_canh.khi_quyen[].loai`, mặc định TẮT — chỉ dùng khi mang nghĩa rõ ở Bước 2): `rain`, `wind`, `leaves`, `steam`, `birds`, `sun`, `hollow_sun`, `crescent`, `ring_pulse` (kèm `vi_tri`, `huong`: `trai`/`phai`, `mat_do`).
 - Lớp sâu (`lop`): `nen`, `giua`, `truoc` · Loại neo (`loai_neo`): `dat`, `tuong`, `troi`, `tren`, `cam` · Khe vị trí (`vi_tri`/`di_toi`): `xa_trai`, `trai`, `giua_trai`, `giua`, `giua_phai`, `phai`, `xa_phai`.

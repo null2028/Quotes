@@ -237,45 +237,81 @@ export function resolveVisualDNA(
   const pick = <T>(arr: readonly T[]): T =>
     arr[Math.floor(rnd() * arr.length) % arr.length];
 
-  const shotCandidates: ShotMode[] = hasPropFocusTarget(script)
-    ? ['SOLID_SCENE', 'BRUSH_DRAW', 'MACRO_PROP', 'SOLID_SCENE']
-    : ['SOLID_SCENE', 'BRUSH_DRAW'];
-  const shotMode: ShotMode = spec?.shotMode ?? pick(shotCandidates);
+  const isSemantic = Boolean(script?.tags?.includes('semantic_v1'));
 
-  const asymmetricCheck = canUseAsymmetricThird(script, shotMode, syllableCount);
-  const layoutCandidates: LayoutVariant[] = asymmetricCheck.allowed
-    ? [
-        'CLASSIC_TOP_STAGE',
-        'SKY_QUOTE_BOTTOM_STAGE',
-        'WINDOW_FRAME',
-        'ASYMMETRIC_THIRD',
-      ]
-    : ['CLASSIC_TOP_STAGE', 'SKY_QUOTE_BOTTOM_STAGE', 'WINDOW_FRAME'];
-
-  let layout: LayoutVariant = spec?.layout ?? pick(layoutCandidates);
+  let shotMode: ShotMode;
+  let layout: LayoutVariant;
   let downgradedAsymmetricThird = false;
-  if (layout === 'ASYMMETRIC_THIRD' && !asymmetricCheck.allowed) {
-    layout = 'WINDOW_FRAME';
-    downgradedAsymmetricThird = true;
+  let lightingGobo: LightingGobo;
+  let pivotMechanic: PivotMechanic;
+
+  if (isSemantic) {
+    // T8-DNA-b: Với Gói Chén (`semantic_v1`), mọi yếu tố mang NGHĨA (bố cục, ánh sáng, kiểu quay, camera)
+    // do Gói Chén quyết; seed ngẫu nhiên CHỈ được đổi chi tiết chống trùng (chân trời, bụi giấy, tâm vignette, thời lượng).
+    const boCucTag = script?.tags?.find((t) => t.startsWith('bo_cuc:'));
+    const boCucCode = boCucTag ? boCucTag.slice('bo_cuc:'.length) : undefined;
+    const layoutFromGoi: LayoutVariant =
+      boCucCode === 'chan_may'
+        ? 'SKY_QUOTE_BOTTOM_STAGE'
+        : boCucCode === 'khung_cua'
+          ? 'WINDOW_FRAME'
+          : 'CLASSIC_TOP_STAGE';
+
+    const anhSangTag = script?.tags?.find((t) => t.startsWith('anh_sang:'));
+    const anhSangCode = anhSangTag
+      ? anhSangTag.slice('anh_sang:'.length)
+      : undefined;
+    const goboFromGoi: LightingGobo =
+      anhSangCode === 'bong_la'
+        ? 'FOLIAGE_DAPPLE'
+        : anhSangCode === 'nan_cua'
+          ? 'WINDOW_SLATS'
+          : anhSangCode === 'den_long'
+            ? 'WARM_LANTERN'
+            : anhSangCode === 'suong_hien'
+              ? 'PORCH_MIST'
+              : 'NONE';
+
+    shotMode = spec?.shotMode ?? 'SOLID_SCENE';
+    layout = spec?.layout ?? layoutFromGoi;
+    downgradedAsymmetricThird = false;
+    lightingGobo = spec?.lightingGobo ?? goboFromGoi;
+    pivotMechanic = spec?.pivotMechanic ?? 'ACCENT_PUSH_IN';
+  } else {
+    const shotCandidates: ShotMode[] = hasPropFocusTarget(script)
+      ? ['SOLID_SCENE', 'BRUSH_DRAW', 'MACRO_PROP', 'SOLID_SCENE']
+      : ['SOLID_SCENE', 'BRUSH_DRAW'];
+    shotMode = spec?.shotMode ?? pick(shotCandidates);
+
+    const asymmetricCheck = canUseAsymmetricThird(script, shotMode, syllableCount);
+    const layoutCandidates: LayoutVariant[] = asymmetricCheck.allowed
+      ? [
+          'CLASSIC_TOP_STAGE',
+          'SKY_QUOTE_BOTTOM_STAGE',
+          'WINDOW_FRAME',
+          'ASYMMETRIC_THIRD',
+        ]
+      : ['CLASSIC_TOP_STAGE', 'SKY_QUOTE_BOTTOM_STAGE', 'WINDOW_FRAME'];
+
+    layout = spec?.layout ?? pick(layoutCandidates);
+    if (layout === 'ASYMMETRIC_THIRD' && !asymmetricCheck.allowed) {
+      layout = 'WINDOW_FRAME';
+      downgradedAsymmetricThird = true;
+    }
+
+    const goboCandidates: LightingGobo[] = isDarkThemePalette(props.themeId)
+      ? ['WARM_LANTERN', 'PORCH_MIST', 'WINDOW_SLATS']
+      : ['FOLIAGE_DAPPLE', 'WINDOW_SLATS', 'PORCH_MIST', 'WARM_LANTERN'];
+    lightingGobo = spec?.lightingGobo ?? pick(goboCandidates);
+
+    const pivotCandidates: PivotMechanic[] = [
+      'PARALLAX_DRIFT',
+      'PULLBACK_REVEAL',
+      'ACCENT_PUSH_IN',
+      'SPOTLIGHT_DIM',
+    ];
+    pivotMechanic = spec?.pivotMechanic ?? pick(pivotCandidates);
   }
-
-  const goboCandidates: LightingGobo[] = isDarkThemePalette(props.themeId)
-    ? ['WARM_LANTERN', 'PORCH_MIST', 'WINDOW_SLATS']
-    : ['FOLIAGE_DAPPLE', 'WINDOW_SLATS', 'PORCH_MIST', 'WARM_LANTERN'];
-  const hasBoiCanhBo = Boolean(
-    script?.tags?.some((t) => t.startsWith('boi_canh_bo:'))
-  );
-  const lightingGobo: LightingGobo =
-    spec?.lightingGobo ?? (hasBoiCanhBo ? 'NONE' : pick(goboCandidates));
-
-  const pivotCandidates: PivotMechanic[] = [
-    'PARALLAX_DRIFT',
-    'PULLBACK_REVEAL',
-    'ACCENT_PUSH_IN',
-    'SPOTLIGHT_DIM',
-  ];
-  const pivotMechanic: PivotMechanic =
-    spec?.pivotMechanic ?? pick(pivotCandidates);
 
   const autoHorizon = Math.round((rnd() * 2 - 1) * 18);
   const horizonOffsetPx = spec?.horizonOffsetPx ?? autoHorizon;

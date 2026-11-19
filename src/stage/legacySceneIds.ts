@@ -60,10 +60,17 @@ export const LEGACY_SCENE_IDS: ReadonlySet<string> = new Set([
   'SCRIPT_DE_SANG_MAI',
 ]);
 
+export function isFreeModeStageScript(script?: StageScript | null): boolean {
+  return script?.che_do === 'tu_do';
+}
+
 export function isLegacyStageScript(
   script?: StageScript | null,
   sceneId?: string
 ): boolean {
+  if (script?.che_do === 'tu_do') {
+    return false;
+  }
   if (script?.strictValidation === true || script?.legacy === false) {
     return false;
   }

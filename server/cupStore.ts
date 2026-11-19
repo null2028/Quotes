@@ -28,6 +28,8 @@ export interface CupRecord {
   errorMessage?: string;
   /** Nguyên văn JSON Gói Chén đã dán khi nhập (lưu kèm để đối chiếu kịch bản ↔ output) */
   goiChenGoc?: Record<string, unknown>;
+  /** Nguyên văn JSON kịch bản Làn tự do (`che_do: "tu_do"`) đã dán khi nhập */
+  scriptGoc?: Record<string, unknown>;
   props: VideoInputProps;
 }
 

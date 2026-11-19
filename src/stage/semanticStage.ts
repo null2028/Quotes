@@ -104,6 +104,42 @@ export const SEMANTIC_PIVOT_STYLES = {
 } as const;
 export type SemanticPivotStyleName = keyof typeof SEMANTIC_PIVOT_STYLES;
 
+export const SEMANTIC_LAYOUTS = {
+  co_dien: {
+    variant: 'CLASSIC_TOP_STAGE' as const,
+    mo_ta: 'Hình trên, chữ dưới — chuẩn mặc định của Trà Nguội',
+  },
+  chan_may: {
+    variant: 'SKY_QUOTE_BOTTOM_STAGE' as const,
+    mo_ta: 'Chữ trên nền trời thoáng, hình đặt thấp phía dưới',
+  },
+  khung_cua: {
+    variant: 'WINDOW_FRAME' as const,
+    mo_ta: 'Khung vòm "Cửa sổ Á Đông" (chỉ chọn khi có chủ đích tạo cảm giác nhìn qua khung cửa)',
+  },
+} as const;
+export type SemanticLayoutName = keyof typeof SEMANTIC_LAYOUTS;
+
+export const SEMANTIC_LIGHTINGS = {
+  bong_la: {
+    gobo: 'FOLIAGE_DAPPLE' as const,
+    mo_ta: 'Bóng lá đong đưa nhẹ (mặc định tắt; chỉ bật khi câu có nắng/cây và đã giải thích ở Bước 2)',
+  },
+  nan_cua: {
+    gobo: 'WINDOW_SLATS' as const,
+    mo_ta: 'Vệt nắng xiên qua nan cửa (mặc định tắt; chỉ bật khi câu có phòng/cửa sổ/chiều nắng)',
+  },
+  den_long: {
+    gobo: 'WARM_LANTERN' as const,
+    mo_ta: 'Quầng sáng đèn ấm (mặc định tắt; chỉ bật khi cảnh tối/đêm có ánh đèn)',
+  },
+  suong_hien: {
+    gobo: 'PORCH_MIST' as const,
+    mo_ta: 'Làn sương nhẹ nơi hiên (mặc định tắt; chỉ bật khi câu có sương/mưa nhẹ/mờ sáng)',
+  },
+} as const;
+export type SemanticLightingName = keyof typeof SEMANTIC_LIGHTINGS;
+
 export const SEMANTIC_BACKDROP_ALIASES: Record<string, SemanticBackdropName> = {
   thien_nhien_mo: 'thien_nhien',
   quan_nho: 'quan',
@@ -271,6 +307,8 @@ export interface SemanticStageScript {
     doan_duong?: SemanticTerrainSegmentSpec[];
   };
   kieu_cu_lat?: SemanticPivotStyleName;
+  bo_cuc?: SemanticLayoutName;
+  anh_sang?: SemanticLightingName;
   vat_do_tren_tay?: string; // "<actorId>.chen_tra" nếu chén trên tay Lữ khách chính là vật đỏ của cú lật
   nhan_vat: SemanticActorSpec[];
   dao_cu: SemanticPropSpec[];
@@ -1673,10 +1711,17 @@ export function compileSemanticStageScript(
       })
     : [];
 
+  const resolvedBoCuc: SemanticLayoutName | undefined =
+    sem.bo_cuc && sem.bo_cuc in SEMANTIC_LAYOUTS ? sem.bo_cuc : undefined;
+  const resolvedAnhSang: SemanticLightingName | undefined =
+    sem.anh_sang && sem.anh_sang in SEMANTIC_LIGHTINGS ? sem.anh_sang : undefined;
+
   const finalTags = [
     'semantic_v1',
     `kieu_cu_lat:${kieuCuLat}`,
     ...(resolvedBo ? [`boi_canh_bo:${resolvedBo}`] : []),
+    ...(resolvedBoCuc ? [`bo_cuc:${resolvedBoCuc}`] : []),
+    ...(resolvedAnhSang ? [`anh_sang:${resolvedAnhSang}`] : []),
   ];
 
   return {

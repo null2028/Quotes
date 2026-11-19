@@ -10841,5 +10841,390 @@
       }
     ],
     "sceneId": "SCRIPT_DE_SANG_MAI"
+  },
+  "SCRIPT_GOICHEN_NG_LUI": {
+    "sceneId": "SCRIPT_GOICHEN_NG_LUI",
+    "name": "Kịch Bản Sân Khấu Mới",
+    "description": "Kịch bản JSON khai báo V7.0",
+    "terrain": {
+      "type": "flat",
+      "y": 352
+    },
+    "atmosphere": [
+      {
+        "type": "wind",
+        "count": 4,
+        "direction": "left",
+        "leaveAt": "pivot",
+        "fadeDuration": 1.5
+      },
+      {
+        "type": "crescent",
+        "x": "far_right",
+        "y": 208,
+        "radius": 16,
+        "colorRole": "accent",
+        "enterAt": "pivot",
+        "fadeDuration": 1.8
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": "left",
+        "scale": 1.2,
+        "facing": "right",
+        "pose": "walk",
+        "colorRole": "ink"
+      }
+    ],
+    "props": [
+      {
+        "id": "bench1",
+        "type": "bench",
+        "x": "center_right",
+        "y": 0,
+        "colorRole": "ink"
+      }
+    ],
+    "timeline": [
+      {
+        "at": "start",
+        "duration": 2.8,
+        "target": "hero",
+        "toX": "center_right"
+      },
+      {
+        "at": "pivot",
+        "duration": 2.2,
+        "target": "hero",
+        "leanDeg": -8,
+        "sitProgress": 1,
+        "showTeaCup": 1
+      }
+    ]
+  },
+  "SCRIPT_GOICHEN_Q096": {
+    "sceneId": "SCRIPT_GOICHEN_Q096",
+    "name": "Kịch Bản Sân Khấu Mới",
+    "description": "Kịch bản JSON khai báo V7.0",
+    "terrain": {
+      "type": "flat",
+      "y": 352
+    },
+    "atmosphere": [
+      {
+        "type": "wind",
+        "count": 4,
+        "direction": "left",
+        "leaveAt": "pivot",
+        "fadeDuration": 1.5
+      },
+      {
+        "type": "crescent",
+        "x": "far_right",
+        "y": 208,
+        "radius": 16,
+        "colorRole": "accent",
+        "enterAt": "pivot",
+        "fadeDuration": 1.8
+      }
+    ],
+    "actors": [
+      {
+        "id": "hero",
+        "x": "left",
+        "scale": 1.2,
+        "facing": "right",
+        "pose": "walk",
+        "colorRole": "ink"
+      }
+    ],
+    "props": [
+      {
+        "id": "bench1",
+        "type": "bench",
+        "x": "center_right",
+        "y": 0,
+        "colorRole": "ink"
+      }
+    ],
+    "timeline": [
+      {
+        "at": "start",
+        "duration": 2.8,
+        "target": "hero",
+        "toX": "center_right"
+      },
+      {
+        "at": "pivot",
+        "duration": 2.2,
+        "target": "hero",
+        "leanDeg": -8,
+        "sitProgress": 1,
+        "showTeaCup": 1
+      }
+    ]
+  },
+  "SCRIPT_GOICHEN_I_U_K_DI_U": {
+    "sceneId": "SCRIPT_GOICHEN_I_U_K_DI_U",
+    "name": "Điều kỳ diệu",
+    "tags": [
+      "semantic_v1"
+    ],
+    "legacy": false,
+    "strictValidation": true,
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 74,
+      "endX": 466
+    },
+    "atmosphere": [],
+    "actors": [
+      {
+        "id": "hero",
+        "rig": "human",
+        "x": 298.35,
+        "yOffset": 0,
+        "scale": 1.4,
+        "facing": "right",
+        "pose": "stand",
+        "leanDeg": 0,
+        "sitProgress": 0,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "showTeaCup": 0,
+        "teaCupRed": false,
+        "semanticLayer": "giua",
+        "role": "lu_khach",
+        "ponytail": false,
+        "layer": "mid"
+      }
+    ],
+    "props": [
+      {
+        "id": "mam",
+        "type": "sprout",
+        "x": 235.35,
+        "y": 0,
+        "layer": "fore",
+        "semanticLayer": "truoc",
+        "anchorKind": "dat",
+        "scale": 1.4,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "idle": "none"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "pivot+0.4s",
+        "duration": 0.85,
+        "exactDuration": true,
+        "target": "mam",
+        "colorRole": "accent"
+      },
+      {
+        "at": "pivot",
+        "duration": 1.1,
+        "exactDuration": true,
+        "target": "camera",
+        "zoom": 1.14,
+        "panX": -9.7,
+        "panY": 0
+      },
+      {
+        "at": "line_2",
+        "duration": 2,
+        "exactDuration": true,
+        "target": "hero",
+        "leanDeg": 13
+      },
+      {
+        "at": "pivot+0.6s",
+        "duration": 1.2,
+        "exactDuration": true,
+        "target": "hero",
+        "facing": "left",
+        "lookAtTarget": "mam"
+      },
+      {
+        "at": "pivot+2.6s",
+        "duration": 2,
+        "exactDuration": true,
+        "target": "hero",
+        "leanDeg": 8,
+        "lookAtTarget": "mam"
+      }
+    ]
+  },
+  "SCRIPT_C19_NET_DAT_NAY_MAM": {
+    "sceneId": "SCRIPT_C19_NET_DAT_NAY_MAM",
+    "name": "Nét đất nảy mầm",
+    "act1": "Lữ khách cúi đầu đi dọc một nét đất trơn, chẳng có gì",
+    "act2AtPivot": "Ở 'điều kỳ diệu', chính nét đất trước chân anh vươn lên thành mầm đỏ",
+    "act3Afterimage": "Anh dừng, ngẩng lên rồi cúi nhìn mầm; mầm khẽ đung đưa",
+    "redProp": "Mầm cây đỏ mọc từ nét đất",
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 130,
+      "endX": 410
+    },
+    "actors": [
+      {
+        "id": "hero",
+        "x": 150,
+        "scale": 1.3,
+        "facing": "right",
+        "pose": "walk",
+        "leanDeg": 8,
+        "opacity": 1,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "mid"
+      },
+      {
+        "id": "nguoi_qua",
+        "x": 420,
+        "scale": 1.15,
+        "facing": "left",
+        "pose": "walk",
+        "leanDeg": 12,
+        "opacity": 0.22,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "layer": "far",
+        "leaveAt": "line_3",
+        "fadeDuration": 1.6
+      }
+    ],
+    "props": [
+      {
+        "id": "may",
+        "type": "cloud_wisp",
+        "x": 210,
+        "y": 200,
+        "layer": "sky",
+        "scale": 1,
+        "opacity": 0.32,
+        "colorRole": "secondary",
+        "focusRole": "support",
+        "idle": {
+          "type": "float",
+          "speed": 0.6,
+          "amplitude": 0.5
+        }
+      },
+      {
+        "id": "mam",
+        "type": "net_dat_nay_mam",
+        "x": 334,
+        "y": 0,
+        "anchorType": "ground",
+        "layer": "mid",
+        "scale": 3,
+        "opacity": 1,
+        "colorRole": "accent",
+        "focusRole": "hero",
+        "drawProgress": 0,
+        "idle": {
+          "type": "float",
+          "speed": 0.5,
+          "amplitude": 0.25
+        },
+        "shapes": [
+          {
+            "d": "M -6 0 Q -2 0.3 0 0 C 1.6 -6 -1.4 -12 0.5 -18",
+            "fill": "none",
+            "role": "accent",
+            "strokeScale": 1.1
+          },
+          {
+            "d": "M 0.3 -12.5 C -4 -15 -8.5 -14 -10 -10.5 C -6 -9.2 -2.5 -10.2 0.3 -12.5 Z",
+            "fill": "accent",
+            "fillOpacity": 0.92,
+            "role": "accent",
+            "strokeScale": 0.4
+          },
+          {
+            "d": "M 0.5 -16 C 4.5 -19.8 9.5 -19.2 11 -15.4 C 7 -13.8 3 -14 0.5 -16 Z",
+            "fill": "accent",
+            "fillOpacity": 0.92,
+            "role": "accent",
+            "strokeScale": 0.4
+          }
+        ],
+        "saveAs": "net_dat_nay_mam"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start",
+        "duration": 4.2,
+        "target": "hero",
+        "toX": 205
+      },
+      {
+        "at": "start+0.3s",
+        "duration": 6.5,
+        "target": "nguoi_qua",
+        "toX": 150
+      },
+      {
+        "at": "line_2",
+        "duration": 3.6,
+        "target": "hero",
+        "toX": 252,
+        "leanDeg": 14
+      },
+      {
+        "at": "line_3",
+        "duration": 2.8,
+        "target": "hero",
+        "toX": 288
+      },
+      {
+        "at": "pivot+0.15s",
+        "duration": 1.9,
+        "target": "mam",
+        "drawProgress": 1
+      },
+      {
+        "at": "pivot+0.5s",
+        "duration": 1.1,
+        "target": "hero",
+        "pose": "stand",
+        "leanDeg": 0
+      },
+      {
+        "at": "pivot+2.2s",
+        "duration": 2,
+        "target": "hero",
+        "pose": "reach_out",
+        "leanDeg": 10,
+        "lookAtTarget": "mam"
+      },
+      {
+        "at": "pivot+0.6s",
+        "duration": 4.5,
+        "target": "camera",
+        "zoom": 1.1,
+        "panX": 14,
+        "panY": 3
+      }
+    ],
+    "che_do": "tu_do"
   }
 }

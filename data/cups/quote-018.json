@@ -1,0 +1,64 @@
+{
+  "id": "quote-018",
+  "cupNumber": "18",
+  "status": "completed",
+  "progress": 100,
+  "captionText": "Đôi dòng ngẫm về \"đường lui\" cho những ngày muốn sống chậm lại một nhịp.\nCâu chữ nào hôm nay chạm đúng tâm trạng của bạn nhất?\n\n#tranguoi #duonglui #chiemnghiem #thohay #chualanh",
+  "props": {
+    "id": "quote-018",
+    "textFormat": "POEM",
+    "title": "Đường lui",
+    "author": "",
+    "publishSlot": "Anytime",
+    "fontSizeScale": 1,
+    "segments": [
+      "Việc khó anh tính nhanh,",
+      "Chưa từng sai một bước.",
+      "Chỉ chạm mắt em thôi,",
+      "Tính đường lui... chẳng được."
+    ],
+    "pivotWord": "chẳng được",
+    "highlightStyle": "BOTH",
+    "durationMode": "AUTO_SEED",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "visualDNA": {
+      "mode": "CUSTOM",
+      "layout": "CLASSIC_TOP_STAGE",
+      "lightingGobo": "PORCH_MIST",
+      "shotMode": "SOLID_SCENE",
+      "pivotMechanic": "PARALLAX_DRIFT",
+      "horizonOffsetPx": 5,
+      "forceSolidStyle": true
+    },
+    "motion": {
+      "sceneId": "SCRIPT_GOICHEN_NG_LUI",
+      "archetype": "SCRIPT_GOICHEN_NG_LUI",
+      "pacingMode": "WRY_BATHOS",
+      "stateA": {
+        "intensity": 0.78,
+        "spread": 0.22,
+        "tiltDeg": -12
+      },
+      "stateB": {
+        "intensity": 0.08,
+        "spread": 0.72,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "FOLEY_MASTER",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  },
+  "videoUrl": "/output/quote-018/Ch%C3%A9n%2018%20-%20%C4%90%C6%B0%E1%BB%9Dng%20lui.mp4?v=1795004998196"
+}
