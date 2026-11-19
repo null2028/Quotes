@@ -72,7 +72,7 @@ export const SEMANTIC_BACKDROPS = {
   },
   van_phong: {
     ten: 'Văn phòng',
-    mo_ta: 'Vạch tường góc phòng + 1 cửa sổ (porch_window) treo cao',
+    mo_ta: 'Vạch chân tường ngang thấp phía sau + 1 cửa sổ (porch_window) treo cao',
   },
   phong_trong_nha: {
     ten: 'Phòng trong nhà',
@@ -1947,38 +1947,21 @@ function buildSemanticBackdropProps(
 
     case 'van_phong': {
       const items: PropSpec[] = [];
-      // Vạch tường góc phòng mảnh (trái & chân tường phải)
+      // T8-BOI-CANH-b #2: Bỏ hai vạch dọc vô nghĩa; chỉ giữ 1 nét chân tường ngang thấp phía sau
       items.push(
         makeBackdropProp(
-          'vp_tuong_trai',
-          Math.max(108, leftX - 24),
-          groundY,
+          'vp_chan_tuong',
+          270,
+          -8,
           [
             {
-              d: 'M 0 0 L 0 -154 M 0 -6.5 L 34 -6.5',
+              d: 'M -166 0 L 166 0',
               fill: 'none',
               role: 'ink',
-              strokeScale: 0.66,
+              strokeScale: 0.56,
             },
           ],
-          { scale: 1.0, opacity: 0.38 }
-        )
-      );
-      items.push(
-        makeBackdropProp(
-          'vp_tuong_phai',
-          Math.min(432, rightX + 24),
-          groundY,
-          [
-            {
-              d: 'M 0 0 L 0 -154 M -30 -6.5 L 0 -6.5',
-              fill: 'none',
-              role: 'ink',
-              strokeScale: 0.62,
-              opacity: 0.78,
-            },
-          ],
-          { scale: 1.0, opacity: 0.38 }
+          { scale: 1.0, opacity: 0.36, anchorKind: 'tuong' }
         )
       );
       // 1 cửa sổ công sở (porch_window) treo cao, lệch về bên thoáng xa vật đỏ

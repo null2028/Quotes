@@ -101,7 +101,7 @@
 ### 6. Văn phòng (`van_phong`) — **36 quote (`13.7%`)**
 - **Nền (địa hình / tường / vạch)**:
   - Địa hình: `dia_hinh: "phang"` (mặt sàn phẳng).
-  - Lớp `nen`: `cua_so` công sở hoặc `dong_ho_treo` trên tường sau bàn làm việc, giữ bố cục ngang gọn gàng cho loạt quote Công sở (`W009–W055`, `W075–W095`, `Q001`).
+  - Lớp nền tự động (`boi_canh.bo: "van_phong"`): vạch chân tường ngang thấp phía sau + 1 cửa sổ (`porch_window`) treo cao, giữ bố cục ngang gọn gàng cho loạt quote Công sở (`W009–W055`, `W075–W095`, `Q001`).
 - **Đạo cụ mặc định (3–6 preset)**:
   1. `ban_lam_viec` *(alias `std_work_desk`, lớp `giua`, neo `dat`)*
   2. `ghe_tua` / `ghe_van_phong` *(alias `std_chair`, lớp `giua`, neo `dat`)*

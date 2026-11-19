@@ -79,8 +79,8 @@ export function normalizeTerrainConfig(
       hillCenterX: 270,
       hillHeight: 24,
       hillWidth: 180,
-      forkAtX: 230,
-      forkAngleDeg: -22,
+      forkAtX: 232,
+      forkAngleDeg: -9,
       shoreX: 255,
       waterSide: 'right',
       waveAmplitude: 4.0,
@@ -128,8 +128,8 @@ export function normalizeTerrainConfig(
     hillCenterX: resolveXCoord(input.hillCenterX, 270),
     hillHeight: input.hillHeight ?? 24,
     hillWidth: Math.max(40, input.hillWidth ?? 180),
-    forkAtX: resolveXCoord(input.forkAtX, 230),
-    forkAngleDeg: input.forkAngleDeg ?? -22,
+    forkAtX: resolveXCoord(input.forkAtX, 232),
+    forkAngleDeg: input.forkAngleDeg ?? -9,
     shoreX: resolveXCoord(input.shoreX, 255),
     waterSide: input.waterSide ?? 'right',
     waveAmplitude: input.waveAmplitude ?? 4.0,
@@ -493,15 +493,15 @@ export const TerrainRenderer: React.FC<{
 
     let forkNode: React.ReactNode = null;
     if (terrain.type === 'fork') {
-      const rad = (terrain.forkAngleDeg * Math.PI) / 180;
-      const branchLen = Math.max(195, terrain.endX - terrain.forkAtX - 8);
+      // T8-BOI-CANH-b #1: Nhánh ngã rẽ thấp gần mặt đất (góc nhỏ ≤ 12°), mờ dần về xa + cột biển chỉ đường 2 mũi tên tại điểm tách
+      const clampedAngleDeg = Math.max(-12, Math.min(-4, terrain.forkAngleDeg));
+      const rad = (clampedAngleDeg * Math.PI) / 180;
+      const branchLen = Math.max(168, Math.min(205, terrain.endX - terrain.forkAtX - 18));
       const endForkX = terrain.forkAtX + Math.cos(rad) * branchLen;
       const endForkY = terrain.y + Math.sin(rad) * branchLen;
-      const ctrlX = terrain.forkAtX + Math.cos(rad) * branchLen * 0.42;
-      const ctrlY = terrain.y + Math.sin(rad) * branchLen * 0.16;
+      const ctrlX = terrain.forkAtX + Math.cos(rad) * branchLen * 0.45;
+      const ctrlY = terrain.y + Math.sin(rad) * branchLen * 0.28;
       const forkPath = `M ${terrain.forkAtX} ${terrain.y} Q ${ctrlX.toFixed(1)} ${ctrlY.toFixed(1)} ${endForkX.toFixed(1)} ${endForkY.toFixed(1)}`;
-      const forkShadowPath = `M ${(terrain.forkAtX + 6).toFixed(1)} ${(terrain.y + 2.0).toFixed(1)} Q ${(ctrlX + 4).toFixed(1)} ${(ctrlY + 2.0).toFixed(1)} ${(endForkX - 18).toFixed(1)} ${(endForkY + 2.0).toFixed(1)}`;
-      // T8-BOI-CANH #2: Nhánh ngã rẽ nét liền mảnh, góc tách rõ, vẽ tiếp nối sau khi đường chính chạm điểm tách
       const forkStartRatio = Math.max(
         0.15,
         Math.min(0.65, (terrain.forkAtX - terrain.startX) / Math.max(40, terrain.endX - terrain.startX))
@@ -512,6 +512,9 @@ export const TerrainRenderer: React.FC<{
       );
       const forkEvo = evolvePath(Math.max(0.001, forkDraw), forkPath);
       const forkGradId = `${gradId}-fork`;
+      const sx = terrain.forkAtX;
+      const sy = terrain.y;
+      const signStroke = fineHorizonStrokeWidth * 0.72;
       forkNode = React.createElement(
         'g',
         { opacity: forkDraw > 0.005 ? 1 : 0 },
@@ -523,20 +526,20 @@ export const TerrainRenderer: React.FC<{
             {
               id: forkGradId,
               gradientUnits: 'userSpaceOnUse',
-              x1: terrain.forkAtX,
-              y1: terrain.y,
+              x1: sx,
+              y1: sy,
               x2: endForkX,
               y2: endForkY,
             },
             React.createElement('stop', {
               offset: '0%',
               stopColor: stroke,
-              stopOpacity: solidHorizon ? 0.88 : 0.68,
+              stopOpacity: solidHorizon ? 0.76 : 0.6,
             }),
             React.createElement('stop', {
-              offset: '72%',
+              offset: '55%',
               stopColor: stroke,
-              stopOpacity: solidHorizon ? 0.72 : 0.54,
+              stopOpacity: solidHorizon ? 0.42 : 0.34,
             }),
             React.createElement('stop', {
               offset: '100%',
@@ -545,23 +548,45 @@ export const TerrainRenderer: React.FC<{
             })
           )
         ),
+        // Nhánh rẽ thấp gần mặt đất mờ dần về xa
         React.createElement('path', {
           d: forkPath,
           fill: 'none',
           stroke: `url(#${forkGradId})`,
-          strokeWidth: fineHorizonStrokeWidth * 0.9,
+          strokeWidth: fineHorizonStrokeWidth * 0.85,
           strokeLinecap: 'round',
           strokeDasharray: forkEvo.strokeDasharray,
           strokeDashoffset: forkEvo.strokeDashoffset,
         }),
-        React.createElement('path', {
-          d: forkShadowPath,
-          fill: 'none',
-          stroke,
-          strokeWidth: solidHorizon ? 0.45 : 0.7,
-          strokeLinecap: 'round',
-          opacity: (solidHorizon ? 0.12 : 0.09) * shadowAlphaMult * forkDraw,
-        })
+        // Cột biển chỉ đường 2 mũi tên (nét mảnh, lớp nền) đặt tại điểm tách
+        React.createElement(
+          'g',
+          { opacity: 0.48 * forkDraw },
+          // Thân cột thẳng đứng từ mặt đất
+          React.createElement('path', {
+            d: `M ${sx} ${sy} L ${sx} ${(sy - 46).toFixed(1)}`,
+            fill: 'none',
+            stroke,
+            strokeWidth: signStroke * 1.05,
+            strokeLinecap: 'round',
+          }),
+          // Mũi tên trên chỉ phải-lên (theo nhánh rẽ)
+          React.createElement('path', {
+            d: `M ${(sx - 1).toFixed(1)} ${(sy - 42).toFixed(1)} L ${(sx + 14).toFixed(1)} ${(sy - 44).toFixed(1)} L ${(sx + 20).toFixed(1)} ${(sy - 40.5).toFixed(1)} L ${(sx + 14).toFixed(1)} ${(sy - 37).toFixed(1)} L ${(sx - 1).toFixed(1)} ${(sy - 37).toFixed(1)} Z`,
+            fill: 'none',
+            stroke,
+            strokeWidth: signStroke,
+            strokeLinejoin: 'round',
+          }),
+          // Mũi tên dưới chỉ trái (ngược chiều)
+          React.createElement('path', {
+            d: `M ${(sx + 1).toFixed(1)} ${(sy - 33).toFixed(1)} L ${(sx - 13).toFixed(1)} ${(sy - 33).toFixed(1)} L ${(sx - 19).toFixed(1)} ${(sy - 29.5).toFixed(1)} L ${(sx - 13).toFixed(1)} ${(sy - 26).toFixed(1)} L ${(sx + 1).toFixed(1)} ${(sy - 26).toFixed(1)} Z`,
+            fill: 'none',
+            stroke,
+            strokeWidth: signStroke,
+            strokeLinejoin: 'round',
+          })
+        )
       );
     }
 

@@ -9,7 +9,7 @@
 - `phong_trong_nha` · **Phòng trong nhà** · nền tự dựng: Vạch tường + cửa sổ nhỏ (porch_window) và khung tranh treo tường · địa hình: phang · đạo cụ gợi ý: cua_so, porch_window, cua_phong, giuong_ngu, chiec_goi, ban_quan, ghe_tua, std_chair
 - `khong_gian_ky_hieu` · **Không gian ký hiệu** · nền tự dựng: Không nền, chỉ đường đất mảnh trên nền giấy trống · địa hình: phang · đạo cụ gợi ý: trai_tim, tim_net_dut, duong_ke, soi_chi, bong_bong_nghi, chat_bubble, cuon_sach, trang_giay
 - `hien_tra` · **Hiên trà** · nền tự dựng: Mép mái hiên phía trên + 1 cột hiên + nét sàn gỗ mảnh · địa hình: phang · đạo cụ gợi ý: ban_tra, low_tea_table, don_go, ghe_dai, low_wood_stool, bench, am_tra, chen_tra
-- `van_phong` · **Văn phòng** · nền tự dựng: Vạch tường góc phòng + 1 cửa sổ (porch_window) treo cao · địa hình: phang · đạo cụ gợi ý: ban_lam_viec, std_work_desk, ghe_tua, ghe_van_phong, std_chair, laptop, may_tinh_ban, desk_laptop
+- `van_phong` · **Văn phòng** · nền tự dựng: Vạch chân tường ngang thấp phía sau + 1 cửa sổ (porch_window) treo cao · địa hình: phang · đạo cụ gợi ý: ban_lam_viec, std_work_desk, ghe_tua, ghe_van_phong, std_chair, laptop, may_tinh_ban, desk_laptop
 - `quan` · **Quán** · nền tự dựng: Vạch tường quán + cửa sổ (porch_window) + 1 đèn thả mảnh treo cao · địa hình: phang · đạo cụ gợi ý: ban_quan, ghe_tua, std_chair, ly_ca_phe, chen_tra, ly_ruou, dien_thoai, cuon_sach
 - `nha_que` · **Nhà quê, mâm cơm** · nền tự dựng: Bóng ngôi nhà mái hiên (warm_house) + hàng rào gỗ thấp ven sân · địa hình: phang · đạo cụ gợi ý: mam_com, bat_com, am_tra, don_go, ghe_tua, cua_nha, nha_nho
 - `ga_tau` · **Ga tàu** · nền tự dựng: Bóng toa tàu chạy ngang có hàng ô cửa + cột đồng hồ sân ga · địa hình: phang · đạo cụ gợi ý: toa_tau, vali, ghe_dai, bench, dong_ho_treo

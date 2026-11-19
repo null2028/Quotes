@@ -3,7 +3,7 @@
  */
 
 // MỘT hằng số diện tích vật đỏ tối thiểu duy nhất trên khung 1080×1920 (đồng bộ với tn-core)
-export const MIN_RED_AREA_PX2 = 2400;
+export const MIN_RED_AREA_PX2 = 2000;
 
 // 3 lớp sâu ngữ nghĩa: chỉ kiểm tra đè nhau giữa các vật CÙNG lớp
 export const SEMANTIC_LAYERS = ['nen', 'giua', 'truoc'] as const;

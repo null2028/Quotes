@@ -262,8 +262,11 @@ export function resolveVisualDNA(
   const goboCandidates: LightingGobo[] = isDarkThemePalette(props.themeId)
     ? ['WARM_LANTERN', 'PORCH_MIST', 'WINDOW_SLATS']
     : ['FOLIAGE_DAPPLE', 'WINDOW_SLATS', 'PORCH_MIST', 'WARM_LANTERN'];
+  const hasBoiCanhBo = Boolean(
+    script?.tags?.some((t) => t.startsWith('boi_canh_bo:'))
+  );
   const lightingGobo: LightingGobo =
-    spec?.lightingGobo ?? pick(goboCandidates);
+    spec?.lightingGobo ?? (hasBoiCanhBo ? 'NONE' : pick(goboCandidates));
 
   const pivotCandidates: PivotMechanic[] = [
     'PARALLAX_DRIFT',
