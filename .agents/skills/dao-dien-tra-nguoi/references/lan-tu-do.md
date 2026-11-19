@@ -5,7 +5,7 @@
 ## 1. Cấu trúc JSON bọc Chén (dán thẳng vào Studio)
 - Object gốc gồm câu chữ + kịch bản sân khấu:
   - `title` (string, bắt buộc): tiêu đề Chén.
-  - `segments` (string[], bắt buộc, 2–4 dòng): các dòng thơ/quote. Hỗ trợ 2 ký hiệu nhịp hiện chữ (không bao giờ hiện lên video/ảnh bìa/caption/tên file): `" / "` giữa dòng = **tách nhịp** (vế sau hiện ở nhịp kế tiếp, vẫn cùng dòng hiển thị); `"+"` đầu dòng = **nối nhịp** (dòng này hiện cùng nhịp với dòng trên). Engine tự căn nhịp theo **trọng số âm tiết từng nhịp + khoảng nín thở trước cú lật** và tự co giãn tổng thời lượng đàn hồi **`8.5s–24.0s`** (4 dải `BAND_S/M/L/XL`, theo `pacingMode` + `textFormat`); mốc `line_N` = lúc dòng hiển thị N bắt đầu hiện (nhịp đầu của dòng), `pivot` tính trong nhịp chứa `pivotWord`.
+  - `segments` (string[], bắt buộc): các dòng thơ/quote — độ dài theo 4 dải S 6–13 · M 14–28 · L 29–42 · XL 43–58 âm tiết (trần 48 tự sáng tác, 58 trích dẫn có tác giả); giới hạn thật là khung chữ, thời lượng video engine tự tính 8.5–24s (4 dải `BAND_S/M/L/XL`, theo `pacingMode` + `textFormat`). Hỗ trợ 2 ký hiệu nhịp hiện chữ (không bao giờ hiện lên video/ảnh bìa/caption/tên file): `" / "` giữa dòng = **tách nhịp** (vế sau hiện ở nhịp kế tiếp, vẫn cùng dòng hiển thị); `"+"` đầu dòng = **nối nhịp** (dòng này hiện cùng nhịp với dòng trên). Engine tự căn nhịp theo **trọng số âm tiết từng nhịp + khoảng nín thở trước cú lật**; mốc `line_N` = lúc dòng hiển thị N bắt đầu hiện (nhịp đầu của dòng), `pivot` tính trong nhịp chứa `pivotWord`.
   - `pivotWord` (string, bắt buộc): cụm chữ đổi đỏ nằm trong dòng cuối của `segments`.
   - `author` (string, tuỳ chọn), `textFormat` (`"POEM"` | `"PROSE"`), `themeId` (`"MINIMAL_LIGHT"` | `"MINIMAL_DARK"` | `"WARM_NOIR"`, mặc định `"MINIMAL_LIGHT"`), `durationMode` (`"AUTO_SEED"` mặc định).
   - `stageScript` (object, bắt buộc): mang cờ **`"che_do": "tu_do"`** (tuyệt đối KHÔNG ghi `"legacy": true`).
@@ -33,9 +33,14 @@
   - Tô/nét (tuyệt đối không ghi mã màu hex): `fill` (`none`, `bg`, `ink`, `secondary`, `accent`), `fillOpacity` (`0..1`), `role` (`ink`, `secondary`, `accent`), `strokeScale`, `dashed`, `opacity`, `show` (`always`, `before_pivot`, `after_pivot`), `anim.type` (`spin`, `swing`, `bob`, `pulse`, `flutter`).
 - **`atmosphere[]`**: `id`, `type`, `x`, `y`, `radius`, `count`, `direction`, `colorRole`, `focusRole`, `opacity`, `enterAt`, `leaveAt`, `fadeDuration` · `type`: `rain`, `wind`, `leaves`, `steam`, `birds`, `sun`, `hollow_sun`, `crescent`, `ring_pulse`. Lưu ý `colorRole: "accent"` hoặc `leaves` sau cú lật đều được tính là nguồn đỏ.
 - **`camera`**: `zoom`, `panX`, `panY` (`zoom` trong `0.6..2.0`, `panX`, `panY`).
+  - Máy **KHÔNG** tự đẩy/kéo/rung camera ở cú lật — muốn chuyển động camera thì tự ghi cue `target: "camera"`.
+  - Không cần khai `visualDNA` / `forceSolidStyle` / tag `solid_style`: Làn tự do mặc định đã nét đậm (`SOLID_SCENE`), bố cục chuẩn (`CLASSIC_TOP_STAGE`), không gobo.
+  - Nhịp xuất hiện: vật/nhân vật có cue `drawProgress` → vẽ nét đúng nhịp đó; có `enterAt` + `fadeDuration` → mờ dần vào đúng thời lượng đó; không ghi gì → chạy nghi thức mở màn mặc định.
 - **`timeline[]`**: `at`, `when`, `duration`, `exactDuration`, `target`, `x`, `toX`, `y`, `toY`, `yOffset`, `arcY`, `follow`, `scale`, `rotate`, `opacity`, `colorRole`, `variant`, `facing`, `pose`, `leanDeg`, `sitProgress`, `lookAtTarget`, `showTeaCup`, `dissolveToCloud`, `drawProgress`, `morphProgress`, `splitProgress`, `floatAwayProgress`, `emitters`, `bridgeProgress`, `strokeWidth`, `dropGravity`, `zoom`, `panX`, `panY`.
   - `at`: mốc `"start"`, `"line_1"`, `"line_2"`, `"line_3"`, `"line_4"`, `"pivot"`, `"end"`, hỗ trợ cộng/trừ giây (VD `"start+0.3s"`, `"pivot+0.15s"`, `"pivot+2.2s"`).
   - `duration`: thời lượng chuyển (giây, `0.05..15`) · `target`: `id` của actor/prop hoặc `"camera"` / `"terrain"`.
+  - Mẹo neo mốc: neo động tác theo `"line_N"` / `"pivot"` (±s) thay vì `"start+Xs"` dài, vì thời lượng video co giãn theo câu (8.5–24s).
+  - Mẹo di chuyển: không cho 2 lệnh di chuyển (`toX`/`toY`) cùng một `target` chồng thời gian — gộp thành 1 lệnh liền (nếu chồng, engine sẽ tự cắt ngắn lệnh đầu).
 
 ## 4. Máy kiểm tra Làn tự do (`validateFreeModeStageScript`, quét mỗi 0.25s)
 > Không ép TEMPO, không đếm cử chỉ, không giới hạn đạo cụ trong kho — máy chỉ kiểm VỠ HÌNH:

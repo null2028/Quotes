@@ -12,8 +12,8 @@ Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc `
 - Nhân vật biểu cảm bằng tư thế, hướng đầu, độ nghiêng, bước đi, dừng lại, ngoái nhìn, vươn tay; ít mà đắt.
 
 ## Bước 1 — Câu chữ (DỪNG chờ chốt)
-- Nếu chủ kênh **đưa sẵn câu**: giữ nguyên văn 100%, chia dòng hợp lý (2–4 dòng) và đề xuất cụm chữ lật ở dòng cuối.
-- Nếu chủ kênh **đưa ý tưởng**: đưa **3 phương án** câu chữ (2–4 dòng, **14–28 âm tiết**, cụm chữ lật nằm ở **dòng cuối**).
+- Nếu câu đã chốt từ skill sáng tác `sang-tac-tra-nguoi` (hoặc chủ kênh **đưa sẵn câu**): giữ nguyên văn 100%, chỉ chia dòng + đề xuất ký hiệu nhịp + cụm chữ lật ở dòng cuối, **không chấm hay sửa lại câu**.
+- Nếu chủ kênh **đưa ý tưởng**: đưa **3 phương án** câu chữ (độ dài theo 4 dải S 6–13 · M 14–28 · L 29–42 · XL 43–58 âm tiết; trần 48 tự sáng tác, 58 trích dẫn có tác giả; giới hạn thật là khung chữ, thời lượng video engine tự tính 8.5–24s; cụm chữ lật nằm ở **dòng cuối**).
 - **Nhịp đọc & hiện chữ**: có thể đặt 2 ký hiệu nhịp ngay trong câu để kiểm soát lúc chữ hiện (ký hiệu tự ẩn khi xuất hình): `" / "` giữa dòng = **tách nhịp** (vế sau hiện ở nhịp kế tiếp, vẫn cùng dòng); `"+"` đầu dòng = **nối nhịp** (dòng này hiện cùng lúc với dòng trên). Đề xuất nhịp đặt dấu nếu câu cần dồn cặp mở đầu hoặc chừa khoảng lặng trước vế lật.
 - Giữ chất **“Lắng — Kiệm lời — Đời thực — Có dư vị”**. Tránh từ sáo rỗng bi lụy, khẩu hiệu dạy đời, văn dịch cứng, hashtag rác (`#fyp`, `#foryou`, `#xuhuong`, `#viral`).
 
