@@ -20,6 +20,7 @@
 | 1 | TF1 — làn tự do chính thức, kiểm tra chỉ vỡ hình | `Đọc tasks/TF1.md và làm.` |
 | 2 | TF2 — preview chạy macOS + Linux, cùng luồng video thật | `Đọc tasks/TF2.md và làm.` |
 | 3 | TF3 — sửa đồi che vật đỏ, đất kéo hết ngang, dấu phiên bản + log | `Đọc tasks/TF3.md và làm.` |
+| 4 | TF4 — skill đạo diễn viết làn tự do (mẫu Chén 19) | `Đọc tasks/TF4.md và làm.` |
 | — | Sau đó: làm 2–3 Chén thật qua làn tự do, rồi mới quyết thêm gì | |
 TẠM DỪNG: T8-DNA-b, các họ đạo cụ (T8-HO), mọi luật mới.
 
