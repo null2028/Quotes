@@ -24,6 +24,7 @@
 | 5 | TF5 — làn tự do không bị engine tự thêm (DNA ngẫu nhiên, mở màn ép) | `Đọc tasks/TF5.md và làm.` |
 | 6 | TF6 — nhịp hiện chữ (/ tách, + nối) + sửa thanh cỡ chữ | `Đọc tasks/TF6.md và làm.` |
 | 7 | TS1 — đóng gói skill sáng tác `sang-tac-tra-nguoi`, cập nhật AGENTS/bản đồ/nhật ký | `Đọc tasks/TS1.md và làm.` |
+| 8 | TF7 — đồng bộ skill đạo diễn với engine (độ dài câu, TF5, PA-B, mẹo timeline) | `Đọc tasks/TF7.md và làm.` |
 | — | Sau đó: làm 2–3 Chén thật qua làn tự do, rồi mới quyết thêm gì | |
 TẠM DỪNG: T8-DNA-b, các họ đạo cụ (T8-HO), mọi luật mới.
 
