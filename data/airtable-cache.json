@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-11-18T04:31:28.740Z",
+  "syncedAt": "2026-11-19T12:56:37.535Z",
   "selectedBaseId": "app9rk1rYkbXuIi3e",
   "selectedBaseName": "Trà Nguội",
   "selectedTableId": "tblUvm81GfyOYZ4jH",
@@ -1196,6 +1196,34 @@
         }
       ],
       "records": [
+        {
+          "id": "rec0bE4sUnvnjEeso",
+          "createdTime": "2026-11-18T10:06:50.000Z",
+          "fields": {
+            "TikTok Caption": "Có người cần một chén rượu để say, có người chỉ cần một ánh nhìn. 🍷\n\nBạn dễ say vì rượu hay vì một người?\n\n#tranguoi #tinhyeu #tantu",
+            "Chủ đề": "Tình yêu",
+            "Tone": "Thi vị",
+            "Cảm xúc": "Rung động · say mê · vui nhẹ",
+            "Quote tinh chỉnh": "Người ta mê chén rượu nồng,\nCòn tôi chỉ thích ngắm đồng tử em.\nRượu say tỉnh giấc là quên,\nRiêng em một thoáng, say mềm cả tim.",
+            "Trạng thái": "Đã lưu",
+            "Chất": "Thi vị",
+            "Visual direction": "Bối cảnh: Một quán rượu nhỏ trong đêm, ánh đèn vàng ấm và không khí yên tĩnh. Nhân vật ngồi trước chén rượu còn nguyên, ánh nhìn hướng về đôi mắt của người đối diện. Cận cảnh ánh mắt phản chiếu ánh đèn, rồi chuyển về chén rượu chưa vơi. Tạo tương phản giữa men rượu và ánh nhìn khiến lòng say. Phong cách hoạt họa painterly, bán hiện thực điện ảnh; chuyển động tiết chế, ánh sáng mềm, bảng màu nâu gỗ và vàng mật ong.",
+            "Visual": "Cao",
+            "Hiệu ứng cảm xúc": "Vui nhẹ · mỉm cười",
+            "Caption Status": "Draft",
+            "Nội dung nguyên văn": "Người ta mê chén rượu nồng,\nCòn tôi chỉ thích ngắm đồng tử em.\nRượu say tỉnh giấc là quên,\nRiêng em một thoáng, say mềm cả tim.",
+            "Thời điểm phù hợp": "Anytime",
+            "ID": "Q161",
+            "Tags": [
+              "tình yêu",
+              "cảm xúc",
+              "tán tỉnh",
+              "thơ",
+              "đáng yêu"
+            ],
+            "Loại": "Thơ"
+          }
+        },
         {
           "id": "rec0sFni8VlZACf49",
           "createdTime": "2026-11-12T03:10:30.000Z",
@@ -5625,7 +5653,7 @@
           }
         }
       ],
-      "recordCount": 159
+      "recordCount": 160
     },
     {
       "id": "tblG0SqIZOVn5D2NJ",
@@ -5720,6 +5748,11 @@
               {
                 "id": "selcNg3Py59sHObgL",
                 "name": "Night",
+                "color": "blueLight2"
+              },
+              {
+                "id": "self9Uk7OrbmoFecM",
+                "name": "Noon",
                 "color": "blueLight2"
               }
             ]
@@ -5818,6 +5851,23 @@
           }
         },
         {
+          "id": "rec0xWzQPwK0GQhRB",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Lời khen thì nhiều, chỗ vừa vặn chỉ có một. 🍵\n\n#tranguoi #tho4cau #thathinh #tinhyeu #doisong",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Khen em đẹp chắc là thừa mất / Đặt em vào tim, có lẽ là vừa nhất. (CellphoneS Sforum — https://cellphones.com.vn/sforum/tho-tha-thinh)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Khen em đẹp thừa mất ↔ Đặt vào tim vừa nhất",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "là vừa nhất",
+            "Nội dung Trà Nguội": "Khen em đẹp chắc là thừa mất,\nĐặt em vào tim, có lẽ là vừa nhất.",
+            "ID": "W087",
+            "Đạo cụ sân khấu": "Lữ khách đứng khẽ đặt chén trà ngay ngắn vào chính giữa khay gỗ → Chạm điểm lật, chén trà hóa Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "rec1smfzYfbsTd3Ym",
           "createdTime": "2026-11-12T07:24:31.000Z",
           "fields": {
@@ -5886,6 +5936,23 @@
           }
         },
         {
+          "id": "rec4g1mlUvGiMiR0s",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Đã thương là tính chuyện đường dài luôn. 🍵\n\n#tranguoi #thathinh #noilai #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Có bệnh lây thì phải yếu, nếu yêu em thì phải lấy (VOH Nói Lái — https://voh.com.vn/song-dep/nhung-cau-noi-lai-495792.html)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Lây thì phải yếu ↔ Yêu em thì phải lấy",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "thì phải lấy",
+            "Nội dung Trà Nguội": "Có bệnh lây thì phải yếu,\nnếu yêu em thì phải lấy.",
+            "ID": "W090",
+            "Đạo cụ sân khấu": "Lữ khách ngồi ngay ngắn trước phong thư trên bàn trà → Chạm điểm lật, ấn triện vuông góc giấy dập sắc Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "rec4khlAkFnXWIsH9",
           "createdTime": "2026-11-12T07:08:04.000Z",
           "fields": {
@@ -5900,6 +5967,40 @@
             "Nội dung Trà Nguội": "Sáng soi gương cứ trách mắt mình thường thâm.\nHóa ra tại đêm nào cũng thức… nghĩ về người thầm thương.",
             "ID": "W003",
             "Đạo cụ sân khấu": "Chiếc gương nhỏ trên bàn sáng → Ánh đèn điện thoại hắt nhẹ lúc khuya"
+          }
+        },
+        {
+          "id": "rec5N0ZIKFn9oipuP",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Công sở / Mưu sinh",
+            "TikTok Caption": "Chẳng cần mười điểm, chỉ cần vừa vặn với nhau. 🍵\n\n#tranguoi #congso #tinhyeu #chiemnghiem #doisong",
+            "Kiểu chơi chữ": "4 - Slang công sở",
+            "Hạt nhân gốc": "Tìm chồng cũng giống tuyển dụng nhân sự. Quan trọng là tìm người phù hợp, không phải là tìm người xuất sắc nhất. (VOH Nghề Nghiệp — https://voh.com.vn/song-dep/tha-thinh-theo-nghe-nghiep-540212.html)",
+            "Thời điểm phù hợp": "Noon",
+            "Cặp khóa / Mô-típ": "Tuyển dụng nhân sự ↔ Tìm người phù hợp",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "người phù hợp",
+            "Nội dung Trà Nguội": "Tìm chồng cũng giống tuyển dụng nhân sự.\nQuan trọng là tìm người phù hợp,\nkhông phải là tìm người xuất sắc nhất.",
+            "ID": "W095",
+            "Đạo cụ sân khấu": "Hai chiếc ghế gỗ đặt đối diện vừa vặn bên bàn trà sáng → Chạm điểm lật, ấm trà giữa bàn ánh sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "rec6DVTwkt5J7tYoq",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Công sở / Mưu sinh",
+            "TikTok Caption": "Tan ca bỏ lại KPI, chỉ giữ đường về bên em. 🌙\n\n#tranguoi #congso #thathinh #tinhyeu #doisong",
+            "Kiểu chơi chữ": "4 - Slang công sở",
+            "Hạt nhân gốc": "Ban ngày anh chạy theo những con số, tối về thì chạy theo em. (Chanh Tươi Kế Toán — https://chanhtuoi.com/stt-ve-nghe-ke-toan-p12022.html)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Chạy theo con số ↔ Tối về chạy theo em",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "chạy theo em",
+            "Nội dung Trà Nguội": "Ban ngày anh chạy theo những con số,\ntối về thì chạy theo em.",
+            "ID": "W094",
+            "Đạo cụ sân khấu": "Lữ khách đứng dậy rời bàn làm việc hướng về khung cửa sổ sáng đèn → Chạm điểm lật, ô cửa ấm sắc Đỏ Chu Sa"
           }
         },
         {
@@ -5937,6 +6038,74 @@
           }
         },
         {
+          "id": "rec8i266VHfe7v2QJ",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Công sở / Mưu sinh",
+            "TikTok Caption": "Khoản nào cắt được chứ thương anh thì chịu. 🍵\n\n#tranguoi #thathinh #congso #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "4 - Slang công sở",
+            "Hạt nhân gốc": "Yêu anh là một khoản đầu tư dài hạn, dẫu biết là lỗ nhưng em vẫn không nỡ cắt lỗ. (Duẩn Digi — https://duandigi.com/marketing/brand-messaging/nhung-cau-noi-hay-ve-nghe-ke-toan/)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Đầu tư dài hạn ↔ Biết lỗ chẳng nỡ cắt lỗ",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "không nỡ cắt lỗ",
+            "Nội dung Trà Nguội": "Yêu anh là một khoản đầu tư dài hạn,\ndẫu biết là lỗ,\nnhưng em vẫn không nỡ cắt lỗ.",
+            "ID": "W093",
+            "Đạo cụ sân khấu": "Lữ khách ngồi bên bàn làm việc nhìn cuốn sổ tay mở sẵn → Chạm điểm lật, nhành hoa nhỏ kẹp giữa trang sổ hóa Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "rec988kHuMIq9cAF8",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Công sở / Mưu sinh",
+            "TikTok Caption": "Việc công ty gấp được, chuyện tình cảm đừng treo. 🍵\n\n#tranguoi #thathinh #congso #tinhyeu #doisong",
+            "Kiểu chơi chữ": "4 - Slang công sở",
+            "Hạt nhân gốc": "Cuộc sống đã đủ nhiều deadline, anh đừng biến em thành deadline phải chờ tin nhắn nhé. (Viettel Store — https://viettelstore.vn/tin-tuc/status-tha-thinh-hay)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Đủ nhiều deadline ↔ Đừng biến tin nhắn thành deadline phải chờ",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "deadline phải chờ",
+            "Nội dung Trà Nguội": "Cuộc sống đã đủ nhiều deadline,\nđừng biến tin nhắn của anh thành thêm một deadline phải chờ.",
+            "ID": "W082",
+            "Đạo cụ sân khấu": "Lữ khách ngồi trước bàn làm việc cạnh cuốn lịch chữ A → Chạm điểm lật, tờ lịch trên bàn bừng sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "rec9GfGe60iq09KZE",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Tiêu chuẩn tuyển người thương gói gọn hai vế. 😌\n\n#tranguoi #thathinh #noilai #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Muốn làm chồng chính thống của em thì phải tập chống thính của người khác. (Chanh Tươi Review — https://chanhtuoi.com/nhung-cau-tha-thinh-vui-p6904.html)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Chồng chính thống ↔ Tập chống thính",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "tập chống thính",
+            "Nội dung Trà Nguội": "Muốn làm chồng chính thống của em,\nthì phải tập chống thính của người khác.",
+            "ID": "W081",
+            "Đạo cụ sân khấu": "Lữ khách ngồi thẳng lưng bên bàn trà khẽ xua chiếc lá bay ngang → Chạm điểm lật, chén trà trước mặt bừng sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "rec9rORvjaFOloFw6",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Bấm nhầm một nút, mở đầu cả một chuyện dài. 🍵\n\n#tranguoi #tho4cau #thathinh #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Cố tình “thả tim” nàng chẳng đổ / Vô tình “phẫn nộ” lại nên duyên. (Cỏ Mềm — https://comem.vn/cap-tha-thinh-sang-chanh)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Cố tình thả tim chẳng đổ ↔ Vô tình phẫn nộ lại nên duyên",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "lại nên duyên",
+            "Nội dung Trà Nguội": "Cố tình “thả tim” nàng chẳng đổ,\nVô tình “phẫn nộ” lại nên duyên.",
+            "ID": "W086",
+            "Đạo cụ sân khấu": "Lữ khách ngồi nhìn phong thư nhỏ nằm im trên bàn → Chạm điểm lật, con dấu triện tròn dập xuống hóa sắc Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recAgwbl80oNkqsk1",
           "createdTime": "2026-11-12T07:08:08.000Z",
           "fields": {
@@ -5954,6 +6123,40 @@
           }
         },
         {
+          "id": "recBP817BUnObWKAb",
+          "createdTime": "2026-11-18T08:20:18.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Đọc xong câu hai nhớ nhìn lại hai chữ đầu. 🍵\n\n#tranguoi #thathinh #noilai #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Yêu em, anh chẳng dám cầu đâu / Điều mong muốn sẽ đặt ở đầu câu. (Thơ Đường Luật — https://www.thoduongluat.com/p/top-150-cau-noi-lai-tha-thinh-hai-huoc.html)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Cầu đâu ↔ Đặt ở đầu câu (Yêu em)",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "đặt ở đầu câu",
+            "Nội dung Trà Nguội": "Yêu em, anh chẳng dám cầu đâu,\nĐiều mong muốn sẽ đặt ở đầu câu.",
+            "ID": "W073",
+            "Đạo cụ sân khấu": "Lữ khách ngồi bàn gỗ mở cuốn sổ tay trắng → Chạm điểm lật, phong thư nhỏ trên mặt bàn bừng sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "recCggzQ9684R36Ic",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Công sở / Mưu sinh",
+            "TikTok Caption": "Thức khuya cày việc cũng vì một mái nhà chung. 🌙\n\n#tranguoi #congso #tinhyeu #tamsu #doisong",
+            "Kiểu chơi chữ": "4 - Slang công sở",
+            "Hạt nhân gốc": "Làm cả đêm không ngủ để sau này ngủ cùng nhau (Kenh14 — https://kenh14.vn/muon-kieu-tha-thinh-cuc-tai-tinh-cua-gioi-tre-20201026130410074.chn)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Làm cả đêm không ngủ ↔ Sau này ngủ cùng nhau",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "ngủ cùng nhau",
+            "Nội dung Trà Nguội": "Làm cả đêm không ngủ,\nđể sau này ngủ cùng nhau.",
+            "ID": "W083",
+            "Đạo cụ sân khấu": "Lữ khách ngồi làm việc khuya bên bàn nhỏ, phía xa là khung cửa ngôi nhà ấm → Chạm điểm lật, ô cửa ngôi nhà sáng sắc Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recDKQITIZFt0n6UT",
           "createdTime": "2026-11-12T07:24:36.000Z",
           "fields": {
@@ -5968,6 +6171,74 @@
             "Nội dung Trà Nguội": "Tuổi trẻ chăm chỉ đi làm, hay đùa sau này hai đứa ráng giàu cùng nha.\nĐi qua bao mùa nắng mưa mới hiểu… lời chúc đẹp nhất vẫn là bình yên già cùng nhau.",
             "ID": "W069",
             "Đạo cụ sân khấu": "Hai người trẻ sóng bước buổi sáng → Hóa thành hai mái đầu bạc thong thả thưởng trà bên hiên"
+          }
+        },
+        {
+          "id": "recDNCg8qJltuWpvZ",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Điểm chung lớn nhất của hai đứa mình đấy. 🍵\n\n#tranguoi #thathinh #tinhyeu #haihuoc #doisong",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Anh có yêu bản thân mình không? Nếu có thì mình thật giống nhau, em cũng yêu anh! (CareerViet — https://careerviet.vn/vi/talentcommunity/1000-cap-tha-thinh-stt-tha-thinh-sieu-cute-khien-crush-phai-do-guc.35A5220C.html)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Anh yêu bản thân ↔ Mình giống nhau, em cũng yêu anh",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "em cũng yêu anh",
+            "Nội dung Trà Nguội": "Anh có yêu bản thân mình không?\nNếu có thì mình thật giống nhau,\nem cũng yêu anh.",
+            "ID": "W085",
+            "Đạo cụ sân khấu": "Hai chén trà đặt cách xa trên mặt bàn gỗ → Chạm điểm lật, một chén khẽ dịch lại gần và bừng sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "recDnEjrAaKbzbQ8b",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Hết vốn vần điệu rồi, đành chốt thẳng vậy. 🍵\n\n#tranguoi #thathinh #noilai #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Tặng anh một bài, thơ làm vội. Làm thơ khó quá, thôi làm vợ (BlogAnChoi — https://bloganchoi.com/cau-noi-lai-tha-thinh-hai-huoc/)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Thơ làm vội ↔ Thôi làm vợ",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "thôi làm vợ",
+            "Nội dung Trà Nguội": "Tặng anh một bài thơ làm vội,\nLàm thơ khó quá, thôi làm vợ.",
+            "ID": "W079",
+            "Đạo cụ sân khấu": "Lữ khách ngồi trước bàn gỗ nhìn trang nháp thơ → Chạm điểm lật, ấn triện nhỏ bên góc giấy bừng sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "recEpMPxNsUXlUPWh",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Gặp ít thôi mà lần nào cũng nhớ lâu. 🍵\n\n#tranguoi #thathinh #noilai #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Tuy số lần gặp cậu thưa và ít. Nhưng cứ gặp cậu là tôi thích và ưa. (Cỏ Mềm TikTok — https://comem.vn/stt-tik-tok-tha-thinh)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Thưa và ít ↔ Thích và ưa",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "thích và ưa",
+            "Nội dung Trà Nguội": "Tuy số lần gặp cậu thưa và ít,\nnhưng cứ gặp cậu là tôi thích và ưa.",
+            "ID": "W089",
+            "Đạo cụ sân khấu": "Lữ khách đứng cạnh bàn nhỏ có cuốn lịch chữ A điểm thưa vài trang → Chạm điểm lật, tờ lịch hôm nay bừng sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "recF7Ccsdgi5jDdhn",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Tiền lương dễ giữ hơn giữ khoảng cách với anh. 🍵\n\n#tranguoi #tholucbat #thathinh #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Cầm tiền thì sợ tiêu mau, / Cầm tay anh sợ… giữ lâu ghiền liền. (Điện máy XANH — https://www.dienmayxanh.com/kinh-nghiem-hay/stt-tha-thinh-1588759)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Cầm tiền sợ tiêu mau ↔ Cầm tay sợ giữ lâu ghiền liền",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "giữ lâu ghiền liền",
+            "Nội dung Trà Nguội": "Cầm tiền thì sợ tiêu mau,\nCầm tay anh sợ giữ lâu ghiền liền.",
+            "ID": "W084",
+            "Đạo cụ sân khấu": "Lữ khách đứng nhìn đồng xu nhỏ trên lòng bàn tay → Chạm điểm lật, chiếc lá trà đôi khẽ đáp xuống tay bừng sắc Đỏ Chu Sa"
           }
         },
         {
@@ -6036,6 +6307,40 @@
             "Nội dung Trà Nguội": "Tối qua tăng ca về còn dõng dạc thề sáng mai nộp đơn nghỉ.\nSáng dậy pha ấm trà nhìn lại số dư… lại lặng lẽ đứng ủi phẳng áo sơ mi.",
             "ID": "W027",
             "Đạo cụ sân khấu": "Tờ giấy nháp gấp gọn lại trên bàn → Chiếc áo sơ mi treo thẳng thớm đón nắng sớm"
+          }
+        },
+        {
+          "id": "recHHuGX0Oz5dfklk",
+          "createdTime": "2026-11-18T09:05:17.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Gió đầu mùa lạnh thật, hay tại đứng gần ai đó. 🧣\n\n#tranguoi #muadong #thathinh #tinhyeu #doisong",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Trời lạnh, mình cần một người để đổ lỗi vì đỏ mặt. (Thế Giới Di Động — https://www.thegioididong.com/hoi-dap/stt-mua-dong-1602293)",
+            "Thời điểm phù hợp": "Morning",
+            "Cặp khóa / Mô-típ": "Trời lạnh ↔ Cần người để đổ lỗi vì đỏ mặt",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "vì đỏ mặt",
+            "Nội dung Trà Nguội": "Trời lạnh, mình cần một người\nđể đổ lỗi vì đỏ mặt.",
+            "ID": "W102",
+            "Đạo cụ sân khấu": "Lữ khách đứng giữa làn sương se lạnh bên hiên trà nóng → Chạm điểm lật, làn hơi ấm từ chén trà và chiếc khăn ánh sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "recHLsH2UMiSPZPvD",
+          "createdTime": "2026-11-18T09:05:17.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Quyết định đúng đắn nhất ngày hôm nay đấy. ✨\n\n#tranguoi #choichu #thathinh #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "5 - Đồng âm đa nghĩa",
+            "Hạt nhân gốc": "Anh sẽ không bao giờ thấy trời tối / Bởi vì yêu em là sáng suốt. (VOH Thơ Tình Yêu — https://voh.com.vn/song-dep/tho-tinh-yeu-2-cau-550750.html)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Chẳng thấy trời tối ↔ Yêu em là sáng suốt",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "là sáng suốt",
+            "Nội dung Trà Nguội": "Anh sẽ không bao giờ thấy trời tối,\nBởi vì yêu em là sáng suốt.",
+            "ID": "W099",
+            "Đạo cụ sân khấu": "Lữ khách đứng dưới hiên nhà khi phố lên đèn → Chạm điểm lật, chiếc đèn lồng nhỏ trên cao bừng sáng sắc Đỏ Chu Sa"
           }
         },
         {
@@ -6158,6 +6463,40 @@
           }
         },
         {
+          "id": "recN6e66dwkcqmBLl",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Trà đậm hay nhạt cũng êm khi ngồi đúng người. 🍵\n\n#tranguoi #tholucbat #thathinh #tinhyeu #doisong",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Thanh xuân như một ly trà / Đậm nhạt một tí miễn là có anh (Taimienphi — https://thuthuat.taimienphi.vn/stt-tha-thinh-bang-do-uong-68540n.aspx)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Thanh xuân như ly trà ↔ Đậm nhạt miễn có anh",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "miễn là có anh",
+            "Nội dung Trà Nguội": "Thanh xuân như một ly trà,\nĐậm nhạt một tí miễn là có anh.",
+            "ID": "W097",
+            "Đạo cụ sân khấu": "Ấm trà nghiêng rót làn nước mảnh vào chén nhỏ trên khay gỗ → Chạm điểm lật, dòng trà trong chén hóa Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "recO0c2QRMkIwF41s",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Trà còn đầy chén, thương còn đầy tim. 🍵\n\n#tranguoi #thathinh #noilai #tinhyeu #doisong",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Đừng hỏi em chán chưa, vì tình em chứa chan. (VOH Chơi Chữ — https://voh.com.vn/song-dep/tha-thinh-choi-chu-483087.html)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Chán chưa ↔ Chứa chan",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "chứa chan",
+            "Nội dung Trà Nguội": "Đừng hỏi em chán chưa,\nvì tình em chứa chan.",
+            "ID": "W088",
+            "Đạo cụ sân khấu": "Lữ khách ngồi bên bàn gỗ nghiêng ấm rót trà đầy chén sứ nhỏ → Chạm điểm lật, sắc nước trà trong chén ánh lên Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recOE7hbHyEsmnYoY",
           "createdTime": "2026-11-12T07:08:11.000Z",
           "fields": {
@@ -6243,6 +6582,23 @@
           }
         },
         {
+          "id": "recTpcE6wa4LyTq1i",
+          "createdTime": "2026-11-18T08:33:16.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Bữa sáng ấm bụng rồi, còn chờ ấm lòng thôi. 🍜\n\n#tranguoi #thathinh #noilai #tinhyeu #doisong",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Sáng nay đưa cậu đi ăn phở lòng tái, mong cậu phải lòng tớ (BlogAnChoi — https://bloganchoi.com/cau-noi-lai-tha-thinh-hai-huoc/ & Giải Pháp Web — https://giaiphapweb.vn/nhung-cau-noi-lai-tha-thinh/)",
+            "Thời điểm phù hợp": "Morning",
+            "Cặp khóa / Mô-típ": "Phở lòng tái ↔ Phải lòng tớ",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "phải lòng tớ",
+            "Nội dung Trà Nguội": "Sáng nay đưa cậu đi ăn phở lòng tái,\nmong cậu phải lòng tớ.",
+            "ID": "W080",
+            "Đạo cụ sân khấu": "Lữ khách ngồi trước bàn gỗ cạnh bát phở nóng bốc làn khói mảnh → Chạm điểm lật, chiếc bát nhỏ ánh sắc Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recTt0irfcPuQtZEy",
           "createdTime": "2026-11-12T07:17:58.000Z",
           "fields": {
@@ -6325,6 +6681,23 @@
             "Nội dung Trà Nguội": "Hồi trẻ cứ ngỡ hết thương rồi mới thành người dưng.\nQua vài mùa gió mới hiểu, buồn nhất là thành người dưng khi vẫn còn thương.",
             "ID": "W005",
             "Đạo cụ sân khấu": "Hai chiếc ghế gỗ từng kê sát → Lặng lẽ dịch xa nhau dưới ánh đèn đường đêm"
+          }
+        },
+        {
+          "id": "recWU72gj8IxAU5my",
+          "createdTime": "2026-11-18T08:20:18.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Tỉnh hay say thì lý do vẫn chỉ có một thôi. 🍶\n\n#tranguoi #thathinh #noilai #congso #haihuoc",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Lấy nhớ cậu, làm cớ nhậu. (VOH Online — https://voh.com.vn/song-dep/tha-thinh-choi-chu-483087.html)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Lấy nhớ cậu ↔ Làm cớ nhậu",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "làm cớ nhậu",
+            "Nội dung Trà Nguội": "Lấy nhớ cậu,\nlàm cớ nhậu.",
+            "ID": "W074",
+            "Đạo cụ sân khấu": "Lữ khách ngồi tĩnh tại bên bàn trà thấp dưới hiên tối → Chạm điểm lật, chén nhỏ trên bàn ánh sắc Đỏ Chu Sa"
           }
         },
         {
@@ -6447,6 +6820,23 @@
           }
         },
         {
+          "id": "recbz8OZ90waQt4tU",
+          "createdTime": "2026-11-18T08:20:18.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Người ta thích cưa đổ, mình chỉ thích đi cùng. 🍵\n\n#tranguoi #thathinh #tinhyeu #haihuoc #doisong",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Em không muốn cưa anh đổ, vì nhìn anh ngã em đau. (Thế Giới Di Động — https://www.thegioididong.com/hoi-dap/stt-caption-tha-thinh-1587613)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Không muốn cưa anh đổ ↔ Nhìn anh ngã em đau",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "ngã em đau",
+            "Nội dung Trà Nguội": "Em không muốn cưa anh đổ,\nvì nhìn anh ngã em đau.",
+            "ID": "W078",
+            "Đạo cụ sân khấu": "Lữ khách đứng khẽ nghiêng người trước nhành cây nhỏ trên sân → Chạm điểm lật, chiếc lá trà giữ trên tay hóa Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recdLAQOHlDstIdaX",
           "createdTime": "2026-11-12T07:18:02.000Z",
           "fields": {
@@ -6495,6 +6885,40 @@
             "Nội dung Trà Nguội": "Ngày đi phỏng vấn nghe giới thiệu môi trường ở đây rất công bằng.\nVào làm mới hiểu chữ bằng ấy… là lúc họp bằng mặt mà tan họp chẳng bằng lòng.",
             "ID": "W037",
             "Đạo cụ sân khấu": "Hai chiếc cốc chạm nhẹ xã giao trên bàn họp → Quay lưng bước về hai phía ngược nhau"
+          }
+        },
+        {
+          "id": "recg7a89Nek4zgKAP",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Người thương rồi thì bình thường mấy cũng quý. 🌙\n\n#tranguoi #thathinh #noilai #tinhyeu #tamsu",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Không chê anh quá thường, vì thương anh quá nhiều. (FPT Shop — https://fptshop.com.vn/tin-tuc/for-gamers/cau-noi-lai-hay-198760)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Quá thường ↔ Thương anh quá nhiều",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "thương anh quá nhiều",
+            "Nội dung Trà Nguội": "Không chê anh quá thường,\nvì thương anh quá nhiều.",
+            "ID": "W092",
+            "Đạo cụ sân khấu": "Lữ khách ngồi lặng bên ngọn đèn bàn nhỏ lúc chiều muộn → Chạm điểm lật, quầng sáng đèn bàn ấm lên sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "recgQJlV2FBkOzD4V",
+          "createdTime": "2026-11-18T08:20:18.000Z",
+          "fields": {
+            "Chủ đề": "Công sở / Mưu sinh",
+            "TikTok Caption": "Ban ngày gánh KPI, tối về chỉ cần bình yên. 🍵\n\n#tranguoi #thathinh #congso #tinhyeu #doisong",
+            "Kiểu chơi chữ": "4 - Slang công sở",
+            "Hạt nhân gốc": "Đi làm thì ôm việc, tối về muốn ôm anh. (ZaloPay Blog — https://zalopay.vn/stt-tha-thinh-6494)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Đi làm ôm việc ↔ Tối về muốn ôm anh",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "muốn ôm anh",
+            "Nội dung Trà Nguội": "Đi làm thì ôm việc,\ntối về muốn ôm anh.",
+            "ID": "W075",
+            "Đạo cụ sân khấu": "Lữ khách ngồi hơi cúi mệt mỏi trước bàn làm việc → Chạm điểm lật, ngọn đèn bàn nhỏ bừng sáng sắc Đỏ Chu Sa ấm áp"
           }
         },
         {
@@ -6600,6 +7024,23 @@
           }
         },
         {
+          "id": "reclzYmTcpv6dXRoB",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Trà nguội từ chiều, sao đêm vẫn tỉnh thế này. 🌙\n\n#tranguoi #tho4cau #thathinh #tinhyeu #tamsu",
+            "Kiểu chơi chữ": "3 - Bẻ lái / Phản đạo lý",
+            "Hạt nhân gốc": "Anh mất ngủ không phải do trà / Suy đi nghĩ lại chắc là nhớ em. (VOH Thơ 2 Câu — https://voh.com.vn/song-dep/tho-tha-thinh-2-cau-470724.html)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Mất ngủ không do trà ↔ Chắc là nhớ em",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "chắc là nhớ em",
+            "Nội dung Trà Nguội": "Anh mất ngủ không phải do trà,\nSuy đi nghĩ lại chắc là nhớ em.",
+            "ID": "W096",
+            "Đạo cụ sân khấu": "Lữ khách ngồi bên chén trà nguội khói cạnh khung cửa trăng khuya → Chạm điểm lật, chén trà ánh sắc Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recmOquOQ5LGcaSUO",
           "createdTime": "2026-11-12T07:17:58.000Z",
           "fields": {
@@ -6702,6 +7143,23 @@
           }
         },
         {
+          "id": "recorsDzYO52P2EKj",
+          "createdTime": "2026-11-18T08:20:18.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Có những cái tên cứ về đêm lại hóa bầu trời. 🌙\n\n#tranguoi #thathinh #tinhyeu #tamsu #doisong",
+            "Kiểu chơi chữ": "2 - Đảo vế A-B / B-A",
+            "Hạt nhân gốc": "Ban ngày anh kể em nghe về bầu trời/ Ban đêm anh kể bầu trời nghe về em (Trần Duy Phương / Chữ nghĩa là gì — Kenh14: https://kenh14.vn/gap-tac-gia-cua-loat-cau-tha-thinh-dao-de-duoc-gioi-tre-yeu-thich-20220911092831946.chn)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Kể em nghe về bầu trời ↔ Kể bầu trời nghe về em",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "nghe về em",
+            "Nội dung Trà Nguội": "Ban ngày anh kể em nghe về bầu trời,\nBan đêm anh kể bầu trời nghe về em.",
+            "ID": "W077",
+            "Đạo cụ sân khấu": "Lữ khách ngồi bên khung cửa sổ ngắm trời đêm → Chạm điểm lật, ánh trăng bên song cửa nhuộm sắc Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recphzhbnt8fEJzNZ",
           "createdTime": "2026-11-12T07:13:51.000Z",
           "fields": {
@@ -6733,6 +7191,23 @@
             "Nội dung Trà Nguội": "Giữa trưa hè cúp điện, người ta thở dài kêu một tiếng mất mát.\nCòn tôi ngồi bên hiên gió thổi lồng lộng… vắng một bóng người vẫn thấy mất mát như thường.",
             "ID": "W035",
             "Đạo cụ sân khấu": "Chiếc quạt giấy phe phẩy bên hiên gió → Chiếc ghế mây bỏ trống phía đối diện"
+          }
+        },
+        {
+          "id": "recqeiQc41zkQeHKI",
+          "createdTime": "2026-11-18T09:05:13.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Gom hết vốn liếng về chung một nhà. 🍵\n\n#tranguoi #thathinh #noilai #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "1 - Nói lái / Đảo âm",
+            "Hạt nhân gốc": "Anh bán hết đám cá tươi để làm đám cưới ta (Bách hóa XANH — https://www.bachhoaxanh.com/kinh-nghiem-hay/tong-hop-nhung-cau-noi-lai-tha-thinh-hai-huoc-ba-dao-6592763)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Đám cá tươi ↔ Đám cưới ta",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "đám cưới ta",
+            "Nội dung Trà Nguội": "Anh bán hết đám cá tươi,\nđể làm đám cưới ta.",
+            "ID": "W091",
+            "Đạo cụ sân khấu": "Hai chén trà đặt song đôi trên mặt bàn gỗ mộc → Chạm điểm lật, nhành hoa nhỏ giữa hai chén bừng sắc Đỏ Chu Sa"
           }
         },
         {
@@ -6801,6 +7276,23 @@
             "Nội dung Trà Nguội": "Tách cà phê đắng quá thì chỉ cần thêm một muỗng đường là dịu.\nChỉ có đoạn đường tan tầm đi một mình dưới mưa… chẳng biết pha thêm gì cho bớt xa.",
             "ID": "W040",
             "Đạo cụ sân khấu": "Muỗng đường nhỏ khuấy tan trong tách → Hóa thành con đường dài hun hút dưới hiên mưa đêm"
+          }
+        },
+        {
+          "id": "recti9YvbWbXYReuA",
+          "createdTime": "2026-11-18T08:20:18.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Cà phê đắng được, chuyện tình cảm thì đừng. ☕\n\n#tranguoi #thathinh #congso #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "5 - Đồng âm đa nghĩa",
+            "Hạt nhân gốc": "Cho em order một đen đá không đường / Và… một người yêu thương không đá em. (VOH Sống Đẹp — https://voh.com.vn/song-dep/tho-tha-thinh-2-cau-470724.html)",
+            "Thời điểm phù hợp": "Morning",
+            "Cặp khóa / Mô-típ": "Đen đá không đường ↔ Yêu thương không đá em",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "không đá em",
+            "Nội dung Trà Nguội": "Cho em gọi một ly đen đá không đường,\nVà một người yêu thương không đá em.",
+            "ID": "W076",
+            "Đạo cụ sân khấu": "Lữ khách ngồi bên bàn nhỏ nâng ly cà phê sáng → Chạm điểm lật, chiếc ly trên mặt bàn chuyển sắc Đỏ Chu Sa"
           }
         },
         {
@@ -6906,6 +7398,23 @@
           }
         },
         {
+          "id": "recvHF91DSyzwQWSU",
+          "createdTime": "2026-11-18T09:05:17.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Trót phải lòng rồi, tìm đâu ra thuốc giải nữa. 🍵\n\n#tranguoi #choichu #thathinh #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "5 - Đồng âm đa nghĩa",
+            "Hạt nhân gốc": "Tìm đâu ra thuốc giải? / Khi tình yêu em là độc nhất. (Vietcetera — https://vietcetera.com/vn/5-trend-choi-chu-pha-dao-moi-nghia)",
+            "Thời điểm phù hợp": "Night",
+            "Cặp khóa / Mô-típ": "Tìm thuốc giải ↔ Tình yêu độc nhất",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "là độc nhất",
+            "Nội dung Trà Nguội": "Tìm đâu ra thuốc giải?\nKhi tình yêu em là độc nhất.",
+            "ID": "W098",
+            "Đạo cụ sân khấu": "Chiếc bình gốm nhỏ đặt đơn độc trên mặt bàn tối giản → Chạm điểm lật, đóa hoa một cành trong bình bừng sắc Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "recvsCY86N2uxSwYD",
           "createdTime": "2026-11-12T07:24:31.000Z",
           "fields": {
@@ -6991,6 +7500,40 @@
           }
         },
         {
+          "id": "reczBdxC7B1Saybig",
+          "createdTime": "2026-11-18T09:05:17.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Phép tính nào cũng rối, trừ nết hiền của anh. 🍵\n\n#tranguoi #choichu #thathinh #tinhyeu #doisong",
+            "Kiểu chơi chữ": "5 - Đồng âm đa nghĩa",
+            "Hạt nhân gốc": "Em không giỏi học Toán, nhưng biết tính anh rất hiền. (AVAKids — https://www.avakids.com/me-va-be/caption-stt-tha-thinh-chat-phat-ngat-dang-la-dinh-1591870)",
+            "Thời điểm phù hợp": "Morning",
+            "Cặp khóa / Mô-típ": "Không giỏi học Toán ↔ Biết tính anh rất hiền",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "tính anh rất hiền",
+            "Nội dung Trà Nguội": "Em không giỏi học Toán,\nnhưng biết tính anh rất hiền.",
+            "ID": "W101",
+            "Đạo cụ sân khấu": "Lữ khách khép cuốn sổ nhỏ bên tách trà buổi sớm → Chạm điểm lật, chén trà trước mặt ánh lên sắc Đỏ Chu Sa"
+          }
+        },
+        {
+          "id": "reczLjgVQXTMa8pdK",
+          "createdTime": "2026-11-18T09:05:17.000Z",
+          "fields": {
+            "Chủ đề": "Tình yêu",
+            "TikTok Caption": "Mượn cớ ghé tiệm, chứ thứ muốn giữ là tay anh. 🍵\n\n#tranguoi #tholucbat #thathinh #tinhyeu #haihuoc",
+            "Kiểu chơi chữ": "5 - Đồng âm đa nghĩa",
+            "Hạt nhân gốc": "Giá anh mở tiệm cầm đồ - Để em đây đến giả vờ cầm tay (Chanh Tươi Review — https://chanhtuoi.com/nhung-cau-tha-thinh-vui-p6904.html)",
+            "Thời điểm phù hợp": "Anytime",
+            "Cặp khóa / Mô-típ": "Mở tiệm cầm đồ ↔ Giả vờ cầm tay",
+            "Trạng thái dùng": "Sẵn sàng dùng",
+            "Pivot Word (Đỏ Chu Sa)": "giả vờ cầm tay",
+            "Nội dung Trà Nguội": "Giá anh mở tiệm cầm đồ,\nĐể em đây đến giả vờ cầm tay.",
+            "ID": "W100",
+            "Đạo cụ sân khấu": "Lữ khách dừng bước dưới mái hiên quán nhỏ, chìa bàn tay hứng chiếc lá rơi → Chạm điểm lật, chiếc lá trên tay hóa Đỏ Chu Sa"
+          }
+        },
+        {
           "id": "reczmZzLrQbeNqUkM",
           "createdTime": "2026-11-12T07:13:47.000Z",
           "fields": {
@@ -7025,7 +7568,7 @@
           }
         }
       ],
-      "recordCount": 72
+      "recordCount": 102
     },
     {
       "id": "tblUvm81GfyOYZ4jH",
@@ -7276,6 +7819,20 @@
           }
         },
         {
+          "id": "rec9rMtHlRWOBnELo",
+          "createdTime": "2026-11-18T12:28:33.000Z",
+          "fields": {
+            "Khung giờ hợp": "🌤️ Trưa–Chiều",
+            "Bình luận mồi": "Góc đối chữ Quán Trà: đố cả nhà tìm được cặp nói lái hoặc đảo vế đối lại chữ «chẳng được» vừa sạch vừa duyên — câu đắt nhất tuần này quán xin phép vẽ tặng thành Chén mới nhé 🍵",
+            "Tên file MP4": "Chén 18 - Đường lui.mp4 · 🍵 Foley -14 LUFS",
+            "Mood": "Tự trào",
+            "Lời dẫn trong video": "Việc khó anh tính nhanh,\nChưa từng sai một bước.\nChỉ chạm mắt em thôi,\nTính đường lui... chẳng được.\n\n[Nhấn đỏ: chẳng được]",
+            "Trạng thái": "🎬 Đã xuất MP4",
+            "Caption & Hashtag": "Đôi dòng ngẫm về \"đường lui\" cho những ngày muốn sống chậm lại một nhịp.\nCâu chữ nào hôm nay chạm đúng tâm trạng của bạn nhất?\n\n#tranguoi #duonglui #chiemnghiem #thohay #chualanh",
+            "Mã Chén": "Chén 18 — Đường lui"
+          }
+        },
+        {
           "id": "recD3k3zHjBWZ7Yk2",
           "createdTime": "2026-11-12T13:04:38.000Z",
           "fields": {
@@ -7388,6 +7945,20 @@
           }
         },
         {
+          "id": "rech4BcjYvhR514Om",
+          "createdTime": "2026-11-19T09:13:31.000Z",
+          "fields": {
+            "Khung giờ hợp": "🌤️ Trưa–Chiều",
+            "Bình luận mồi": "Pha xong chữ «cũng là bản lĩnh» đặt ở góc bàn — sáng giờ của bạn đang thong thả hay tất bật, ghé ngồi thở chậm với quán một nhịp nhé 🍵",
+            "Tên file MP4": "(Đang nháp) Chén 20 - Dừng lại cũng là bản lĩnh.mp4 · 🎯 Pivot Accent",
+            "Mood": "Nhẹ nhàng",
+            "Lời dẫn trong video": "Va vấp đủ rồi, thôi chứng minh,\nĐàn ông đâu mãi phải gồng mình.\nNhững ngày tự biết vai đã mỏi.\nDám dừng lại, cũng là bản lĩnh.\n\n[Nhấn đỏ: cũng là bản lĩnh]",
+            "Trạng thái": "🎬 Đã xuất MP4",
+            "Caption & Hashtag": "Những ngày trưởng thành mỏi vai, cứ ngồi nghỉ uống ngụm trà rồi mai tính tiếp.\nHôm nay của bạn có vất vả lắm không?\n\n#tranguoi #truongthanh #chualanh #suyngam #trichdan",
+            "Mã Chén": "Chén 20 — Dừng lại cũng là bản lĩnh"
+          }
+        },
+        {
           "id": "recjTYVr2zOKh5gv6",
           "createdTime": "2026-11-12T13:04:38.000Z",
           "fields": {
@@ -7413,6 +7984,20 @@
             "Trạng thái": "🎬 Đã xuất MP4",
             "Caption & Hashtag": "Việc quan trọng nhất trong mọi cuộc họp giao ban lúc 9h sáng.\nTrưa nay phòng bạn đã chốt được thực đơn chưa?\n\n#tranguoi #tho4cau #tholucbat #congso #haihuoc",
             "Mã Chén": "Chén 13 — Biên bản sáng thứ Hai"
+          }
+        },
+        {
+          "id": "recm20nGkPSPx8xTp",
+          "createdTime": "2026-11-19T00:52:21.000Z",
+          "fields": {
+            "Khung giờ hợp": "🌤️ Trưa–Chiều",
+            "Bình luận mồi": "Pha xong chữ «điều kỳ diệu» đặt ở góc bàn — sáng giờ của bạn đang thong thả hay tất bật, ghé ngồi thở chậm với quán một nhịp nhé 🍵",
+            "Tên file MP4": "Chén 19 - Điều kỳ diệu.mp4 · 🎯 Pivot Accent",
+            "Mood": "Nhẹ nhàng",
+            "Lời dẫn trong video": "Chỉ có hai cách để sống\nmột cuộc đời:\nMột là chẳng có gì là kỳ diệu.\nHai là xem mọi thứ\nđều là điều kỳ diệu.\n\n[Nhấn đỏ: điều kỳ diệu]",
+            "Trạng thái": "🎬 Đã xuất MP4",
+            "Caption & Hashtag": "Đôi dòng ngẫm về \"điều kỳ diệu\" cho những ngày muốn sống chậm lại một nhịp.\nCâu chữ nào hôm nay chạm đúng tâm trạng của bạn nhất?\n\n#tranguoi #dieukydieu #chiemnghiem #thohay #chualanh",
+            "Mã Chén": "Chén 19 — Điều kỳ diệu"
           }
         },
         {
@@ -7458,7 +8043,7 @@
           }
         }
       ],
-      "recordCount": 17
+      "recordCount": 20
     },
     {
       "id": "tblh6mY4AwQbryx1J",

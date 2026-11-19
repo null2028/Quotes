@@ -4,17 +4,393 @@
   "status": "completed",
   "progress": 100,
   "captionText": "Đôi dòng ngẫm về \"điều kỳ diệu\" cho những ngày muốn sống chậm lại một nhịp.\nCâu chữ nào hôm nay chạm đúng tâm trạng của bạn nhất?\n\n#tranguoi #dieukydieu #chiemnghiem #thohay #chualanh",
+  "goiChenGoc": {
+    "phien_ban_goi": 1,
+    "tieu_de": "Một ấm trà",
+    "cau": [
+      "Chỉ có hai cách để sống một cuộc đời:",
+      "Một là chẳng có gì là kỳ diệu.",
+      "Hai là xem mọi thứ đều là điều kỳ diệu."
+    ],
+    "cu_lat": "điều kỳ diệu",
+    "kieu_cu_lat": "day_may",
+    "boi_canh": {
+      "bo": "hien_tra",
+      "dia_hinh": "phang"
+    },
+    "nhan_vat": [
+      {
+        "id": "hero",
+        "vai": "lu_khach",
+        "ngoi_tren": "don_a.mat_ghe",
+        "huong": "phai",
+        "tu_the": "ngoi_tua",
+        "nghieng": "thang",
+        "cam_chen_tra": true
+      },
+      {
+        "id": "nguoi_kia",
+        "vai": "nguoi_b",
+        "ngoi_tren": "don_b.mat_ghe",
+        "huong": "trai",
+        "tu_the": "ngoi_tua",
+        "nghieng": "thang",
+        "cam_chen_tra": true
+      }
+    ],
+    "dao_cu": [
+      {
+        "id": "don_a",
+        "type": "low_wood_stool",
+        "loai_neo": "dat",
+        "vi_tri": "trai",
+        "lop": "giua"
+      },
+      {
+        "id": "am",
+        "type": "am_tra",
+        "loai_neo": "dat",
+        "vi_tri": "giua",
+        "lop": "giua",
+        "vat_do": true
+      },
+      {
+        "id": "don_b",
+        "type": "low_wood_stool",
+        "loai_neo": "dat",
+        "vi_tri": "phai",
+        "lop": "giua"
+      }
+    ],
+    "nhip": [
+      {
+        "moc": "bat_dau",
+        "nhan_vat": {
+          "hero": {
+            "tu_the": "ngoi_tua",
+            "nghieng": "thang",
+            "cam_chen_tra": true
+          },
+          "nguoi_kia": {
+            "tu_the": "ngoi_tua",
+            "nghieng": "thang",
+            "cam_chen_tra": true
+          }
+        }
+      },
+      {
+        "moc": "dong_2",
+        "nhan_vat": {
+          "nguoi_kia": {
+            "nghieng": "guc"
+          }
+        }
+      },
+      {
+        "moc": "cu_lat",
+        "sau": 0.5,
+        "nhan_vat": {
+          "hero": {
+            "nghieng": "nhe_truoc",
+            "nhin_theo": "am"
+          }
+        }
+      },
+      {
+        "moc": "cu_lat",
+        "sau": 2.6,
+        "nhan_vat": {
+          "nguoi_kia": {
+            "nghieng": "thang",
+            "nhin_theo": "am"
+          }
+        }
+      }
+    ]
+  },
+  "scriptGoc": {
+    "sceneId": "SCRIPT_TANG_DA_HOA_DAI_KY_DIEU",
+    "name": "Tảng đá ven đường & bông hoa dại kỳ diệu",
+    "description": "Người qua đường bước lướt ngang tảng đá ven lối không ngoái lại; Lữ khách cúi đầu đi chậm phía sau, dừng chân trước tảng đá đúng lúc nhành hoa dại Đỏ Chu Sa từ từ bung nở từ khe đá.",
+    "act1": "Đường phẳng tối giản hiện dần tảng đá góc cạnh ven lối; bóng người qua đường mờ nhạt bước lướt qua tảng đá rồi khuất dần sát cú lật, còn Lữ khách hiện nét êm rồi cúi đầu bước rất chậm từ trái tới.",
+    "act2AtPivot": "Chạm cụm 'điều kỳ diệu', từ khe nứt trên đỉnh tảng đá, một nhành hoa dại Đỏ Chu Sa từ từ vẽ nét bung nở; Lữ khách chậm rãi dừng bước đứng thẳng lại.",
+    "act3Afterimage": "Lữ khách khẽ cúi mình lặng ngắm bông hoa dại Đỏ Chu Sa đung đưa nhẹ trên khe đá đến tận khung cuối.",
+    "redProp": "Nhành hoa dại 4 cánh Đỏ Chu Sa mọc từ khe tảng đá ven đường",
+    "tags": [
+      "tu_do",
+      "chiem_nghiem",
+      "dieu_ky_dieu",
+      "hoa_dai"
+    ],
+    "che_do": "tu_do",
+    "terrain": {
+      "type": "flat",
+      "y": 352,
+      "startX": 110,
+      "endX": 430
+    },
+    "actors": [
+      {
+        "id": "hero",
+        "x": 224,
+        "scale": 1.35,
+        "facing": "right",
+        "pose": "stand",
+        "leanDeg": 6,
+        "opacity": 1,
+        "colorRole": "ink",
+        "focusRole": "hero",
+        "layer": "mid",
+        "semanticLayer": "giua",
+        "enterAt": "start+0.8s",
+        "fadeDuration": 1.6
+      },
+      {
+        "id": "nguoi_qua",
+        "x": 382,
+        "scale": 1.18,
+        "facing": "left",
+        "pose": "walk",
+        "leanDeg": 10,
+        "opacity": 0.26,
+        "colorRole": "secondary",
+        "focusRole": "ambient",
+        "layer": "far",
+        "semanticLayer": "nen",
+        "enterAt": "start+0.6s",
+        "leaveAt": "pivot-0.4s",
+        "fadeDuration": 2
+      }
+    ],
+    "props": [
+      {
+        "id": "tang_da",
+        "type": "tang_da_ven_duong",
+        "x": 336,
+        "y": 0,
+        "anchorType": "ground",
+        "layer": "mid",
+        "semanticLayer": "giua",
+        "scale": 1.2,
+        "opacity": 0.94,
+        "colorRole": "ink",
+        "focusRole": "support",
+        "drawProgress": 0,
+        "idle": "none",
+        "shapes": [
+          {
+            "d": "M -22 0 L -23 -6 L -16 -12.5 L -7 -16 L -0.5 -14.5 L 4 -16.5 L 13 -13.5 L 20 -7.5 L 22 0 Z",
+            "fill": "bg",
+            "fillOpacity": 0.14,
+            "role": "ink",
+            "strokeScale": 0.95
+          },
+          {
+            "d": "M -22 0 L -23 -6 L -16 -12.5 L -7 -16 L -10 -8.5 L -13 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.15,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M 8 -7 L 13 -13.5 L 20 -7.5 L 22 0 L 11 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.08,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -7 -16 L -10 -8.5 L -13 0 M -10 -8.5 L 2 -6.5 L 13 -13.5 M 2 -6.5 L 7 0",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.62,
+            "opacity": 0.72
+          },
+          {
+            "d": "M -0.5 -14.5 L 1.2 -10.2 L -0.8 -6.5",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.6,
+            "opacity": 0.78
+          },
+          {
+            "d": "M 19 0 L 20.5 -4.5 L 25.5 -5.2 L 28 -2.2 L 27 0 Z",
+            "fill": "bg",
+            "fillOpacity": 0.16,
+            "role": "ink",
+            "strokeScale": 0.78
+          },
+          {
+            "d": "M 19 0 L 20.5 -4.5 L 23.2 -4.8 L 22.5 0 Z",
+            "fill": "ink",
+            "fillOpacity": 0.12,
+            "role": "ink",
+            "strokeScale": 0
+          },
+          {
+            "d": "M -24 0 L 29 0",
+            "fill": "none",
+            "role": "ink",
+            "strokeScale": 0.85
+          }
+        ],
+        "saveAs": "tang_da_ven_duong"
+      },
+      {
+        "id": "hoa_dai",
+        "type": "hoa_dai_khe_da",
+        "x": 336,
+        "y": -18,
+        "anchorType": "ground",
+        "layer": "fore",
+        "semanticLayer": "truoc",
+        "scale": 1.35,
+        "opacity": 1,
+        "colorRole": "accent",
+        "focusRole": "hero",
+        "drawProgress": 0,
+        "idle": {
+          "type": "sway",
+          "speed": 0.35,
+          "amplitude": 0.3
+        },
+        "shapes": [
+          {
+            "d": "M 0 0 C -1.5 -7 2.2 -14 1.2 -21",
+            "fill": "none",
+            "role": "accent",
+            "strokeScale": 1.05
+          },
+          {
+            "d": "M -0.4 -9.5 C -4.8 -12.5 -10.5 -11.8 -11.8 -8.2 C -7.6 -6.6 -3.5 -7.2 -0.4 -9.5 Z",
+            "fill": "accent",
+            "fillOpacity": 0.88,
+            "role": "accent",
+            "strokeScale": 0.45
+          },
+          {
+            "d": "M 1.2 -12.8 C 5.8 -15.8 11.2 -15.0 12.4 -11.4 C 8.2 -9.8 4.2 -10.5 1.2 -12.8 Z",
+            "fill": "accent",
+            "fillOpacity": 0.88,
+            "role": "accent",
+            "strokeScale": 0.45
+          },
+          {
+            "d": "M 1.2 -22.2 C -3.8 -28.5 -11.2 -29.5 -10.2 -22.5 C -9.2 -18.5 -3.5 -19.0 1.2 -22.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.92,
+            "role": "accent",
+            "strokeScale": 0.45
+          },
+          {
+            "d": "M 1.2 -22.2 C 6.2 -28.8 13.4 -28.2 12.2 -21.5 C 11.0 -17.6 5.6 -18.8 1.2 -22.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.92,
+            "role": "accent",
+            "strokeScale": 0.45
+          },
+          {
+            "d": "M 1.2 -22.2 C -3.2 -31.8 5.6 -34.2 6.8 -28.2 C 7.4 -24.8 4.4 -23.0 1.2 -22.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.9,
+            "role": "accent",
+            "strokeScale": 0.45
+          },
+          {
+            "d": "M 1.2 -22.2 C -5.5 -19.2 -7.2 -14.2 -2.2 -14.0 C 1.8 -13.8 3.2 -17.8 1.2 -22.2 Z",
+            "fill": "accent",
+            "fillOpacity": 0.86,
+            "role": "accent",
+            "strokeScale": 0.45
+          },
+          {
+            "circle": [
+              1.2,
+              -22.2,
+              2.1
+            ],
+            "fill": "bg",
+            "fillOpacity": 0.92,
+            "role": "accent",
+            "strokeScale": 0.65
+          }
+        ],
+        "saveAs": "hoa_dai_khe_da"
+      }
+    ],
+    "camera": {
+      "zoom": 1,
+      "panX": 0,
+      "panY": 0
+    },
+    "timeline": [
+      {
+        "at": "start+0.6s",
+        "duration": 2.8,
+        "target": "tang_da",
+        "drawProgress": 1
+      },
+      {
+        "at": "start+0.8s",
+        "duration": 7.4,
+        "target": "nguoi_qua",
+        "toX": 162
+      },
+      {
+        "at": "start+1.8s",
+        "duration": 5,
+        "target": "hero",
+        "toX": 282,
+        "leanDeg": 10
+      },
+      {
+        "at": "pivot+0.25s",
+        "duration": 3,
+        "exactDuration": true,
+        "target": "hoa_dai",
+        "drawProgress": 1
+      },
+      {
+        "at": "pivot+0.65s",
+        "duration": 1.8,
+        "exactDuration": true,
+        "target": "hero",
+        "pose": "stand",
+        "leanDeg": 0
+      },
+      {
+        "at": "pivot+2.6s",
+        "duration": 2.4,
+        "exactDuration": true,
+        "target": "hero",
+        "pose": "stand",
+        "leanDeg": 9,
+        "lookAtTarget": "hoa_dai"
+      },
+      {
+        "at": "pivot+0.8s",
+        "duration": 5.2,
+        "target": "camera",
+        "zoom": 1.12,
+        "panX": 16,
+        "panY": 4
+      }
+    ]
+  },
   "props": {
     "id": "quote-019",
     "textFormat": "POEM",
     "title": "Điều kỳ diệu",
     "author": "",
     "publishSlot": "Anytime",
-    "fontSizeScale": 0.84,
+    "publishMood": "Nhẹ nhàng",
+    "fontSizeScale": 1,
     "segments": [
-      "Chỉ có hai cách để sống một cuộc đời:",
+      "Chỉ có hai cách để sống ",
+      "một cuộc đời:",
       "Một là chẳng có gì là kỳ diệu.",
-      "Hai là xem mọi thứ đều là điều kỳ diệu."
+      "Hai là xem mọi thứ ",
+      "đều là điều kỳ diệu."
     ],
     "pivotWord": "điều kỳ diệu",
     "highlightStyle": "BOTH",
@@ -30,13 +406,13 @@
       "strokeScale": 1
     },
     "motion": {
-      "sceneId": "SCRIPT_C19_NET_DAT_NAY_MAM",
-      "archetype": "SCRIPT_C19_NET_DAT_NAY_MAM",
-      "pacingMode": "WRY_BATHOS",
+      "sceneId": "SCRIPT_TANG_DA_HOA_DAI_KY_DIEU",
+      "archetype": "SCRIPT_TANG_DA_HOA_DAI_KY_DIEU",
+      "pacingMode": "CONTEMPLATIVE",
       "stateA": {
-        "intensity": 0.78,
-        "spread": 0.22,
-        "tiltDeg": -12
+        "intensity": 0.85,
+        "spread": 0.25,
+        "tiltDeg": -14
       },
       "stateB": {
         "intensity": 0.08,
@@ -45,10 +421,10 @@
       }
     },
     "bgm": {
-      "audioMode": "FOLEY_MASTER",
+      "audioMode": "PIVOT_ACCENT",
       "foleyPivotStyle": "AUTO"
     },
     "brandText": "TRÀ NGUỘI"
   },
-  "videoUrl": "/output/quote-019/Ch%C3%A9n%2019%20-%20%C4%90i%E1%BB%81u%20k%E1%BB%B3%20di%E1%BB%87u.mp4?v=1795061655401"
+  "videoUrl": "/output/quote-019/Ch%C3%A9n%2019%20-%20%C4%90i%E1%BB%81u%20k%E1%BB%B3%20di%E1%BB%87u.mp4?v=1795078296258"
 }

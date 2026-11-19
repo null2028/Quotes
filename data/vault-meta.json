@@ -1,5 +1,130 @@
 [
   {
+    "sceneId": "SCRIPT_DUNG_LAI_BAN_LINH_AM_TRA",
+    "name": "Đẩy khối đá lên dốc & tựa lưng uống trà đón chiều đỏ",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đường dốc hiện ra cùng khối đá tảng và Lữ khách; cả người và khối đá tiến lên đều đặn chậm rãi một quãng dài dọc con dốc suốt ba dòng đầu.",
+    "act2AtPivot": "Chạm 'cũng là bản lĩnh', khối đá dừng lại vững chãi; sau một nhịp lắng, Lữ khách từ tốn buông tay quay mặt sang trái ngồi tựa lưng vào sườn đá nâng chén trà nhỏ, còn vầng mặt trời chiều Đỏ Chu Sa thanh gọn hiện dần ở góc trời bên trái.",
+    "act3Afterimage": "Lữ khách ngồi tựa lưng tĩnh tại vào chính khối đá mình vừa dừng đẩy, nhấp trà ngắm vầng mặt trời chiều Đỏ Chu Sa nhỏ ấm đến tận khung cuối.",
+    "redProp": "Vầng mặt trời chiều Đỏ Chu Sa nhỏ gọn ở góc trời bên trái",
+    "tags": [
+      "tu_do",
+      "chiem_nghiem",
+      "dan_ong",
+      "ban_linh"
+    ],
+    "usageCount": 3
+  },
+  {
+    "sceneId": "SCRIPT_C19_NET_DAT_NAY_MAM",
+    "name": "Nét đất nảy mầm",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Lữ khách cúi đầu đi dọc một nét đất trơn, chẳng có gì",
+    "act2AtPivot": "Ở 'điều kỳ diệu', chính nét đất trước chân anh vươn lên thành mầm đỏ",
+    "act3Afterimage": "Anh dừng, ngẩng lên rồi cúi nhìn mầm; mầm khẽ đung đưa",
+    "redProp": "Mầm cây đỏ mọc từ nét đất",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_TANG_DA_HOA_DAI_KY_DIEU",
+    "name": "Tảng đá ven đường & bông hoa dại kỳ diệu",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Đường phẳng tối giản hiện dần tảng đá góc cạnh ven lối; bóng người qua đường mờ nhạt bước lướt qua tảng đá rồi khuất dần sát cú lật, còn Lữ khách hiện nét êm rồi cúi đầu bước rất chậm từ trái tới.",
+    "act2AtPivot": "Chạm cụm 'điều kỳ diệu', từ khe nứt trên đỉnh tảng đá, một nhành hoa dại Đỏ Chu Sa từ từ vẽ nét bung nở; Lữ khách chậm rãi dừng bước đứng thẳng lại.",
+    "act3Afterimage": "Lữ khách khẽ cúi mình lặng ngắm bông hoa dại Đỏ Chu Sa đung đưa nhẹ trên khe đá đến tận khung cuối.",
+    "redProp": "Nhành hoa dại 4 cánh Đỏ Chu Sa mọc từ khe tảng đá ven đường",
+    "tags": [
+      "tu_do",
+      "chiem_nghiem",
+      "dieu_ky_dieu",
+      "hoa_dai"
+    ],
+    "usageCount": 2
+  },
+  {
+    "sceneId": "SCRIPT_GOICHEN_M_T_M_TR",
+    "name": "Một ấm trà",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản sân khấu khai báo JSON (V7.0 StageScript)",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "semantic_v1",
+      "kieu_cu_lat:day_may",
+      "boi_canh_bo:hien_tra"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_GOICHEN_M_A",
+    "name": "Mưa",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản sân khấu khai báo JSON (V7.0 StageScript)",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "semantic_v1",
+      "kieu_cu_lat:day_may",
+      "boi_canh_bo:pho_ngo"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_GOICHEN_NG_LUI",
+    "name": "Kịch Bản Sân Khấu Mới",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản JSON khai báo V7.0",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_GOICHEN_Q096",
+    "name": "Kịch Bản Sân Khấu Mới",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản JSON khai báo V7.0",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "script",
+      "v7"
+    ],
+    "usageCount": 1
+  },
+  {
+    "sceneId": "SCRIPT_GOICHEN_I_U_K_DI_U",
+    "name": "Điều kỳ diệu",
+    "category": "TRAVELER",
+    "origin": "script",
+    "act1": "Kịch bản sân khấu khai báo JSON (V7.0 StageScript)",
+    "act2AtPivot": "Chuyển hóa mượt tại điểm bẻ lái pivotWord",
+    "act3Afterimage": "Dư âm tĩnh lặng đến cuối video",
+    "redProp": "Đạo cụ điểm nhấn Đỏ Gạch (#CE472E)",
+    "tags": [
+      "semantic_v1"
+    ],
+    "usageCount": 2
+  },
+  {
     "sceneId": "SCRIPT_DE_SANG_MAI",
     "name": "Chén 16: Khóa Ví Để Sang Mai (Tối Giản 1 Ví Trên Bàn)",
     "category": "TRAVELER",

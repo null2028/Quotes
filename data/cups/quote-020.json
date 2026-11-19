@@ -1,0 +1,242 @@
+{
+  "id": "quote-020",
+  "cupNumber": "20",
+  "status": "draft",
+  "progress": 0,
+  "seoFileName": "chen-20-dung-lai-cung-la-nhe-nhang-tra-nguoi.mp4",
+  "captionText": "Những ngày trưởng thành mỏi vai, cứ ngồi nghỉ uống ngụm trà rồi mai tính tiếp.\nHôm nay của bạn có vất vả lắm không?\n\n#tranguoi #truongthanh #chualanh #suyngam #trichdan",
+  "scriptGoc": {
+    "title": "Dừng lại cũng là bản lĩnh",
+    "textFormat": "POEM",
+    "fontSizeScale": 0.9,
+    "segments": [
+      "Va vấp đủ rồi, thôi chứng minh,",
+      "Đàn ông đâu mãi phải gồng mình.",
+      "Những ngày tự biết vai đã mỏi.",
+      "Dám dừng lại, cũng là bản lĩnh."
+    ],
+    "pivotWord": "cũng là bản lĩnh",
+    "stageScript": {
+      "sceneId": "SCRIPT_DUNG_LAI_BAN_LINH_AM_TRA",
+      "name": "Đẩy khối đá lên dốc & tựa lưng uống trà đón chiều đỏ",
+      "description": "Lữ khách gồng lưng dùng hai tay đẩy đều đặn khối đá tảng góc cạnh dọc con dốc nghiêng; chạm cú lật 'cũng là bản lĩnh', anh dừng tay quay lưng ngồi tựa ngay vào chính khối đá đó nhấp chén trà nhỏ dưới vầng mặt trời chiều Đỏ Chu Sa thanh gọn.",
+      "act1": "Đường dốc hiện ra cùng khối đá tảng và Lữ khách; cả người và khối đá tiến lên đều đặn chậm rãi một quãng dài dọc con dốc suốt ba dòng đầu.",
+      "act2AtPivot": "Chạm 'cũng là bản lĩnh', khối đá dừng lại vững chãi; sau một nhịp lắng, Lữ khách từ tốn buông tay quay mặt sang trái ngồi tựa lưng vào sườn đá nâng chén trà nhỏ, còn vầng mặt trời chiều Đỏ Chu Sa thanh gọn hiện dần ở góc trời bên trái.",
+      "act3Afterimage": "Lữ khách ngồi tựa lưng tĩnh tại vào chính khối đá mình vừa dừng đẩy, nhấp trà ngắm vầng mặt trời chiều Đỏ Chu Sa nhỏ ấm đến tận khung cuối.",
+      "redProp": "Vầng mặt trời chiều Đỏ Chu Sa nhỏ gọn ở góc trời bên trái",
+      "tags": [
+        "tu_do",
+        "chiem_nghiem",
+        "dan_ong",
+        "ban_linh"
+      ],
+      "che_do": "tu_do",
+      "terrain": {
+        "type": "slope",
+        "y": 348,
+        "startX": 105,
+        "endX": 435,
+        "angleDeg": -8
+      },
+      "actors": [
+        {
+          "id": "hero",
+          "x": 162,
+          "scale": 1.36,
+          "facing": "right",
+          "pose": "push",
+          "leanDeg": 18,
+          "sitProgress": 0,
+          "seatedOn": "khoi_da.mat_ghe",
+          "showTeaCup": 0,
+          "teaCupRed": false,
+          "opacity": 1,
+          "colorRole": "ink",
+          "focusRole": "hero",
+          "layer": "mid",
+          "semanticLayer": "giua",
+          "enterAt": "start+0.25s",
+          "fadeDuration": 1
+        }
+      ],
+      "props": [
+        {
+          "id": "khoi_da",
+          "type": "khoi_da_len_doc",
+          "x": 7.36,
+          "y": -2,
+          "follow": "hero:ground_front",
+          "anchorType": "ground",
+          "layer": "mid",
+          "semanticLayer": "giua",
+          "scale": 1.15,
+          "rotate": -8,
+          "opacity": 0.96,
+          "colorRole": "ink",
+          "focusRole": "support",
+          "drawProgress": 0,
+          "idle": "none",
+          "shapes": [
+            {
+              "d": "M -23 0 L -25 -16 L -21 -38 L -8 -46 L 14 -44 L 24 -28 L 23 0 Z",
+              "fill": "bg",
+              "fillOpacity": 0.2,
+              "role": "ink",
+              "strokeScale": 1
+            },
+            {
+              "d": "M -23 0 L -25 -16 L -21 -38 L -8 -46 L -10 -22 L -12 0 Z",
+              "fill": "ink",
+              "fillOpacity": 0.16,
+              "role": "ink",
+              "strokeScale": 0
+            },
+            {
+              "d": "M -8 -46 L -10 -22 L -12 0 M -10 -22 L 10 -18 L 24 -28 M 10 -18 L 13 0",
+              "fill": "none",
+              "role": "ink",
+              "strokeScale": 0.65,
+              "opacity": 0.72
+            }
+          ],
+          "saveAs": "khoi_da_len_doc"
+        },
+        {
+          "id": "mat_troi",
+          "type": "mat_troi_chieu_nho",
+          "x": 168,
+          "y": 218,
+          "anchorType": "center",
+          "layer": "sky",
+          "semanticLayer": "nen",
+          "scale": 1,
+          "opacity": 0,
+          "colorRole": "accent",
+          "focusRole": "hero",
+          "idle": "none",
+          "shapes": [
+            {
+              "circle": [
+                0,
+                0,
+                11.5
+              ],
+              "fill": "accent",
+              "fillOpacity": 0.92,
+              "role": "accent",
+              "strokeScale": 0
+            }
+          ],
+          "saveAs": "mat_troi_chieu_nho"
+        }
+      ],
+      "camera": {
+        "zoom": 1.1,
+        "panX": -6,
+        "panY": 4
+      },
+      "timeline": [
+        {
+          "at": "start+0.15s",
+          "duration": 1.2,
+          "target": "khoi_da",
+          "drawProgress": 1
+        },
+        {
+          "at": "start+0.6s",
+          "duration": 6.4,
+          "target": "hero",
+          "toX": 266,
+          "pose": "push",
+          "leanDeg": 20
+        },
+        {
+          "at": "pivot+0.25s",
+          "duration": 0.1,
+          "exactDuration": true,
+          "target": "khoi_da",
+          "follow": null,
+          "toX": 306,
+          "toY": -2
+        },
+        {
+          "at": "pivot+0.25s",
+          "duration": 2.6,
+          "exactDuration": true,
+          "target": "mat_troi",
+          "toY": 208,
+          "opacity": 1
+        },
+        {
+          "at": "pivot+0.45s",
+          "duration": 2.2,
+          "exactDuration": true,
+          "target": "hero",
+          "toX": 272,
+          "facing": "left",
+          "pose": "sit_lean",
+          "sitProgress": 1,
+          "leanDeg": -5,
+          "showTeaCup": 1
+        },
+        {
+          "at": "pivot+0.6s",
+          "duration": 5.2,
+          "target": "camera",
+          "zoom": 1.24,
+          "panX": -6,
+          "panY": -4
+        }
+      ]
+    }
+  },
+  "props": {
+    "id": "quote-020",
+    "textFormat": "POEM",
+    "title": "Dừng lại cũng là bản lĩnh",
+    "author": "",
+    "publishSlot": "Anytime",
+    "publishMood": "Nhẹ nhàng",
+    "fontSizeScale": 1,
+    "segments": [
+      "Va vấp đủ rồi, ",
+      "+thôi chứng minh,",
+      "Đàn ông đâu mãi phải gồng mình.",
+      "Những ngày tự biết vai đã mỏi.",
+      "Dám dừng lại / cũng là bản lĩnh."
+    ],
+    "pivotWord": "cũng là bản lĩnh",
+    "highlightStyle": "BOTH",
+    "durationMode": "AUTO_SEED",
+    "targetDurationSeconds": 15,
+    "typingSpeedMsPerChar": 55,
+    "holdAfterFinishSeconds": 5.5,
+    "themeId": "MINIMAL_LIGHT",
+    "stageTuning": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "scale": 1,
+      "strokeScale": 1
+    },
+    "motion": {
+      "sceneId": "SCRIPT_DUNG_LAI_BAN_LINH_AM_TRA",
+      "archetype": "SCRIPT_DUNG_LAI_BAN_LINH_AM_TRA",
+      "pacingMode": "CONTEMPLATIVE",
+      "stateA": {
+        "intensity": 0.85,
+        "spread": 0.25,
+        "tiltDeg": -14
+      },
+      "stateB": {
+        "intensity": 0.08,
+        "spread": 0.72,
+        "tiltDeg": 0
+      }
+    },
+    "bgm": {
+      "audioMode": "PIVOT_ACCENT",
+      "foleyPivotStyle": "AUTO"
+    },
+    "brandText": "TRÀ NGUỘI"
+  }
+}

@@ -26,3 +26,7 @@ qa-artifacts-ci/
 
 # Lưu trữ: bản thử cũ, spec cũ, task đã xong (không dùng, giữ để tra lại)
 _luu-tru/
+
+# File chạy máy của Studio (không lưu git)
+data/studio-desktop.log*
+data/studio-runtime.json
