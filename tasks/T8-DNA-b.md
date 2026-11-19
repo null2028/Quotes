@@ -3,6 +3,7 @@ CÁCH LÀM VIỆC (bắt buộc): đọc AGENTS.md, docs/BAN-DO-HE-THONG.md (m�
 Code liên quan: src/engine/visualDnaResolver.ts, src/engine/timelineSync.ts, src/automation/geminiBundleBridge.ts (convertGoiChenToBundle), src/stage/stageValidator.ts, scripts/check-goi.mjs, scripts/stage-preview.mjs, studio-ui (phần slider stageTuning).
 
 T8-DNA-b. Visual DNA chỉ còn làm việc "chống trùng", không đổi nghĩa (chồng chéo #2, #3, #4, #7, #8)
+0. (Từ ảnh qa-artifacts-ci/T8-DNA-a.png) Khi đẩy máy, mái hiên lớp nền tràn lên vùng tiêu đề trên cùng và che dòng 'CHÉN 19 — KỲ DIỆU'. Cắt (clip) mọi thứ của vùng hình trong khung vùng hình ở mọi mức zoom; tiêu đề và khối chữ không bao giờ bị hình đè. Đây là luật cho mọi bố cục.
 Nguyên tắc: với Gói Chén, những gì mang NGHĨA (bố cục, khung, ánh sáng, camera) do Gói Chén quyết; seed ngẫu nhiên chỉ được đổi những chi tiết KHÔNG mang nghĩa để chống trùng (dịch nhẹ chân trời, bụi giấy, tâm vignette, thời lượng).
 1. Bố cục (#2): Gói Chén mặc định CLASSIC_TOP_STAGE. Trường tuỳ chọn `bo_cuc`: co_dien | chan_may | khung_cua (khung_cua = vòm "Cửa sổ Á Đông", chỉ khi skill chọn có chủ đích). Seed không được tự đổi bố cục của Gói Chén. Bỏ hành vi tự hạ ASYMMETRIC_THIRD→WINDOW_FRAME cho Gói Chén.
 2. Ánh sáng (#3): Gói Chén mặc định không gobo; trường tuỳ chọn `anh_sang` (bong_la, nan_cua, den_long, suong_hien) — skill phải nêu lý do như khí quyển.

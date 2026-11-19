@@ -14,21 +14,14 @@
   - Họ đạo cụ: `Đọc tasks/T8-HO.md và làm họ <tên họ>.`
 - Agent B: mở đúng thư mục `Quotes-B` rồi mới giao việc.
 
-## Hàng đợi của Agent A (model mặc định: Neon)
-| # | Task | Câu lệnh | Chủ kênh cần xem |
-|---|---|---|---|
-| 1 | T7b — vật đỏ giữ đến hết, không bỏ im lặng, cụ thể hoá câu trừu tượng | `Đọc tasks/T7b.md và làm.` | — (đang chạy) |
-| 2 | T7c — nghi thức mở màn | `Đọc tasks/T7c.md và làm.` | ảnh dải 3 giây đầu |
-| 3 | T8-BOI-CANH — 9 bộ bối cảnh + ngã rẽ rõ | `Đọc tasks/T8-BOI-CANH.md và làm.` | tờ 3×3 bối cảnh |
-| — | **Chủ kênh**: cập nhật skill trên Gemini web, dựng lại Chén 19 (phương án chén trà), render, xem trên điện thoại | | video |
-| 4 | Họ `khung` (cửa, cổng, gương, mái hiên…) | `Đọc tasks/T8-HO.md và làm họ khung.` | tờ duyệt |
-| 5 | Họ `giay` | `Đọc tasks/T8-HO.md và làm họ giay.` | tờ duyệt |
-| 6 | Kiểu cú lật (xuat_hien, bien_hinh, lui_may, phong_dai…) | task sẽ viết sau | |
-| 7 | Tham số họ + trạng thái dùng chung | task sẽ viết sau | |
-| 8 | Họ `cay_co`, `do_mang`, rồi các họ còn lại | `Đọc tasks/T8-HO.md và làm họ <tên>.` | tờ duyệt |
-| 9 | Chữ nhỏ trên đồ vật, đồ tạm lắp ghép | task sẽ viết sau | |
-Carbon chỉ khi có lỗi lạ Neon không giải được. Chạy quá 20 phút chưa sửa file nào → gõ: "Bạn đã đủ thông tin để sửa chưa? Nếu đủ thì sửa ngay."
-Sau mỗi task có thư viện mới (họ đạo cụ, bối cảnh): cập nhật skill trên Gemini web (tải zip mới, xoá bản cũ, tải lên).
+## Hàng đợi của Agent A (từ 19/11 — chuyển hướng "làn tự do", model Neon)
+| # | Task | Câu lệnh |
+|---|---|---|
+| 1 | TF1 — làn tự do chính thức, kiểm tra chỉ vỡ hình | `Đọc tasks/TF1.md và làm.` |
+| 2 | TF2 — preview chạy macOS + Linux, cùng luồng video thật | `Đọc tasks/TF2.md và làm.` |
+| 3 | TF3 — sửa đồi che vật đỏ, đất kéo hết ngang, dấu phiên bản + log | `Đọc tasks/TF3.md và làm.` |
+| — | Sau đó: làm 2–3 Chén thật qua làn tự do, rồi mới quyết thêm gì | |
+TẠM DỪNG: T8-DNA-b, các họ đạo cụ (T8-HO), mọi luật mới.
 
 ## Sau mỗi task
 Nhắn Claude "xong <tên task>" → Claude duyệt, commit (A) hoặc gộp nhánh (B), rồi báo task tiếp theo.

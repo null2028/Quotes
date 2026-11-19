@@ -2,6 +2,9 @@
 
 > **Mọi agent đọc file này đầu tiên**, sau đó đọc ngay [docs/BAN-DO-HE-THONG.md](docs/BAN-DO-HE-THONG.md), [docs/NHAT-KY-QUYET-DINH.md](docs/NHAT-KY-QUYET-DINH.md) và [docs/QUY-TRINH-LAM-VIEC.md](docs/QUY-TRINH-LAM-VIEC.md) trước khi sửa bất kỳ dòng code nào.
 
+> **MỤC ĐÍCH GỐC (không bao giờ quên):** sáng tạo tự do cho từng câu quote, trong khuôn khổ KHÔNG lỗi toạ độ, KHÔNG lỗi đồ vật, KHÔNG vỡ hình.
+> **Nguyên tắc từ 19/11:** AI tự do về hình (ý tưởng, dáng, vị trí, chuyển động) · Máy chỉ chặn VỠ HÌNH (đè, xuyên, lơ lửng, ngoài khung, đè chữ, sai số vật đỏ) · Mắt (preview, rồi chủ kênh) quyết video có nghĩa không. Gu và nhịp là ghi chú, không phải luật chặn. Chỉ thêm luật khi thấy cùng một lỗi trên video thật 2 lần.
+
 ## 1. Dự án là gì & Kiến trúc hiện hành
 
 - **Trà Nguội Studio** là hệ thống dựng video thơ/quote ngắn bằng **Remotion + React/Vite/Express** (`/Volumes/Data/Quotes`, chạy cục bộ tại `http://localhost:3688` qua `npm run app` hoặc `Trà Nguội.app`).
