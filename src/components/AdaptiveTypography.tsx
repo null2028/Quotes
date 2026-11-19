@@ -305,22 +305,32 @@ export const AdaptiveTypography: React.FC<{
     lineWeights.reduce((a, b) => a + b, 0)
   );
 
-  // Hướng 1: Đồng nhất 100% hiệu ứng thấm mực mềm mại và thanh nét Đỏ Chu Sa kéo xuống chậm rãi theo đường cong Cosine S-Curve
-  const revealProgresses = sync.segmentTimings.map((seg) =>
-    interpolate(
+  // PA-B (TNS-RES-TYPO-ELASTIC-V1.0): Dùng Ease-Out Cubic đúng thời gian thấm mực từng chế độ
+  // để chữ đạt >75% độ nét ngay ~0.30s đầu (bảo toàn vùng nhìn ngoại vi 14-15 ký tự).
+  // Giữ nguyên Cosine S-Curve + 0.35s cho 7 Chén cũ (sync.isLegacyTiming).
+  const revealEasing = sync.isLegacyTiming
+    ? Easing.inOut(Easing.sin)
+    : Easing.out(Easing.cubic);
+  const revealTailPadFrames = sync.isLegacyTiming
+    ? Math.round(0.35 * sync.fps)
+    : 0;
+
+  const revealProgresses = sync.segmentTimings.map((seg) => {
+    const firstEnd = seg.chunks?.[0]?.endTypingFrame ?? seg.endTypingFrame;
+    return interpolate(
       frame,
       [
         seg.startFrame,
-        Math.max(seg.startFrame + 1, seg.endTypingFrame + Math.round(0.35 * sync.fps)),
+        Math.max(seg.startFrame + 1, firstEnd + revealTailPadFrames),
       ],
       [0, 1],
       {
-        easing: Easing.inOut(Easing.sin),
+        easing: revealEasing,
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
       }
-    )
-  );
+    );
+  });
 
   const lineProgresses = revealProgresses.map(
     (revealP) => revealP * (1 - typoLoopBlend)
@@ -485,6 +495,87 @@ export const AdaptiveTypography: React.FC<{
                   [palette.inkPrimary, palette.accentText || palette.accent]
                 )
               : palette.inkPrimary;
+
+            const hasSplitChunks = Boolean(seg.chunks && seg.chunks.length > 1);
+
+            if (hasSplitChunks && seg.chunks) {
+              return (
+                <div
+                  key={seg.index}
+                  style={{
+                    maxWidth: activeGeo.typographyMaxWidth,
+                    opacity: 1 - typoLoopBlend,
+                    transform: `translateY(${(-typoLoopBlend * 2.5).toFixed(2)}px)`,
+                    filter:
+                      exitBlurPx > 0.05
+                        ? `blur(${exitBlurPx.toFixed(2)}px)`
+                        : 'none',
+                    fontFamily: serifStack,
+                    fontSize: quoteFontSize,
+                    lineHeight,
+                    color: palette.inkPrimary,
+                    textAlign: 'left',
+                    whiteSpace: 'pre-wrap',
+                    overflowWrap: 'break-word',
+                    wordBreak: 'normal',
+                    textWrap: props.textFormat === 'POEM' ? 'wrap' : 'pretty',
+                    willChange: 'opacity, transform, filter',
+                  }}
+                >
+                  {seg.chunks.map((chunk, ci) => {
+                    const chunkRevealP = interpolate(
+                      frame,
+                      [
+                        chunk.startFrame,
+                        Math.max(
+                          chunk.startFrame + 1,
+                          chunk.endTypingFrame + revealTailPadFrames
+                        ),
+                      ],
+                      [0, 1],
+                      {
+                        easing: revealEasing,
+                        extrapolateLeft: 'clamp',
+                        extrapolateRight: 'clamp',
+                      }
+                    );
+                    const chunkBlur = interpolate(chunkRevealP, [0, 1], [5.2, 0]);
+                    const localPivStart = seg.containsPivot
+                      ? Math.max(0, seg.pivotCharStartIndex - chunk.cleanCharOffset)
+                      : -1;
+                    const localPivEnd = seg.containsPivot
+                      ? Math.min(
+                          chunk.cleanText.length,
+                          seg.pivotCharEndIndex - chunk.cleanCharOffset
+                        )
+                      : -1;
+                    const chunkHasOverlapPivot =
+                      seg.containsPivot && localPivEnd > localPivStart;
+                    return (
+                      <span
+                        key={ci}
+                        style={{
+                          opacity: chunkRevealP,
+                          filter:
+                            chunkBlur > 0.05
+                              ? `blur(${chunkBlur.toFixed(2)}px)`
+                              : 'none',
+                        }}
+                      >
+                        {ci > 0 ? ' ' : null}
+                        {renderFormattedLineContent(
+                          chunk.rawText,
+                          chunkHasOverlapPivot,
+                          chunkHasOverlapPivot ? localPivStart : -1,
+                          chunkHasOverlapPivot ? localPivEnd : -1,
+                          pivotColor
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
+            }
 
             return (
               <div

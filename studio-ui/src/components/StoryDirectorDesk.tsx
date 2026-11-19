@@ -59,6 +59,7 @@ import { THEME_PALETTES, LAYOUT_TOKENS } from '../../../src/theme/palettes';
 import {
   auditVietnameseSyllables,
   computeTimelineSync,
+  countQuoteBeats,
   stripInlineMarkdown,
 } from '../../../src/engine/timelineSync';
 import {
@@ -157,14 +158,30 @@ export const StoryDirectorDesk: React.FC<Props> = ({
   };
 
   const sync = computeTimelineSync(props, LAYOUT_TOKENS.fps);
+  const totalDurSec = sync.durationInFrames / LAYOUT_TOKENS.fps;
   const pivotTimeNum = sync.pivotFrame / LAYOUT_TOKENS.fps;
   const pivotTimeSec = pivotTimeNum.toFixed(1);
   const syllableAudit = auditVietnameseSyllables(props.segments);
-  const isPivotOptimal = pivotTimeNum >= 5.5 && pivotTimeNum <= 9.5;
+  const pivotRatio = pivotTimeNum / Math.max(1, totalDurSec);
+  const dwellAfterPivotSec = totalDurSec - pivotTimeNum;
+  const isPivotOptimal =
+    pivotRatio >= 0.3 && pivotRatio <= 0.72 && dwellAfterPivotSec >= 3.0;
 
   const quoteTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const unifiedQuoteText = props.segments.join('\n');
   const fontSizeScale = props.fontSizeScale ?? 1.0;
+  const baseFontPx = LAYOUT_TOKENS.typography.baseFontSize;
+  const committedFontPx = Math.max(
+    38,
+    Math.min(48, Math.round(baseFontPx * fontSizeScale))
+  );
+  const [dragFontPx, setDragFontPx] = useState<number | null>(null);
+  const activeFontPx = dragFontPx ?? committedFontPx;
+  const quoteBeatCount = countQuoteBeats(props.segments);
+
+  useEffect(() => {
+    setDragFontPx(null);
+  }, [cup.id]);
 
   const [isScriptOpen, setIsScriptOpen] = useState(false);
   const [isCreatingBlankScript, setIsCreatingBlankScript] = useState(false);
@@ -905,9 +922,9 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                   ? 'text-tea-accent bg-tea-accent/10 border-tea-accent/30'
                   : 'text-amber-800 bg-amber-500/12 border-amber-500/35'
               }`}
-              title="Khung điểm lật tối ưu: 5.5s – 9.5s"
+              title={`Dải ${sync.durationBand.replace('_', '-')} (${totalDurSec.toFixed(1)}s · ${sync.effectiveCps} CPS · hậu vị ${dwellAfterPivotSec.toFixed(1)}s)`}
             >
-              Hồi II tại {pivotTimeSec}s (Frame #{sync.pivotFrame})
+              {sync.durationBand.replace('_', '-')} {totalDurSec.toFixed(1)}s · Hồi II tại {pivotTimeSec}s
             </span>
           </div>
         </div>
@@ -978,44 +995,53 @@ export const StoryDirectorDesk: React.FC<Props> = ({
               </button>
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-tea-muted font-medium">
+            <div className="flex items-center gap-2 text-xs shrink-0">
+              <span className="text-tea-muted font-medium whitespace-nowrap">
                 Cỡ chữ:{' '}
-                <strong className="font-mono text-tea-ink">
-                  {Math.round(
-                    LAYOUT_TOKENS.typography.baseFontSize *
-                      Math.max(0.88, Math.min(1.15, fontSizeScale))
-                  )}
-                  px ({fontSizeScale.toFixed(2)}x)
+                <strong className="font-mono tabular-nums inline-block w-10 text-right text-tea-ink">
+                  {activeFontPx}px
                 </strong>
               </span>
               <input
                 type="range"
-                min={0.88}
-                max={1.15}
-                step={0.02}
-                value={Math.max(0.88, Math.min(1.15, fontSizeScale))}
-                onChange={(e) =>
+                min={38}
+                max={48}
+                step={1}
+                value={activeFontPx}
+                onPointerDown={() => setDragFontPx(activeFontPx)}
+                onChange={(e) => {
+                  const nextPx = Math.max(
+                    38,
+                    Math.min(48, Math.round(Number(e.target.value)))
+                  );
+                  setDragFontPx(nextPx);
                   onUpdateProps({
                     ...props,
-                    fontSizeScale: Number(e.target.value),
-                  })
-                }
-                className="w-20 accent-tea-accent"
-                title="Cỡ chữ chuẩn 42px (1.00x), biên độ tinh chỉnh toàn kênh 38px–48px"
+                    fontSizeScale: Number((nextPx / baseFontPx).toFixed(4)),
+                  });
+                }}
+                onPointerUp={() => setDragFontPx(null)}
+                onPointerCancel={() => setDragFontPx(null)}
+                onBlur={() => setDragFontPx(null)}
+                className="w-24 accent-tea-accent cursor-pointer"
+                title="Cỡ chữ chuẩn 42px, tinh chỉnh từng bước 1px trong biên độ 38px–48px"
               />
-              {Math.abs(fontSizeScale - 1.0) > 0.01 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    onUpdateProps({ ...props, fontSizeScale: 1.0 })
-                  }
-                  className="px-1.5 py-0.5 rounded bg-tea-edge/60 text-[10px] font-mono text-tea-muted hover:text-tea-ink"
-                  title={`Đặt lại cỡ chữ chuẩn ${LAYOUT_TOKENS.typography.baseFontSize}px (1.00x)`}
-                >
-                  {LAYOUT_TOKENS.typography.baseFontSize}px
-                </button>
-              )}
+              <button
+                type="button"
+                disabled={activeFontPx === baseFontPx}
+                onClick={() => {
+                  setDragFontPx(null);
+                  onUpdateProps({ ...props, fontSizeScale: 1.0 });
+                }}
+                className={`w-[54px] shrink-0 text-center px-1.5 py-0.5 rounded font-mono text-[10px] transition ${
+                  activeFontPx === baseFontPx
+                    ? 'bg-tea-edge/30 text-tea-muted/45 cursor-default'
+                    : 'bg-tea-edge/70 text-tea-muted hover:text-tea-ink hover:bg-tea-edge cursor-pointer'
+                }`}
+                title={`Đặt lại cỡ chữ chuẩn ${baseFontPx}px`}
+              >
+                ↺ {baseFontPx}px
+              </button>
             </div>
           </div>
 
@@ -1032,12 +1058,17 @@ export const StoryDirectorDesk: React.FC<Props> = ({
 
           <div className="px-3.5 py-1.5 bg-tea-bg/30 border-t border-tea-border/50 flex flex-wrap items-center justify-between gap-2 text-[11px] text-tea-muted">
             <span>
-              Nhập sao lên hình đúng vậy: <code>Enter</code> tách dòng tuần tự ·{' '}
-              <code>Enter 2 lần</code> tách khổ (20px) · <code>*nghiêng*</code> ·{' '}
-              <code>**đậm**</code>
+              Nhập sao lên hình đúng vậy: <code>Enter</code> tách dòng ·{' '}
+              <code>Enter 2 lần</code> tách khổ · <code>*nghiêng*</code> ·{' '}
+              <code>**đậm**</code> · <code> / </code> tách nhịp ·{' '}
+              <code>+</code> đầu dòng nối nhịp
             </span>
             <span className="font-mono flex items-center gap-2">
               <span>{nonEmptySegments.length} dòng</span>
+              <span>·</span>
+              <span title="Tổng số nhịp hiện chữ (chia đều theo ký hiệu + và / )">
+                {quoteBeatCount} nhịp
+              </span>
               <span>·</span>
               <span title="Thời gian đọc ngẫm ước tính">
                 Đọc ngẫm ~{syllableAudit.contemplateSeconds}s
@@ -2667,13 +2698,13 @@ export const StoryDirectorDesk: React.FC<Props> = ({
                 Thời lượng &amp; Phá chữ ký 15.0s (`{(sync.durationInFrames / sync.fps).toFixed(2)}s · {sync.durationInFrames} frames`)
               </div>
               <div className="text-[11px] text-tea-muted">
-                Tự động giãn theo số âm tiết + seed để tránh trùng thời lượng cứng 900f ngoài kênh mà vẫn khép vòng Seamless Loop
+                Tự động giãn theo trọng số âm tiết từng nhịp (4 dải 8.5–24.0s, né mốc cứng 15.0s) và giữ đủ khoảng lắng hậu vị + Seamless Loop
               </div>
             </div>
             <div className="inline-flex rounded-lg border border-tea-border bg-tea-paper p-0.5 text-[11px] font-semibold shrink-0">
               {(
                 [
-                  { id: 'AUTO_SEED' as DurationMode, label: '🎲 Động (13.5–16.5s)' },
+                  { id: 'AUTO_SEED' as DurationMode, label: '🎲 Đàn hồi (8.5–24s)' },
                   { id: 'FIXED' as DurationMode, label: '📌 Cố định' },
                 ]
               ).map((dm) => {
@@ -2706,8 +2737,8 @@ export const StoryDirectorDesk: React.FC<Props> = ({
               <span className="text-[11px] text-tea-muted">Thời lượng cố định:</span>
               <input
                 type="range"
-                min={12}
-                max={22}
+                min={8.5}
+                max={24}
                 step={0.5}
                 value={props.targetDurationSeconds ?? 15}
                 onChange={(e) =>

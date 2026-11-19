@@ -393,7 +393,7 @@ function buildLanTuDoMd() {
     '## 1. Cấu trúc JSON bọc Chén (dán thẳng vào Studio)',
     '- Object gốc gồm câu chữ + kịch bản sân khấu:',
     '  - `title` (string, bắt buộc): tiêu đề Chén.',
-    '  - `segments` (string[], bắt buộc, 2–4 dòng): các dòng thơ/quote.',
+    '  - `segments` (string[], bắt buộc, 2–4 dòng): các dòng thơ/quote. Hỗ trợ 2 ký hiệu nhịp hiện chữ (không bao giờ hiện lên video/ảnh bìa/caption/tên file): `" / "` giữa dòng = **tách nhịp** (vế sau hiện ở nhịp kế tiếp, vẫn cùng dòng hiển thị); `"+"` đầu dòng = **nối nhịp** (dòng này hiện cùng nhịp với dòng trên). Engine tự căn nhịp theo **trọng số âm tiết từng nhịp + khoảng nín thở trước cú lật** và tự co giãn tổng thời lượng đàn hồi **`8.5s–24.0s`** (4 dải `BAND_S/M/L/XL`, theo `pacingMode` + `textFormat`); mốc `line_N` = lúc dòng hiển thị N bắt đầu hiện (nhịp đầu của dòng), `pivot` tính trong nhịp chứa `pivotWord`.',
     '  - `pivotWord` (string, bắt buộc): cụm chữ đổi đỏ nằm trong dòng cuối của `segments`.',
     '  - `author` (string, tuỳ chọn), `textFormat` (`"POEM"` | `"PROSE"`), `themeId` (`"MINIMAL_LIGHT"` | `"MINIMAL_DARK"` | `"WARM_NOIR"`, mặc định `"MINIMAL_LIGHT"`), `durationMode` (`"AUTO_SEED"` mặc định).',
     '  - `stageScript` (object, bắt buộc): mang cờ **`"che_do": "tu_do"`** (tuyệt đối KHÔNG ghi `"legacy": true`).',
@@ -477,6 +477,7 @@ Bạn là Đạo diễn kênh **Trà Nguội**. Trước khi làm, hãy đọc \
 ## Bước 1 — Câu chữ (DỪNG chờ chốt)
 - Nếu chủ kênh **đưa sẵn câu**: giữ nguyên văn 100%, chia dòng hợp lý (2–4 dòng) và đề xuất cụm chữ lật ở dòng cuối.
 - Nếu chủ kênh **đưa ý tưởng**: đưa **3 phương án** câu chữ (2–4 dòng, **14–28 âm tiết**, cụm chữ lật nằm ở **dòng cuối**).
+- **Nhịp đọc & hiện chữ**: có thể đặt 2 ký hiệu nhịp ngay trong câu để kiểm soát lúc chữ hiện (ký hiệu tự ẩn khi xuất hình): \`" / "\` giữa dòng = **tách nhịp** (vế sau hiện ở nhịp kế tiếp, vẫn cùng dòng); \`"+"\` đầu dòng = **nối nhịp** (dòng này hiện cùng lúc với dòng trên). Đề xuất nhịp đặt dấu nếu câu cần dồn cặp mở đầu hoặc chừa khoảng lặng trước vế lật.
 - Giữ chất **“Lắng — Kiệm lời — Đời thực — Có dư vị”**. Tránh từ sáo rỗng bi lụy, khẩu hiệu dạy đời, văn dịch cứng, hashtag rác (\`#fyp\`, \`#foryou\`, \`#xuhuong\`, \`#viral\`).
 
 ## Bước 2 — Cú lật (3 phương án ngắn, DỪNG chờ chốt)

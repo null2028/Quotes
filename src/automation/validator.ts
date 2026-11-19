@@ -1,4 +1,5 @@
 import { VideoInputProps, VideoInputSchema } from '../schemas/videoSchema';
+import { stripInlineMarkdown } from '../engine/timelineSync';
 
 /**
  * Đảm bảo pivotWord luôn tồn tại nguyên vẹn bên trong ít nhất 1 segment (ưu tiên segment cuối)
@@ -7,7 +8,7 @@ export function ensureValidPivotSubstring(
   segments: string[],
   candidatePivot: string
 ): string {
-  const stripMd = (s: string) => s.replace(/\*+/g, '').trim();
+  const stripMd = (s: string) => stripInlineMarkdown(s).trim();
   const cleanCandidate = stripMd(candidatePivot);
   const nonEmptySegments = segments
     .map((s) => stripMd(s))

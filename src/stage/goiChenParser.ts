@@ -4,7 +4,11 @@
  * Luồng: Gói Chén → chuyển sang SemanticStageScript → compileSemanticStageScript → validateStageScriptHard
  * Lỗi trả về là câu tiếng Việt có gợi ý tên đúng, dùng cho T4 (copy gửi lại Gemini web).
  */
-import { computeTimelineSync, TimelineSyncResult } from '../engine/timelineSync';
+import {
+  computeTimelineSync,
+  stripInlineMarkdown,
+  TimelineSyncResult,
+} from '../engine/timelineSync';
 import { resolveVisualDNA, ResolvedVisualDNA } from '../engine/visualDnaResolver';
 import type { VideoInputProps } from '../schemas/videoSchema';
 import { BUILT_IN_PROP_CATALOG, BUILT_IN_PROP_NAMES } from './propCatalog';
@@ -113,8 +117,9 @@ export function parseGoiChen(
   if (!cuLat || typeof cuLat !== 'string') {
     formatErrors.push('Thiếu trường "cu_lat" (cụm chữ đổi đỏ, kiểu string).');
   } else if (Array.isArray(cau) && cau.length > 0) {
-    const lastLine = String(cau[cau.length - 1]);
-    if (!lastLine.includes(cuLat as string)) {
+    const lastLine = stripInlineMarkdown(String(cau[cau.length - 1]));
+    const cleanCuLat = stripInlineMarkdown(cuLat as string);
+    if (!lastLine.includes(cleanCuLat)) {
       formatErrors.push(
         `"cu_lat" = "${cuLat}" không nằm trong dòng cuối "${lastLine}". Cụm chữ đổi đỏ phải là một phần của dòng cuối cùng trong "cau".`
       );

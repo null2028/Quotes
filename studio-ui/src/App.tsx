@@ -74,6 +74,7 @@ export const App: React.FC = () => {
   } | null>(null);
 
   const saveTimerRef = useRef<number | null>(null);
+  const saveSeqRef = useRef<number>(0);
   const prevStatusMapRef = useRef<Record<string, RenderJobStatus>>({});
   const initialTrackerSyncedRef = useRef<boolean>(false);
 
@@ -273,6 +274,7 @@ export const App: React.FC = () => {
       )
     );
 
+    const reqSeq = (saveSeqRef.current += 1);
     if (saveTimerRef.current) {
       window.clearTimeout(saveTimerRef.current);
     }
@@ -280,6 +282,8 @@ export const App: React.FC = () => {
       saveTimerRef.current = null;
       try {
         const res = await studioApi.updateCup(activeCup.id, nextProps);
+        // TF6 #3: Bỏ qua phản hồi lưu cũ nếu người dùng đã kéo/sửa tiếp (tránh ghi đè thanh cỡ chữ khi đang kéo)
+        if (reqSeq !== saveSeqRef.current) return;
         setCups((prev) =>
           prev.map((c) =>
             c.id === res.cup.id

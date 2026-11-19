@@ -380,12 +380,12 @@ async function runGate2() {
     brandText: 'TRÀ NGUỘI',
   });
   const expectedLeadInFrames = Math.round(STAGE_LEAD_IN_SECONDS * LAYOUT_TOKENS.fps);
-  const expectedFadeDuration = Math.round(1.05 * LAYOUT_TOKENS.fps);
+  const expectedFadeDuration = sampleSync.fadeDurationFrames;
   const expectedLoopFadeStart =
     sampleSync.durationInFrames - Math.round(TYPO_LOOP_FADE_SECONDS * LAYOUT_TOKENS.fps);
   assertCheck(
     unitChecks,
-    'computeTimelineSync chuẩn Hướng 1 (FIXED 15s): mở chữ Dòng 1 tại 0.35s (frame 21), thấm mực đồng nhất & Seamless Loop (frame 852 -> 899)',
+    'computeTimelineSync chuẩn PA-B (FIXED 15s): mở chữ Dòng 1 tại 0.35s (frame 21), thấm mực Ease-Out Cubic & Seamless Loop (frame 852 -> 899)',
     sampleSync.durationInFrames === 900 &&
       sampleSync.introBufferFrames === expectedLeadInFrames &&
       sampleSync.segmentTimings?.[0]?.startFrame === 21 &&
@@ -427,10 +427,10 @@ async function runGate2() {
   });
   assertCheck(
     unitChecks,
-    'computeTimelineSync (AUTO_SEED) chuẩn V8.5: thời lượng động !== 900f (bội 30f trong 810..990) & Ràng buộc B.1 Header dissolve sau Cover trước Pivot',
+    'computeTimelineSync (AUTO_SEED) chuẩn PA-B đàn hồi: thời lượng động !== 900f (bội 30f trong 510..1440 = 8.5–24.0s) & Ràng buộc B.1 Header dissolve sau Cover trước Pivot',
     sampleDynamicSync.durationInFrames !== 900 &&
-      sampleDynamicSync.durationInFrames >= 810 &&
-      sampleDynamicSync.durationInFrames <= 990 &&
+      sampleDynamicSync.durationInFrames >= 510 &&
+      sampleDynamicSync.durationInFrames <= 1440 &&
       sampleDynamicSync.durationInFrames % 30 === 0 &&
       sampleDynamicSync.recommendedCoverFrame + 18 <= sampleDynamicSync.headerDissolveStartFrame &&
       sampleDynamicSync.headerDissolveEndFrame < sampleDynamicSync.pivotFrame,

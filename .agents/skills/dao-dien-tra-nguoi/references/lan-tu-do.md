@@ -5,7 +5,7 @@
 ## 1. Cấu trúc JSON bọc Chén (dán thẳng vào Studio)
 - Object gốc gồm câu chữ + kịch bản sân khấu:
   - `title` (string, bắt buộc): tiêu đề Chén.
-  - `segments` (string[], bắt buộc, 2–4 dòng): các dòng thơ/quote.
+  - `segments` (string[], bắt buộc, 2–4 dòng): các dòng thơ/quote. Hỗ trợ 2 ký hiệu nhịp hiện chữ (không bao giờ hiện lên video/ảnh bìa/caption/tên file): `" / "` giữa dòng = **tách nhịp** (vế sau hiện ở nhịp kế tiếp, vẫn cùng dòng hiển thị); `"+"` đầu dòng = **nối nhịp** (dòng này hiện cùng nhịp với dòng trên). Engine tự căn nhịp theo **trọng số âm tiết từng nhịp + khoảng nín thở trước cú lật** và tự co giãn tổng thời lượng đàn hồi **`8.5s–24.0s`** (4 dải `BAND_S/M/L/XL`, theo `pacingMode` + `textFormat`); mốc `line_N` = lúc dòng hiển thị N bắt đầu hiện (nhịp đầu của dòng), `pivot` tính trong nhịp chứa `pivotWord`.
   - `pivotWord` (string, bắt buộc): cụm chữ đổi đỏ nằm trong dòng cuối của `segments`.
   - `author` (string, tuỳ chọn), `textFormat` (`"POEM"` | `"PROSE"`), `themeId` (`"MINIMAL_LIGHT"` | `"MINIMAL_DARK"` | `"WARM_NOIR"`, mặc định `"MINIMAL_LIGHT"`), `durationMode` (`"AUTO_SEED"` mặc định).
   - `stageScript` (object, bắt buộc): mang cờ **`"che_do": "tu_do"`** (tuyệt đối KHÔNG ghi `"legacy": true`).

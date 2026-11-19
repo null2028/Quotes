@@ -1008,22 +1008,83 @@ function wrapQuoteSegmentForSvg(rawText, seg, maxWidthPx, fontSize) {
       seg.pivotCharStartIndex >= 0 &&
       seg.pivotCharEndIndex > seg.pivotCharStartIndex;
     if (!hasPiv) {
-      return { text: wLine.text, pivStart: -1, pivEnd: -1 };
+      return { text: wLine.text, startIdx: wLine.startIdx, pivStart: -1, pivEnd: -1 };
     }
     const ovStart = Math.max(wLine.startIdx, seg.pivotCharStartIndex);
     const ovEnd = Math.min(endIdx, seg.pivotCharEndIndex);
     if (ovEnd > ovStart) {
       return {
         text: wLine.text,
+        startIdx: wLine.startIdx,
         pivStart: ovStart - wLine.startIdx,
         pivEnd: ovEnd - wLine.startIdx,
       };
     }
-    return { text: wLine.text, pivStart: -1, pivEnd: -1 };
+    return { text: wLine.text, startIdx: wLine.startIdx, pivStart: -1, pivEnd: -1 };
   });
 }
 
-function renderWrappedQuoteLineSvg(wLine, x, y, fontSize, isPivotRedActive, palette, opacity) {
+function renderWrappedQuoteLineSvg(
+  wLine,
+  x,
+  y,
+  fontSize,
+  isPivotRedActive,
+  palette,
+  opacity,
+  chunkTimingContext = null
+) {
+  // TF6: Khi dòng có tách nhịp (" / "), dựng từng mảnh theo mốc beat riêng (mảnh chưa tới nhịp bị ẩn hoàn toàn)
+  if (chunkTimingContext && chunkTimingContext.chunks.length > 1) {
+    const { chunks, seg, frame, fadeFrames, useEaseOutCubic } = chunkTimingContext;
+    const lineStart = wLine.startIdx ?? 0;
+    const lineEnd = lineStart + wLine.text.length;
+    const hasPiv =
+      isPivotRedActive &&
+      Boolean(seg?.containsPivot) &&
+      seg.pivotCharStartIndex >= 0 &&
+      seg.pivotCharEndIndex > seg.pivotCharStartIndex;
+
+    const tspans = [];
+    for (let ci = 0; ci < chunks.length; ci++) {
+      const ch = chunks[ci];
+      const rawU = frame < ch.startFrame ? 0 : Math.min(1, (frame - ch.startFrame) / fadeFrames);
+      const chOp = useEaseOutCubic ? 1 - Math.pow(1 - rawU, 3) : rawU;
+      if (chOp <= 0.01) continue;
+
+      const spanStart = ci === 0 ? ch.cleanCharOffset : Math.max(0, ch.cleanCharOffset - 1);
+      const spanEnd = ch.cleanCharOffset + ch.cleanText.length;
+      const ovStart = Math.max(lineStart, spanStart);
+      const ovEnd = Math.min(lineEnd, spanEnd);
+      if (ovEnd <= ovStart) continue;
+
+      const localText = wLine.text.slice(ovStart - lineStart, ovEnd - lineStart);
+      const opStr = chOp.toFixed(3);
+      if (hasPiv) {
+        const pStart = Math.max(ovStart, seg.pivotCharStartIndex);
+        const pEnd = Math.min(ovEnd, seg.pivotCharEndIndex);
+        if (pEnd > pStart) {
+          const pre = localText.slice(0, pStart - ovStart);
+          const piv = localText.slice(pStart - ovStart, pEnd - ovStart);
+          const post = localText.slice(pEnd - ovStart);
+          if (pre) {
+            tspans.push(`<tspan fill="${palette.inkPrimary}" fill-opacity="${opStr}">${escXml(pre)}</tspan>`);
+          }
+          if (piv) {
+            tspans.push(`<tspan font-weight="600" fill="${palette.accentText}" fill-opacity="${opStr}">${escXml(piv)}</tspan>`);
+          }
+          if (post) {
+            tspans.push(`<tspan fill="${palette.inkPrimary}" fill-opacity="${opStr}">${escXml(post)}</tspan>`);
+          }
+          continue;
+        }
+      }
+      tspans.push(`<tspan fill="${palette.inkPrimary}" fill-opacity="${opStr}">${escXml(localText)}</tspan>`);
+    }
+    if (tspans.length === 0) return '';
+    return `<text x="${x}" y="${y}" font-family="${CROSS_PLATFORM_SERIF_FONT}" font-size="${fontSize}" fill="${palette.inkPrimary}">${tspans.join('')}</text>`;
+  }
+
   const opStr = opacity.toFixed(3);
   if (isPivotRedActive && wLine.pivStart >= 0 && wLine.pivEnd > wLine.pivStart) {
     const pre = wLine.text.slice(0, wLine.pivStart);
@@ -1130,7 +1191,13 @@ function renderStudioMatchedFrameSvg({
   const maxTextW = geo.typographyMaxWidth || 788;
 
   const isPivotActive = frame >= timeline.pivotFrame;
-  const fadeFrames = Math.max(1, Math.round(1.05 * fps));
+  const fadeFrames = Math.max(1, timeline.fadeDurationFrames ?? Math.round(0.95 * fps));
+  const useEaseOutCubic = !timeline.isLegacyTiming;
+  const evalRevealOp = (startF) => {
+    if (frame < startF) return 0;
+    const u = Math.max(0, Math.min(1, (frame - startF) / fadeFrames));
+    return useEaseOutCubic ? 1 - Math.pow(1 - u, 3) : u;
+  };
   const blockTopY = geo.typographyTop + Math.round(geo.topSpacerMaxPx || 145);
   let curY = blockTopY;
   const textEls = [];
@@ -1138,27 +1205,33 @@ function renderStudioMatchedFrameSvg({
   let anyVisibleLine = false;
 
   for (let lIdx = 0; lIdx < lines.length; lIdx++) {
-    const st = segs[lIdx]?.startFrame ?? lIdx * 90;
-    const wrappedLines = wrapQuoteSegmentForSvg(lines[lIdx], segs[lIdx], maxTextW, quoteFontSize);
-    const lineOp =
-      frame < st ? 0 : Math.min(1, (frame - st) / fadeFrames);
+    const seg = segs[lIdx];
+    const st = seg?.startFrame ?? lIdx * 90;
+    const wrappedLines = wrapQuoteSegmentForSvg(seg?.text ?? lines[lIdx], seg, maxTextW, quoteFontSize);
+    const lineOp = evalRevealOp(st);
+    const hasSplitChunks = Boolean(seg?.chunks && seg.chunks.length > 1);
+    const chunkCtx = hasSplitChunks
+      ? { chunks: seg.chunks, seg, frame, fadeFrames, useEaseOutCubic }
+      : null;
 
     for (let wi = 0; wi < wrappedLines.length; wi++) {
       const baselineY = curY + quoteFontSize;
       if (lineOp > 0.01) {
-        anyVisibleLine = true;
-        textEls.push(
-          renderWrappedQuoteLineSvg(
-            wrappedLines[wi],
-            textX,
-            baselineY,
-            quoteFontSize,
-            isPivotActive,
-            palette,
-            lineOp
-          )
+        const lineSvg = renderWrappedQuoteLineSvg(
+          wrappedLines[wi],
+          textX,
+          baselineY,
+          quoteFontSize,
+          isPivotActive,
+          palette,
+          lineOp,
+          chunkCtx
         );
-        visibleBlockBottom = baselineY + 12;
+        if (lineSvg) {
+          anyVisibleLine = true;
+          textEls.push(lineSvg);
+          visibleBlockBottom = baselineY + 12;
+        }
       }
       curY += lineHeightPx;
     }

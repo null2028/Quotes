@@ -1,4 +1,5 @@
 import { VideoInputProps } from '../schemas/videoSchema';
+import { stripInlineMarkdown } from '../engine/timelineSync';
 
 interface CaptionArchetypeRule {
   id: string;
@@ -227,8 +228,8 @@ export function generateSeoCaptionForCup(
 ): string {
   const fullCorpus = [
     props.title ?? '',
-    props.pivotWord ?? '',
-    ...props.segments,
+    stripInlineMarkdown(props.pivotWord ?? ''),
+    ...props.segments.map((s) => stripInlineMarkdown(s)),
   ].join(' ');
 
   const matched = CAPTION_ARCHETYPE_RULES.find((rule) =>
@@ -322,7 +323,7 @@ export function generateSeedCommentForCup(
     cleanPivot,
     effectiveMood,
     props.publishTopic || '',
-    ...props.segments,
+    ...props.segments.map((s) => stripInlineMarkdown(s)),
   ]
     .join(' ')
     .toLowerCase();
@@ -492,9 +493,11 @@ export function auditTikTokSeoCaption(
   const hookNorm = normalizeTextCompare(firstHook);
 
   const segNorms = segments
-    .map((s) => normalizeTextCompare(s))
+    .map((s) => normalizeTextCompare(stripInlineMarkdown(s)))
     .filter((s) => s.length >= 12);
-  const fullQuoteNorm = normalizeTextCompare(segments.join(' '));
+  const fullQuoteNorm = normalizeTextCompare(
+    segments.map((s) => stripInlineMarkdown(s)).join(' ')
+  );
 
   const duplicatesQuoteVerbatim =
     hookNorm.length >= 14 &&

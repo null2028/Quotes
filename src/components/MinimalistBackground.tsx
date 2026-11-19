@@ -39,12 +39,18 @@ const LightingGoboLayer: React.FC<{
   gobo: LightingGobo;
   palette: ThemePalette;
   loopProgress: number;
-}> = ({ gobo, palette, loopProgress }) => {
+  durationSec: number;
+}> = ({ gobo, palette, loopProgress, durationSec }) => {
   if (gobo === 'NONE') return null;
   const tau = Math.PI * 2;
   const isDark = isDarkThemePalette(palette.id);
-  const w1 = 1 - Math.cos(loopProgress * tau);
-  const w2 = 1 - Math.cos(loopProgress * tau * 2);
+  // Bội số nguyên sinh học theo TNS-RES-STAGE-LIGHT-PROPS-V1.0 (8.5s–24.0s):
+  // giữ vận tốc ánh sáng tự nhiên & bảo toàn tuyệt đối điểm nối vòng lặp frame[0] === frame[end]
+  const kGobo1 = Math.max(1, Math.round(durationSec / 12.0));
+  const kGobo2 = Math.max(2, Math.round(durationSec / 6.0));
+  const amp1Scale = kGobo1 >= 2 ? 0.75 : 1.0;
+  const w1 = (1 - Math.cos(loopProgress * tau * kGobo1)) * amp1Scale;
+  const w2 = 1 - Math.cos(loopProgress * tau * kGobo2);
 
   if (gobo === 'FOLIAGE_DAPPLE') {
     const spot1X = 24 + w1 * 3.5;
@@ -146,12 +152,17 @@ export const MinimalistBackground: React.FC<{
   visualDNA?: ResolvedVisualDNA;
 }> = ({ palette, title, jobId = '01', sync, visualDNA }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
+  const { durationInFrames, fps } = useVideoConfig();
   const { swissGrid } = LAYOUT_TOKENS;
 
   const safeTotalFrames = Math.max(2, durationInFrames);
+  const durationSec = safeTotalFrames / Math.max(1, fps || LAYOUT_TOKENS.fps);
   const loopProgress = (frame % safeTotalFrames) / safeTotalFrames;
   const tau = Math.PI * 2;
+
+  // Lượng tử hóa bội số nguyên chu kỳ sinh học (8.5s–24.0s): bảo toàn Seamless Loop ở mọi dải thời lượng
+  const kBreath = Math.max(2, Math.round(durationSec / 3.9));
+  const moteHarmScale = Math.max(1, Math.round(durationSec / 14.0));
 
   const vc = visualDNA?.vignetteCenter ?? {
     xPct: 50,
@@ -167,7 +178,7 @@ export const MinimalistBackground: React.FC<{
   const grainShiftX = (1 - Math.cos(loopProgress * tau * 2)) * 18;
   const grainShiftY = (1 - Math.cos(loopProgress * tau * 3)) * 16;
 
-  const breathWave = 0.5 + 0.5 * Math.cos(loopProgress * tau * 8);
+  const breathWave = 0.5 + 0.5 * Math.cos(loopProgress * tau * kBreath);
   const dotOpacity = 0.74 + breathWave * 0.26;
   const dotScale = 0.93 + breathWave * 0.13;
 
@@ -230,6 +241,7 @@ export const MinimalistBackground: React.FC<{
         gobo={visualDNA?.lightingGobo ?? 'NONE'}
         palette={palette}
         loopProgress={loopProgress}
+        durationSec={durationSec}
       />
       <div
         style={{
@@ -268,8 +280,9 @@ export const MinimalistBackground: React.FC<{
         }}
       >
         {(visualDNA?.motes ?? PAPER_MOTES).map((m, idx) => {
-          const thetaX = loopProgress * tau * m.harmX + m.phase;
-          const thetaY = loopProgress * tau * m.harmY + m.phase * 1.3;
+          const thetaX = loopProgress * tau * (m.harmX * moteHarmScale) + m.phase;
+          const thetaY =
+            loopProgress * tau * (m.harmY * moteHarmScale) + m.phase * 1.3;
           const cx = m.baseX + Math.sin(thetaX) * m.ampX;
           const cy = m.baseY + Math.cos(thetaY) * m.ampY;
           const shimmer = 0.72 + 0.28 * Math.cos(thetaX + thetaY);
